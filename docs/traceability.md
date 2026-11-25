@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 14 workstreams, 10 ADRs, 33 decisions, 36 commits (6 unlinked). Newest commit indexed: `6126ab1`.
+Counts: 14 workstreams, 10 ADRs, 36 decisions, 41 commits (6 unlinked). Newest commit indexed: `3856dad`.
 
 ## Workstreams
 
@@ -131,11 +131,15 @@ Counts: 14 workstreams, 10 ADRs, 33 decisions, 36 commits (6 unlinked). Newest c
 
 ### W-013
 
-**S3 review follow-ups (create email oracle, login limiter DoS, audit hardening)** — PARKED
-- Where: [board](workstreams.md)
-- Decisions and ADRs: none
-- Commits (0):
-  - none yet
+**S3 review follow-ups** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-26--closed-w-013-s3-review-follow-ups)
+- Decisions and ADRs: [ADR-008](#adr-008), [D-034](#d-034), [D-035](#d-035), [D-036](#d-036)
+- Commits (5):
+  - `863d4b8` fix(persistence): make email unique per owner, closing the create-path oracle (2026-11-26)
+  - `977821f` fix(api): key the login limiter on (IP, email) plus a loose per-email ceiling (2026-11-26)
+  - `feef681` fix(identity): require If-Match to change or delete an existing permission override (2026-11-26)
+  - `3766cbc` fix(identity): close the remaining S3 review findings on admin and audit edges (2026-11-26)
+  - `3856dad` docs(spine): close W-013 into the project log, hot-state to S4 (2026-11-26)
 
 ### W-014
 
@@ -218,11 +222,16 @@ Counts: 14 workstreams, 10 ADRs, 33 decisions, 36 commits (6 unlinked). Newest c
 
 **Authentication, authorization and the identity model** — accepted — [`ADR-008-auth-and-identity-model.md`](adr/ADR-008-auth-and-identity-model.md)
 - Introduced by: `8a24bd7` docs(identity): ADR-008 auth model, ADR-009 module management, failure modes (2026-11-25)
-- Amended by: none
+- Amended by:
+  - `863d4b8` fix(persistence): make email unique per owner, closing the create-path oracle (2026-11-26)
+  - `feef681` fix(identity): require If-Match to change or delete an existing permission override (2026-11-26)
 - Cited in commit Refs:
   - `c99c3e0` docs(plans): drop a private platform name from the S3 plan (2026-11-25)
-- Workstreams: [W-005](#w-005)
-- Decisions: [D-016](#d-016), [D-017](#d-017), [D-018](#d-018), [D-019](#d-019), [D-020](#d-020), [D-022](#d-022), [D-024](#d-024), [D-026](#d-026)
+  - `863d4b8` fix(persistence): make email unique per owner, closing the create-path oracle (2026-11-26)
+  - `977821f` fix(api): key the login limiter on (IP, email) plus a loose per-email ceiling (2026-11-26)
+  - `feef681` fix(identity): require If-Match to change or delete an existing permission override (2026-11-26)
+- Workstreams: [W-005](#w-005), [W-013](#w-013)
+- Decisions: [D-016](#d-016), [D-017](#d-017), [D-018](#d-018), [D-019](#d-019), [D-020](#d-020), [D-022](#d-022), [D-024](#d-024), [D-026](#d-026), [D-034](#d-034), [D-035](#d-035), [D-036](#d-036)
 
 ### ADR-009
 
@@ -485,10 +494,41 @@ Counts: 14 workstreams, 10 ADRs, 33 decisions, 36 commits (6 unlinked). Newest c
 - Workstreams: [W-012](#w-012)
 - Cited in commit Refs: none
 
+### D-034
+
+**W-013 customer email is unique per owner** — accepted — [decisions.md](decisions.md#d-034--w-013-customer-email-is-unique-per-owner--2026-11-26)
+- ADR: [ADR-008](adr/ADR-008-auth-and-identity-model.md)
+- Workstreams: [W-013](#w-013)
+- Cited in commit Refs:
+  - `863d4b8` fix(persistence): make email unique per owner, closing the create-path oracle (2026-11-26)
+
+### D-035
+
+**W-013 login limiter: strict (IP, email) partition plus a loose per-email ceiling** — accepted — [decisions.md](decisions.md#d-035--w-013-login-limiter-strict-ip-email-partition-plus-a-loose-per-email-ceiling--2026-11-26)
+- ADR: [ADR-008](adr/ADR-008-auth-and-identity-model.md)
+- Workstreams: [W-013](#w-013)
+- Cited in commit Refs:
+  - `977821f` fix(api): key the login limiter on (IP, email) plus a loose per-email ceiling (2026-11-26)
+
+### D-036
+
+**W-013 S3 review hardening of the admin surface** — accepted — [decisions.md](decisions.md#d-036--w-013-s3-review-hardening-of-the-admin-surface--2026-11-26)
+- ADR: [ADR-008](adr/ADR-008-auth-and-identity-model.md)
+- Workstreams: [W-013](#w-013)
+- Cited in commit Refs:
+  - `feef681` fix(identity): require If-Match to change or delete an existing permission override (2026-11-26)
+  - `3766cbc` fix(identity): close the remaining S3 review findings on admin and audit edges (2026-11-26)
+  - `3856dad` docs(spine): close W-013 into the project log, hot-state to S4 (2026-11-26)
+
 ## Commit to ids
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `3856dad` | docs(spine): close W-013 into the project log, hot-state to S4 | 2026-11-26 | [W-013](#w-013), [D-036](#d-036) |
+| `3766cbc` | fix(identity): close the remaining S3 review findings on admin and audit edges | 2026-11-26 | [W-013](#w-013), [D-036](#d-036) |
+| `feef681` | fix(identity): require If-Match to change or delete an existing permission override | 2026-11-26 | [W-013](#w-013), [D-036](#d-036), [ADR-008](#adr-008) |
+| `977821f` | fix(api): key the login limiter on (IP, email) plus a loose per-email ceiling | 2026-11-26 | [W-013](#w-013), [D-035](#d-035), [ADR-008](#adr-008) |
+| `863d4b8` | fix(persistence): make email unique per owner, closing the create-path oracle | 2026-11-26 | [W-013](#w-013), [D-034](#d-034), [ADR-008](#adr-008) |
 | `6126ab1` | docs(spine): close W-012 into the project log, hot-state to W-013 | 2026-11-26 | [W-012](#w-012), [ADR-010](#adr-010) |
 | `c35a022` | fix(persistence): audit forced writes, detach failed-save rows, independent failure row | 2026-11-26 | [W-012](#w-012), [ADR-010](#adr-010) |
 | `f38e3bf` | docs(audit): ADR-010, decisions, runbook 06, failure modes and deferred items | 2026-11-26 | [W-012](#w-012), [ADR-010](#adr-010) |
