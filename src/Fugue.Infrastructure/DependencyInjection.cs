@@ -1,6 +1,7 @@
 using Fugue.Application.Abstractions;
 using Fugue.Application.Features.Customers;
 using Fugue.Domain.Abstractions;
+using Fugue.Infrastructure.Audit;
 using Fugue.Infrastructure.Identity;
 using Fugue.Infrastructure.Persistence;
 using Fugue.Infrastructure.Persistence.Customers;
@@ -24,13 +25,25 @@ public static class DependencyInjection
         services.AddScoped<IAuditStamp, AuditStamp>();
         services.AddScoped<AuditableSaveChangesInterceptor>();
 
+        // audit_log (ADR-010): options, redaction, the SaveChanges interceptor (EF path) and IAuditTrail (Dapper path and failures).
+        services.AddOptions<AuditOptions>(); // bound to the Audit: section by the composition root
+        services.AddSingleton<AuditRedactor>();
+        services.AddScoped<AuditRowFactory>();
+        services.AddScoped<AuditLogSaveChangesInterceptor>();
+        services.AddScoped<IAuditTrail, AuditTrail>();
+        services.AddScoped<IActorDirectory, ActorDirectory>();
+        services.TryAddScoped<IAuditRequestInfo, NullAuditRequestInfo>();
+
         services.AddDbContext<FugueDbContext>((sp, options) =>
         {
             string connection = configuration.GetConnectionString("Postgres")
                 ?? throw new InvalidOperationException(
                     "ConnectionStrings:Postgres is not configured. Set ConnectionStrings__Postgres (see .env.example) or use dotnet user-secrets.");
             PersistenceOptions.Configure(options, connection);
-            options.AddInterceptors(sp.GetRequiredService<AuditableSaveChangesInterceptor>());
+            // Stamp first, then audit: the audit diff skips the stamp columns the first interceptor just wrote.
+            options.AddInterceptors(
+                sp.GetRequiredService<AuditableSaveChangesInterceptor>(),
+                sp.GetRequiredService<AuditLogSaveChangesInterceptor>());
         });
 
         services.AddScoped<SqlExecutor>();

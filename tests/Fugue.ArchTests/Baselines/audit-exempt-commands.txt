@@ -1,0 +1,5 @@
+# Shrink-only baseline for Fitness rule "audit-exempt-commands": commands marked [NoAudit] (authentication; recorded in access_audit, not audit_log).
+# A line that is no longer a violation FAILS the test: delete it (ratchet).
+LoginCommand
+LogoutCommand
+RefreshTokenCommand

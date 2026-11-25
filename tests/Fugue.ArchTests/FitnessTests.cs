@@ -253,6 +253,85 @@ public sealed class FitnessTests
     }
 
     [Fact]
+    public void Fitness_Audit_AuditBehavior_is_registered_between_Logging_and_Validation()
+    {
+        // Audit wraps validation (validation failures get a failure row) and sits inside logging. Mediator generates its pipeline from this list.
+        string program = File.ReadAllText(Path.Combine(RepoRoot(), "src", "Fugue.Api", "Program.cs"));
+        System.Text.RegularExpressions.Match list = System.Text.RegularExpressions.Regex.Match(program, @"PipelineBehaviors\s*=\s*\[([^\]]*)\]");
+
+        Assert.True(list.Success, "PipelineBehaviors list not found in Program.cs");
+        string[] order = System.Text.RegularExpressions.Regex.Matches(list.Groups[1].Value, @"typeof\((\w+)<,>\)").Select(m => m.Groups[1].Value).ToArray();
+        Assert.Equal(["LoggingBehavior", "AuditBehavior", "ValidationBehavior"], order);
+    }
+
+    [Fact]
+    public void Fitness_Audit_every_command_passes_through_AuditBehavior_unless_it_is_a_baselined_NoAudit_command()
+    {
+        Type[] commands = Application.GetTypes()
+            .Where(t => t is { IsAbstract: false, IsInterface: false } && t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICommand<>)))
+            .ToArray();
+        Assert.NotEmpty(commands);
+
+        // Every command must satisfy the behavior's constraints, or Mediator could not wrap it.
+        IEnumerable<string> cannotBeWrapped = commands.Where(c =>
+        {
+            Type response = c.GetInterfaces().First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICommand<>)).GetGenericArguments()[0];
+            try
+            {
+                _ = typeof(Fugue.Application.Common.Behaviors.AuditBehavior<,>).MakeGenericType(c, response);
+                return false;
+            }
+            catch (ArgumentException)
+            {
+                return true;
+            }
+        }).Select(c => c.Name);
+        Assert.Empty(cannotBeWrapped);
+
+        // The exemptions (authentication commands, recorded in access_audit) are an allowlist that may only shrink.
+        AssertRatchet("audit-exempt-commands", commands.Where(c => c.IsDefined(typeof(Fugue.Domain.Audit.NoAuditAttribute), inherit: false)).Select(c => c.Name));
+    }
+
+    [Fact]
+    public void Fitness_Audit_Application_and_Api_never_reference_the_audit_entity()
+    {
+        // The audit_log entity and its DbSet belong to Infrastructure; the rest of the code sees DTOs and ports (IAuditTrail, IAuditLogReader).
+        IEnumerable<string> bad = new[] { Application, Api }
+            .SelectMany(a => Types.InAssembly(a).That().HaveDependencyOn("Fugue.Domain.Audit.AuditLog").GetTypes())
+            .Select(t => t.FullName ?? t.Name);
+
+        AssertRatchet("audit-entity-references", bad);
+    }
+
+    [Fact]
+    public void Fitness_Audit_audit_log_has_exactly_one_insert_statement_in_the_source()
+    {
+        string[] hits = Directory.GetFiles(Path.Combine(RepoRoot(), "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}Migrations{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
+                && !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Where(f => File.ReadAllText(f).Contains("INSERT INTO audit_log", StringComparison.Ordinal))
+            .Select(f => Path.GetFileName(f)).ToArray();
+
+        Assert.Equal(["AuditTrail.cs"], hits);
+    }
+
+    [Fact]
+    public void Fitness_Audit_every_raw_SQL_write_goes_through_the_audit_trail_or_is_baselined()
+    {
+        // A Dapper or raw-SQL write is invisible to the EF change tracker, so its class must call IAuditTrail. The baseline is the list of
+        // classes that deliberately do not (session rows are covered by access_audit; access_audit is itself an audit table).
+        var write = new System.Text.RegularExpressions.Regex(@"\b(INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+[a-z_]+");
+        IEnumerable<string> bad = Directory.GetFiles(Path.Combine(RepoRoot(), "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}Migrations{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
+                && !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Select(f => (File: Path.GetFileName(f), Text: File.ReadAllText(f)))
+            .Where(f => write.IsMatch(f.Text) && !f.Text.Contains("IAuditTrail", StringComparison.Ordinal))
+            .Select(f => f.File);
+
+        AssertRatchet("raw-sql-writes", bad);
+    }
+
+    [Fact]
     public void Fitness_Domain_depends_only_on_FluentResults_and_the_BCL()
     {
         string[] allowed = ["System", "Microsoft", "netstandard", "FluentResults", "Fugue.Domain"];

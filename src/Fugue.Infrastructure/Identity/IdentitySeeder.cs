@@ -5,6 +5,7 @@ using Fugue.Domain.Ids;
 using Fugue.Infrastructure.Persistence;
 using Fugue.Infrastructure.Persistence.Seeding;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Fugue.Infrastructure.Identity;
 
@@ -17,7 +18,7 @@ public interface IIdentitySeeder
     Task SeedDevelopmentUsersAsync(string password, CancellationToken ct);
 }
 
-internal sealed class IdentitySeeder(FugueDbContext db, PasswordVerifier hasher, SqlExecutor sql, IAuditStamp stamp, IGrantAuditWriter audit)
+internal sealed class IdentitySeeder(FugueDbContext db, PasswordVerifier hasher, SqlExecutor sql, IAuditStamp stamp, IGrantAuditWriter audit, IAuditTrail trail)
     : IIdentitySeeder
 {
     public async Task SeedDevelopmentUsersAsync(string password, CancellationToken ct)
@@ -29,12 +30,29 @@ internal sealed class IdentitySeeder(FugueDbContext db, PasswordVerifier hasher,
         UserId self2 = await EnsureAsync(DevUsers.Self2, "Dev Self-Service Two", RoleCodes.SelfService, null, ct);
 
         // Ownership demo: self owns seeded customer 01, self2 owns 02 (only when the customer seeder has run).
-        await sql.ExecuteAsync(
-            "UPDATE customers SET user_id = @UserId, updated_at = @Now, updated_by = @Actor WHERE id = @Id AND user_id IS NULL",
-            new { UserId = self, Id = CustomerId.From(CustomerSeeder.IdFor(1)), stamp.Capture().Now, stamp.Capture().Actor }, ct);
-        await sql.ExecuteAsync(
-            "UPDATE customers SET user_id = @UserId, updated_at = @Now, updated_by = @Actor WHERE id = @Id AND user_id IS NULL",
-            new { UserId = self2, Id = CustomerId.From(CustomerSeeder.IdFor(2)), stamp.Capture().Now, stamp.Capture().Actor }, ct);
+        await AssignOwnerAsync(self, CustomerSeeder.IdFor(1), ct);
+        await AssignOwnerAsync(self2, CustomerSeeder.IdFor(2), ct);
+
+        async Task AssignOwnerAsync(UserId owner, Guid customerId, CancellationToken token)
+        {
+            // The Dapper update and its audit row commit together (a direct SQL write the change tracker cannot see).
+            await using IDbContextTransaction tx = await db.Database.BeginTransactionAsync(token);
+            AuditStampValue now = stamp.Capture();
+            int changed = await sql.ExecuteAsync(
+                "UPDATE customers SET user_id = @UserId, updated_at = @Now, updated_by = @Actor WHERE id = @Id AND user_id IS NULL",
+                new { UserId = owner, Id = CustomerId.From(customerId), now.Now, now.Actor }, token);
+            if (changed > 0)
+            {
+                await trail.RecordAsync(
+                    new AuditEntry(
+                        nameof(Domain.Customers.Customer), customerId.ToString(),
+                        new Dictionary<string, AuditFieldChange> { ["UserId"] = AuditFieldChange.Changed(null, owner) },
+                        typeof(Domain.Customers.Customer), "customers.assign_owner"),
+                    token);
+            }
+
+            await tx.CommitAsync(token);
+        }
 
         async Task<UserId> EnsureAsync(string email, string name, string? role, GroupId? group, CancellationToken token)
         {

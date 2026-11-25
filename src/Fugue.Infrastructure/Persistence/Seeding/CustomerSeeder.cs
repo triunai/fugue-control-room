@@ -9,7 +9,7 @@ namespace Fugue.Infrastructure.Persistence.Seeding;
 /// <c>INSERT ... ON CONFLICT (id) DO UPDATE</c> (the upsert path of ADR-006) inside one unit of work. Running it
 /// twice leaves 25 rows. Created-at values are fixed so keyset paging is deterministic.
 /// </summary>
-internal sealed class CustomerSeeder(SqlExecutor sql, IUnitOfWork unitOfWork, IAuditStamp stamp) : ICustomerSeeder
+internal sealed class CustomerSeeder(SqlExecutor sql, IUnitOfWork unitOfWork, IAuditStamp stamp, IAuditTrail audit) : ICustomerSeeder
 {
     private const int Count = 25;
     private static readonly DateTimeOffset Epoch = new(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
@@ -47,6 +47,11 @@ internal sealed class CustomerSeeder(SqlExecutor sql, IUnitOfWork unitOfWork, IA
                 ct);
         }
 
+        // One summary row per run, not 25: the upsert is idempotent and a re-run would otherwise bury the log in identical rows.
+        await audit.RecordAsync(
+            new AuditEntry(nameof(Customer), null, new Dictionary<string, AuditFieldChange>(), typeof(Customer), "customers.seed",
+                new Dictionary<string, object?> { ["count"] = Count, ["source"] = "development seed" }),
+            ct);
         await unitOfWork.CommitAsync(ct);
         return Count;
     }

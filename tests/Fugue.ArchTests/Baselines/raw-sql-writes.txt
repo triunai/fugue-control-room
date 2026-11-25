@@ -1,0 +1,5 @@
+# Shrink-only baseline for Fitness rule "raw-sql-writes": source files with a raw SQL write that do NOT call IAuditTrail.
+# RefreshTokenStore: session rows are covered by access_audit (ADR-010). AccessAuditWriter: it is an audit table itself.
+# A line that is no longer a violation FAILS the test: delete it (ratchet).
+AccessAuditWriter.cs
+RefreshTokenStore.cs

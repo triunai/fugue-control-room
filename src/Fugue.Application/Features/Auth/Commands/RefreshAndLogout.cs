@@ -1,11 +1,13 @@
 using FluentResults;
 using FluentValidation;
 using Fugue.Application.Abstractions;
+using Fugue.Domain.Audit;
 using Mediator;
 
 namespace Fugue.Application.Features.Auth.Commands;
 
 /// <summary>Contract. Rotation: the presented token dies, a new one in the same family is issued; reusing a dead one revokes the family.</summary>
+[NoAudit] // recorded in access_audit, not audit_log (ADR-010)
 public sealed record RefreshTokenCommand(string RefreshToken, ClientInfo Client) : ICommand<Result<TokenDto>>;
 
 public sealed class RefreshTokenValidator : AbstractValidator<RefreshTokenCommand>
@@ -38,6 +40,7 @@ public sealed class RefreshTokenHandler(IRefreshTokenStore store, IAccessTokenIs
 }
 
 /// <summary>Contract. Ends the session: the token's whole family is revoked. Always succeeds, so it reveals nothing about the token.</summary>
+[NoAudit] // recorded in access_audit, not audit_log (ADR-010)
 public sealed record LogoutCommand(string RefreshToken, ClientInfo Client) : ICommand<Result>;
 
 public sealed class LogoutValidator : AbstractValidator<LogoutCommand>

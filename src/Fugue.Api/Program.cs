@@ -1,3 +1,4 @@
+using Fugue.Api.Auditing;
 using Fugue.Api.Auth;
 using Fugue.Api.Correlation;
 using Fugue.Api.Http;
@@ -8,6 +9,7 @@ using Fugue.Application.Abstractions;
 using Fugue.Application.Common.Behaviors;
 using Fugue.Domain.Abstractions;
 using Fugue.Infrastructure;
+using Fugue.Infrastructure.Audit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -58,6 +60,9 @@ try
     builder.Services.AddAuthRateLimiting(builder.Configuration);
     builder.Services.AddScoped<CorrelationContext>();
     builder.Services.AddScoped<ICorrelationContext>(sp => sp.GetRequiredService<CorrelationContext>());
+    builder.Services.AddOptions<AuditOptions>().Bind(builder.Configuration.GetSection(AuditOptions.Section)).ValidateOnStart();
+    builder.Services.AddSingleton<IValidateOptions<AuditOptions>, AuditOptionsValidator>();
+    builder.Services.AddScoped<IAuditRequestInfo, HttpAuditRequestInfo>(); // before AddInfrastructure, which only adds a null default
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -70,8 +75,8 @@ try
     {
         options.ServiceLifetime = ServiceLifetime.Scoped;
 
-        // Outermost first: logging sees validation failures.
-        options.PipelineBehaviors = [typeof(LoggingBehavior<,>), typeof(ValidationBehavior<,>)];
+        // Outermost first: logging sees everything; audit wraps validation so validation failures get a failure row (ADR-010).
+        options.PipelineBehaviors = [typeof(LoggingBehavior<,>), typeof(AuditBehavior<,>), typeof(ValidationBehavior<,>)];
     });
 
     WebApplication app = builder.Build();

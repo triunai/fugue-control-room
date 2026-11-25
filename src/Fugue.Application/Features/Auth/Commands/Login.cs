@@ -1,12 +1,14 @@
 using FluentResults;
 using FluentValidation;
 using Fugue.Application.Abstractions;
+using Fugue.Domain.Audit;
 using Fugue.Domain.Identity;
 using Mediator;
 
 namespace Fugue.Application.Features.Auth.Commands;
 
 /// <summary>Contract. Password is never logged (LoggingBehavior logs names and outcomes only).</summary>
+[NoAudit] // recorded in access_audit, not audit_log (ADR-010)
 public sealed record LoginCommand(string Email, string Password, ClientInfo Client) : ICommand<Result<TokenDto>>;
 
 public sealed class LoginValidator : AbstractValidator<LoginCommand>

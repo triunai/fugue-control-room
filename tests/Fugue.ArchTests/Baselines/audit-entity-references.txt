@@ -1,0 +1,2 @@
+# Shrink-only baseline for Fitness rule "audit-entity-references": types outside Infrastructure that touch the audit_log entity. Should stay empty.
+# A line that is no longer a violation FAILS the test: delete it (ratchet).

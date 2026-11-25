@@ -6,7 +6,9 @@ using Fugue.Application.Features.Customers;
 using Fugue.Domain.Abstractions;
 using Fugue.Domain.Customers;
 using Fugue.Domain.Ids;
+using Fugue.Infrastructure.Audit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
 
 namespace Fugue.Infrastructure.Persistence.Customers;
@@ -15,7 +17,7 @@ namespace Fugue.Infrastructure.Persistence.Customers;
 /// ADR-006: Dapper inserts, EF reads (AsNoTracking projections) and EF tracked updates guarded by the xmin
 /// concurrency token. Unique-violation (SQLSTATE 23505) on the email index becomes <c>customer.email_taken</c>.
 /// </summary>
-internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAuditStamp stamp) : ICustomerRepository
+internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAuditStamp stamp, IAuditTrail audit) : ICustomerRepository
 {
     private const string UniqueViolation = "23505";
     private const string ForeignKeyViolation = "23503";
@@ -32,6 +34,9 @@ internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAu
         customer.CreatedAt = customer.UpdatedAt = now.Now;
         customer.CreatedBy = customer.UpdatedBy = now.Actor;
 
+        // The insert and its audit row are one transaction: join the caller's unit of work, or open a short one. A failed insert
+        // leaves nothing behind (the finally rolls back before the caller writes its own failure audit row on the same connection).
+        IDbContextTransaction? own = db.Database.CurrentTransaction is null ? await db.Database.BeginTransactionAsync(ct) : null;
         try
         {
             long version = await sql.ExecuteScalarAsync<long>(
@@ -48,6 +53,12 @@ internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAu
                     now.Actor,
                 },
                 ct);
+            await audit.RecordAsync(AuditSnapshot.Created(customer, customer.Id.ToString(), "customers.create"), ct);
+            if (own is not null)
+            {
+                await own.CommitAsync(ct);
+            }
+
             return Result.Ok(ToDto(customer, version));
         }
         catch (PostgresException ex) when (ex.SqlState == UniqueViolation)
@@ -57,6 +68,13 @@ internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAu
         catch (PostgresException ex) when (ex.SqlState == ForeignKeyViolation)
         {
             return Result.Fail<CustomerDto>(CustomerErrors.OwnerNotFound()); // an owner id that is not a user
+        }
+        finally
+        {
+            if (own is not null)
+            {
+                await own.DisposeAsync(); // not committed: rolls back
+            }
         }
     }
 
