@@ -2,6 +2,7 @@ using System.Threading.RateLimiting;
 using Fugue.Api.Contracts;
 using Fugue.Api.Http;
 using Fugue.Domain.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
@@ -15,11 +16,18 @@ public sealed class AuthRateLimitOptions
 
     public int PerIpPermits { get; set; } = 20;
 
+    /// <summary>The strict bucket: attempts per (client IP, canonical email) per <see cref="WindowSeconds"/> (D-035).</summary>
     public int PerEmailPermits { get; set; } = 5;
 
     public int WindowSeconds { get; set; } = 60;
 
+    /// <summary>Concurrent in-flight attempts per (client IP, canonical email).</summary>
     public int PerEmailConcurrency { get; set; } = 2;
+
+    /// <summary>The loose ceiling: attempts that did not succeed per canonical email, from any IP, per <see cref="EmailCeilingWindowSeconds"/> (D-035).</summary>
+    public int EmailCeilingPermits { get; set; } = 50;
+
+    public int EmailCeilingWindowSeconds { get; set; } = 900;
 }
 
 public static class AuthRateLimiting
@@ -56,7 +64,12 @@ public static class AuthRateLimiting
     }
 }
 
-/// <summary>Per canonical-email fixed window plus a concurrency limit; one instance for the process.</summary>
+/// <summary>
+/// D-035. A strict fixed window and a concurrency limit per (client IP, canonical email), plus a loose per-email ceiling
+/// across all IPs. The strict bucket is charged on every attempt; the ceiling is only charged by attempts that did not
+/// succeed (so a victim's own good logins never count), and is only checked, never charged, by a request the strict bucket
+/// already rejected. One IP can therefore throttle only itself against a victim, until the ceiling is reached.
+/// </summary>
 public sealed class EmailRateLimiter(IOptions<AuthRateLimitOptions> options) : IDisposable
 {
     private readonly PartitionedRateLimiter<string> _window = PartitionedRateLimiter.Create<string, string>(key =>
@@ -74,19 +87,37 @@ public sealed class EmailRateLimiter(IOptions<AuthRateLimitOptions> options) : I
             QueueLimit = 0,
         }));
 
-    public (RateLimitLease Window, RateLimitLease Concurrency) Acquire(string emailKey) =>
-        (_window.AttemptAcquire(emailKey), _concurrency.AttemptAcquire(emailKey));
+    private readonly PartitionedRateLimiter<string> _ceiling = PartitionedRateLimiter.Create<string, string>(key =>
+        RateLimitPartition.GetFixedWindowLimiter(key, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = options.Value.EmailCeilingPermits,
+            Window = TimeSpan.FromSeconds(options.Value.EmailCeilingWindowSeconds),
+            QueueLimit = 0,
+        }));
+
+    public static string StrictKey(string clientIp, string emailKey) => $"{clientIp}|{emailKey}";
+
+    public (RateLimitLease Window, RateLimitLease Concurrency) Acquire(string strictKey) =>
+        (_window.AttemptAcquire(strictKey), _concurrency.AttemptAcquire(strictKey));
+
+    /// <summary>True while the per-email ceiling has headroom (a read: it does not charge).</summary>
+    public bool CeilingHasRoom(string emailKey) =>
+        _ceiling.GetStatistics(emailKey) is not { CurrentAvailablePermits: <= 0 };
+
+    /// <summary>Charges the ceiling for an attempt that did not succeed.</summary>
+    public void ChargeCeiling(string emailKey) => _ceiling.AttemptAcquire(emailKey).Dispose();
 
     public void Dispose()
     {
         _window.Dispose();
         _concurrency.Dispose();
+        _ceiling.Dispose();
     }
 }
 
 /// <summary>
-/// Runs BEFORE the action (so before the command, the validator and the password hash): partitions by canonical email.
-/// The per-IP window runs earlier still, in the rate-limiter middleware.
+/// Runs BEFORE the action (so before the command, the validator and the password hash): the strict (IP, email) bucket,
+/// then the per-email ceiling. The per-IP window runs earlier still, in the rate-limiter middleware.
 /// </summary>
 public sealed class EmailRateLimitFilter(EmailRateLimiter limiter) : IAsyncActionFilter
 {
@@ -99,18 +130,24 @@ public sealed class EmailRateLimitFilter(EmailRateLimiter limiter) : IAsyncActio
             return;
         }
 
-        (RateLimitLease window, RateLimitLease concurrency) = limiter.Acquire(EmailKey.Canonicalize(email));
+        string emailKey = EmailKey.Canonicalize(email);
+        string ip = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        (RateLimitLease window, RateLimitLease concurrency) = limiter.Acquire(EmailRateLimiter.StrictKey(ip, emailKey));
         using (window)
         using (concurrency)
         {
-            if (!window.IsAcquired || !concurrency.IsAcquired)
+            if (!window.IsAcquired || !concurrency.IsAcquired || !limiter.CeilingHasRoom(emailKey))
             {
-                await AuthRateLimiting.WriteRejected(context.HttpContext, window.IsAcquired ? concurrency : window);
+                await AuthRateLimiting.WriteRejected(context.HttpContext, !window.IsAcquired ? window : concurrency);
                 context.Result = new Microsoft.AspNetCore.Mvc.EmptyResult();
                 return;
             }
 
-            await next();
+            ActionExecutedContext executed = await next();
+            if (executed.Result is not ObjectResult { StatusCode: null or (>= 200 and < 300) })
+            {
+                limiter.ChargeCeiling(emailKey);
+            }
         }
     }
 }

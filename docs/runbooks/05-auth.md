@@ -33,7 +33,7 @@ login admin@fugue.test
 ```
 Expect: `{"accessToken":"eyJ...","tokenType":"Bearer","expiresIn":900,"refreshToken":null}` (15 minutes). The token holds only identity claims (`sub`, `jti`, `iss`, `aud`, `iat`, `nbf`, `exp`); permissions are looked up on every request, so a revoked role or override takes effect immediately.
 
-Email is canonical (trimmed, case-insensitive). Any failure (unknown email, wrong password, inactive, deleted, local login disabled) returns the same `401` `auth.invalid_credentials`. Sign-in is rate limited per IP and per email (`429`, `Retry-After`, `auth.rate_limited`).
+Email is canonical (trimmed, case-insensitive). Any failure (unknown email, wrong password, inactive, deleted, local login disabled) returns the same `401` `auth.invalid_credentials`. Sign-in is rate limited three ways before any password work (`429`, `Retry-After`, `auth.rate_limited`): per IP, per (IP, email) so one IP cannot lock a victim out from other IPs, and a loose per-email ceiling (`RateLimiting:Auth:EmailCeilingPermits`, default 50 failed attempts per 900 s from any IP; successful logins never charge it).
 
 ## 2. Call as each user
 

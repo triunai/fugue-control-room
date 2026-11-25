@@ -52,9 +52,9 @@ The ADR files stay the home of architecture reasoning; a D entry below is the sh
 ## D-035 — W-013 login limiter: strict (IP, email) partition plus a loose per-email ceiling — 2026-11-26
 WS: WS-13
 Context: S-M3. The per-email limiter charged every attempt, so an attacker could hold a victim at 429 from any IP (a lockout lever, the thing D-020 refused to build).
-Decision: three limiters, all evaluated before password verification and chained so a request must pass each: per IP (unchanged), strict per (client IP, canonical email), and a loose per-email ceiling (default 50 per 15 minutes, configurable). A throttled request is a 429 problem+json with Retry-After. Refresh shares the policy where it already shares the limiter.
+Decision: three limiters, all evaluated before password verification and chained so a request must pass each: per IP (unchanged), strict per (client IP, canonical email), and a loose per-email ceiling (default 50 per 15 minutes, configurable) that only unsuccessful attempts charge. A throttled request is a 429 problem+json with Retry-After. Refresh has no email (the token is the credential), so it keeps only the per-IP policy; there is nothing to partition.
 Why: one IP hammering a victim exhausts only its own (IP, email) bucket, so the victim from another IP still signs in; the loose ceiling still bounds a distributed guesser while leaving real headroom.
-Consequences: a botnet of 50+ distinct IPs can still push a victim to 429 for the window (accepted; it needs real distribution and is bounded by the ceiling). Partition state is in memory per process.
+Consequences: 50+ failed attempts from any mix of IPs push a victim's logins to 429 for the window (accepted trade-off; one IP at the strict rate needs about ten minutes of sustained abuse, and the victim's own good logins never charge the ceiling). Partition state is in memory per process.
 Who: owner
 Status: accepted
 Promote: yes (ADR-008)
