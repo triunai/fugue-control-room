@@ -54,6 +54,7 @@ public static class DependencyInjection
         services.AddScoped<IAccessAuditWriter, AccessAuditWriter>();
         services.AddScoped<Fugue.Application.Features.Modules.IModuleRegistry, ModuleRegistry>();
         services.AddScoped<Fugue.Application.Features.Groups.IGroupAdmin, GroupAdmin>();
+        services.AddScoped<Fugue.Application.Features.Overrides.IOverrideAdmin, OverrideAdmin>();
         services.AddScoped<IGrantAuditWriter, GrantAuditWriter>();
         services.AddScoped<IIdentitySeeder, IdentitySeeder>();
         return services;

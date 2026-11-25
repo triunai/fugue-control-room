@@ -13,3 +13,5 @@ public sealed record SetModuleActiveRequest(bool IsActive);
 public sealed record RefreshRequest(string RefreshToken);
 
 public sealed record LogoutRequest(string RefreshToken);
+
+public sealed record SetOverrideRequest(bool IsAllowed, string? Reason, DateTimeOffset? ExpiresAt);

@@ -1,0 +1,21 @@
+meta {
+  name: The override takes effect on the user's very next request
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/groups
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{selfToken}}
+}
+
+tests {
+  test("self-service can now list groups (200)", function () {
+    expect(res.status).to.equal(200);
+  });
+}

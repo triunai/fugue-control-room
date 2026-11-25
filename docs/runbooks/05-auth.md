@@ -103,3 +103,15 @@ Two append-only tables (they carry `occurred_at` and an actor, not the `created_
 docker compose exec postgres psql -U fugue -d fugue -c "select occurred_at, event, outcome, reason_code, correlation_id from access_audit order by occurred_at desc limit 10"
 ```
 Find one request everywhere with its `X-Correlation-Id` (runbook 02). A richer general `audit_log` (field-level diffs) is a later batch; these tables share the unit-of-work transaction and the correlation context it will build on.
+
+## 9. Overrides: a per-user allow or deny
+
+An override adds (`isAllowed: true`) or removes (`false`) ONE permission for ONE user, optionally until `expiresAt`. **Deny beats allow beats role.** An override whose `expiresAt` is at or before now is expired and ignored; there is one row per user and permission, so setting it again replaces it.
+```bash
+USER=<the user's id>
+curl -si -X PUT http://localhost:5080/api/v1/overrides/$USER/GROUPS_VIEW -H "Authorization: Bearer $T" -H 'Content-Type: application/json' \
+  -d '{"isAllowed":true,"reason":"covering for support","expiresAt":"2099-01-01T00:00:00Z"}' | head -1
+curl -s -H "Authorization: Bearer $T" http://localhost:5080/api/v1/overrides/$USER
+curl -si -X DELETE http://localhost:5080/api/v1/overrides/$USER/GROUPS_VIEW -H "Authorization: Bearer $T" | head -1
+```
+Expect: `204`, the listing with `"expired":false`, then `204`. Needs `OVERRIDES_MANAGE` (set, delete) or `OVERRIDES_VIEW` (list): admin only by default. The change is effective on the user's next request (nothing is cached) and writes a `grant_audit` row (`permission_override`, granted or revoked, before and after JSON). You cannot change your own overrides (`409 override.self_target`), an expiry in the past is `400`, unknown users and permissions are `404`. A deny on `CUSTOMERS_ALL` is the way to turn a staff user into a restricted one that only sees and creates its own customers. Expiry is evaluated when permissions are read; nothing writes an `expired` audit row (a sweeper is a follow-up).

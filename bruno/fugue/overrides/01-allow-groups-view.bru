@@ -1,0 +1,25 @@
+meta {
+  name: Allow GROUPS_VIEW for self-service until tomorrow (204)
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/api/v1/overrides/{{selfUserId}}/GROUPS_VIEW
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "isAllowed": true,
+    "reason": "bruno demo",
+    "expiresAt": "2099-01-01T00:00:00Z"
+  }
+}
+
+tests {
+  test("204", function () {
+    expect(res.status).to.equal(204);
+  });
+}

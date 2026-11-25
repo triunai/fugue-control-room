@@ -1,0 +1,17 @@
+meta {
+  name: Remove the override (204)
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/overrides/{{selfUserId}}/GROUPS_VIEW
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("204", function () {
+    expect(res.status).to.equal(204);
+  });
+}

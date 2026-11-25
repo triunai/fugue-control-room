@@ -1,0 +1,20 @@
+meta {
+  name: List the user's overrides
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/overrides/{{selfUserId}}
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("200 with the allow override, not expired", function () {
+    expect(res.status).to.equal(200);
+    const o = res.body.find(function (x) { return x.permission === "GROUPS_VIEW"; });
+    expect(o.isAllowed).to.equal(true);
+    expect(o.expired).to.equal(false);
+  });
+}

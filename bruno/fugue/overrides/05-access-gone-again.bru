@@ -1,0 +1,21 @@
+meta {
+  name: And access is gone again (403)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v1/groups
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{selfToken}}
+}
+
+tests {
+  test("403", function () {
+    expect(res.status).to.equal(403);
+  });
+}

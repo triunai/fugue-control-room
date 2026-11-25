@@ -30,6 +30,7 @@ script:pre-request {
 script:post-response {
   if (res.status === 200 && res.body.length > 0) {
     bru.setVar("selfCustomerId", res.body[0].id);
+    bru.setVar("selfUserId", res.body[0].ownerId);
   }
 }
 
