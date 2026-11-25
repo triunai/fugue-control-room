@@ -90,18 +90,20 @@ Domain code uses plain names. Theming is brand-only (the name Fugue appears in n
 - Do not implement `ApiControllerBase.MapStatus` on the owner's behalf: it is the owner's hand-written decision (ErrorType -> HTTP status). Its tests are expected red until then.
 - No Dapper outside `SqlExecutor` (it must share EF's connection and transaction); no reads through Dapper.
 - Don't commit `.env`, real connection strings, keys, `.pfx`/`.pem`.
-- Don't push to a remote. Commit only when asked.
+- Don't push to a remote. Commit only when asked. Agent commits end with `Refs: W-NNN` (or `D-`/`ADR-`) and `Co-Authored-By:`; a `fix(...)` touching `src/` touches `tests/` or says `Tests: none (<reason>)`.
+- Beads (`bd`) is a local queue: never commit `.beads/`, never cite a bead id in a commit or a doc.
 
 ## Documentation System
 
-`hygiene.md` is the router (verbs: hydrate, park, wrap, ...). Rules and reasons: `docs/conventions/doc-spine.md`. Spine docs live in `docs/` (hot-state, workstreams, decisions, state-backlog, project-log). Extra dirs: `docs/adr/`, `docs/migrations/`, `docs/plans/`, `docs/postmortems/`, `docs/reviews/`. Each fact has one home. `CHANGELOG.md`: append at top, ISO dates.
+`hygiene.md` is the router (verbs: hydrate, park, wrap, ...). Rules and reasons: `docs/conventions/doc-spine.md`. Spine docs live in `docs/` (hot-state, workstreams, decisions, state-backlog, project-log). Doc lifecycle (W row -> project-log + CHANGELOG, cold archive): `hygiene.md`. Extra dirs: `docs/adr/`, `docs/migrations/`, `docs/plans/`, `docs/postmortems/`, `docs/reviews/`. Each fact has one home. `CHANGELOG.md`: append at top, ISO dates.
 
 ## Session Start Ritual
 
-1. Read `hygiene.md`, then the newest `docs/NEXT-SESSION-SEED-PROMPT-*.md` if present.
-2. Read `docs/hot-state.md` (`RESUME HERE` block), then `docs/workstreams.md` (the board).
-3. Run `git status --short --branch`; confirm branch and worktree before editing.
+1. Read `docs/hot-state.md` FIRST (it is the resume point), then resume its "Next action" exactly. Then `hygiene.md` and the newest `docs/ai/handoffs/*` (or `docs/NEXT-SESSION-SEED-PROMPT-*.md`).
+2. Read `docs/workstreams.md` (the live board; every new ask becomes a `W-NNN` row FIRST).
+3. Run `git status --short --branch` and `git config core.hooksPath` (must be empty); confirm branch and worktree before editing.
 4. Pick a thread; its `Resume:` line says the next action.
+5. Never read `docs/archive/` without a grep hit in `docs/archive/INDEX.md`.
 
 ## Current Work
 
@@ -119,7 +121,7 @@ Phase order lives in `docs/plans/roadmap.md`; status in the spine files.
 
 ## Testing
 
-xUnit + Testcontainers (real Postgres, not in-memory) for integration; unit tests for domain, handlers and behaviors; NetArchTest in `Fugue.ArchTests` for layering and "controllers contain no logic" rules. When tenancy is enabled, each tenant-owned feature gets a cross-tenant-leak test. `node scripts/check-test-integrity.mjs` warns on skipped or weakened tests; `npm run test:scripts` tests it.
+xUnit + Testcontainers (real Postgres, not in-memory) for integration; unit tests for domain, handlers and behaviors; NetArchTest in `Fugue.ArchTests` for layering and "controllers contain no logic" rules. When tenancy is enabled, each tenant-owned feature gets a cross-tenant-leak test. `node scripts/check-test-integrity.mjs` warns on skipped or weakened tests; `npm run test:scripts` tests the scripts. `tests/Fugue.ArchTests/FitnessTests.cs` holds the fitness functions (`Fitness_<module>_<rule>`) with shrink-only baselines in `tests/Fugue.ArchTests/Baselines/`: a stale baseline line fails the test. Structural review catches are pinned there.
 
 ## Commands
 
@@ -146,7 +148,8 @@ npm install                              # installs lefthook hooks (prepare)
 | Juncture | Runs | Blocks? |
 |---|---|---|
 | commit | secrets-scan, `dotnet format --verify-no-changes` (if `*.cs` staged and a solution exists), test-integrity (advisory) | yes, except test-integrity |
-| commit-msg | kit rule (`.githooks/commit-msg`) + commitlint | yes |
-| push | stack-check (restore, build, test), ledger-check, spine-nudge (advisory) | yes, except nudge |
+| commit-msg | kit rule (`.githooks/commit-msg`) + commitlint + `check-refs-trailer` + `check-fix-has-test` | yes |
+| push | stack-check (restore, build, test), ledger-check, adr-check; advisory: spine-nudge, commit-link-check, codex-gate (seam review, detached, capped) | yes, except advisory |
+| every Bash tool call | `scripts/safe-command-guard.mjs` (Claude Code PreToolUse hook, `.claude/settings.json`) | yes: force push, `--no-verify`, hard reset on main, stray `rm -rf`, `curl \| sh`, secret printing, undry-run `ef database drop` |
 
 Orchestrator: `lefthook.yml`. Pause the advisory layer once: `LEFTHOOK_EXCLUDE=guardrail git push`. Details: `AGENTS.md`.

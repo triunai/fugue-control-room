@@ -4,6 +4,44 @@ Tracks notable changes across migrations, API contracts, and project documentati
 
 > **ADR links.** An entry that reflects a real architectural decision cites it as `(ADR-NNN)`; the ADR lives in `docs/adr/`.
 
+## 2026-11-25 — Closed W-004: S2 persistence: Postgres, EF Core + Dapper, audit, typed ids, Customers slice
+WS: WS-04
+Closed: W-004 (WS-04) S2 persistence: Postgres, EF Core + Dapper, audit, typed ids, Customers slice
+Outcome: Compose Postgres, EF Core + Dapper over one unit of work, audit stamping on both paths, Uuid7 typed ids, Customers vertical slice, dev seeder, Testcontainers tests, Bruno suite and runbooks 03-04. 16 tests stay red until MapStatus exists.
+Commits:
+- b30ca07 feat(customers): postgres compose, ef core + dapper unit of work, audit stamping, typed ids, customers slice
+- 8ed061b feat(api): bruno regression suite, seed fix, runbooks 03-04 and S2 spine docs
+Decisions: D-004, ADR-006
+Follow-ups: MapStatus is the owner's (W-009); S3 identity next (W-005)
+
+## 2026-11-25 — Closed W-003: S1 validation, exception handler, Serilog, correlation and saga IDs
+WS: WS-03
+Closed: W-003 (WS-03) S1 validation, exception handler, Serilog, correlation and saga IDs
+Outcome: Validation and logging behaviors, global exception handler, Serilog, correlation and saga ids (ADR-005), a ping feature that exercises the real pipeline, runbook 02 and tests; framework 400s fixed to problem+json.
+Commits:
+- 914e2ed feat(observability): validation and logging behaviors, global exception handler, correlation and saga IDs
+- 7430e44 fix(api): problem+json for framework 400s and empty status-code responses
+Decisions: D-003, ADR-005
+Follow-ups: S4 webhooks must carry the correlation headers (W-006)
+
+## 2026-11-25 — Closed W-002: S0 retarget .NET 8, FluentResults, Application layer, neutral docs
+WS: WS-02
+Closed: W-002 (WS-02) S0 retarget .NET 8, FluentResults, Application layer, neutral docs
+Outcome: Retargeted to .NET 8 (Fugue.sln, SDK pinned 8.0.428); added Fugue.Application; replaced the hand-rolled Result with FluentResults and FugueError; Send* returns ActionResult<T>; neutral docs, ADR-003/004, roadmap, runbook 01 and the AI journal.
+Commits:
+- 5382163 refactor(arch): retarget net8, adopt FluentResults, add Application layer, neutral docs
+Decisions: D-002, D-009, D-010, D-011, ADR-003, ADR-004
+Follow-ups: none
+
+## 2026-11-11 — Closed W-001: Bootstrap the doc spine
+WS: WS-01
+Closed: W-001 (WS-01) Bootstrap the doc spine
+Outcome: Router, spine files, git hooks and spine scripts installed; the link checker runs clean.
+Commits:
+- 400fa57 chore(spine): bootstrap repo spine, solution skeleton and ApiControllerBase
+Decisions: D-001, D-005, D-006, D-007, D-008, ADR-001, ADR-002
+Follow-ups: none
+
 ## 2026-11-25 — S2 — persistence, Customers slice, Bruno
 
 ### Added

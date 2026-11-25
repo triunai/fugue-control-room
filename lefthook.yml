@@ -24,6 +24,10 @@ pre-commit:
       tags: guardrail
       # ADVISORY (always exits 0): new Skip =, dropped Assert.*/Should(), deleted test files.
       run: node scripts/check-test-integrity.mjs
+    prune-check:
+      tags: guardrail
+      # ADVISORY (exit 0): done thread still on the board, dropped W without a journal entry, stale hot-state.
+      run: node scripts/spine/prune-check.mjs
 
 commit-msg:
   commands:
@@ -34,6 +38,14 @@ commit-msg:
     commitlint:
       tags: baseline
       run: npx --no -- commitlint --edit {1}
+    refs-trailer:
+      tags: baseline
+      # Agent commits (Co-Authored-By: Claude) need a resolvable `Refs: W-/D-/ADR-` trailer. Humans exempt.
+      run: node scripts/check-refs-trailer.mjs {1}
+    fix-has-test:
+      tags: baseline
+      # A fix(...) commit touching src/ must touch tests/ or carry `Tests: none (<reason>)`.
+      run: node scripts/check-fix-has-test.mjs {1}
 
 pre-push:
   commands:
@@ -44,6 +56,19 @@ pre-push:
     ledger-check:
       tags: baseline
       run: bash scripts/spine/ledger-check.sh
+    adr-check:
+      tags: baseline
+      # Every ADR linked from a D entry; every `Promote: yes` has its ADR.
+      run: node scripts/spine/adr-check.mjs
+    commit-link-check:
+      tags: guardrail
+      # WARN-only: commits not linked to a ledger entry or an open W; ADRs and closed-W parity.
+      run: node scripts/spine/commit-link-check.mjs
+    codex-gate:
+      tags: guardrail
+      # ADVISORY (D-014): seam-triggered cross-model review, detached, capped at 8/day, never blocks or delays the push.
+      use_stdin: true
+      run: node scripts/codex-gate.mjs
     spine-nudge:
       tags: guardrail
       # WARN-only. Needs git's pre-push refs on stdin.

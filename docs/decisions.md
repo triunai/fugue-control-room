@@ -4,7 +4,141 @@ Latest first. Add an entry when a call settles. To change a decision, add a new 
 
 Heading form: `## D-NNN — <title> — <YYYY-MM-DD>`. NNN is three digits. Only the orchestrator mints numbers.
 First non-blank body line must be `WS: WS-NN` (comma-separate several) or `WS: (pre-WS)` for decisions older than the rule. Never guess.
-Then: Context (one or two lines) · Decision · Why · Consequences · Supersedes (if any).
+Then: Context (one or two lines) · Decision · Why · Consequences · Supersedes (if any), and three closing lines: `Who:` (owner, AI, review) · `Status:` (accepted, superseded by D-NNN, ...) · `Promote:` (`no`, or `yes (ADR-NNN)`).
+Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR file (`docs/adr/_template.md`: context, decision, alternatives, consequences, supersedes) when it changes architecture, a public contract, the data model, security posture or a cross-cutting convention; the D entry links the ADR. `node scripts/spine/adr-check.mjs` (pre-push) fails on an unlinked ADR or a `Promote: yes` without its file.
+
+## Index (D-NNN to ADR file)
+
+| D | Title | ADR |
+|---|---|---|
+| D-001 | Adopt the doc spine | - |
+| D-002 | Retarget .NET 8, FluentResults, single-tenant default (covers the .NET 8 and FluentResults owner overrides) | [ADR-003](adr/ADR-003-single-tenant-default-tenancy-toggle.md), [ADR-004](adr/ADR-004-fluentresults-with-errortype.md) |
+| D-003 | Three-layer correlation | [ADR-005](adr/ADR-005-trace-correlation-saga-ids.md) |
+| D-004 | EF Core reads, Dapper writes | [ADR-006](adr/ADR-006-ef-core-reads-dapper-writes.md) |
+| D-005 | Shared database with `tenant_id`, no RLS (superseded by D-002) | [ADR-001](adr/ADR-001-shared-db-tenant-id.md) |
+| D-006 | MVC controllers over `ApiControllerBase`; source-generated Mediator | [ADR-002](adr/ADR-002-controllers-with-api-controller-base.md) |
+| D-007 | Clean-room rewrite after the template audit | - |
+| D-008 | Name: Fugue; theme the brand, keep domain names plain | - |
+| D-009 | `MapStatus` is the owner's | [ADR-004](adr/ADR-004-fluentresults-with-errortype.md) |
+| D-010 | OrbStack as the container runtime | - |
+| D-011 | Fable architecture critique: accepted, with two challenges | - |
+| D-012 | Pin every catch | - |
+| D-013 | Beads is a local queue; commits cite only committed ids | [ADR-007](adr/ADR-007-ai-harness-gates.md) |
+| D-014 | Codex review gate is advisory, seam-triggered, capped | [ADR-007](adr/ADR-007-ai-harness-gates.md) |
+| D-015 | Commit gates and the safe-command guard | [ADR-007](adr/ADR-007-ai-harness-gates.md) |
+
+The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-015 — Commit gates and the safe-command guard — 2026-11-25
+WS: WS-08
+Context: the owner's two sibling repos learned the hard way that hooks and prompts do not hold a rule; machine checks do.
+Decision: `commit-msg` runs `check-refs-trailer` (agent commits need a resolvable `Refs:`) and `check-fix-has-test` (a `fix` touching `src/` touches `tests/` or says `Tests: none (reason)`); a project-level PreToolUse hook (`scripts/safe-command-guard.mjs`) blocks force push, `--no-verify`, hard reset on main, stray `rm -rf`, `curl | sh`, secret printing and an undry-run `ef database drop`.
+Why: each rule matches a failure already seen elsewhere; the guard is narrow because a false positive trains people to ignore it.
+Consequences: human commits are exempt from the refs gate; hooks stay client-side, so CI remains the real backstop when added.
+Who: owner+AI
+Status: accepted
+Promote: yes (ADR-007)
+
+## D-014 — Codex review gate is advisory, seam-triggered, capped — 2026-11-25
+WS: WS-08
+Context: cross-family review is valuable on critical seams but quota is finite and an LLM deciding "should I review" gets skipped.
+Decision: `scripts/codex-gate.mjs` runs at pre-push, decides from the diff alone (seam globs), dedupes by diff hash, caps at 8 launches per day, runs detached, and never blocks or delays the push. Findings land in `docs/reviews/codex/`. It reads Codex output, never its exit code.
+Why: the trigger is a pure function of the diff; non-blocking keeps the owner's override cheap.
+Consequences: an override on quota is recorded in the commit or handoff; the gate is advisory, so the review gate matrix in `AGENTS.md` still requires an independent final-diff review.
+Who: owner
+Status: accepted
+Promote: yes (ADR-007)
+
+## D-013 — Beads is a local queue; commits cite only committed ids — 2026-11-25
+WS: WS-08
+Context: `bd init` rewrites `core.hooksPath`, can add a Dolt remote, and committed its own config on this repo.
+Decision: `.beads/` is gitignored; nothing beads-related is committed. A `Refs:` trailer may cite only `W-NNN`, `D-NNN` or `ADR-NNN`. `core.hooksPath` stays unset.
+Why: a public repo must not depend on a local database, and an id a reader cannot resolve is noise.
+Consequences: beads ids appear only in local notes. See `docs/failure-modes.md`.
+Who: owner
+Status: accepted
+Promote: yes (ADR-007)
+
+## D-012 — Pin every catch — 2026-11-25
+WS: WS-08
+Context: review catches that are only fixed come back.
+Decision: no High or Medium finding closes without a regression test, an architecture test or a type that makes it unrepresentable. Recorded in `AGENTS.md`; the review skill enforces the loop.
+Why: a catch you do not pin is a bug you rent.
+Consequences: reviewer rounds repeat until no High or Medium remains and each has a pin.
+Who: owner
+Status: accepted
+Promote: no
+
+## D-011 — Fable architecture critique: accepted, with two challenges — 2026-11-25
+WS: WS-02
+Context: an external review of the S0 plan (see `docs/ai-journal.md`).
+Decision: accepted nearly all of it (Dapper deferral was later overridden, D-004); kept `SagaId` alongside W3C trace context; kept runbooks.
+Why: the critique was mostly right; the exceptions concern what the owner needs to demonstrate.
+Consequences: ADR-005 keeps three correlation layers.
+Who: review, owner accepted with two challenges
+Status: accepted
+Promote: no
+
+## D-010 — OrbStack as the container runtime — 2026-11-25
+WS: WS-02
+Context: Docker on macOS for Postgres and Testcontainers.
+Decision: OrbStack.
+Why: least setup friction; fastest in the comparison.
+Consequences: Testcontainers needs `DOCKER_HOST` pointed at the OrbStack socket (runbook 03).
+Who: AI proposed, owner accepted
+Status: accepted
+Promote: no
+
+## D-009 — `MapStatus` is the owner's — 2026-11-11
+WS: WS-02, WS-09
+Context: the ErrorType-to-HTTP-status mapping is the one policy call worth the owner's own hands.
+Decision: the method stays unimplemented; agents never fill it in. Dependent tests stay red on purpose, and the same logic is pinned green at the `Result` level.
+Why: ownership of the decision is the point.
+Consequences: a known-red list lives in `docs/hot-state.md` until the owner writes it.
+Who: owner
+Status: accepted
+Promote: no
+
+## D-008 — Name: Fugue — 2026-11-11
+WS: WS-01
+Context: a project name.
+Decision: "Fugue" (independent voices over one subject).
+Why: brand-only theming; domain types keep plain names.
+Consequences: the name appears in namespaces and docs, not in domain types.
+Who: AI proposed, owner accepted
+Status: accepted
+Promote: no
+
+## D-007 — Clean-room rewrite after the template audit — 2026-11-11
+WS: WS-01
+Context: six parallel Haiku agents audited a previous template; three claims were spot-checked by hand and all were confirmed.
+Decision: copy patterns, not files; the old code had committed secrets and a foreign domain.
+Why: agent claims are cheap; trust is earned by checking.
+Consequences: the spot-check habit is recorded in `docs/ai-journal.md`.
+Who: AI audit, owner spot-checked
+Status: accepted
+Promote: no
+
+## D-006 — MVC controllers over `ApiControllerBase`; Mediator not MediatR — 2026-11-11
+WS: WS-01
+Context: controller style and mediator library.
+Decision: MVC controllers with an abstract `ApiControllerBase` (no generic CRUD controller, no FastEndpoints); source-generated `Mediator` (MIT) because MediatR v13+ is commercial. See ADR-002.
+Why: the project exists to practise the plumbing, so keep it visible; avoid licence risk.
+Consequences: actions are one-liners; logic lives in handlers.
+Who: AI proposed, owner accepted
+Status: accepted
+Promote: yes (ADR-002)
+
+## D-005 — Shared database with `tenant_id`, no RLS — 2026-11-11
+WS: WS-01
+Context: the owner overrode the AI's row-level-security proposal. Superseded by D-002 (tenancy becomes a toggle, ADR-003).
+Decision: shared database with a `tenant_id` column only (ADR-001).
+Why: RLS adds operational weight the project does not need.
+Consequences: ADR-001 is superseded, not deleted.
+Supersedes: none. Superseded by: D-002.
+Who: owner (overrode AI's RLS proposal)
+Status: superseded by D-002
+Promote: yes (ADR-001)
 
 ## D-004 — EF Core reads, Dapper writes, one shared transaction — 2026-11-25
 WS: WS-04
@@ -12,6 +146,9 @@ Context: an external review suggested deferring Dapper; the owner wants the full
 Decision: EF for reads and xmin-checked updates; Dapper for inserts, upserts and set-based writes; Dapper always on EF's connection and current transaction via `IUnitOfWork`; audit stamped on both paths (ADR-006).
 Why: each tool where it is strongest, without losing optimistic concurrency or atomicity.
 Consequences: the S4 outbox writes through the unit of work; Dapper never reads aggregates.
+Who: owner (overrode a Fable review)
+Status: accepted
+Promote: yes (ADR-006)
 
 ## D-003 — Three-layer correlation: trace, correlation id, saga id — 2026-11-25
 WS: WS-03
@@ -19,6 +156,9 @@ Context: need to debug across logs, responses and later outbound webhooks; a rev
 Decision: W3C `Activity` trace per hop, `X-Correlation-Id` per request chain, `X-Saga-Id` per business process (ADR-005); validated inbound, echoed outbound, in logs and Activity tags. Behaviors require FluentResults responses (`ResultBase, new()`).
 Why: each id answers a different question; validation blocks header and log injection.
 Consequences: S4 outbox and webhooks must carry the ids as headers.
+Who: owner, from a review suggestion challenged
+Status: accepted
+Promote: yes (ADR-005)
 
 ## D-002 — Retarget .NET 8, adopt FluentResults, single-tenant default — 2026-11-25
 WS: WS-02
@@ -27,6 +167,9 @@ Decision: target .NET 8 (EOL check disabled on purpose, NuGet audit kept); Fluen
 Why: CV/interview alignment, ecosystem familiarity, domain-neutral template; reasons in the ADRs and `docs/ai-journal.md`.
 Consequences: ADR-001 is superseded; Application must not reference ASP.NET Core (arch test).
 Supersedes: ADR-001 (not a D-entry).
+Who: owner (overrode AI on .NET version and Result type)
+Status: accepted
+Promote: yes (ADR-003)
 
 ## D-001 — Adopt the doc spine — 2026-11-11
 WS: WS-01
@@ -34,3 +177,6 @@ Context: AI sessions lose context between runs; hand-written notes drift.
 Decision: keep project memory in split files by lifecycle (now, board, why, open, journal, handoff), joined by a thread key and checked by a script.
 Why: each file has one job and every link can be machine-checked.
 Consequences: every wrap updates the spine in the order in `hygiene.md`; pushes run `scripts/spine/ledger-check.sh`.
+Who: owner+AI
+Status: accepted
+Promote: no

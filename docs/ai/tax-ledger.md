@@ -14,7 +14,7 @@ Paid by = the named person who accepted the cost, and the date. No name and date
 ## Not tax
 These do NOT belong here:
 - Bugs nobody chose to leave (backlog)
-- Ideas and wishes (backlog)
+- Ideas and wish-list items (backlog)
 - Facts about behaviour (findings)
 - Work in progress (board)
 - Anything with no cost of leaving it

@@ -35,3 +35,14 @@ secrets.json
 .DS_Store
 node_modules/
 .omc/
+
+# Beads: LOCAL task queue only. Nothing beads-related is ever committed.
+# (bd init commits its own config and rewrites core.hooksPath; see docs/failure-modes.md)
+.beads/
+.beads.gate.lock
+.dolt/
+*.gate.lock*
+
+# Local agent state (advisory gate ledger, per-machine settings)
+.fugue-local/
+.claude/settings.local.json

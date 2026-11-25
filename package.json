@@ -5,7 +5,7 @@
   "description": "Repo tooling only (git hooks, commit linting). The application is .NET.",
   "scripts": {
     "prepare": "lefthook install",
-    "test:scripts": "node --test scripts/check-test-integrity.test.mjs",
+    "test:scripts": "node --test scripts/*.test.mjs scripts/spine/*.test.mjs",
     "api:test": "cd bruno/fugue && bru run --env local"
   },
   "devDependencies": {

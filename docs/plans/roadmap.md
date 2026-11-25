@@ -24,6 +24,9 @@ Each phase ends with a green build (0 warnings), tests, and a commit. Statuses l
 - Hand-written strongly-typed ID pattern (UUIDv7) with `CustomerId` only.
 - Customers vertical slice (ETag/If-Match, keyset paging, guarded transitions), idempotent dev seeder, Testcontainers fixture, Bruno suite, migration catalog discipline.
 
+## H1 - AI engineering harness (done)
+- Local beads; `W-`/`D-`/`ADR-` ids; commit gates (`Refs:` trailer, fix-has-test); safe-command guard; advisory Codex gate; project skills; fitness functions; doc lifecycle (prune, ADR promotion, changelog ledger); `docs/ai/how-we-use-ai.md`. ADR-007.
+
 ## S3 - identity
 - JWT bearer + a dev token issuer (development only).
 - Two role policies; fallback policy = authenticated.
@@ -49,10 +52,5 @@ Each phase ends with a green build (0 warnings), tests, and a commit. Statuses l
 - Dockerfile + one-command compose.
 - Extend the Bruno suite to new endpoints (the collection and `npm run api:test` exist since S2).
 
-## S6 (optional) - gateway
-- YARP API gateway in compose, load-balancing two API replicas.
-
-## Deferred
-- Per-user deny overrides in authorization.
-- Audit sampling: never. Audit records are not sampled.
-- Tenancy toggle implementation (`Tenancy:Enabled`, ADR-003): after S3 if a target domain needs it.
+## Parked
+Far-ahead and deferred items (S6 gateway, Kafka adapter, tenancy toggle implementation, Dapper reads, deny overrides, audit knobs) live in `docs/archive/deferred.md` with a "revive when" trigger each. Do not plan them before S5 lands.

@@ -71,6 +71,9 @@ if [ -f "$WS_FILE" ]; then
   ' "$WS_FILE")
 fi
 WSLIST=" $(printf '%s\n' "$WS_OUT" | sed -n 's/^KEY //p' | tr '\n' ' ')"
+# Pruned threads: a `Closed: W-NNN (WS-NN) title` line in the project log keeps WS-NN a known key (hygiene.md, Doc lifecycle).
+CLOSED_WS=$(sed -n 's/^Closed:.*(\(WS-[0-9][0-9]*\)).*/\1/p' "$LOG_FILE" docs/archive/project-log/*.md 2>/dev/null | tr '\n' ' ')
+WSLIST="$WSLIST $CLOSED_WS "
 WS_COUNT=$(printf '%s\n' "$WS_OUT" | grep -c '^KEY ')
 
 # ---- log / decisions / backlog: one awk program, three kinds ----
