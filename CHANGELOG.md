@@ -4,6 +4,18 @@ Tracks notable changes across migrations, API contracts, and project documentati
 
 > **ADR links.** An entry that reflects a real architectural decision cites it as `(ADR-NNN)`; the ADR lives in `docs/adr/`.
 
+## 2026-11-26 — Closed W-013: S3 review follow-ups
+WS: WS-13
+Closed: W-013 (WS-13) S3 review follow-ups
+Outcome: Email uniqueness is per owner (migration CustomerEmailPerOwner) and login is limited per (IP, email) plus a loose per-email ceiling, both owner calls. Override changes need If-Match (migration OverrideConcurrencyToken); group self-target, 23505 races, tenant is_active, fail-closed module config, access_audit clipping and HMAC subkey fixed and pinned; module PATCH audit was already covered by W-012. Recorded not fixed: raw user ids in createdBy, anonymous access_audit growth. Suite 260 green, Bruno 40/56.
+Commits:
+- 863d4b8 fix(persistence): make email unique per owner, closing the create-path oracle
+- 977821f fix(api): key the login limiter on (IP, email) plus a loose per-email ceiling
+- feef681 fix(identity): require If-Match to change or delete an existing permission override
+- 3766cbc fix(identity): close the remaining S3 review findings on admin and audit edges
+Decisions: D-034, D-035, D-036, ADR-008
+Follow-ups: Cross-family review of the W-013 auth and migration changes (not yet done).
+
 ## 2026-11-26 — Closed W-012: Rich append-only audit log
 WS: WS-12
 Closed: W-012 (WS-12) Rich append-only audit log

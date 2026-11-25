@@ -38,9 +38,3 @@ ID: W-011
 Status: written by a research agent, stale status lines corrected by the lead; committing now.
 Resume: refresh Status/Highlights whenever a batch lands.
 Refs: `README.md`
-
-### WS-13 — S3 review follow-ups (create email oracle, login limiter DoS, audit hardening) — ⏸ PARKED (2026-11-25)
-ID: W-013
-Status: not started. MED/LOW findings of the S3 build review that were deferred, not fixed: create-path email oracle (per-owner uniqueness or generic 409), per-email limiter charging successes, group/override self-target and 23505 races, no concurrency check on `OverrideAdmin.SetAsync` (a stale forced write wins; W-012 audits it as `unconditionalWrite` but does not prevent it), access_audit reason_code truncation and HMAC subkey, module PATCH audit, module config parsing and SYSTEM config-disable, tenant is_active, anonymous audit retention.
-Resume: read `docs/reviews/s3/rv-s3-build.md`, decide the email-uniqueness rule (owner call), then fix MEDs first with pins.
-Refs: `docs/reviews/s3/rv-s3-build.md`, ADR-008

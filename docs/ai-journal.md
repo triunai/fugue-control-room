@@ -141,3 +141,14 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
   - One trap hit while building: the behavior's eager DbContext dependency broke every host without a database (failure mode 18); another process trap, a pathspec commit that skipped new files (19).
 - **Decision:** accepted as ADR-010 (D-027 to D-033); the cross-family review verdict and fixes are in `docs/reviews/codex/2026-11-26-w012-audit.md`.
 - **Why:** the audit has to be atomic with the change or it lies; the three tables answer different questions, so merging them would trade clarity for one query surface.
+
+## 2026-11-26 - W-013 S3 review follow-ups
+- **Asked:** close the deferred S3 review findings; the owner decided email uniqueness (per owner) and the login limiter (strict per IP and email plus a loose per-email ceiling).
+- **AI proposed / chose:**
+  - Two partial-style unique indexes (a plain `(user_id, email)` treats NULL owners as distinct), and a ceiling that only unsuccessful attempts charge, so a victim's own logins never count; refresh has no email and keeps only the per-IP limit.
+  - `If-Match` required on override changes and deletes (create sends none), matching Customers and Modules; races made deterministic in tests by running the competing write inside a decorated `IGrantAuditWriter`, which fires between the handler's check and its save.
+  - Module config fails closed (a typo must not leave a kill switch open) and ignores SYSTEM; the email hash gets an HMAC subkey and no fallback key.
+  - Two traps hit: Npgsql scaffolds `AddColumn xmin` that emits no DDL (failure mode 21), and commit messages need 95-column wrapping and a listed scope (22).
+- **Decision:** accepted as D-034 to D-036 (ADR-008 amended). Not reviewed by another model family yet (auth and migrations are critical seams): in the hot-state inbox.
+- **Why:** each fix pins a state a stale client, a typo or a race could otherwise produce.
+
