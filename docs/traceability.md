@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 14 workstreams, 9 ADRs, 26 decisions, 30 commits (6 unlinked). Newest commit indexed: `bf48af9`.
+Counts: 14 workstreams, 10 ADRs, 33 decisions, 36 commits (6 unlinked). Newest commit indexed: `6126ab1`.
 
 ## Workstreams
 
@@ -118,11 +118,16 @@ Counts: 14 workstreams, 9 ADRs, 26 decisions, 30 commits (6 unlinked). Newest co
 
 ### W-012
 
-**Rich append-only audit log** — PARKED
-- Where: [board](workstreams.md)
-- Decisions and ADRs: none
-- Commits (0):
-  - none yet
+**Rich append-only audit log** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-26--closed-w-012-rich-append-only-audit-log)
+- Decisions and ADRs: [ADR-010](#adr-010), [D-027](#d-027), [D-028](#d-028), [D-029](#d-029), [D-030](#d-030), [D-031](#d-031), [D-032](#d-032), [D-033](#d-033)
+- Commits (6):
+  - `67c7d95` feat(persistence): audit_log table, append-only trigger and AUDIT_READ seed (2026-11-26)
+  - `8d8f77a` feat(persistence): capture audit rows from EF and Dapper writes and failed commands (2026-11-26)
+  - `beba6dd` feat(api): audit log query endpoint with keyset paging behind AUDIT_READ (2026-11-26)
+  - `f38e3bf` docs(audit): ADR-010, decisions, runbook 06, failure modes and deferred items (2026-11-26)
+  - `c35a022` fix(persistence): audit forced writes, detach failed-save rows, independent failure row (2026-11-26)
+  - `6126ab1` docs(spine): close W-012 into the project log, hot-state to W-013 (2026-11-26)
 
 ### W-013
 
@@ -227,6 +232,19 @@ Counts: 14 workstreams, 9 ADRs, 26 decisions, 30 commits (6 unlinked). Newest co
 - Cited in commit Refs: none
 - Workstreams: [W-005](#w-005)
 - Decisions: [D-023](#d-023)
+
+### ADR-010
+
+**Rich append-only audit log** — accepted — [`ADR-010-audit-log.md`](adr/ADR-010-audit-log.md)
+- Introduced by: `f38e3bf` docs(audit): ADR-010, decisions, runbook 06, failure modes and deferred items (2026-11-26)
+- Amended by:
+  - `c35a022` fix(persistence): audit forced writes, detach failed-save rows, independent failure row (2026-11-26)
+- Cited in commit Refs:
+  - `f38e3bf` docs(audit): ADR-010, decisions, runbook 06, failure modes and deferred items (2026-11-26)
+  - `c35a022` fix(persistence): audit forced writes, detach failed-save rows, independent failure row (2026-11-26)
+  - `6126ab1` docs(spine): close W-012 into the project log, hot-state to W-013 (2026-11-26)
+- Workstreams: [W-012](#w-012)
+- Decisions: [D-027](#d-027), [D-028](#d-028), [D-029](#d-029), [D-030](#d-030), [D-031](#d-031), [D-032](#d-032)
 
 ## Decisions
 
@@ -418,10 +436,65 @@ Counts: 14 workstreams, 9 ADRs, 26 decisions, 30 commits (6 unlinked). Newest co
 - Workstreams: [W-005](#w-005)
 - Cited in commit Refs: none
 
+### D-027
+
+**W-012 audit_log table shape, append-only trigger, indexes** — accepted — [decisions.md](decisions.md#d-027--w-012-audit_log-table-shape-append-only-trigger-indexes--2026-11-26)
+- ADR: [ADR-010](adr/ADR-010-audit-log.md)
+- Workstreams: [W-012](#w-012)
+- Cited in commit Refs: none
+
+### D-028
+
+**W-012 audit rows are written in the same transaction as the change** — accepted — [decisions.md](decisions.md#d-028--w-012-audit-rows-are-written-in-the-same-transaction-as-the-change--2026-11-26)
+- ADR: [ADR-010](adr/ADR-010-audit-log.md)
+- Workstreams: [W-012](#w-012)
+- Cited in commit Refs: none
+
+### D-029
+
+**W-012 failed commands are recorded by AuditBehavior** — accepted — [decisions.md](decisions.md#d-029--w-012-failed-commands-are-recorded-by-auditbehavior--2026-11-26)
+- ADR: [ADR-010](adr/ADR-010-audit-log.md)
+- Workstreams: [W-012](#w-012)
+- Cited in commit Refs: none
+
+### D-030
+
+**W-012 safety knobs for the audit log** — accepted — [decisions.md](decisions.md#d-030--w-012-safety-knobs-for-the-audit-log--2026-11-26)
+- ADR: [ADR-010](adr/ADR-010-audit-log.md)
+- Workstreams: [W-012](#w-012)
+- Cited in commit Refs: none
+
+### D-031
+
+**W-012 read API behind AUDIT_READ, admin only, keyset paged** — accepted — [decisions.md](decisions.md#d-031--w-012-read-api-behind-audit_read-admin-only-keyset-paged--2026-11-26)
+- ADR: [ADR-010](adr/ADR-010-audit-log.md)
+- Workstreams: [W-012](#w-012)
+- Cited in commit Refs: none
+
+### D-032
+
+**W-012 grant_audit and access_audit stay specialised** — accepted — [decisions.md](decisions.md#d-032--w-012-grant_audit-and-access_audit-stay-specialised--2026-11-26)
+- ADR: [ADR-010](adr/ADR-010-audit-log.md)
+- Workstreams: [W-012](#w-012)
+- Cited in commit Refs: none
+
+### D-033
+
+**W-012 retention and archival of the audit log are deferred** — accepted — [decisions.md](decisions.md#d-033--w-012-retention-and-archival-of-the-audit-log-are-deferred--2026-11-26)
+- ADR: none
+- Workstreams: [W-012](#w-012)
+- Cited in commit Refs: none
+
 ## Commit to ids
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `6126ab1` | docs(spine): close W-012 into the project log, hot-state to W-013 | 2026-11-26 | [W-012](#w-012), [ADR-010](#adr-010) |
+| `c35a022` | fix(persistence): audit forced writes, detach failed-save rows, independent failure row | 2026-11-26 | [W-012](#w-012), [ADR-010](#adr-010) |
+| `f38e3bf` | docs(audit): ADR-010, decisions, runbook 06, failure modes and deferred items | 2026-11-26 | [W-012](#w-012), [ADR-010](#adr-010) |
+| `beba6dd` | feat(api): audit log query endpoint with keyset paging behind AUDIT_READ | 2026-11-26 | [W-012](#w-012) |
+| `8d8f77a` | feat(persistence): capture audit rows from EF and Dapper writes and failed commands | 2026-11-26 | [W-012](#w-012) |
+| `67c7d95` | feat(persistence): audit_log table, append-only trigger and AUDIT_READ seed | 2026-11-26 | [W-012](#w-012) |
 | `bf48af9` | docs(spine): close W-014 into the project log and CHANGELOG | 2026-11-26 | [W-014](#w-014) |
 | `e0b8f3c` | feat(spine): multi-id Refs gate and a generated commit traceability index | 2026-11-26 | [W-014](#w-014), [D-013](#d-013), [ADR-007](#adr-007) |
 | `5704fc6` | docs(spine): open W-014 commit traceability index on the board | 2026-11-26 | [W-014](#w-014) |
