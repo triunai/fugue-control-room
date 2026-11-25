@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# pre-commit: 1) secrets-scan  2) stack-check. Stops at the first failure.
+# Client-side only: git commit --no-verify skips it.
+# SIGPIPE is ignored (and inherited by the scripts), so a piped `git commit | head` cannot turn a rejection into a pass.
+trap '' PIPE
+ROOT=$(git rev-parse --show-toplevel) || exit 0
+for gate in secrets-scan stack-check; do
+  script="$ROOT/scripts/spine/$gate.sh"
+  if [ ! -f "$script" ]; then
+    {
+      echo "COMMIT REJECTED - gate script missing"
+      echo "  WHAT:  scripts/spine/$gate.sh is not in the repo"
+      echo "  WHERE: $script"
+      echo "  FIX:   restore it: git checkout HEAD -- scripts/spine/$gate.sh  (or re-run the kit bootstrap)"
+    } >&2
+    exit 1
+  fi
+  bash "$script" || exit 1
+done
+exit 0

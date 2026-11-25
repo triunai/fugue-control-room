@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Fugue.Api/Fugue.Api.csproj" />
+    <Project Path="src/Fugue.Domain/Fugue.Domain.csproj" />
+    <Project Path="src/Fugue.Infrastructure/Fugue.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Fugue.ArchTests/Fugue.ArchTests.csproj" />
+    <Project Path="tests/Fugue.Tests/Fugue.Tests.csproj" />
+  </Folder>
+</Solution>

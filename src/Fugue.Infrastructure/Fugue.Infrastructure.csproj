@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Fugue.Domain\Fugue.Domain.csproj" />
+  </ItemGroup>
+</Project>

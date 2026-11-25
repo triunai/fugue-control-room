@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# commit-msg gate: <type>(<scope>)?: <summary>, 10..150 characters, no pasted file lists.
+# Thresholds are a starting point. After ~200 commits, re-derive them from your own history
+# (command in .githooks/README.md, "Re-derive the commit-msg thresholds").
+# Client-side only: git commit --no-verify skips it.
+# Messages go to stderr and SIGPIPE is ignored, so the exit code is right even if the output is piped.
+
+trap '' PIPE
+set -u
+MSG_FILE="${1:-}"
+[ -n "$MSG_FILE" ] && [ -f "$MSG_FILE" ] || exit 0
+
+MIN_SUBJECT=10
+MAX_SUBJECT=150
+MAX_PATHS=3
+TYPES='build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test|wip'
+AUTOGEN='^(Merge |Revert |fixup!|squash!)'
+
+SUBJECT=$(sed -n '1p' "$MSG_FILE" | tr -d '\r' | sed 's/[[:space:]]*$//')
+[ -z "$SUBJECT" ] && exit 0
+case "$SUBJECT" in \#*) exit 0 ;; esac
+LEN=${#SUBJECT}
+
+fail() {
+  exec >&2
+  echo ""
+  echo "COMMIT REJECTED - commit message rule: $1"
+  echo "  WHAT:  $2"
+  echo "  WHERE: first line of the message ($LEN characters)"
+  if [ "$LEN" -gt 100 ]; then echo "         ${SUBJECT:0:100}... [cut for display]"; else echo "         $SUBJECT"; fi
+  echo "  FIX:   $3"
+  echo "  Format: <type>(<scope>): <what changed, in plain words>"
+  echo "  Types:  $(echo "$TYPES" | tr '|' ' ')"
+  echo "  Length: $MIN_SUBJECT to $MAX_SUBJECT characters"
+  echo "  Example: docs(spine): add the router"
+  echo "  Your message is not lost. Edit it and commit again:"
+  echo "      git commit --edit --file=\"\$(git rev-parse --git-dir)/COMMIT_EDITMSG\""
+  echo ""
+  exit 1
+}
+
+if printf '%s' "$SUBJECT" | grep -qE "$AUTOGEN"; then exit 0; fi
+
+if [ "$LEN" -lt "$MIN_SUBJECT" ]; then
+  fail "subject too short" \
+    "the subject has $LEN character(s); the minimum is $MIN_SUBJECT. A subject like \"fix\" tells the next reader nothing." \
+    "say what changed and where, in one line, e.g. fix(auth): reject an expired token on refresh"
+fi
+
+PATH_HITS=$(printf '%s' "$SUBJECT" | grep -oE '[A-Za-z0-9_-]+(/[A-Za-z0-9_.-]+)*\.(ts|tsx|js|jsx|cs|py|go|rs|java|rb|php|sql|json|ya?ml|md|css|scss|html|sh)' | wc -l | tr -d ' ')
+if [ "${PATH_HITS:-0}" -ge "$MAX_PATHS" ]; then
+  fail "file list in the subject" \
+    "the subject names $PATH_HITS files. Git already records them (git show --stat)." \
+    "write one summary line, a blank line, then the file detail in the body"
+fi
+
+if [ "$LEN" -gt "$MAX_SUBJECT" ]; then
+  fail "subject too long" \
+    "the subject has $LEN characters; the maximum is $MAX_SUBJECT. The cap exists to catch pasted content." \
+    "keep line 1 to one sentence; put the rest after a blank line"
+fi
+
+if ! printf '%s' "$SUBJECT" | grep -qE "^($TYPES)(\([^)]+\))?!?: .+"; then
+  fail "missing or unknown type prefix" \
+    "the subject does not start with <type>: or <type>(<scope>): using a lowercase type from the list" \
+    "add a prefix such as feat: fix: docs: refactor: test: chore:"
+fi
+exit 0

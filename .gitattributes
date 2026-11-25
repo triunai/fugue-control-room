@@ -1,0 +1,4 @@
+# ai-dev-kit:begin
+*.sh text eol=lf
+.githooks/* text eol=lf
+# ai-dev-kit:end

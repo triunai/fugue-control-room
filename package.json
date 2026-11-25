@@ -1,0 +1,15 @@
+{
+  "name": "fugue",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Repo tooling only (git hooks, commit linting). The application is .NET.",
+  "scripts": {
+    "prepare": "lefthook install",
+    "test:scripts": "node --test scripts/check-test-integrity.test.mjs"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "lefthook": "^1.7.0"
+  }
+}

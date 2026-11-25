@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# pre-push: 1) ledger-check (BLOCKING)  2) spine-nudge (warning only, never blocks).
+# Git sends the refs being pushed on stdin; they are passed on to spine-nudge.
+# Client-side only: git push --no-verify skips it. It checks your working tree, not the pushed commit.
+trap '' PIPE
+ROOT=$(git rev-parse --show-toplevel) || exit 0
+REFS=$(cat)
+
+if [ ! -f "$ROOT/scripts/spine/ledger-check.sh" ]; then
+  {
+    echo "PUSH REJECTED - gate script missing"
+    echo "  WHAT:  scripts/spine/ledger-check.sh is not in the repo"
+    echo "  WHERE: $ROOT/scripts/spine/ledger-check.sh"
+    echo "  FIX:   git checkout HEAD -- scripts/spine/ledger-check.sh  (or re-run the kit bootstrap)"
+  } >&2
+  exit 1
+fi
+
+if ! bash "$ROOT/scripts/spine/ledger-check.sh" "$ROOT"; then
+  {
+    echo ""
+    echo "PUSH REJECTED - the doc spine has broken links (LEDGER lines above)"
+    echo "  WHAT:  an entry is missing its WS: line, names a missing thread, or a number is duplicated"
+    echo "  WHERE: the file and line in each LEDGER line"
+    echo "  FIX:   edit the lines named above, commit, push again. Re-check any time: bash scripts/spine/ledger-check.sh"
+  } >&2
+  exit 1
+fi
+
+[ -f "$ROOT/scripts/spine/spine-nudge.sh" ] && printf '%s\n' "$REFS" | bash "$ROOT/scripts/spine/spine-nudge.sh"
+exit 0

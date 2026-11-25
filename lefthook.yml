@@ -1,0 +1,51 @@
+# lefthook.yml - the SINGLE git hook orchestrator for Fugue.
+# Decision: the kit's hook logic lives in scripts (scripts/spine/*.sh, .githooks/commit-msg) and
+# lefthook calls them. core.hooksPath is deliberately NOT set; lefthook installs into .git/hooks.
+# Setting both would run two orchestrators. See hygiene.md "Hook wiring".
+#
+# TWO CLASSES: tag `baseline` (always-on, blocking) and tag `guardrail` (advisory, never fails).
+# Pause the advisory layer for one command:  LEFTHOOK_EXCLUDE=guardrail git push
+# Install: `npm install` (prepare script runs `lefthook install`).
+
+pre-commit:
+  commands:
+    secrets-scan:
+      tags: baseline
+      run: bash scripts/spine/secrets-scan.sh
+    dotnet-format:
+      tags: baseline
+      # Only when *.cs is staged AND a solution exists. Skips cleanly before Phase 1.
+      glob: "*.cs"
+      run: |
+        SLN=$(git ls-files '*.sln' '*.slnx' | head -n1)
+        if [ -z "$SLN" ]; then echo "dotnet-format: no solution yet - skipped"; exit 0; fi
+        dotnet format "$SLN" --verify-no-changes --no-restore
+    test-integrity:
+      tags: guardrail
+      # ADVISORY (always exits 0): new Skip =, dropped Assert.*/Should(), deleted test files.
+      run: node scripts/check-test-integrity.mjs
+
+commit-msg:
+  commands:
+    kit-commit-msg:
+      tags: baseline
+      # The kit's rule: <type>(<scope>)?: <summary>, 10..150 chars, no pasted file lists.
+      run: bash .githooks/commit-msg {1}
+    commitlint:
+      tags: baseline
+      run: npx --no -- commitlint --edit {1}
+
+pre-push:
+  commands:
+    stack-check:
+      tags: baseline
+      # dotnet restore, build --no-restore, test --no-build. Skips with exit 0 when no solution exists.
+      run: bash scripts/spine/stack-check.sh --test
+    ledger-check:
+      tags: baseline
+      run: bash scripts/spine/ledger-check.sh
+    spine-nudge:
+      tags: guardrail
+      # WARN-only. Needs git's pre-push refs on stdin.
+      use_stdin: true
+      run: bash scripts/spine/spine-nudge.sh
