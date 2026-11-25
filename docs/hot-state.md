@@ -22,7 +22,8 @@ None expected after the final H1 commit. Local-only and ignored: `.beads/` (loca
 W-005 S3 identity, W-006 S4 outbox and webhooks, W-007 S5 REST hardening, W-010 verify the Codex gate (all parked, not started); W-009 MapStatus (blocked on owner).
 
 ## Pending owner questions
-- Implement `ApiControllerBase.MapStatus` (D-009, W-009).
+- Clone the work repo to study its model/entity file conventions (naming, file extensions/partials). Patterns only - never copy files or names into Fugue.
+- Amend the `PasswordHasher<T>` / Argon2id wording in CLAUDE.md (PasswordHasher<T> is PBKDF2).
 - Review the "S1/S2 implementation choices" entries in `docs/ai-journal.md`.
 
 ## Tests (verified 2026-11-25)
