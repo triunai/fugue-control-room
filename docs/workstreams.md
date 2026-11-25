@@ -15,12 +15,6 @@ Glyph legend:
 - `⛔ BLOCKED` — waiting on something outside the thread; `Status:` names it
 - `✅ DONE` — finished and verified
 
-### WS-05 — S3 identity: JWT bearer, role policies, ownership handler — ⏸ PARKED (2026-11-25)
-ID: W-005
-Status: plan written (`docs/plans/s3-identity.md`), awaiting cross-family review; no code yet.
-Resume: get the plan reviewed (`dual-gate-review`), fold findings in, then build slice 1.
-Refs: `docs/plans/roadmap.md`, ADR-003
-
 ### WS-06 — S4 transactional outbox and signed webhooks — ⏸ PARKED (2026-11-25)
 ID: W-006
 Status: not started; needs S3. The outbox writes through `IUnitOfWork` (ADR-006).
@@ -51,8 +45,8 @@ Status: owner asked for a rich `audit_log` (field-level before/after JSONB, acto
 Resume: plan after W-005 closes; build on S3's IUnitOfWork + grant/access audit seam.
 Refs: ADR-006
 
-### WS-11 — S3 review follow-ups (create email oracle, login limiter DoS, audit hardening) — ⏸ PARKED (2026-11-25)
-ID: W-011
+### WS-13 — S3 review follow-ups (create email oracle, login limiter DoS, audit hardening) — ⏸ PARKED (2026-11-25)
+ID: W-013
 Status: not started. MED/LOW findings of the S3 build review that were deferred, not fixed: create-path email oracle (per-owner uniqueness or generic 409), per-email limiter charging successes, group/override self-target and 23505 races, access_audit reason_code truncation and HMAC subkey, module PATCH audit, module config parsing and SYSTEM config-disable, tenant is_active, anonymous audit retention.
 Resume: read `docs/reviews/s3/rv-s3-build.md`, decide the email-uniqueness rule (owner call), then fix MEDs first with pins.
 Refs: `docs/reviews/s3/rv-s3-build.md`, ADR-008

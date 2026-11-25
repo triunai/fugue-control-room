@@ -6,6 +6,26 @@ Heading form: `## <YYYY-MM-DD> — <title>`. Entry key = `<date>#<n>`, where n i
 First non-blank body line must be `WS: WS-NN` (comma-separate several) or `WS: (pre-WS)`.
 Then: what was done · what was decided (cite D-NNN) · what is open (cite #NNN).
 
+## 2026-11-25 — Closed W-005: S3 identity: JWT auth, lean UAM v3, module management
+WS: WS-05
+Closed: W-005 (WS-05) S3 identity: JWT auth, lean UAM v3, module management
+Outcome: JWT HS256 login with refresh rotation and family reuse detection, per-request uncached effective permissions (roles, groups, overrides; deny > allow > role), ownership scoping with 404, module management (config kill switch + registry), tenants, groups, grant_audit and access_audit, 204 mutations. Codex rejected the first plan (10 findings, all accepted); Codex and a Sonnet reviewer reviewed the build (1 HIGH fixed and pinned). Suite 171 green, Bruno 32 requests / 45 assertions.
+Commits:
+- ae7fbb8 docs(spine): close W-009 into the project log and CHANGELOG
+- b4b0dea docs(plans): S3 identity plan
+- f6363b8 docs(plans): revise S3 per cross-family review
+- 580100e feat(identity): UAM v3 schema, seeded catalog and base-entity contract
+- e1b54f3 feat(auth): JWT login, per-request permissions, ownership scoping, 204 mutations
+- 142158a feat(identity): module management with a config kill switch and a runtime registry
+- aae8b27 feat(identity): groups with audited membership changes, and a tenant column
+- 31c91c7 feat(identity): refresh tokens with rotation, family reuse detection and logout
+- b7ac795 feat(identity): access_audit events for login, refresh, 403 and disabled modules
+- 98f1491 feat(identity): permission overrides with expiry, audited in the same transaction
+- 8a24bd7 docs(identity): ADR-008 auth model, ADR-009 module management, failure modes
+- 4e01024 fix(identity): family revocation lock, smuggled perm claims, override and owner edge cases
+Decisions: D-016..D-026, ADR-008, ADR-009
+Follow-ups: W-013 S3 review follow-ups (create email oracle, limiter DoS, audit hardening)
+
 ## 2026-11-25 — Closed W-009: MapStatus: ErrorType to HTTP status
 WS: WS-09
 Closed: W-009 (WS-09) MapStatus: ErrorType to HTTP status
