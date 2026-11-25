@@ -2,32 +2,34 @@
 
 OVERWRITTEN at every wrap or pause, never appended; at most 40 lines. After a wrap or days away: read this first, then do "Next action" exactly. History lives in `docs/project-log.md` and `CHANGELOG.md`.
 
-## ▶ RESUME HERE — 2026-11-25
+## ▶ RESUME HERE — 2026-11-26
 Branch: `main` (no other worktrees).
-Last green sha: 4e01024 (build 0/0; `dotnet test` 171 green (Fugue.ArchTests 24, Fugue.Tests 147); Bruno 32 requests / 45 assertions; `npm run test:scripts` 74).
+Last green sha: c35a022 (build 0/0; `dotnet test` 222 green (Fugue.ArchTests 29, Fugue.Tests 193); Bruno 40 requests / 56 tests on a live API with `--seed`; `npm run test:scripts` 83).
 
 ## Last action done
-S3 identity (W-005) built and closed: JWT + refresh, uncached effective permissions, ownership 404, module management (ADR-009), tenants, groups, grant/access audit, overrides, 204 mutations, ADR-008. Cross-family review done (Codex plan REJECT -> all 10 accepted; Codex + Sonnet build reviews, HIGH fixed). Dispositions: `docs/reviews/s3/rv-s3-build.md`.
+W-012 rich append-only `audit_log` built and closed (ADR-010, D-027 to D-033): table + trigger + `AUDIT_READ` (admin only), EF interceptor in the same SaveChanges, `IAuditTrail` for Dapper writes, `AuditBehavior` failure rows, write-time masking, `GET /api/v1/audit` with keyset paging, runbook `06-audit.md`. Codex review (1 HIGH, 3 MED) all fixed and pinned, fixes not re-reviewed: `docs/reviews/codex/2026-11-26-w012-audit.md`. The migration is applied to the local compose DB.
 
 ## Next action (exact)
-1. `git status --short --branch`; `git config core.hooksPath` must print nothing; read `docs/runbooks/05-auth.md` (needs `dotnet user-secrets set Auth:SigningKey "$(openssl rand -base64 32)" --project src/Fugue.Api`).
-2. Owner call needed for W-013: should customer email uniqueness stay global (create-path oracle) or become per owner? Then fix W-013 MEDs first.
-3. The rich general `audit_log` batch is next (another agent): build on `IUnitOfWork` + `ICorrelationContext` + the two audit tables. Then W-006 (S4 outbox), W-007 (S5).
+1. `git status --short --branch`; `git config core.hooksPath` must print nothing.
+2. Owner call needed for W-013: should customer email uniqueness stay global (create-path oracle) or become per owner? Then fix the W-013 MEDs first (add the missing `OverrideAdmin` concurrency check).
+3. Then W-006 (S4 outbox; it writes through `IUnitOfWork`, and every raw SQL write must call `IAuditTrail` or be baselined: fitness rule `raw-sql-writes`), then W-007 (S5).
 
 ## Uncommitted work in progress
 None expected. Local-only and ignored: `.beads/`, `.fugue-local/`, `.env`.
 
 ## In flight (open W ids)
-W-013 S3 review follow-ups; W-011 README (other agent), W-012 rich audit log (other agent); W-006 S4 outbox and webhooks, W-007 S5 REST hardening, W-010 verify the Codex gate (all parked).
+W-013 S3 review follow-ups; W-011 README (other agent); W-006 S4 outbox and webhooks, W-007 S5 REST hardening, W-010 verify the Codex gate (all parked).
 
 ## Pending owner questions
 - Clone the work repo to study its model/entity file conventions (naming, file extensions/partials). Patterns only - never copy files or names into Fugue.
 - Amend the `PasswordHasher<T>` / Argon2id wording in CLAUDE.md (PasswordHasher<T> is PBKDF2).
 - Customer email uniqueness: global or per owner (W-013)?
+- Staff read access to the audit log was left admin-only (D-031); say if staff should get `AUDIT_READ`.
 - Review the "S1/S2 implementation choices" entries in `docs/ai-journal.md`.
 
 ## Owed inbox
-- Unverified: Codex ran on the committed HEAD before the review-fix commit (the fixes are covered by tests, not re-reviewed); `OnForbidden` behaviour is covered by tests only on .NET 8.
+- Unverified: the W-012 review fixes were not re-reviewed by Codex (covered by tests); `OnForbidden` behaviour is covered by tests only on .NET 8.
+- The append-only trigger does not stop the table owner or a superuser; a non-owner API role is in `docs/archive/deferred.md`.
 
 ## Seed prompt (copy-paste)
-> Hydrate Fugue: read `docs/hot-state.md`, `hygiene.md`, `docs/ai/handoffs/2026-11-25-lead.md`, ADR-008 and ADR-009. Run `git status --short --branch` and `git config core.hooksPath` (empty). S3 is done; decide W-013 (email uniqueness), then start the next batch (rich `audit_log`, or S4 outbox W-006). Auth is a critical seam: plan review before code, `dual-gate-review` after. Commit by pathspec with `Refs: W-NNN` and `Co-Authored-By:`; never push.
+> Hydrate Fugue: read `docs/hot-state.md`, `hygiene.md`, ADR-008, ADR-009 and ADR-010. Run `git status --short --branch` and `git config core.hooksPath` (empty). S3 and the audit log are done; decide W-013 (email uniqueness), then start the next batch (S4 outbox W-006). Auth and migrations are critical seams: plan review before code, cross-family review after. Commit by pathspec (`git add` new files first) with `Refs: W-NNN` and `Co-Authored-By:`; never push.

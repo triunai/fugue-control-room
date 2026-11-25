@@ -6,6 +6,19 @@ Heading form: `## <YYYY-MM-DD> — <title>`. Entry key = `<date>#<n>`, where n i
 First non-blank body line must be `WS: WS-NN` (comma-separate several) or `WS: (pre-WS)`.
 Then: what was done · what was decided (cite D-NNN) · what is open (cite #NNN).
 
+## 2026-11-26 — Closed W-012: Rich append-only audit log
+WS: WS-12
+Closed: W-012 (WS-12) Rich append-only audit log
+Outcome: Rich append-only audit_log: who, what, field-level old/new, outcome and error code, request and trace ids, in the SAME transaction as the change (EF SaveChanges interceptor plus IAuditTrail for Dapper writes), one failure row per failed command (AuditBehavior), write-time masking and size bound, trigger blocks UPDATE/DELETE/TRUNCATE, GET /api/v1/audit behind AUDIT_READ (admin) with keyset paging. Codex review: 1 HIGH + 3 MED, all fixed and pinned (fixes not re-reviewed). Suite 222 green, Bruno 40 requests / 56 tests.
+Commits:
+- 67c7d95 feat(persistence): audit_log table, append-only trigger and AUDIT_READ seed
+- 8d8f77a feat(persistence): capture audit rows from EF and Dapper writes and failed commands
+- beba6dd feat(api): audit log query endpoint with keyset paging behind AUDIT_READ
+- f38e3bf docs(audit): ADR-010, decisions, runbook 06, failure modes and deferred items
+- c35a022 fix(persistence): audit forced writes, detach failed-save rows, independent failure row
+Decisions: D-027, D-028, D-029, D-030, D-031, D-032, D-033, ADR-010
+Follow-ups: W-013 gains the missing OverrideAdmin concurrency check; deferred (docs/archive/deferred.md): audit retention and partitioning, non-owner DB role, tenant filter on audit reads, auditing of reads
+
 ## 2026-11-25 — Closed W-014: Commit traceability index
 WS: WS-14
 Closed: W-014 (WS-14) Commit traceability index
