@@ -1,0 +1,33 @@
+meta {
+  name: A 409 leaves one failure row with the error code
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers
+  body: json
+  auth: inherit
+}
+
+headers {
+  X-Correlation-Id: {{auditFailureCorrelation}}
+}
+
+body:json {
+  {
+    "name": "Audit Duplicate",
+    "email": "{{auditEmail}}",
+    "phone": null
+  }
+}
+
+script:pre-request {
+  bru.setVar("auditFailureCorrelation", "bruno-audit-fail-" + Date.now());
+}
+
+tests {
+  test("409 Conflict", function () {
+    expect(res.status).to.equal(409);
+  });
+}

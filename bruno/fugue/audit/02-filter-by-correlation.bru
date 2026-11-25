@@ -1,0 +1,35 @@
+meta {
+  name: Filter the audit log by that correlation id (one rich row)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/audit?correlationId={{auditCorrelation}}
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("200 and exactly the request's row", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body).to.have.length(1);
+  });
+  test("who, what, which row, outcome", function () {
+    const row = res.body[0];
+    expect(row.action).to.equal("customers.create");
+    expect(row.entityType).to.equal("Customer");
+    expect(row.entityId).to.equal(bru.getVar("auditCustomerId"));
+    expect(row.outcome).to.equal("success");
+    expect(row.actorType).to.equal("user");
+    expect(row.permissionUsed).to.equal("CUSTOMERS_INSERT");
+    expect(row.httpMethod).to.equal("POST");
+    expect(row.correlationId).to.equal(bru.getVar("auditCorrelation"));
+  });
+  test("field-level change with the email partially masked", function () {
+    const changes = res.body[0].changes;
+    expect(changes.name.new).to.equal("Audit Subject");
+    expect(changes.email.new).to.match(/^a\*\*\*@example\.test$/);
+    expect(changes.phone.new).to.match(/^\*\*\*77$/);
+  });
+}

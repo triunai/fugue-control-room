@@ -1,0 +1,19 @@
+meta {
+  name: Follow the cursor (no repeated rows)
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/v1/audit?limit=2&cursor={{auditCursor}}
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("200 and none of the first page's rows", function () {
+    expect(res.status).to.equal(200);
+    const first = JSON.parse(bru.getVar("auditFirstPageIds"));
+    res.body.forEach(function (r) { expect(first).to.not.include(r.id); });
+  });
+}

@@ -1,0 +1,41 @@
+meta {
+  name: Create a customer under a known correlation id (writes one audit row)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers
+  body: json
+  auth: inherit
+}
+
+headers {
+  X-Correlation-Id: {{auditCorrelation}}
+}
+
+body:json {
+  {
+    "name": "Audit Subject",
+    "email": "{{auditEmail}}",
+    "phone": "+14155550177"
+  }
+}
+
+script:pre-request {
+  const run = String(Date.now());
+  bru.setVar("auditCorrelation", "bruno-audit-" + run);
+  bru.setVar("auditEmail", "Audit-" + run + "@Example.Test");
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("auditCustomerId", res.body.id);
+  }
+}
+
+tests {
+  test("201 Created", function () {
+    expect(res.status).to.equal(201);
+  });
+}

@@ -1,0 +1,18 @@
+meta {
+  name: A bad limit is a 400 problem
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/v1/audit?limit=0
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("400 problem+json", function () {
+    expect(res.status).to.equal(400);
+    expect(res.headers["content-type"]).to.include("application/problem+json");
+  });
+}

@@ -1,0 +1,31 @@
+meta {
+  name: Without AUDIT_READ the log is 403
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/v1/audit
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{selfToken}}
+}
+
+script:pre-request {
+  const res = await bru.sendRequest({
+    method: "POST",
+    url: bru.getEnvVar("baseUrl") + "/api/v1/auth/token",
+    headers: { "Content-Type": "application/json" },
+    data: { email: bru.getEnvVar("selfEmail"), password: bru.getEnvVar("devPw") }, // secrets-scan:ignore
+  });
+  bru.setVar("selfToken", res.data.accessToken);
+}
+
+tests {
+  test("403 for a self-service user", function () {
+    expect(res.status).to.equal(403);
+  });
+}
