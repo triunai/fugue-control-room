@@ -26,8 +26,74 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-013 | Beads is a local queue; commits cite only committed ids | [ADR-007](adr/ADR-007-ai-harness-gates.md) |
 | D-014 | Codex review gate is advisory, seam-triggered, capped | [ADR-007](adr/ADR-007-ai-harness-gates.md) |
 | D-015 | Commit gates and the safe-command guard | [ADR-007](adr/ADR-007-ai-harness-gates.md) |
+| D-016 | S3: JWT bearer (HS256), local token endpoint, no refresh (proposed) | pending ADR-008 |
+| D-017 | S3: lean UAM v3 port and precedence deny > allow > role (proposed; owner overrode "defer overrides") | pending ADR-008 |
+| D-018 | S3: permissions via cached DB lookup in `OnTokenValidated`, not token claims (proposed) | pending ADR-008 |
+| D-019 | S3: ownership by repository scoping, 404 on cross-owner (proposed) | pending ADR-008 |
+| D-020 | S3: uniform login failure, dummy hash, no lockout (proposed) | pending ADR-008 |
+| D-021 | S3: deferrals and exclusions from UAM v3 (proposed) | - |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-21 — S3 deferrals and exclusions from UAM v3 — 2026-11-25
+WS: WS-05
+Context: the owner wants a lean port.
+Decision: Not built in S3: refresh tokens and user_sessions, SSO columns, tenants (ADR-003 toggle), groups, access_audit and grant_audit, all domain tables, user and role CRUD, lockout. Parked in `docs/archive/deferred.md` with revive triggers.
+Why: each is outside the S3 acceptance and the ~3 day horizon.
+Consequences: see `docs/plans/s3-identity.md`.
+Who: AI (proposed), owner to confirm after cross-family review
+Status: proposed
+Promote: no
+
+## D-20 — S3 login failure is uniform; no lockout — 2026-11-25
+WS: WS-05
+Context: login must not reveal whether an email exists.
+Decision: One `auth.invalid_credentials` for every failure and one hash verify on every attempt (dummy hash when no user); no lockout in S3, S5 rate limiting covers brute force.
+Why: removes the enumeration and timing oracle without new state or a lock-out-a-victim vector.
+Consequences: see `docs/plans/s3-identity.md`.
+Who: AI (proposed), owner to confirm after cross-family review
+Status: proposed
+Promote: pending (ADR-008)
+
+## D-19 — S3 ownership by repository scoping, 404 on cross-owner — 2026-11-25
+WS: WS-05
+Context: self-service users see only their own record while Application has no ASP.NET dependency.
+Decision: `CUSTOMERS_ALL` widens scope; handlers build an `OwnerScope` from `ICurrentUser`; repositories filter; a miss is NotFound.
+Why: filters lists, leaks nothing, keeps layering; `IAuthorizationService` resource handlers fail all three.
+Consequences: see `docs/plans/s3-identity.md`.
+Who: AI (proposed), owner to confirm after cross-family review
+Status: proposed
+Promote: pending (ADR-008)
+
+## D-18 — S3 permissions by cached lookup in OnTokenValidated — 2026-11-25
+WS: WS-05
+Context: permissions must be revocable faster than the token TTL without bloating the token.
+Decision: Effective permissions are loaded per user, cached 60 s in memory, evicted on change, added as in-memory claims; inactive users fail the ticket.
+Why: revocation latency at most 60 s; small token; one query per user per minute.
+Consequences: see `docs/plans/s3-identity.md`.
+Who: AI (proposed), owner to confirm after cross-family review
+Status: proposed
+Promote: pending (ADR-008)
+
+## D-17 — S3 lean UAM v3 port; precedence deny > allow > role — 2026-11-25
+WS: WS-05
+Context: the owner's UAM v3 design is the model; the owner overrode the earlier recommendation to defer per-user overrides.
+Decision: Port users, modules, resources, actions, permissions, roles, role_permissions, user_roles, user_permission_overrides (with `expires_at`); precedence deny override > allow override > role grant; overrides are their own, last-cut slice.
+Why: precedence was unwritten in v3; the written rule and expiry close the audit gaps.
+Consequences: see `docs/plans/s3-identity.md`.
+Who: AI (proposed), owner to confirm after cross-family review
+Status: proposed
+Promote: pending (ADR-008)
+
+## D-16 — S3 JWT bearer, HS256, local token endpoint, no refresh — 2026-11-25
+WS: WS-05
+Context: Fugue needs authentication that Bruno and Testcontainers can use.
+Decision: JwtBearer 8.x, HS256 with a 32-byte-minimum key from env, 15 min TTL, 30 s skew, `POST /api/v1/auth/token`, `PasswordHasher<T>`; refresh tokens deferred. CLAUDE.md says Argon2id but `PasswordHasher<T>` is PBKDF2: owner to amend the wording.
+Why: one process is issuer and verifier, so an asymmetric key buys nothing yet.
+Consequences: see `docs/plans/s3-identity.md`.
+Who: AI (proposed), owner to confirm after cross-family review
+Status: proposed
+Promote: pending (ADR-008)
 
 ## D-015 — Commit gates and the safe-command guard — 2026-11-25
 WS: WS-08

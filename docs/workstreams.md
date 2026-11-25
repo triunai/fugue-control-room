@@ -17,8 +17,8 @@ Glyph legend:
 
 ### WS-05 — S3 identity: JWT bearer, role policies, ownership handler — ⏸ PARKED (2026-11-25)
 ID: W-005
-Status: not started. Plan first (critical seam: auth), see `docs/plans/roadmap.md` S3.
-Resume: write `docs/plans/s3-identity.md`, get the plan reviewed, then build. Open it with "new task: …".
+Status: plan written (`docs/plans/s3-identity.md`), awaiting cross-family review; no code yet.
+Resume: get the plan reviewed (`dual-gate-review`), fold findings in, then build slice 1.
 Refs: `docs/plans/roadmap.md`, ADR-003
 
 ### WS-06 — S4 transactional outbox and signed webhooks — ⏸ PARKED (2026-11-25)

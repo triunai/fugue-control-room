@@ -112,3 +112,9 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
   - Fitness rules found zero violations on first run, so every baseline starts empty; the ratchet was proved by adding a stale line and watching the test fail.
 - **Decision:** accepted; the owner fixed the shape: beads local only, `Refs:` ids limited to committed `W-`/`D-`/`ADR-`, the Codex gate advisory, project-log plus CHANGELOG as additive ledgers with a closing script, `hot-state.md` as the resume point.
 - **Why:** each rule matches a failure already seen in the sibling repos; owner calls (ledger shape, advisory gate) were not the AI's to make.
+
+## 2026-11-25 - S3 identity plan (UAM)
+- **Asked:** a reviewable S3 plan for authentication, authorization and ownership.
+- **AI proposed:** a slim role and permission module with per-user overrides deferred.
+- **Decision:** overrode. The owner chose a lean port of their UAM v3 design (modules, resources, actions, permissions, roles, user roles, overrides with deny winning), with overrides as the last-cut slice; tenants, sessions, groups, audit tables and domain tables are parked in `docs/archive/deferred.md`.
+- **Why:** the owner's design is the model being rehearsed; the AI added only what Fugue conventions need (timestamptz, typed ids, audit stamps, app-generated UUIDv7), a written precedence rule and `expires_at`. D-016 to D-021 are proposed, not accepted.

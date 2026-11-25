@@ -8,11 +8,11 @@ Last green sha: ad58e29
 (build 0 warnings; arch tests 17 green; Fugue.Tests 48 green 16 red-by-design; only docs follow it.)
 
 ## Last action done
-H1 harness (W-008) finished, committed in slices and closed; S0 to S2 closed into the project log and CHANGELOG.
+S3 identity plan written (W-005, docs only): `docs/plans/s3-identity.md`, D-016 to D-021 proposed. Before that: H1 harness (W-008) closed.
 
 ## Next action (exact)
 1. `git status --short --branch`; `git config core.hooksPath` must print nothing.
-2. Open S3 (W-005): write `docs/plans/s3-identity.md`, get the plan reviewed (`dual-gate-review`), then build.
+2. S3 plan awaiting cross-family review: review `docs/plans/s3-identity.md` (`dual-gate-review`), fold findings in, confirm D-016 to D-021, then build slice 1.
 3. Seed prompt below.
 
 ## Uncommitted work in progress
@@ -32,4 +32,4 @@ W-005 S3 identity, W-006 S4 outbox and webhooks, W-007 S5 REST hardening, W-010 
 - (empty)
 
 ## Seed prompt (copy-paste)
-> Hydrate Fugue: read `docs/hot-state.md`, `hygiene.md`, `docs/ai/handoffs/2026-11-25-lead.md`, the S3 section of `docs/plans/roadmap.md` and ADR-003. Run `git status --short --branch` and `git config core.hooksPath` (empty). Open S3 identity as W-005: write `docs/plans/s3-identity.md` first (JWT bearer, a development-only token issuer, two role policies, fallback policy = authenticated, a resource-ownership handler returning 404 for cross-scope misses). Auth is a critical seam: independent cross-family plan review before code, `dual-gate-review` after. Use `agent-task-contract` for dispatch. Never implement `MapStatus`. Commit with `Refs: W-005` and `Co-Authored-By:`; never push; wrap with `wrap-session`.
+> Hydrate Fugue: read `docs/hot-state.md`, `hygiene.md`, `docs/ai/handoffs/2026-11-25-lead.md`, the S3 section of `docs/plans/roadmap.md` and ADR-003. Run `git status --short --branch` and `git config core.hooksPath` (empty). Continue S3 identity (W-005): the plan `docs/plans/s3-identity.md` exists (JWT bearer, lean UAM v3 port, cached permission lookup, ownership scoping with 404); get it reviewed, then build slice 1. Auth is a critical seam: independent cross-family plan review before code, `dual-gate-review` after. Use `agent-task-contract` for dispatch. Never implement `MapStatus`. Commit with `Refs: W-005` and `Co-Authored-By:`; never push; wrap with `wrap-session`.
