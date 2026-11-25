@@ -32,6 +32,7 @@ internal sealed class RefreshTokenStore(FugueDbContext db, IAuditStamp stamp) : 
         IDbContextTransaction? own = db.Database.CurrentTransaction is null ? await db.Database.BeginTransactionAsync(ct) : null;
         try
         {
+            await LockFamilyAsync(old.FamilyId, ct); // serialize with family revocation: a revoke started later sees our new token
             var newId = RefreshTokenId.New();
             AuditStampValue s = stamp.Capture();
             int claimed = await db.Database.ExecuteSqlInterpolatedAsync($"""
@@ -93,12 +94,37 @@ internal sealed class RefreshTokenStore(FugueDbContext db, IAuditStamp stamp) : 
         }
     }
 
-    private Task<int> RevokeFamilyCoreAsync(Guid family, DateTimeOffset now, CancellationToken ct)
+    private async Task<int> RevokeFamilyCoreAsync(Guid family, DateTimeOffset now, CancellationToken ct)
     {
-        AuditStampValue s = stamp.Capture();
-        return db.Database.ExecuteSqlInterpolatedAsync(
-            $"UPDATE refresh_tokens SET revoked_at = {now}, updated_at = {s.Now}, updated_by = {s.Actor} WHERE family_id = {family} AND revoked_at IS NULL", ct);
+        IDbContextTransaction? own = db.Database.CurrentTransaction is null ? await db.Database.BeginTransactionAsync(ct) : null;
+        try
+        {
+            await LockFamilyAsync(family, ct); // wait for any in-flight rotation; the UPDATE below then takes a fresh snapshot
+            AuditStampValue s = stamp.Capture();
+            int revoked = await db.Database.ExecuteSqlInterpolatedAsync(
+                $"UPDATE refresh_tokens SET revoked_at = {now}, updated_at = {s.Now}, updated_by = {s.Actor} WHERE family_id = {family} AND revoked_at IS NULL", ct);
+            if (own is not null)
+            {
+                await own.CommitAsync(ct);
+            }
+
+            return revoked;
+        }
+        finally
+        {
+            if (own is not null)
+            {
+                await own.DisposeAsync();
+            }
+        }
     }
+
+    /// <summary>
+    /// Transaction-scoped advisory lock keyed by the family. Without it, a revoke that starts while a rotation is between its
+    /// UPDATE and its INSERT misses the new token (READ COMMITTED snapshot) and the family survives revocation (Codex build review, HIGH).
+    /// </summary>
+    private Task<int> LockFamilyAsync(Guid family, CancellationToken ct) =>
+        db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({family.ToString()}, 0))", ct);
 
     private static RefreshToken Build(RefreshTokenId id, UserId user, Guid family, NewRefreshToken t) => new()
     {

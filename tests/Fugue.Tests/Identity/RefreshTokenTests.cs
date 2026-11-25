@@ -155,4 +155,30 @@ public sealed class RefreshTokenTests(PostgresFixture db)
 
         Assert.Equal([HttpStatusCode.Unauthorized, HttpStatusCode.Unauthorized, HttpStatusCode.TooManyRequests], statuses);
     }
+
+    /// <summary>Pins the Codex build-review HIGH: revoking a family must wait for an in-flight rotation of that family.</summary>
+    [Fact]
+    public async Task Family_revocation_waits_for_an_in_flight_rotation_holding_the_family_lock()
+    {
+        TokenDto token = await Login(DevUsers.Staff);
+        await using NpgsqlConnection holder = new(db.ConnectionString);
+        await holder.OpenAsync();
+        await using NpgsqlCommand family = new("SELECT family_id FROM refresh_tokens WHERE token_hash = @h", holder);
+        family.Parameters.AddWithValue("h", RefreshTokenSecret.Hash(token.RefreshToken!));
+        var familyId = (Guid)(await family.ExecuteScalarAsync())!;
+
+        await using NpgsqlTransaction rotation = await holder.BeginTransactionAsync();
+        await using (NpgsqlCommand lockCommand = new("SELECT pg_advisory_xact_lock(hashtextextended(@f, 0))", holder, rotation))
+        {
+            lockCommand.Parameters.AddWithValue("f", familyId.ToString());
+            await lockCommand.ExecuteNonQueryAsync();
+        }
+
+        Task<HttpResponseMessage> logout = db.Anonymous().PostAsJsonAsync("/api/v1/auth/logout", new { refreshToken = token.RefreshToken });
+        Task finished = await Task.WhenAny(logout, Task.Delay(1500));
+        Assert.NotSame(logout, finished); // still blocked behind the rotation
+
+        await rotation.CommitAsync();
+        Assert.Equal(HttpStatusCode.NoContent, (await logout).StatusCode);
+    }
 }

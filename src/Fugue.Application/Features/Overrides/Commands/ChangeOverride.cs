@@ -34,7 +34,7 @@ public sealed class SetOverrideHandler(IOverrideAdmin overrides, ICurrentUser cu
         }
 
         return await overrides.SetAsync(
-            command.UserId, command.Permission.Trim().ToUpperInvariant(), command.IsAllowed, command.Reason, command.ExpiresAt, cancellationToken);
+            command.UserId, command.Permission.Trim().ToUpperInvariant(), command.IsAllowed, command.Reason, command.ExpiresAt?.ToUniversalTime(), cancellationToken);
     }
 }
 

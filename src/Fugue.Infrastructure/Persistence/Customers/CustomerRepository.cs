@@ -18,6 +18,7 @@ namespace Fugue.Infrastructure.Persistence.Customers;
 internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAuditStamp stamp) : ICustomerRepository
 {
     private const string UniqueViolation = "23505";
+    private const string ForeignKeyViolation = "23503";
 
     private const string InsertSql = """
         INSERT INTO customers (id, name, email, phone, status, user_id, created_at, created_by, updated_at, updated_by)
@@ -52,6 +53,10 @@ internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAu
         catch (PostgresException ex) when (ex.SqlState == UniqueViolation)
         {
             return Result.Fail<CustomerDto>(CustomerErrors.EmailTaken());
+        }
+        catch (PostgresException ex) when (ex.SqlState == ForeignKeyViolation)
+        {
+            return Result.Fail<CustomerDto>(CustomerErrors.OwnerNotFound()); // an owner id that is not a user
         }
     }
 

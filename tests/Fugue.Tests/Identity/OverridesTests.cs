@@ -132,4 +132,16 @@ public sealed class OverridesTests(PostgresFixture db)
         Assert.Equal(HttpStatusCode.Forbidden, (await staff.GetAsync($"/api/v1/overrides/{user}")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await staff.SendAsync(Put(user, "GROUPS_VIEW", new { isAllowed = true }))).StatusCode);
     }
+
+    [Fact]
+    public async Task An_expiry_with_a_non_utc_offset_is_accepted()
+    {
+        (_, UserId user) = await db.NewUserAsync();
+        using HttpClient admin = db.ClientAs(DevUsers.Admin);
+        string local = db.Clock.GetUtcNow().AddHours(2).ToOffset(TimeSpan.FromHours(8)).ToString("o", System.Globalization.CultureInfo.InvariantCulture);
+
+        HttpResponseMessage response = await admin.SendAsync(Put(user, "GROUPS_VIEW", new { isAllowed = true, expiresAt = local }));
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
 }

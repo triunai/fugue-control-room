@@ -74,6 +74,12 @@ public sealed class JwtBearerSetup(IOptions<AuthOptions> auth, TimeProvider time
             return;
         }
 
+        // Defence in depth: the issuer never puts permissions in a token, but a token that somehow carries `perm` claims must not keep them.
+        foreach (Claim stale in identity.FindAll(ClaimsCurrentUser.PermissionClaim).ToList())
+        {
+            identity.RemoveClaim(stale);
+        }
+
         foreach (string permission in access.Permissions)
         {
             identity.AddClaim(new Claim(ClaimsCurrentUser.PermissionClaim, permission));

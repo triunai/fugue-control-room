@@ -190,4 +190,14 @@ public sealed class OwnershipTests(PostgresFixture db)
 
         Assert.Equal(HttpStatusCode.Created, (await support.PostAsJsonAsync("/api/v1/customers", new { name = "Via group", email = Email() })).StatusCode);
     }
+
+    [Fact]
+    public async Task An_unknown_owner_id_on_create_is_a_400_not_a_500()
+    {
+        using HttpClient admin = db.ClientAs(DevUsers.Admin);
+
+        HttpResponseMessage response = await admin.PostAsJsonAsync("/api/v1/customers", new { name = "Orphan", email = Email(), userId = Guid.NewGuid() });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }

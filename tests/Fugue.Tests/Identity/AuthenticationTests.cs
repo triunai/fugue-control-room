@@ -142,6 +142,17 @@ public sealed class AuthenticationTests(PostgresFixture db)
     }
 
     [Fact]
+    public async Task Permission_claims_smuggled_into_a_token_are_discarded()
+    {
+        (_, Fugue.Domain.Ids.UserId nobody) = await db.NewUserAsync(); // holds no permission at all
+        using HttpClient client = db.Anonymous();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", TestTokens.Make(db.SigningKey, nobody.Value, db.Clock.GetUtcNow(), extraPermClaim: Permissions.CustomersView));
+
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync("/api/v1/customers?limit=1")).StatusCode);
+    }
+
+    [Fact]
     public async Task A_user_deactivated_mid_session_is_401_on_the_next_request()
     {
         (string email, _) = await db.NewUserAsync([RoleCodes.Staff]);

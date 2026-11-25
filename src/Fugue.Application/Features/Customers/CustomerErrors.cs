@@ -16,6 +16,9 @@ public static class CustomerErrors
     public static FugueError EmailChangeForbidden() =>
         FugueErrors.Forbidden("customer.email_change_forbidden", "Only staff can change a customer's email.");
 
+    public static FugueError OwnerNotFound() =>
+        FugueErrors.Validation(new Dictionary<string, string[]> { ["userId"] = ["The owner is not a known user."] });
+
     public static FugueError VersionMismatch() =>
         FugueErrors.PreconditionFailed(
             "customer.version_mismatch", "The customer changed since it was read. Re-read it and retry with the new ETag.");

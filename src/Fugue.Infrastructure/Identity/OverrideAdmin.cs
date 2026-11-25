@@ -44,6 +44,15 @@ internal sealed class OverrideAdmin(FugueDbContext db, IGrantAuditWriter audit, 
         existing.IsAllowed = isAllowed;
         existing.Reason = reason;
         existing.ExpiresAt = expiresAt;
+        if (db.Entry(existing).State == EntityState.Unchanged || db.Entry(existing).State == EntityState.Modified)
+        {
+            // Last writer wins, and says so: never let EF skip a column because THIS request's stale read already held the value.
+            foreach (string column in new[] { nameof(existing.IsAllowed), nameof(existing.Reason), nameof(existing.ExpiresAt) })
+            {
+                db.Entry(existing).Property(column).IsModified = true;
+            }
+        }
+
         audit.Record("permission_override", existing.Id.Value, userId.Value, "granted", reason, before, Json(existing));
         await db.SaveChangesAsync(ct); // the override and its grant_audit row commit together
         return Result.Ok();
