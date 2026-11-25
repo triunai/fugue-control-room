@@ -5,6 +5,13 @@ namespace Fugue.Api.Http;
 /// <summary>Writes framework-level auth failures (no handler ran) as the same problem+json the handlers produce, with code and correlation id.</summary>
 public static class AuthProblems
 {
+    /// <summary>The caller's address and user agent, truncated; recorded on audit rows only.</summary>
+    public static Fugue.Application.Abstractions.ClientInfo ClientOf(HttpContext context)
+    {
+        string ua = context.Request.Headers.UserAgent.ToString();
+        return new(context.Connection.RemoteIpAddress?.ToString(), ua.Length == 0 ? null : ua[..Math.Min(ua.Length, 256)]);
+    }
+
     public static async Task WriteAsync(HttpContext context, int status, string code, string detail, string? retryAfterSeconds = null)
     {
         context.Response.StatusCode = status;

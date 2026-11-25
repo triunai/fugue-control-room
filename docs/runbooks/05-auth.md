@@ -91,3 +91,15 @@ curl -s -X POST http://localhost:5080/api/v1/auth/refresh -H 'Content-Type: appl
 curl -si -X POST http://localhost:5080/api/v1/auth/refresh -H 'Content-Type: application/json' -d "{\"refreshToken\":\"$R\"}" | head -1   # 401: already rotated
 ```
 Expect: the first call is `200` with a different `refreshToken`. Presenting the OLD token again is `401` `auth.invalid_refresh_token` AND revokes the whole family (theft response): the newest token of that login stops working too, and the user signs in again. Other logins (other devices) are separate families and are unaffected. `POST /api/v1/auth/logout` with a refresh token revokes its family and is always `204` (it reveals nothing about whether the token existed). Refresh and logout are anonymous (the refresh token is the credential) and use the same per-IP rate limit as login; an expired token, an unknown token and a deactivated user are all the same `401`.
+
+## 8. The audit trails
+
+Two append-only tables (they carry `occurred_at` and an actor, not the `created_*` stamps; see the base-entity fitness function):
+
+* `grant_audit`: every grant or revoke of a group membership (and, with overrides, a permission override), written in the SAME transaction as the change: subject type and id, target user, `granted` / `revoked` / `expired`, optional reason, before and after JSON, `correlation_id`, `saga_id`.
+* `access_audit`: `login` (success or failure with the real internal reason: `unknown_user`, `bad_password`, `inactive`, `local_login_disabled`), `refresh`, `refresh_reuse`, `logout`, `forbidden` (the missing permission, internal), `module_disabled`. Email is stored only as an HMAC-SHA256 keyed by the signing key; passwords and tokens are never stored. Writing an access row is best effort (a failure is logged, never a 500).
+
+```bash
+docker compose exec postgres psql -U fugue -d fugue -c "select occurred_at, event, outcome, reason_code, correlation_id from access_audit order by occurred_at desc limit 10"
+```
+Find one request everywhere with its `X-Correlation-Id` (runbook 02). A richer general `audit_log` (field-level diffs) is a later batch; these tables share the unit-of-work transaction and the correlation context it will build on.

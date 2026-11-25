@@ -19,7 +19,7 @@ public sealed class LoginValidator : AbstractValidator<LoginCommand>
     }
 }
 
-public sealed class LoginHandler(IAuthStore store, IPasswordVerifier verifier, IAccessTokenIssuer issuer, IRefreshTokenStore refreshTokens, TimeProvider time)
+public sealed class LoginHandler(IAuthStore store, IPasswordVerifier verifier, IAccessTokenIssuer issuer, IRefreshTokenStore refreshTokens, IAccessAuditWriter audit, TimeProvider time)
     : ICommandHandler<LoginCommand, Result<TokenDto>>
 {
     public async ValueTask<Result<TokenDto>> Handle(LoginCommand command, CancellationToken cancellationToken)
@@ -30,6 +30,9 @@ public sealed class LoginHandler(IAuthStore store, IPasswordVerifier verifier, I
         bool passwordOk = verifier.Verify(user?.PasswordHash, command.Password);
         if (user is null || !passwordOk || !user.IsActive || !user.LocalLoginEnabled)
         {
+            // The client sees one uniform failure; the audit row keeps the real reason for operators.
+            string reason = user is null ? "unknown_user" : !passwordOk ? "bad_password" : !user.IsActive ? "inactive" : "local_login_disabled";
+            await audit.WriteAsync(new AccessAuditEntry("login", "failure", reason, user?.Id, command.Email, command.Client), cancellationToken);
             return Result.Fail<TokenDto>(AuthErrors.InvalidCredentials());
         }
 
@@ -37,6 +40,7 @@ public sealed class LoginHandler(IAuthStore store, IPasswordVerifier verifier, I
         await refreshTokens.CreateAsync(
             new NewRefreshToken(user.Id, refreshHash, Guid.NewGuid(), time.GetUtcNow() + issuer.RefreshLifetime, command.Client), cancellationToken);
 
+        await audit.WriteAsync(new AccessAuditEntry("login", "success", null, user.Id, command.Email, command.Client), cancellationToken);
         IssuedToken token = issuer.Issue(user.Id);
         int expiresIn = (int)Math.Max(0, (token.ExpiresAt - time.GetUtcNow()).TotalSeconds);
         return Result.Ok(new TokenDto(token.Value, "Bearer", expiresIn, refresh));

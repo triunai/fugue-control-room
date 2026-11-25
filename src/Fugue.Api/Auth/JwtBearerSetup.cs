@@ -93,7 +93,15 @@ public sealed class JwtBearerSetup(IOptions<AuthOptions> auth, TimeProvider time
             context.HttpContext, StatusCodes.Status401Unauthorized, "auth.unauthenticated", "Authentication is required or the token is not valid.");
     }
 
-    private static Task OnForbidden(ForbiddenContext context) =>
-        AuthProblems.WriteAsync(
-            context.HttpContext, StatusCodes.Status403Forbidden, "auth.forbidden", "You do not have permission to perform this action.");
+    private static async Task OnForbidden(ForbiddenContext context)
+    {
+        HttpContext http = context.HttpContext;
+        // The client is told nothing about WHICH permission; the audit row records it (internal) for operators.
+        string? permissions = string.Join(',', http.GetEndpoint()?.Metadata.GetOrderedMetadata<HasPermissionAttribute>().Select(a => a.Permission) ?? []);
+        _ = Guid.TryParse(http.User.FindFirstValue("sub"), out Guid sub);
+        await http.RequestServices.GetRequiredService<IAccessAuditWriter>().WriteAsync(
+            new AccessAuditEntry("forbidden", "denied", permissions.Length > 0 ? permissions : null, sub == Guid.Empty ? null : UserId.From(sub), null, AuthProblems.ClientOf(http)),
+            http.RequestAborted);
+        await AuthProblems.WriteAsync(http, StatusCodes.Status403Forbidden, "auth.forbidden", "You do not have permission to perform this action.");
+    }
 }

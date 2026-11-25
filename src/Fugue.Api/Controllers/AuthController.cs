@@ -31,7 +31,7 @@ public sealed class AuthController : ApiControllerBase
     [AllowAnonymous]
     [EnableRateLimiting(AuthRateLimiting.IpPolicy)]
     public Task<IActionResult> Logout(LogoutRequest body, CancellationToken ct) =>
-        SendNoContent(new LogoutCommand(body.RefreshToken), ct);
+        SendNoContent(new LogoutCommand(body.RefreshToken, Client()), ct);
 
     private ClientInfo Client() =>
         new(HttpContext.Connection.RemoteIpAddress?.ToString(), Request.Headers.UserAgent.ToString() is { Length: > 0 } ua ? ua[..Math.Min(ua.Length, 256)] : null);

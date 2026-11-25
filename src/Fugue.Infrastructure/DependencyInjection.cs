@@ -51,6 +51,7 @@ public static class DependencyInjection
         services.AddScoped<IUserAccessReader, UserAccessReader>();
         services.AddScoped<IAuthStore, AuthStore>();
         services.AddScoped<IRefreshTokenStore, RefreshTokenStore>();
+        services.AddScoped<IAccessAuditWriter, AccessAuditWriter>();
         services.AddScoped<Fugue.Application.Features.Modules.IModuleRegistry, ModuleRegistry>();
         services.AddScoped<Fugue.Application.Features.Groups.IGroupAdmin, GroupAdmin>();
         services.AddScoped<IGrantAuditWriter, GrantAuditWriter>();

@@ -1,0 +1,20 @@
+using Fugue.Domain.Ids;
+
+namespace Fugue.Application.Abstractions;
+
+/// <summary>One authentication or authorization event for <c>access_audit</c>. Never carries a password or a token.</summary>
+/// <param name="Event">login, refresh, refresh_reuse, logout, forbidden, module_disabled.</param>
+/// <param name="Outcome">success, failure, denied.</param>
+/// <param name="ReasonCode">An internal reason (bad_password, expired, the missing permission code, the module code...). Never sent to the client.</param>
+/// <param name="Email">The raw email attempted; only a keyed hash of its canonical form is stored.</param>
+public sealed record AccessAuditEntry(string Event, string Outcome, string? ReasonCode, UserId? UserId, string? Email, ClientInfo? Client);
+
+/// <summary>
+/// Writes <c>access_audit</c> rows (append-only; <c>occurred_at</c> and the correlation id come from the clock and the request).
+/// Best effort: a failing audit write is logged and never turns a login or a 403 into a 500. Grant changes use
+/// <see cref="IGrantAuditWriter"/> instead, which is transactional.
+/// </summary>
+public interface IAccessAuditWriter
+{
+    Task WriteAsync(AccessAuditEntry entry, CancellationToken ct);
+}

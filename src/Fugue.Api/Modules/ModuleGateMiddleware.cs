@@ -1,5 +1,7 @@
 using Fugue.Api.Http;
+using Fugue.Application.Abstractions;
 using Fugue.Application.Features.Modules;
+using Fugue.Domain.Ids;
 
 namespace Fugue.Api.Modules;
 
@@ -18,6 +20,10 @@ public sealed partial class ModuleGateMiddleware(RequestDelegate next, ILogger<M
             && !await context.RequestServices.GetRequiredService<IModuleRegistry>().IsEffectivelyEnabledAsync(module.Code, context.RequestAborted))
         {
             LogRefused(module.Code, context.Request.Path);
+            _ = Guid.TryParse(context.User.FindFirst("sub")?.Value, out Guid sub);
+            await context.RequestServices.GetRequiredService<IAccessAuditWriter>().WriteAsync(
+                new AccessAuditEntry("module_disabled", "denied", module.Code, sub == Guid.Empty ? null : UserId.From(sub), null, AuthProblems.ClientOf(context)),
+                context.RequestAborted);
             await AuthProblems.WriteAsync(context, StatusCodes.Status404NotFound, "module.disabled", "The requested resource was not found.");
             return;
         }
