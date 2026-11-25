@@ -50,6 +50,7 @@ public static class DependencyInjection
         services.AddSingleton<IModuleConfig, ConfigModuleSwitch>();
         services.AddScoped<IUserAccessReader, UserAccessReader>();
         services.AddScoped<IAuthStore, AuthStore>();
+        services.AddScoped<IRefreshTokenStore, RefreshTokenStore>();
         services.AddScoped<Fugue.Application.Features.Modules.IModuleRegistry, ModuleRegistry>();
         services.AddScoped<Fugue.Application.Features.Groups.IGroupAdmin, GroupAdmin>();
         services.AddScoped<IGrantAuditWriter, GrantAuditWriter>();

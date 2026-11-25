@@ -9,3 +9,7 @@ public interface ILoginIdentifier
 public sealed record LoginRequest(string Email, string Password) : ILoginIdentifier;
 
 public sealed record SetModuleActiveRequest(bool IsActive);
+
+public sealed record RefreshRequest(string RefreshToken);
+
+public sealed record LogoutRequest(string RefreshToken);

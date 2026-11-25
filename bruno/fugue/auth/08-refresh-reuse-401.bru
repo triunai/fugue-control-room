@@ -1,0 +1,24 @@
+meta {
+  name: Reusing the rotated token is 401 and revokes the family
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/v1/auth/refresh
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "refreshToken": "{{usedRefreshToken}}"
+  }
+}
+
+tests {
+  test("401 auth.invalid_refresh_token", function () {
+    expect(res.status).to.equal(401);
+    expect(res.body.code).to.equal("auth.invalid_refresh_token");
+  });
+}

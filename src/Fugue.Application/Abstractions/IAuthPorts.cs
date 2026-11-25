@@ -41,4 +41,36 @@ public sealed record IssuedToken(string Value, DateTimeOffset ExpiresAt);
 public interface IAccessTokenIssuer
 {
     IssuedToken Issue(UserId userId);
+
+    /// <summary>How long a refresh token (and so a session) lives.</summary>
+    TimeSpan RefreshLifetime { get; }
 }
+
+/// <summary>A refresh token about to be stored: only <see cref="TokenHash"/> ever reaches the database.</summary>
+public sealed record NewRefreshToken(UserId UserId, string TokenHash, Guid FamilyId, DateTimeOffset ExpiresAt, ClientInfo Client);
+
+public enum RotationOutcome
+{
+    Rotated,
+    NotFound,
+
+    /// <summary>The token was already used or revoked: the whole family has been revoked.</summary>
+    Reused,
+    Expired,
+    UserInactive,
+}
+
+public sealed record RotationResult(RotationOutcome Outcome, UserId? UserId);
+
+/// <summary>Refresh-token persistence. All writes are conditional single statements, so two concurrent refreshes cannot both win.</summary>
+public interface IRefreshTokenStore
+{
+    Task CreateAsync(NewRefreshToken token, CancellationToken ct);
+
+    /// <summary>Atomically revokes <paramref name="oldHash"/> and stores <paramref name="next"/> in the same family, or classifies why not (reuse revokes the family).</summary>
+    Task<RotationResult> RotateAsync(string oldHash, NewRefreshToken next, DateTimeOffset now, CancellationToken ct);
+
+    /// <summary>Revokes the whole family of the token with this hash. Unknown hashes are ignored (no oracle).</summary>
+    Task RevokeFamilyAsync(string tokenHash, DateTimeOffset now, CancellationToken ct);
+}
+

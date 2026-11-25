@@ -18,11 +18,18 @@ script:pre-request {
   req.setBody({ email: bru.getEnvVar("adminEmail"), password: bru.getEnvVar("devPw") }); // secrets-scan:ignore
 }
 
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("refreshToken", res.body.refreshToken);
+  }
+}
+
 tests {
   test("200 with a short-lived bearer token", function () {
     expect(res.status).to.equal(200);
     expect(res.body.tokenType).to.equal("Bearer");
     expect(res.body.accessToken).to.be.a("string").and.not.empty;
     expect(res.body.expiresIn).to.be.within(1, 900);
+    expect(res.body.refreshToken).to.be.a("string").and.not.empty;
   });
 }

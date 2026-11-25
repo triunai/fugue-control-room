@@ -10,6 +10,8 @@ namespace Fugue.Api.Auth;
 /// <summary>Mints HS256 access tokens carrying only identity claims; permissions are looked up per request, never embedded.</summary>
 public sealed class JwtAccessTokenIssuer(IOptions<AuthOptions> options, TimeProvider time) : IAccessTokenIssuer
 {
+    public TimeSpan RefreshLifetime => TimeSpan.FromDays(options.Value.RefreshTokenDays);
+
     public IssuedToken Issue(UserId userId)
     {
         AuthOptions o = options.Value;

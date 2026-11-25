@@ -21,6 +21,8 @@ public sealed class AuthOptions
 
     public int ClockSkewSeconds { get; set; } = 30;
 
+    public int RefreshTokenDays { get; set; } = 7;
+
     /// <summary>The decoded key. Only valid after <see cref="AuthOptionsValidator"/> has passed.</summary>
     public byte[] KeyBytes() => Convert.FromBase64String(SigningKey);
 }
@@ -42,6 +44,11 @@ public sealed class AuthOptionsValidator : IValidateOptions<AuthOptions>
         if (options.AccessTokenMinutes is < 1 or > 60)
         {
             failures.Add("Auth:AccessTokenMinutes must be between 1 and 60.");
+        }
+
+        if (options.RefreshTokenDays is < 1 or > 90)
+        {
+            failures.Add("Auth:RefreshTokenDays must be between 1 and 90.");
         }
 
         failures.AddRange(ValidateKey(options.SigningKey));

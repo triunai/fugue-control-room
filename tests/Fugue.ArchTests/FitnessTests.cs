@@ -137,12 +137,12 @@ public sealed class FitnessTests
     }
 
     [Fact]
-    public void Fitness_Auth_the_anonymous_endpoint_set_is_exactly_token_and_ping()
+    public void Fitness_Auth_the_anonymous_endpoint_set_is_exactly_token_refresh_logout_and_ping()
     {
         string[] anonymous = Actions().Where(m => m.GetCustomAttribute<AllowAnonymousAttribute>() is not null)
             .Select(m => $"{m.DeclaringType!.Name}.{m.Name}").Order().ToArray();
 
-        Assert.Equal(["AuthController.Token", "DiagnosticsController.Ping"], anonymous);
+        Assert.Equal(["AuthController.Logout", "AuthController.Refresh", "AuthController.Token", "DiagnosticsController.Ping"], anonymous);
     }
 
     [Fact]

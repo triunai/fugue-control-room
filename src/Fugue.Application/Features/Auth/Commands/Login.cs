@@ -19,7 +19,7 @@ public sealed class LoginValidator : AbstractValidator<LoginCommand>
     }
 }
 
-public sealed class LoginHandler(IAuthStore store, IPasswordVerifier verifier, IAccessTokenIssuer issuer, TimeProvider time)
+public sealed class LoginHandler(IAuthStore store, IPasswordVerifier verifier, IAccessTokenIssuer issuer, IRefreshTokenStore refreshTokens, TimeProvider time)
     : ICommandHandler<LoginCommand, Result<TokenDto>>
 {
     public async ValueTask<Result<TokenDto>> Handle(LoginCommand command, CancellationToken cancellationToken)
@@ -33,8 +33,12 @@ public sealed class LoginHandler(IAuthStore store, IPasswordVerifier verifier, I
             return Result.Fail<TokenDto>(AuthErrors.InvalidCredentials());
         }
 
+        (string refresh, string refreshHash) = RefreshTokenSecret.Generate();
+        await refreshTokens.CreateAsync(
+            new NewRefreshToken(user.Id, refreshHash, Guid.NewGuid(), time.GetUtcNow() + issuer.RefreshLifetime, command.Client), cancellationToken);
+
         IssuedToken token = issuer.Issue(user.Id);
         int expiresIn = (int)Math.Max(0, (token.ExpiresAt - time.GetUtcNow()).TotalSeconds);
-        return Result.Ok(new TokenDto(token.Value, "Bearer", expiresIn, null));
+        return Result.Ok(new TokenDto(token.Value, "Bearer", expiresIn, refresh));
     }
 }

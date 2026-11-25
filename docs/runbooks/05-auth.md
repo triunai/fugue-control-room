@@ -81,3 +81,13 @@ Expect: `204` plus a new `ETag`, then `404` `module.disabled`. Re-enable with th
 A **group** holds roles; every member inherits them (`support@fugue.test` has no role of its own, only membership of `SUPPORT`, which holds `STAFF`). `GET /api/v1/groups` needs `GROUPS_VIEW`; `PUT` or `DELETE /api/v1/groups/{code}/members/{userId}` need `GROUPS_MANAGE`. A membership change takes effect on the member's very next request (permissions are read per request, never cached) and writes a `grant_audit` row (who, what, to whom, granted or revoked, correlation id) in the same transaction as the change; the member list only changes if the audit row is written too.
 
 A **tenant** is a row in `tenants` that a user may point at through the nullable `users.tenant_id`. The tenant id reaches `ICurrentUser.TenantId` (and error responses) from the verified token's user, but nothing filters by it: the `Tenancy:Enabled` toggle of ADR-003 stays off.
+
+## 7. Refresh tokens and logout
+
+`POST /api/v1/auth/token` also returns a `refreshToken`: an opaque 256-bit value shown once. Only its SHA-256 digest is stored (`refresh_tokens.token_hash`), with a `family_id`, `expires_at` (7 days), `revoked_at`, `replaced_by_id` and the creating IP and user agent.
+```bash
+R=$(login self@fugue.test | sed 's/.*"refreshToken":"\([^"]*\)".*/\1/')
+curl -s -X POST http://localhost:5080/api/v1/auth/refresh -H 'Content-Type: application/json' -d "{\"refreshToken\":\"$R\"}"   # new access + new refresh
+curl -si -X POST http://localhost:5080/api/v1/auth/refresh -H 'Content-Type: application/json' -d "{\"refreshToken\":\"$R\"}" | head -1   # 401: already rotated
+```
+Expect: the first call is `200` with a different `refreshToken`. Presenting the OLD token again is `401` `auth.invalid_refresh_token` AND revokes the whole family (theft response): the newest token of that login stops working too, and the user signs in again. Other logins (other devices) are separate families and are unaffected. `POST /api/v1/auth/logout` with a refresh token revokes its family and is always `204` (it reveals nothing about whether the token existed). Refresh and logout are anonymous (the refresh token is the credential) and use the same per-IP rate limit as login; an expired token, an unknown token and a deactivated user are all the same `401`.

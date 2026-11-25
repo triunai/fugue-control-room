@@ -19,6 +19,20 @@ public sealed class AuthController : ApiControllerBase
     public Task<ActionResult<TokenDto>> Token(LoginRequest body, CancellationToken ct) =>
         Send(new LoginCommand(body.Email, body.Password, Client()), ct);
 
+    /// <summary>Rotates a refresh token. The refresh token IS the credential, so this is anonymous; the per-IP rate limit applies.</summary>
+    [HttpPost("refresh")]
+    [AllowAnonymous]
+    [EnableRateLimiting(AuthRateLimiting.IpPolicy)]
+    public Task<ActionResult<TokenDto>> Refresh(RefreshRequest body, CancellationToken ct) =>
+        Send(new RefreshTokenCommand(body.RefreshToken, Client()), ct);
+
+    /// <summary>Ends the session by revoking the token's whole family. Always 204.</summary>
+    [HttpPost("logout")]
+    [AllowAnonymous]
+    [EnableRateLimiting(AuthRateLimiting.IpPolicy)]
+    public Task<IActionResult> Logout(LogoutRequest body, CancellationToken ct) =>
+        SendNoContent(new LogoutCommand(body.RefreshToken), ct);
+
     private ClientInfo Client() =>
         new(HttpContext.Connection.RemoteIpAddress?.ToString(), Request.Headers.UserAgent.ToString() is { Length: > 0 } ua ? ua[..Math.Min(ua.Length, 256)] : null);
 }
