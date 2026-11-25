@@ -63,3 +63,10 @@ test("archive-project-log: moves entries older than 30 days or beyond the latest
   assert.equal(p.move.at(-1).month, "2026-09");
   assert.equal(p.move.at(-1).text, mk("2026-09-01", 99));
 });
+
+import { mergeDecisions } from "./close-workstream.mjs";
+test("close-workstream: D/ADR ids found in the W's commits are added after the supplied decisions, no duplicates", () => {
+  assert.equal(mergeDecisions("D-004, ADR-006", ["ADR-006", "D-013"]), "D-004, ADR-006, D-013");
+  assert.equal(mergeDecisions("", ["ADR-010"]), "ADR-010");
+  assert.equal(mergeDecisions(undefined, []), "");
+});

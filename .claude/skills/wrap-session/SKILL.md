@@ -17,9 +17,13 @@ The step ORDER lives in `hygiene.md` (WRAP row). This skill adds the how. Follow
 6. **Journal**: add an entry to `docs/ai-journal.md` for each point where the AI proposed and the owner accepted, challenged or overrode.
 7. **Handoff**: write or extend `docs/ai/handoffs/<date>-lead.md`: today's summary, traps, facts with how they were verified, not-done, owner decisions owed, and a copy-pasteable SEED PROMPT for the next session.
 8. **Link check and cold storage**: `node scripts/spine/commit-link-check.mjs` (every commit listed in an entry or `Refs:` an open W; fix or explain "unlinked", then `--advance`). If the project log has more than 20 entries or entries older than 30 days: `node scripts/spine/archive-project-log.mjs` (moves them verbatim to `docs/archive/project-log/`, adds an index line). CHANGELOG is never pruned.
+8b. **Traceability**: `npm run trace` regenerates `docs/traceability.md` (commit <-> W <-> ADR <-> D, from `Refs:` trailers and the committed docs). Run it AFTER the spine commit so it sees the final history, then commit the file ALONE (`git add docs/traceability.md && git commit -F <msg> -- docs/traceability.md`, subject `docs(trace): regenerate traceability index`). A commit touching only that file is left out of the index, so a second `npm run trace` leaves no diff. Never hand-edit it. The pre-push `trace-stale` check only warns.
 9. **Gates**: `bash scripts/spine/ledger-check.sh` (exit 0), `node scripts/spine/prune-check.mjs`, `npm run test:scripts`, `dotnet build` (0 warnings), `dotnet test --no-build` (state counts).
 10. **Commit** spine and handoff together (`docs(spine): ...`, trailers `Refs: W-NNN`, `Co-Authored-By:`). Never push unless the owner asks.
 11. **Local beads**: `bd close <id> --reason "<short sha>"` for finished work; keep the epic open. Beads are local only: never write a bead id into a commit or a doc.
+
+## Refs trailer rule (multi-id)
+One `Refs:` trailer may carry several ids (`Refs: W-012, ADR-010, D-022`, or one trailer per id); EVERY id must resolve. A closed W still resolves via its `Closed:` line in the project log, archive or CHANGELOG. Cite the W the work belongs to AND every D/ADR it introduces or amends, so `docs/traceability.md` links them. `close-workstream.mjs` records the D/ADR ids found in the W's commits in the entry's `Decisions:` line.
 
 ## Do not
 Append to hot-state, edit old project-log or CHANGELOG entries, hand-write a closed-thread entry in only one of the two files, leave a done thread on the board, claim "tests pass" without the counts, or wrap with an unverified `Last green sha`.

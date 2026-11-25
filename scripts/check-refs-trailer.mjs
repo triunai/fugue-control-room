@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // commit-msg gate: an agent-authored commit must end with a RESOLVABLE `Refs:` git trailer.
 // Agent = the message carries a `Co-Authored-By:` trailer naming Claude (or another model). Human commits are exempt.
-// Resolvable ids: W-NNN (ID: line in docs/workstreams.md, or `Closed: W-NNN` in docs/project-log.md once pruned), D-NNN (## heading in docs/decisions.md),
+// Resolvable ids: W-NNN (ID: line in docs/workstreams.md, or `Closed: W-NNN` in project-log / archive / CHANGELOG once closed), D-NNN (## heading in docs/decisions.md),
 // ADR-NNN (file docs/adr/ADR-NNN-*.md). Beads ids are local-only and deliberately NOT accepted (D-013).
 // Ported from the owner's multi-tenant SaaS repo; adapted to Fugue's paths and without the bead lookup.
 // Usage (lefthook commit-msg): node scripts/check-refs-trailer.mjs <commit-msg-file>
@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 const AGENT_RE = /(claude|codex|sonnet|opus|haiku|fable)/i;
 const FORMAT = `Expected a git trailer in the FINAL paragraph of the commit message:
 
-  Refs: W-008, D-013
+  Refs: W-008, D-013            (several ids in one trailer are fine; every one must resolve)
 
 Ids: W-NNN workstream (docs/workstreams.md), D-NNN decision (docs/decisions.md), ADR-NNN (docs/adr/).
 A "Refs:" line above the trailer block is invisible to git. Trailers go last, e.g.:
@@ -48,9 +48,10 @@ function readIf(p) {
 }
 
 function logText(root) {
+  // warm log + archived months + CHANGELOG (the permanent ledger, so a closed W resolves even if the log was pruned)
   const dir = path.join(root, "docs/archive/project-log");
   const archived = existsSync(dir) ? readdirSync(dir).map((f) => readIf(path.join(dir, f))) : [];
-  return [readIf(path.join(root, "docs/project-log.md")), ...archived].join("\n");
+  return [readIf(path.join(root, "docs/project-log.md")), readIf(path.join(root, "CHANGELOG.md")), ...archived].join("\n");
 }
 
 export function resolveId(id, root) {
@@ -61,7 +62,7 @@ export function resolveId(id, root) {
       new RegExp(`^Closed:\\s*${id}\\b`, "m").test(logText(root))
     );
   if (/^D-\d+$/.test(id))
-    return new RegExp(`^##\\s+${id}\\b`, "m").test(readIf(path.join(root, "docs/decisions.md")));
+    return new RegExp(`^##\\s+D-0*${Number(id.slice(2))}\\b`, "m").test(readIf(path.join(root, "docs/decisions.md")));
   if (/^ADR-\d+$/.test(id)) {
     const dir = path.join(root, "docs/adr");
     return existsSync(dir) && readdirSync(dir).some((f) => f.startsWith(`${id}-`) && f.endsWith(".md"));
@@ -79,11 +80,12 @@ export function check(message, root) {
   if (!refs.length)
     return { ok: false, errors: ["agent commit has no `Refs:` trailer (a Refs line above the trailer block does not count)."] };
   const ids = refs
-    .flatMap((t) => t.value.split(/[,\s]+/))
+    .flatMap((t) => t.value.split(/[,;\s]+/))
     .map((s) => s.replace(/\.$/, ""))
     .filter(Boolean);
+  // several ids per trailer (`Refs: W-012, ADR-010, D-022`) and several `Refs:` trailers are both fine; EVERY id must resolve.
   if (!ids.length) return { ok: false, errors: ["`Refs:` trailer has no ids."] };
-  const errors = ids
+  const errors = [...new Set(ids)]
     .filter((id) => !resolveId(id, root))
     .map((id) => `Refs id does not resolve (only W-/D-/ADR- ids that exist are accepted): ${id}`);
   return errors.length ? { ok: false, errors } : { ok: true, notes: [] };

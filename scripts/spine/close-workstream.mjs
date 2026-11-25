@@ -63,6 +63,24 @@ export function commitsFor(root, id, extra = []) {
   return [...manual, ...found.filter((f) => !manual.some((m) => m.split(" ")[0] === f.split(" ")[0]))];
 }
 
+/** ADR/D ids cited (in `Refs:`) by the commits of a W, so the entry records what the thread produced. */
+export function refIdsFor(root, id, extraShas = []) {
+  const out = git(root, ["log", "--format=%h%x1f%(trailers:key=Refs,valueonly,separator=%x2C)%x1e"]) || "";
+  const found = new Set();
+  for (const rec of out.split("\x1e")) {
+    const [sha, refs = ""] = rec.trim().split("\x1f");
+    const ids = refs.split(/[,;\s]+/).filter(Boolean);
+    if (ids.includes(id) || extraShas.some((x) => sha && (x.startsWith(sha) || sha.startsWith(x)))) ids.filter((r) => /^(D|ADR)-\d+$/.test(r)).forEach((r) => found.add(r));
+  }
+  return [...found];
+}
+/** Supplied `--decisions` text first, then any commit-cited D/ADR id not already named in it. */
+export function mergeDecisions(supplied, found) {
+  const have = new Set((supplied || "").match(/\b(?:D|ADR)-\d+\b/g) || []);
+  const extra = found.filter((i) => !have.has(i));
+  return [supplied, ...extra].filter(Boolean).join(", ");
+}
+
 function main(argv) {
   const root = process.cwd();
   const id = argv[0];
@@ -75,10 +93,11 @@ function main(argv) {
   if (closedIds(allLogText(root)).includes(id)) { console.error(`${id} already has a Closed: entry; entries are append-only.`); process.exit(1); }
   const t = findThread(board, id);
   if (!t) { console.error(`${id} not found on docs/workstreams.md (needs a '### WS-NN' heading followed by 'ID: ${id}').`); process.exit(1); }
+  const extraShas = (flag("commits") || "").split(",").map((s) => s.trim()).filter(Boolean);
   const entry = buildEntry({
     id, ws: t.ws, title: flag("title") || t.title, date: flag("date") || new Date().toISOString().slice(0, 10),
-    outcome: flag("outcome"), decisions: flag("decisions"), followups: flag("followups"),
-    commits: commitsFor(root, id, (flag("commits") || "").split(",").map((s) => s.trim()).filter(Boolean)),
+    outcome: flag("outcome"), decisions: mergeDecisions(flag("decisions"), refIdsFor(root, id, extraShas)), followups: flag("followups"),
+    commits: commitsFor(root, id, extraShas),
   });
   if (argv.includes("--dry-run")) { console.log(entry); return; }
   writeFileSync(path.join(root, "docs/project-log.md"), prepend(rd(root, "docs/project-log.md"), entry));

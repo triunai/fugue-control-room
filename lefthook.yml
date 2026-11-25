@@ -40,7 +40,7 @@ commit-msg:
       run: npx --no -- commitlint --edit {1}
     refs-trailer:
       tags: baseline
-      # Agent commits (Co-Authored-By: Claude) need a resolvable `Refs: W-/D-/ADR-` trailer. Humans exempt.
+      # Agent commits (Co-Authored-By: Claude) need a `Refs:` trailer; several ids allowed (`Refs: W-012, ADR-010`), each must resolve. Humans exempt.
       run: node scripts/check-refs-trailer.mjs {1}
     fix-has-test:
       tags: baseline
@@ -64,6 +64,10 @@ pre-push:
       tags: guardrail
       # WARN-only: commits not linked to a ledger entry or an open W; ADRs and closed-W parity.
       run: node scripts/spine/commit-link-check.mjs
+    trace-stale:
+      tags: guardrail
+      # ADVISORY (exit 0): regenerates docs/traceability.md in memory and warns if the committed file differs. Never writes.
+      run: node scripts/spine/trace-index.mjs --check
     codex-gate:
       tags: guardrail
       # ADVISORY (D-014): seam-triggered cross-model review, detached, capped at 8/day, never blocks or delays the push.
