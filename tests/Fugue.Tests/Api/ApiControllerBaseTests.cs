@@ -1,11 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Mediator;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Fugue.Tests.Api;
 
@@ -15,14 +11,7 @@ public sealed class ApiControllerBaseTests : IClassFixture<WebApplicationFactory
 
     public ApiControllerBaseTests(WebApplicationFactory<Program> factory)
     {
-        WebApplicationFactory<Program> configured = factory.WithWebHostBuilder(builder =>
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddControllers().AddApplicationPart(typeof(ProbeController).Assembly);
-                services.RemoveAll<ISender>();
-                services.AddSingleton<ISender, FakeSender>();
-            }));
-        _client = configured.CreateClient();
+        _client = ProbeFactory.CreateClient(factory);
     }
 
     [Fact]

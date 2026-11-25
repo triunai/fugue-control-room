@@ -29,4 +29,4 @@ Rules:
 - Repository implementations live in `Fugue.Infrastructure/Persistence/<Feature>/`, not here.
 - Controllers in `Fugue.Api/Controllers/` stay one-liners: `Send(new GetWidget(id), ct)`.
 - Cross-cutting pipeline behaviors (validation, logging) live in `Common/Behaviors/`.
-- Nothing here yet by design: the scaffold carries no domain.
+- `Diagnostics/` (a ping query) is the only feature: it proves the pipeline and shows the slice shape. The scaffold carries no domain.

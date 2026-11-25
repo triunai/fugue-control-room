@@ -6,6 +6,13 @@ Heading form: `## <YYYY-MM-DD> — <title>`. Entry key = `<date>#<n>`, where n i
 First non-blank body line must be `WS: WS-NN` (comma-separate several) or `WS: (pre-WS)`.
 Then: what was done · what was decided (cite D-NNN) · what is open (cite #NNN).
 
+## 2026-11-25 — S1: validation, exceptions, logging, correlation
+WS: WS-03
+Added the validation and logging behaviors, global exception handler, Serilog, correlation and saga ids (ADR-005), a ping feature that exercises the real pipeline, runbook 02 and tests.
+Decided: D-003.
+Next: S2 persistence per the roadmap. Owner action pending: implement `MapStatus`.
+Superseded RESUME block (2026-11-25, S0 done): net8, FluentResults, Application layer, neutral docs finished; S1 was next.
+
 ## 2026-11-25 — S0: net8, FluentResults, Application layer, neutral docs
 WS: WS-02
 Retargeted to .NET 8 (`Fugue.sln`, SDK pinned 8.0.428), added `Fugue.Application`, replaced the hand-rolled Result with FluentResults + `FugueError`, made `Send*` return `ActionResult<T>`, neutralised the docs, wrote ADR-003/004, the roadmap, runbook 01 and the AI journal.

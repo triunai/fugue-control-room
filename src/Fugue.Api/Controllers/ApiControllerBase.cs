@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Text;
 using FluentResults;
 using Fugue.Api.Http;
@@ -82,11 +81,63 @@ public abstract class ApiControllerBase : ControllerBase
     // Return types are ActionResult<T> (not IActionResult) so OpenAPI generators infer the 200/201 body
     // schema from the action signature without a [ProducesResponseType] on every action. Failures are
     // ProblemResult, which is an ActionResult, so the one-liner action style is unchanged.
+    //
+    // Mediator keeps ICommand<T>, IQuery<T> and IRequest<T> as separate hierarchies, so each helper has an
+    // overload per hierarchy; all of them funnel into one private mapper.
 
     /// <summary>200 with the value as the body, plus an <c>ETag</c> when the value is <see cref="IVersioned"/>.</summary>
-    protected async Task<ActionResult<T>> Send<T>(IRequest<Result<T>> request, CancellationToken ct)
+    protected async Task<ActionResult<T>> Send<T>(IRequest<Result<T>> request, CancellationToken ct) =>
+        ToOk(await Sender.Send(request, ct));
+
+    /// <inheritdoc cref="Send{T}(IRequest{Result{T}}, CancellationToken)"/>
+    protected async Task<ActionResult<T>> Send<T>(ICommand<Result<T>> command, CancellationToken ct) =>
+        ToOk(await Sender.Send(command, ct));
+
+    /// <inheritdoc cref="Send{T}(IRequest{Result{T}}, CancellationToken)"/>
+    protected async Task<ActionResult<T>> Send<T>(IQuery<Result<T>> query, CancellationToken ct) =>
+        ToOk(await Sender.Send(query, ct));
+
+    /// <summary>201 with a <c>Location</c> built from <paramref name="actionName"/> and an <c>ETag</c> when versioned.</summary>
+    protected async Task<ActionResult<T>> SendCreated<T>(
+        IRequest<Result<T>> request,
+        string actionName,
+        Func<T, object> routeValues,
+        CancellationToken ct) =>
+        ToCreated(await Sender.Send(request, ct), actionName, routeValues);
+
+    /// <inheritdoc cref="SendCreated{T}(IRequest{Result{T}}, string, Func{T, object}, CancellationToken)"/>
+    protected async Task<ActionResult<T>> SendCreated<T>(
+        ICommand<Result<T>> command,
+        string actionName,
+        Func<T, object> routeValues,
+        CancellationToken ct) =>
+        ToCreated(await Sender.Send(command, ct), actionName, routeValues);
+
+    /// <summary>204 on success.</summary>
+    protected async Task<IActionResult> SendNoContent(IRequest<Result> request, CancellationToken ct) =>
+        ToNoContent(await Sender.Send(request, ct));
+
+    /// <inheritdoc cref="SendNoContent(IRequest{Result}, CancellationToken)"/>
+    protected async Task<IActionResult> SendNoContent(ICommand<Result> command, CancellationToken ct) =>
+        ToNoContent(await Sender.Send(command, ct));
+
+    /// <summary>
+    /// 200 with the items array as the body. When another page exists, adds <c>X-Next-Cursor</c> and an
+    /// RFC 8288 <c>Link: &lt;url&gt;; rel="next"</c> built from the current request URL.
+    /// </summary>
+    protected async Task<ActionResult<IReadOnlyList<T>>> SendPaged<T>(
+        IRequest<Result<PagedResult<T>>> request,
+        CancellationToken ct) =>
+        ToPage(await Sender.Send(request, ct));
+
+    /// <inheritdoc cref="SendPaged{T}(IRequest{Result{PagedResult{T}}}, CancellationToken)"/>
+    protected async Task<ActionResult<IReadOnlyList<T>>> SendPaged<T>(
+        IQuery<Result<PagedResult<T>>> query,
+        CancellationToken ct) =>
+        ToPage(await Sender.Send(query, ct));
+
+    private ActionResult<T> ToOk<T>(Result<T> result)
     {
-        Result<T> result = await Sender.Send(request, ct);
         if (result.IsFailed)
         {
             return Problem(result.Errors[0]);
@@ -96,14 +147,8 @@ public abstract class ApiControllerBase : ControllerBase
         return Ok(result.Value);
     }
 
-    /// <summary>201 with a <c>Location</c> built from <paramref name="actionName"/> and an <c>ETag</c> when versioned.</summary>
-    protected async Task<ActionResult<T>> SendCreated<T>(
-        IRequest<Result<T>> request,
-        string actionName,
-        Func<T, object> routeValues,
-        CancellationToken ct)
+    private ActionResult<T> ToCreated<T>(Result<T> result, string actionName, Func<T, object> routeValues)
     {
-        Result<T> result = await Sender.Send(request, ct);
         if (result.IsFailed)
         {
             return Problem(result.Errors[0]);
@@ -113,22 +158,11 @@ public abstract class ApiControllerBase : ControllerBase
         return CreatedAtAction(actionName, routeValues(result.Value), result.Value);
     }
 
-    /// <summary>204 on success.</summary>
-    protected async Task<IActionResult> SendNoContent(IRequest<Result> request, CancellationToken ct)
-    {
-        Result result = await Sender.Send(request, ct);
-        return result.IsFailed ? Problem(result.Errors[0]) : NoContent();
-    }
+    private IActionResult ToNoContent(Result result) =>
+        result.IsFailed ? Problem(result.Errors[0]) : NoContent();
 
-    /// <summary>
-    /// 200 with the items array as the body. When another page exists, adds <c>X-Next-Cursor</c> and an
-    /// RFC 8288 <c>Link: &lt;url&gt;; rel="next"</c> built from the current request URL.
-    /// </summary>
-    protected async Task<ActionResult<IReadOnlyList<T>>> SendPaged<T>(
-        IRequest<Result<PagedResult<T>>> request,
-        CancellationToken ct)
+    private ActionResult<IReadOnlyList<T>> ToPage<T>(Result<PagedResult<T>> result)
     {
-        Result<PagedResult<T>> result = await Sender.Send(request, ct);
         if (result.IsFailed)
         {
             return Problem(result.Errors[0]);
@@ -177,7 +211,7 @@ public abstract class ApiControllerBase : ControllerBase
         }
 
         problem.Extensions["code"] = fugue.Code;
-        problem.Extensions["traceId"] = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+        ProblemDetailsEnrichment.AddCorrelation(problem, HttpContext);
         if (CurrentUser.TenantId is { } tenantId)
         {
             problem.Extensions["tenantId"] = tenantId;

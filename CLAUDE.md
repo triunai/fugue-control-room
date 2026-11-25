@@ -28,6 +28,10 @@ Fugue.Infrastructure/Persistence/<Feature>/                              reposit
 Fugue.Api/Controllers/<Feature>Controller.cs                             one-liner actions
 ```
 
+Pipeline behaviors (`Fugue.Application/Common/Behaviors`, registered in `Program.cs` via Mediator `PipelineBehaviors`): `LoggingBehavior` (outermost; name, elapsed, outcome, error codes; never payloads) then `ValidationBehavior` (all `IValidator<T>`, aggregated into one `FugueErrors.Validation`, camelCase field keys). Both require `TResponse : ResultBase, new()`, i.e. handlers return FluentResults.
+
+Correlation (ADR-005): `CorrelationIdMiddleware` is first; `X-Correlation-Id` (request chain) and `X-Saga-Id` (business process, `ICorrelationContext.SetSaga`) are validated, echoed, and pushed to Serilog and `Activity`. Unhandled exceptions become a 500 `application/problem+json` via `GlobalExceptionHandler`. Mediator keeps `ICommand`/`IQuery`/`IRequest` separate; `ApiControllerBase.Send*` has an overload for each.
+
 Request flow: controller action (one line) -> `Send(command/query)` via the mediator -> pipeline behaviors (logging, validation) -> handler -> `FluentResults.Result<T>` -> `ApiControllerBase` maps to a response or `ProblemDetails`.
 
 ## Tenancy & Security Model

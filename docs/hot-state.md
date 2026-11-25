@@ -4,9 +4,9 @@ Rules: ONE current `▶ RESUME HERE` block, at most ONE `(previous)` block. When
 
 ## ▶ RESUME HERE — 2026-11-25
 - Tree: `main` (path: repo root)
-- Doing: S0 finished (net8, FluentResults, Application layer, neutral docs).
-- Next action: S1 per `docs/plans/roadmap.md`.
-- Open threads: none active. Known red tests: `MapStatus` theory + two error-shape HTTP tests, until the owner writes `ApiControllerBase.MapStatus`.
+- Doing: S0 and S1 finished (see `docs/plans/roadmap.md`). Nothing in flight.
+- Next action: S2 persistence (local Postgres, EF Core 8). Start with "new task: …".
+- Open threads: none active. Owner action: implement `ApiControllerBase.MapStatus`. Known red tests until then: the 8 `MapStatusTests` theory cases, `Failure_is_a_problem_json_with_code_type_and_trace_id`, `Validation_failure_carries_an_errors_dictionary`, `Ping_with_an_out_of_range_count_is_a_400_validation_problem`.
 
 ## Owed inbox
 One line per item that the next wrap must handle. Format: `- [ ] <what> — <who/why> — <since YYYY-MM-DD>`. Tick and remove when done.

@@ -25,11 +25,11 @@
 - [ ] Errors are `ProblemDetails`; no new ad-hoc error shape
 - [ ] New list endpoints use keyset pagination; new unsafe POSTs accept an idempotency key where money or stock moves
 
-## Tenancy checklist (skip if no tenant-owned entity, query, or auth policy change)
+## Tenancy checklist (skip if tenancy is disabled per ADR-003, or no tenant-owned entity, query, or auth policy change)
 
 - [ ] Cross-tenant leak test added or extended for this module (tenant A cannot read or write tenant B data)
 - [ ] Tenant comes from the verified JWT claim, never a client header or body field
-- [ ] Raw SQL / Dapper reads filter on `tenant_id` explicitly (the EF filter does not cover them)
+- [ ] Raw SQL reads filter on `tenant_id` explicitly (the EF filter does not cover them)
 
 ---
 

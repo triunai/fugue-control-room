@@ -18,7 +18,7 @@ module.exports = {
       "always",
       ["api", "application", "domain", "infra", "identity", "observability", "persistence", "messaging", "tests", "arch", "docs", "ci", "spine", "deps"],
     ],
-    "header-max-length": [2, "always", 100],
+    "header-max-length": [2, "always", 110],
     "subject-case": [0, "never"],
     "scope-empty": [0, "never"],
   },

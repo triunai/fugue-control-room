@@ -2,6 +2,7 @@ using System.Reflection;
 using Fugue.Api.Controllers;
 using Fugue.Domain.Abstractions;
 using Fugue.Infrastructure;
+using Mediator;
 using NetArchTest.Rules;
 
 namespace Fugue.ArchTests;
@@ -78,6 +79,24 @@ public sealed class ArchitectureTests
             .GetResult();
 
         Assert.True(result.IsSuccessful, Describe(result));
+    }
+
+    [Fact]
+    public void Pipeline_behaviors_live_in_Application_Common_Behaviors()
+    {
+        Assembly[] assemblies = [Domain, Application, Api, typeof(AssemblyMarker).Assembly];
+        Type[] behaviors = assemblies
+            .SelectMany(a => a.GetTypes())
+            .Where(t => !t.IsAbstract && t.GetInterfaces().Any(i =>
+                i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IPipelineBehavior<,>)))
+            .ToArray();
+
+        Assert.NotEmpty(behaviors);
+        Assert.All(behaviors, t =>
+        {
+            Assert.Equal(Application, t.Assembly);
+            Assert.Equal("Fugue.Application.Common.Behaviors", t.Namespace);
+        });
     }
 
     private static string Describe(TestResult result) =>

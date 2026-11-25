@@ -2,7 +2,7 @@
 
 Purpose: an honest record of where an AI assistant shaped this repo and what the owner did with its suggestions. Each entry says what was asked, what the AI proposed, whether the owner accepted, challenged or overrode it, and why. Reviewers can use it to see which decisions are the owner's own.
 
-Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challenged | overrode), **Why**. Newest entries go at the bottom of the seed list below; later entries append.
+Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challenged | overrode), **Why**. Seed entries come first; later entries append at the bottom.
 
 ## 2026-11-11 - Audit of a previous template
 - **Asked:** assess a previous work-derived .NET template for what to reuse.
@@ -69,3 +69,15 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
 - **AI proposed:** after comparing Colima, OrbStack and Docker Desktop: OrbStack (fastest in benchmarks; auto-manages `/var/run/docker.sock`, so Testcontainers works without configuration).
 - **Decision:** accepted.
 - **Why:** least setup friction for a 3-day horizon.
+
+## 2026-11-25 - S1 implementation choices (review these)
+- **Asked:** validation and logging behaviors, exception handler, Serilog, correlation and saga ids.
+- **AI proposed / chose:**
+  - `ValidationBehavior` builds the failure with `where TResponse : ResultBase, new()` and `new TResponse()` (FluentResults results have public parameterless constructors), no reflection of our own; the same shape lets one behavior serve `Result` and `Result<T>`.
+  - Mediator keeps `ICommand`/`IQuery`/`IRequest` as separate hierarchies, so `ApiControllerBase.Send*` gained one overload per hierarchy (all funnel into one private mapper).
+  - Added a real `GET /api/v1/diagnostics/ping` feature so the pipeline can be exercised end to end through the real mediator; this goes beyond "Features/ empty" from S0.
+  - Serilog bootstrap logger is a plain (non-reloadable) logger, to avoid the "logger is already frozen" failure when several `WebApplicationFactory` hosts start in one test process.
+  - Client abort answers 499 with no body; the framework's own "unhandled exception" log is silenced so each failure logs once.
+  - Saga id set by a handler is pushed into the log context at call time; it appears on later log lines in the same request flow and on the response header, but not on lines logged before the call.
+- **Decision:** pending owner review (not yet accepted or challenged).
+- **Why:** these are the points where the brief left a choice. Also observed, not changed: framework-generated 400s from `[ApiController]` are served as `application/json`, not `application/problem+json`, because of the controller-level `[Produces]` (same cause as the earlier content-type bug).

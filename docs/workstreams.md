@@ -21,3 +21,8 @@ Refs: `hygiene.md`, `docs/conventions/doc-spine.md`, D-001
 Status: net8 + `Fugue.sln`, `Fugue.Application`, FluentResults/`FugueError`, neutral docs, ADR-003/004, roadmap, runbook 01, AI journal. Expected red: `MapStatus` tests (owner's to write).
 Resume: none. Next thread is WS-03.
 Refs: `docs/plans/roadmap.md`, ADR-003, ADR-004, D-002
+
+### WS-03 — S1 validation, exception handler, Serilog, correlation and saga IDs — ✅ DONE (2026-11-25)
+Status: behaviors, exception handler, Serilog, correlation middleware, ADR-005, runbook 02, tests. Expected red: `MapStatus`-dependent tests only.
+Resume: none. Next is S2 (persistence) per `docs/plans/roadmap.md`; open it with "new task: …".
+Refs: ADR-005, D-003, `docs/runbooks/02-tracing-a-request.md`

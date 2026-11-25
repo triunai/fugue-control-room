@@ -15,6 +15,7 @@ Each phase ends with a green build (0 warnings), tests, and a commit. Statuses l
 - `GlobalExceptionHandler` (RFC 9457 500), ProblemDetails enrichment with `traceId`/`correlationId`.
 - Serilog (readable console in Development, compact JSON otherwise), request logging.
 - `X-Correlation-Id` + `X-Saga-Id` + W3C trace context (ADR-005). Runbook 02.
+- `GET /api/v1/diagnostics/ping`: the one real endpoint, proving the pipeline end to end through the real mediator.
 
 ## S2 - persistence
 - Local Postgres via docker compose; EF Core 8 + Npgsql.

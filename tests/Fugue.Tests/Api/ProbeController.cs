@@ -1,6 +1,8 @@
 using Fugue.Api.Controllers;
+using Fugue.Application.Abstractions;
 using Fugue.Domain.Results;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Fugue.Tests.Api;
 
@@ -40,4 +42,15 @@ public sealed class ProbeController : ApiControllerBase
                 "Order is invalid.",
                 new Dictionary<string, string[]> { ["quantity"] = ["Must be positive."] })),
             ct);
+
+    [HttpGet("boom")]
+    public IActionResult Boom() =>
+        HttpContext is null ? NoContent() : throw new InvalidOperationException("secret detail");
+
+    [HttpGet("saga")]
+    public IActionResult SetSaga()
+    {
+        HttpContext.RequestServices.GetRequiredService<ICorrelationContext>().SetSaga("order-123");
+        return NoContent();
+    }
 }

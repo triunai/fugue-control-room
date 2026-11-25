@@ -4,6 +4,15 @@ Tracks notable changes across migrations, API contracts, and project documentati
 
 > **ADR links.** An entry that reflects a real architectural decision cites it as `(ADR-NNN)`; the ADR lives in `docs/adr/`.
 
+## 2026-11-25 — S1 — validation, exceptions, logging, correlation and saga IDs
+
+### Added
+- `ValidationBehavior` and `LoggingBehavior` (Mediator pipeline), `AddApplication()` validator registration, `ICorrelationContext`.
+- `GlobalExceptionHandler` (RFC 9457 500, no detail outside Development, 499 for client aborts); `AddProblemDetails` customization adds `traceId` and `correlationId`.
+- `CorrelationIdMiddleware` (`X-Correlation-Id`, `X-Saga-Id`, Activity tags/baggage, Serilog LogContext); Serilog with readable console in Development and compact JSON elsewhere (ADR-005).
+- `Diagnostics` ping feature and controller; runbook 02.
+- `ApiControllerBase.Send*` overloads for `ICommand` and `IQuery`.
+
 ## 2026-11-25 — S0 — retarget .NET 8, FluentResults, Application layer, neutral docs
 
 ### Changed

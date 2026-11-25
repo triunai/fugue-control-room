@@ -6,6 +6,13 @@ Heading form: `## D-NNN — <title> — <YYYY-MM-DD>`. NNN is three digits. Only
 First non-blank body line must be `WS: WS-NN` (comma-separate several) or `WS: (pre-WS)` for decisions older than the rule. Never guess.
 Then: Context (one or two lines) · Decision · Why · Consequences · Supersedes (if any).
 
+## D-003 — Three-layer correlation: trace, correlation id, saga id — 2026-11-25
+WS: WS-03
+Context: need to debug across logs, responses and later outbound webhooks; a review suggested dropping the saga id.
+Decision: W3C `Activity` trace per hop, `X-Correlation-Id` per request chain, `X-Saga-Id` per business process (ADR-005); validated inbound, echoed outbound, in logs and Activity tags. Behaviors require FluentResults responses (`ResultBase, new()`).
+Why: each id answers a different question; validation blocks header and log injection.
+Consequences: S4 outbox and webhooks must carry the ids as headers.
+
 ## D-002 — Retarget .NET 8, adopt FluentResults, single-tenant default — 2026-11-25
 WS: WS-02
 Context: scaffold targeted .NET 10 with a hand-rolled Result type and multi-tenant e-commerce framing; an external review and the owner's interview context changed the goals.
