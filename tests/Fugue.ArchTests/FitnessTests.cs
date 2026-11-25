@@ -169,7 +169,7 @@ public sealed class FitnessTests
     [Fact]
     public void Fitness_Modules_every_Module_attribute_names_a_seeded_module()
     {
-        string[] seeded = [Fugue.Domain.Identity.ModuleCodes.System, Fugue.Domain.Identity.ModuleCodes.Customers, Fugue.Domain.Identity.ModuleCodes.Identity, Fugue.Domain.Identity.ModuleCodes.Audit];
+        string[] seeded = [Fugue.Domain.Identity.ModuleCodes.System, Fugue.Domain.Identity.ModuleCodes.Customers, Fugue.Domain.Identity.ModuleCodes.Identity, Fugue.Domain.Identity.ModuleCodes.Audit, Fugue.Domain.Identity.ModuleCodes.Webhooks];
         IEnumerable<string> bad = Controllers()
             .SelectMany(c => c.GetCustomAttributes<ModuleAttribute>(inherit: false).Select(a => (c, a)))
             .Where(x => !seeded.Contains(x.a.Code)).Select(x => $"{x.c.Name}:{x.a.Code}");

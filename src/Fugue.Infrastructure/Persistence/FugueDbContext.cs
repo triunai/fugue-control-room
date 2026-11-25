@@ -1,6 +1,7 @@
 using Fugue.Domain.Audit;
 using Fugue.Domain.Customers;
 using Fugue.Domain.Identity;
+using Fugue.Domain.Webhooks;
 using Fugue.Infrastructure.Persistence.Ids;
 using Microsoft.EntityFrameworkCore;
 
@@ -43,6 +44,14 @@ public sealed class FugueDbContext(DbContextOptions<FugueDbContext> options) : D
     public DbSet<AccessAudit> AccessAudits => Set<AccessAudit>();
 
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+
+    public DbSet<WebhookSubscription> WebhookSubscriptions => Set<WebhookSubscription>();
+
+    public DbSet<WebhookDelivery> WebhookDeliveries => Set<WebhookDelivery>();
+
+    public DbSet<DataProtectionKeyRecord> DataProtectionKeys => Set<DataProtectionKeyRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

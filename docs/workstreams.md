@@ -15,11 +15,11 @@ Glyph legend:
 - `⛔ BLOCKED` — waiting on something outside the thread; `Status:` names it
 - `✅ DONE` — finished and verified
 
-### WS-06 — S4 transactional outbox and signed webhooks — ⏸ PARKED (2026-11-25)
+### WS-06 — S4 transactional outbox and signed webhooks — 🟢 ACTIVE (2026-11-26)
 ID: W-006
-Status: not started; needs S3. The outbox writes through `IUnitOfWork` (ADR-006).
-Resume: plan after S3 lands.
-Refs: `docs/plans/roadmap.md`, ADR-005, ADR-006
+Status: building; plan in `docs/plans/s4-outbox-webhooks.md`, decisions D-037 to D-040 (ADR-011). Schema and migration first, then capture, subscriptions, dispatcher.
+Resume: `git log --grep "Refs: W-006"`; the plan's "Commits" list is the order.
+Refs: `docs/plans/s4-outbox-webhooks.md`, `docs/plans/roadmap.md`, ADR-005, ADR-006, ADR-010, ADR-011
 
 ### WS-07 — S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry — ⏸ PARKED (2026-11-25)
 ID: W-007

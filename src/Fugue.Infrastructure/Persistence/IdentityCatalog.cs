@@ -20,6 +20,7 @@ public static class IdentityCatalog
     public static readonly ModuleId CustomersModule = ModuleId.From(Seed(1, 2));
     public static readonly ModuleId IdentityModule = ModuleId.From(Seed(1, 3));
     public static readonly ModuleId AuditModule = ModuleId.From(Seed(1, 4));
+    public static readonly ModuleId WebhooksModule = ModuleId.From(Seed(1, 5));
 
     public static readonly RoleId AdminRole = RoleId.From(Seed(5, 1));
     public static readonly RoleId StaffRole = RoleId.From(Seed(5, 2));
@@ -34,6 +35,7 @@ public static class IdentityCatalog
         ("GROUPS", "Groups", IdentityModule),
         ("OVERRIDES", "PermissionDefinition overrides", IdentityModule),
         ("AUDIT", "Audit log", AuditModule),
+        ("WEBHOOKS", "Webhooks", WebhooksModule),
     ];
 
     private static readonly string[] ActionCodes = ["VIEW", "INSERT", "EDIT", "DELETE", "SUSPEND", "ALL", "MANAGE", "READ"];
@@ -67,7 +69,8 @@ public static class IdentityCatalog
             Module(SystemModule, ModuleCodes.System, "System"),
             Module(CustomersModule, ModuleCodes.Customers, "Customers"),
             Module(IdentityModule, ModuleCodes.Identity, "Identity"),
-            Module(AuditModule, ModuleCodes.Audit, "Audit"));
+            Module(AuditModule, ModuleCodes.Audit, "Audit"),
+            Module(WebhooksModule, ModuleCodes.Webhooks, "Webhooks"));
 
         mb.Entity<Resource>().HasData(ResourceDefs.Select(r => new Resource
         {

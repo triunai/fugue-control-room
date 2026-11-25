@@ -3,3 +3,5 @@
 GrantAudit
 AccessAudit
 AuditLog
+OutboxMessage
+WebhookDelivery

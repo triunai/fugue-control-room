@@ -19,12 +19,13 @@ public static class Permissions
     public const string ModulesView = "MODULES_VIEW";
     public const string ModulesManage = "MODULES_MANAGE";
     public const string AuditRead = "AUDIT_READ";
+    public const string WebhooksManage = "WEBHOOKS_MANAGE";
 
     public static readonly IReadOnlyList<string> All =
     [
         CustomersView, CustomersInsert, CustomersEdit, CustomersDelete, CustomersSuspend, CustomersAll,
         GroupsView, GroupsManage, OverridesView, OverridesManage, ModulesView, ModulesManage,
-        AuditRead,
+        AuditRead, WebhooksManage,
     ];
 }
 
@@ -35,6 +36,7 @@ public static class ModuleCodes
     public const string Customers = "CUSTOMERS";
     public const string Identity = "IDENTITY";
     public const string Audit = "AUDIT";
+    public const string Webhooks = "WEBHOOKS";
 }
 
 /// <summary>Role codes of the seeded roles.</summary>

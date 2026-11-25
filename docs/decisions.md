@@ -47,8 +47,52 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-034 | W-013: customer email is unique per owner (owner call) | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
 | D-035 | W-013: login limiter keyed on (IP, email) plus a loose per-email ceiling (owner call) | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
 | D-036 | W-013: S3 review hardening (override If-Match, group self-target, fail-closed module config, tenant is_active, audit key hygiene) | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
+| D-037 | W-006: transactional outbox (same transaction, domain events, frozen payload, thin masked payload) | [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md) |
+| D-038 | W-006: subscription secrets in Data Protection (key ring in the database), SSRF guard at subscribe and connect time | [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md) |
+| D-039 | W-006: two-stage dispatcher (relay, leased delivery), SKIP LOCKED, outbox is the retry authority, signature v1, at-least-once | [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md) |
+| D-040 | W-006: `IEventPublisher` is the broker seam (Kafka adapter documented, not built), Development-only sink | [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md) |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-040 — W-006 the publisher seam, a possible Kafka adapter, and a Development-only sink — 2026-11-26
+WS: WS-06
+Context: the owner asked "REST or Kafka?". There is no broker in scope; the question is where a broker would plug in.
+Decision: `IEventPublisher` (Application) is the seam: the relay hands each claimed outbox message to every registered publisher. The first and only adapter is the webhook fan-out. A Kafka adapter would be one more `IEventPublisher` producing to a topic with the aggregate id as the message key (Kafka orders per key), with the outbox row id as an idempotency header; it is documented in ADR-011 and not built. A Development-only `POST /api/v1/dev/webhook-sink` (anonymous, authenticated by the signature, 404 outside Development) verifies, dedupes by event id and lists the last N, so one API process demonstrates the whole loop.
+Why: the outbox already gives atomic capture and at-least-once relay, which is the hard part of "REST or Kafka"; the transport is an adapter. Dual-writing (commit, then publish) loses events when the process dies in between, which is why the outbox exists at all.
+Consequences: a broker later costs one adapter and a topic design, not a redesign; ordering is per aggregate only if the adapter keys by aggregate id (webhooks give no ordering guarantee under retries, and receivers must tolerate that).
+Who: owner (REST vs Kafka framing), AI (seam shape)
+Status: accepted
+Promote: yes (ADR-011)
+
+## D-039 — W-006 the dispatcher: two stages, leases, SKIP LOCKED, outbox as the retry authority — 2026-11-26
+WS: WS-06
+Context: several API instances may run; a receiver can be slow, down or hostile; a crash can happen anywhere.
+Decision: stage 1 (relay) claims pending messages with `SELECT ... FOR UPDATE SKIP LOCKED` in one transaction, publishes through `IEventPublisher` and marks them dispatched; the webhook adapter inserts one delivery per matching active subscription with `ON CONFLICT DO NOTHING`; a savepoint per message isolates a poison message. Stage 2 (delivery) claims due deliveries with `UPDATE ... WHERE id IN (SELECT ... FOR UPDATE SKIP LOCKED) RETURNING`, setting `in_flight` and a lease and counting the attempt at claim time, sends over HTTP with NO transaction open, and writes the result fenced by the attempt number; an expired lease is reclaimed, so a crash costs one counted attempt. Backoff is exponential with jitter; `MaxAttempts` then dead letter; `POST /webhooks/deliveries/{id}/redeliver` revives a dead one with a fresh budget. The standard resilience handler provides timeouts, a circuit breaker per authority and a rate limiter; its own retry is one attempt and disabled for POST, because the outbox is the single retry authority (durable, counted, minutes of backoff, visible in `webhook_deliveries`). Signature `X-Fugue-Signature: v1=hex(HMAC-SHA256(secret, timestamp + "." + rawBody))` with `X-Fugue-Event-Id`, `-Event-Type`, `-Timestamp`, `X-Correlation-Id`, `X-Saga-Id`, `traceparent`; delivery is at-least-once, so receivers verify the signature, reject timestamps older than 5 minutes and dedupe on the event id.
+Why: holding row locks across HTTP calls would pin connections and block redelivery; leases make the claim short and crash safe; one retry authority keeps attempts honest.
+Consequences: a receiver that is down for the whole backoff schedule dead-letters (visible, redeliverable); two instances never deliver the same row concurrently, but a lease expiry during a very slow send can double-send, which dedupe on the event id absorbs; no per-aggregate ordering.
+Who: AI, owner brief
+Status: accepted
+Promote: yes (ADR-011)
+
+## D-038 — W-006 subscription secrets and the SSRF guard — 2026-11-26
+WS: WS-06
+Context: signing needs the raw secret, so it cannot be hashed; a subscription URL is attacker-influenced input that the server will call.
+Decision: the secret (`whsec_` plus 32 random bytes) is encrypted with ASP.NET Core Data Protection (purpose `Fugue.Webhooks.Secret.v1`), the key ring is stored in the database (`data_protection_keys`, `[NoAudit]`) so every instance and test host decrypts the same data, and the secret is returned once on create and on rotate, never on read; rotation replaces it immediately. The SSRF guard accepts https only (no userinfo), resolves the host and rejects loopback, private, link-local (including the cloud metadata address), carrier-grade NAT, multicast and reserved ranges, IPv4-mapped IPv6 included. It runs at subscribe time AND at connect time (the `ConnectCallback` resolves, checks and dials the verified address, which defeats DNS rebinding); redirects are never followed. `Webhooks:AllowInsecureLocal=true` permits http, loopback and private ranges for local demos, never link-local, and the host refuses to start with it outside Development.
+Why: ciphertext in the table is useless without the key ring; a subscribe-time check alone is bypassed by a name that resolves to a public address first and a private one later.
+Consequences: the key ring and the ciphertext sit in the same database, so a database dump exposes both; production should protect the key ring at rest (certificate or a key service) through Data Protection's `ProtectKeysWith*`, which is a deployment step recorded in the runbook, not built. Losing the key ring makes every stored secret unreadable (rotate to recover).
+Who: AI, owner brief
+Status: accepted
+Promote: yes (ADR-011)
+
+## D-037 — W-006 the transactional outbox — 2026-11-26
+WS: WS-06
+Context: S4 needs events that exist if and only if the business change committed, with no broker in scope.
+Decision: `outbox_messages` (UUIDv7 id, versioned event type such as `customer.created.v1`, aggregate type and id, jsonb payload, correlation id, saga id defaulting to the aggregate id, traceparent, status pending/dispatched/dead, attempts, next attempt, last error, dispatched at) is written in the SAME transaction as the change. Customer raises domain events (created, updated, suspended, reactivated, deleted); an EF SaveChanges interceptor turns them into outbox rows in the same SaveChanges, and the Dapper insert path calls `IOutbox` inside the unit of work (the audit pattern). The payload is thin and masked with the audit redaction rules (email and phone partially masked, never secrets); receivers fetch the resource by id. The row is not `IAuditable` (it is on the append-only allowlist with `occurred_at`); status columns may change, a trigger rejects any change to the event columns, DELETE stays legal for retention. The entity is `[NoAudit]`.
+Why: a commit followed by a publish loses the event when the process dies between the two; the outbox turns that into one atomic write plus a retryable relay. A frozen payload means what was committed is what is delivered.
+Consequences: every event type needs a versioned name constant (fitness function); a new Dapper write that must publish calls `IOutbox`; the outbox grows until a retention job exists (deferred).
+Who: AI, owner brief
+Status: accepted
+Promote: yes (ADR-011)
 
 ## D-036 — W-013 S3 review hardening of the admin surface — 2026-11-26
 WS: WS-13
