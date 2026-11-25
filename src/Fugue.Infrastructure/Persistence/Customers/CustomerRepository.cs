@@ -17,7 +17,7 @@ namespace Fugue.Infrastructure.Persistence.Customers;
 /// ADR-006: Dapper inserts, EF reads (AsNoTracking projections) and EF tracked updates guarded by the xmin
 /// concurrency token. Unique-violation (SQLSTATE 23505) on the per-owner email indexes becomes <c>customer.email_taken</c>.
 /// </summary>
-internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAuditStamp stamp, IAuditTrail audit) : ICustomerRepository
+internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAuditStamp stamp, IAuditTrail audit, IOutbox outbox) : ICustomerRepository
 {
     private const string UniqueViolation = "23505";
     private const string ForeignKeyViolation = "23503";
@@ -54,6 +54,7 @@ internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAu
                 },
                 ct);
             await audit.RecordAsync(AuditSnapshot.Created(customer, customer.Id.ToString(), "customers.create"), ct);
+            await outbox.EnqueueAsync(customer, ct); // same transaction: the event exists if and only if the insert commits (ADR-011)
             if (own is not null)
             {
                 await own.CommitAsync(ct);

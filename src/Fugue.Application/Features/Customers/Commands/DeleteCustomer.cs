@@ -24,8 +24,12 @@ public sealed class DeleteCustomerHandler(ICustomerRepository customers, ICurren
         }
 
         Domain.Customers.Customer? customer = await customers.FindForUpdateAsync(command.Id, OwnerScope.From(currentUser), cancellationToken);
-        return customer is null
-            ? Result.Fail(CustomerErrors.NotFound(command.Id))
-            : await customers.DeleteAsync(customer, expected, cancellationToken);
+        if (customer is null)
+        {
+            return Result.Fail(CustomerErrors.NotFound(command.Id));
+        }
+
+        customer.MarkDeleted();
+        return await customers.DeleteAsync(customer, expected, cancellationToken);
     }
 }

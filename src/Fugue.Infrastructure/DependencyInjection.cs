@@ -3,6 +3,7 @@ using Fugue.Application.Features.Customers;
 using Fugue.Domain.Abstractions;
 using Fugue.Infrastructure.Audit;
 using Fugue.Infrastructure.Identity;
+using Fugue.Infrastructure.Outbox;
 using Fugue.Infrastructure.Persistence;
 using Fugue.Infrastructure.Persistence.Customers;
 using Fugue.Infrastructure.Persistence.Ids;
@@ -35,16 +36,23 @@ public static class DependencyInjection
         services.AddScoped<IActorDirectory, ActorDirectory>();
         services.TryAddScoped<IAuditRequestInfo, NullAuditRequestInfo>();
 
+        // Outbox (ADR-011): events raised by aggregates become outbox rows in the same SaveChanges (EF path) or through IOutbox (Dapper path).
+        services.AddScoped<OutboxPayloadFactory>();
+        services.AddScoped<OutboxRowFactory>();
+        services.AddScoped<OutboxSaveChangesInterceptor>();
+        services.AddScoped<IOutbox, OutboxWriter>();
+
         services.AddDbContext<FugueDbContext>((sp, options) =>
         {
             string connection = configuration.GetConnectionString("Postgres")
                 ?? throw new InvalidOperationException(
                     "ConnectionStrings:Postgres is not configured. Set ConnectionStrings__Postgres (see .env.example) or use dotnet user-secrets.");
             PersistenceOptions.Configure(options, connection);
-            // Stamp first, then audit: the audit diff skips the stamp columns the first interceptor just wrote.
+            // Stamp first, then audit, then outbox: the audit diff skips the stamp columns the first interceptor just wrote.
             options.AddInterceptors(
                 sp.GetRequiredService<AuditableSaveChangesInterceptor>(),
-                sp.GetRequiredService<AuditLogSaveChangesInterceptor>());
+                sp.GetRequiredService<AuditLogSaveChangesInterceptor>(),
+                sp.GetRequiredService<OutboxSaveChangesInterceptor>());
         });
 
         services.AddScoped<SqlExecutor>();

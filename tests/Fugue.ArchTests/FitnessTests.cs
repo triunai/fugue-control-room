@@ -95,6 +95,34 @@ public sealed class FitnessTests
     }
 
     [Fact]
+    public void Fitness_Application_does_not_reference_HttpClient_or_Data_Protection()
+    {
+        // Transport and key management belong to Infrastructure (ADR-011); Application sees ports (IEventPublisher, ISecretProtector, IWebhookUrlGuard).
+        TestResult result = Types.InAssembly(Application)
+            .ShouldNot().HaveDependencyOnAny("System.Net.Http", "Microsoft.AspNetCore.DataProtection", "Microsoft.Extensions.Http", "Polly")
+            .GetResult();
+
+        Assert.True(result.IsSuccessful, string.Join(", ", result.FailingTypeNames ?? []));
+    }
+
+    [Fact]
+    public void Fitness_Events_every_domain_event_has_a_versioned_unique_name_constant()
+    {
+        // The event name is a public contract (ADR-011): <aggregate>.<verb>.v<N>, declared once as `public const string Type`.
+        var form = new System.Text.RegularExpressions.Regex(@"^[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)+\.v[0-9]+$");
+        Type[] events = Domain.GetTypes()
+            .Where(t => t is { IsClass: true, IsAbstract: false } && typeof(Fugue.Domain.Events.IDomainEvent).IsAssignableFrom(t))
+            .ToArray();
+        Assert.NotEmpty(events);
+
+        string?[] names = events.Select(t => t.GetField("Type", BindingFlags.Public | BindingFlags.Static) is { IsLiteral: true } f && f.FieldType == typeof(string) ? (string?)f.GetRawConstantValue() : null).ToArray();
+        IEnumerable<string> badForm = events.Zip(names).Where(x => x.Second is null || !form.IsMatch(x.Second)).Select(x => x.First.Name);
+        IEnumerable<string> duplicates = events.Zip(names).Where(x => x.Second is not null).GroupBy(x => x.Second).Where(g => g.Count() > 1).SelectMany(g => g.Select(x => x.First.Name));
+
+        AssertRatchet("domain-events", badForm.Concat(duplicates));
+    }
+
+    [Fact]
     public void Fitness_Application_every_command_has_exactly_one_validator()
     {
         Type[] commands = Application.GetTypes()

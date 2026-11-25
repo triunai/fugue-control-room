@@ -70,6 +70,24 @@ internal sealed class AuditRedactor(IOptions<AuditOptions> options)
         return Assemble(parts, truncated, Math.Max(options.Value.MaxChangesBytes, MarkerReserveBytes * 2));
     }
 
+    /// <summary>
+    /// The same masking rules for a value that is not an audit change (an outbox payload field): false when the property is <c>[NoAudit]</c> and
+    /// must be left out, otherwise <paramref name="redacted"/> is masked, partially masked or capped like an audit value.
+    /// </summary>
+    public bool TryRedact(Type entity, string name, object? value, out object? redacted)
+    {
+        PropertyInfo? property = entity.GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+        redacted = null;
+        if (property is not null && Attribute.IsDefined(property, typeof(NoAuditAttribute)))
+        {
+            return false;
+        }
+
+        bool truncated = false;
+        redacted = Redact(name, property, value, ref truncated);
+        return true;
+    }
+
     private object? Redact(string name, PropertyInfo? property, object? value, ref bool truncated)
     {
         if (value is null)
