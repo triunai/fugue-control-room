@@ -52,6 +52,19 @@ public sealed class ArchitectureTests
     }
 
     [Fact]
+    public void Domain_and_Application_do_not_depend_on_data_access_libraries()
+    {
+        foreach (Assembly assembly in new[] { Domain, Application })
+        {
+            TestResult result = Types.InAssembly(assembly)
+                .ShouldNot().HaveDependencyOnAny("Microsoft.EntityFrameworkCore", "Dapper", "Npgsql")
+                .GetResult();
+
+            Assert.True(result.IsSuccessful, Describe(result));
+        }
+    }
+
+    [Fact]
     public void Controllers_inherit_ApiControllerBase()
     {
         Type[] controllers = Controllers().ToArray();

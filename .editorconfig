@@ -56,3 +56,8 @@ dotnet_diagnostic.CS8604.severity = suggestion
 dotnet_diagnostic.CA1716.severity = none
 # CA1000: static factories on Result<T> (Success/Failure) are the idiomatic result-type API.
 dotnet_diagnostic.CA1000.severity = none
+
+# EF Core scaffolded migrations: generated code, not hand-maintained.
+[**/Persistence/Migrations/*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none

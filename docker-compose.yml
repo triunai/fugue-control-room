@@ -1,0 +1,22 @@
+# Local Postgres for development. Credentials come from the untracked .env (copy .env.example).
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: fugue-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fugue
+      POSTGRES_USER: fugue
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set it in .env} # secrets-scan:ignore (reference, not a value)
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432" # set POSTGRES_PORT in .env if 5432 is taken by a host Postgres
+    volumes:
+      - fugue-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fugue -d fugue"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  fugue-pgdata:

@@ -2,10 +2,12 @@ using Fugue.Api.Auth;
 using Fugue.Api.Correlation;
 using Fugue.Api.Http;
 using Fugue.Api.Logging;
+using Fugue.Api.Seeding;
 using Fugue.Application;
 using Fugue.Application.Abstractions;
 using Fugue.Application.Common.Behaviors;
 using Fugue.Domain.Abstractions;
+using Fugue.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Serilog;
@@ -19,6 +21,7 @@ try
 
     builder.Host.UseFugueSerilog();
 
+    builder.Services.AddRouting(options => options.LowercaseUrls = true);
     builder.Services.AddControllers()
         .ConfigureApiBehaviorOptions(options =>
             // Framework-generated 400s (model binding, invalid model state) go through the same ProblemResult
@@ -41,6 +44,13 @@ try
     builder.Services.AddScoped<CorrelationContext>();
     builder.Services.AddScoped<ICorrelationContext>(sp => sp.GetRequiredService<CorrelationContext>());
     builder.Services.AddApplication();
+    builder.Services.AddInfrastructure(builder.Configuration);
+
+    // Development-only seeding: opt in with `dotnet run -- --seed` (or Seed:Enabled=true). Never in tests or other environments.
+    if (builder.Environment.IsDevelopment() && (args.Contains("--seed") || builder.Configuration.GetValue<bool>("Seed:Enabled")))
+    {
+        builder.Services.AddHostedService<DevelopmentSeedHostedService>();
+    }
     builder.Services.AddMediator(options =>
     {
         options.ServiceLifetime = ServiceLifetime.Scoped;

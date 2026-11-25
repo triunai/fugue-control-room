@@ -1,0 +1,171 @@
+using System.Linq.Expressions;
+using FluentResults;
+using Fugue.Application.Abstractions;
+using Fugue.Application.Common;
+using Fugue.Application.Features.Customers;
+using Fugue.Domain.Abstractions;
+using Fugue.Domain.Customers;
+using Fugue.Domain.Ids;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+
+namespace Fugue.Infrastructure.Persistence.Customers;
+
+/// <summary>
+/// ADR-006: Dapper inserts, EF reads (AsNoTracking projections) and EF tracked updates guarded by the xmin
+/// concurrency token. Unique-violation (SQLSTATE 23505) on the email index becomes <c>customer.email_taken</c>.
+/// </summary>
+internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAuditStamp stamp) : ICustomerRepository
+{
+    private const string UniqueViolation = "23505";
+
+    private const string InsertSql = """
+        INSERT INTO customers (id, name, email, phone, status, created_at, created_by, updated_at, updated_by)
+        VALUES (@Id, @Name, @Email, @Phone, @Status, @Now, @Actor, @Now, @Actor)
+        RETURNING xmin::text::bigint
+        """;
+
+    public async Task<Result<CustomerDto>> AddAsync(Customer customer, CancellationToken ct)
+    {
+        AuditStampValue now = stamp.Capture();
+        customer.CreatedAt = customer.UpdatedAt = now.Now;
+        customer.CreatedBy = customer.UpdatedBy = now.Actor;
+
+        try
+        {
+            long version = await sql.ExecuteScalarAsync<long>(
+                InsertSql,
+                new
+                {
+                    customer.Id,
+                    customer.Name,
+                    customer.Email,
+                    customer.Phone,
+                    Status = customer.Status.ToString(),
+                    now.Now,
+                    now.Actor,
+                },
+                ct);
+            return Result.Ok(ToDto(customer, version));
+        }
+        catch (PostgresException ex) when (ex.SqlState == UniqueViolation)
+        {
+            return Result.Fail<CustomerDto>(CustomerErrors.EmailTaken());
+        }
+    }
+
+    public async Task<CustomerDto?> GetAsync(CustomerId id, CancellationToken ct) =>
+        (await db.Customers.AsNoTracking().Where(c => c.Id == id).Select(Projection).FirstOrDefaultAsync(ct))?.ToDto();
+
+    public async Task<IReadOnlyList<CustomerDto>> ListAsync(
+        KeysetCursor? after, CustomerStatus? status, string? search, int take, CancellationToken ct)
+    {
+        IQueryable<Customer> query = after is { } cursor
+            // Row-value comparison is not expressible in LINQ; the rest of the query composes on top of this.
+            ? db.Customers.FromSql($"""
+                SELECT id, name, email, phone, status, created_at, created_by, updated_at, updated_by, xmin
+                FROM customers WHERE (created_at, id) > ({cursor.CreatedAt}, {cursor.Id})
+                """)
+            : db.Customers;
+
+        query = query.AsNoTracking();
+        if (status is { } s)
+        {
+            query = query.Where(c => c.Status == s);
+        }
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            string pattern = $"%{EscapeLike(search)}%";
+            query = query.Where(c => EF.Functions.ILike(c.Name, pattern, "\\") || EF.Functions.ILike(c.Email, pattern, "\\"));
+        }
+
+        List<Row> rows = await query.OrderBy(c => c.CreatedAt).ThenBy(c => c.Id).Take(take).Select(Projection).ToListAsync(ct);
+        return rows.Select(r => r.ToDto()).ToList();
+    }
+
+    public Task<Customer?> FindForUpdateAsync(CustomerId id, CancellationToken ct) =>
+        db.Customers.FirstOrDefaultAsync(c => c.Id == id, ct);
+
+    public async Task<Result<CustomerDto>> SaveAsync(Customer customer, long? expectedVersion, CancellationToken ct)
+    {
+        if (!MatchesExpected(customer, expectedVersion))
+        {
+            return Result.Fail<CustomerDto>(CustomerErrors.VersionMismatch());
+        }
+
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Result.Fail<CustomerDto>(CustomerErrors.VersionMismatch());
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: UniqueViolation })
+        {
+            return Result.Fail<CustomerDto>(CustomerErrors.EmailTaken());
+        }
+
+        return Result.Ok(ToDto(customer, customer.RowVersion));
+    }
+
+    public async Task<Result> DeleteAsync(Customer customer, long expectedVersion, CancellationToken ct)
+    {
+        if (!MatchesExpected(customer, expectedVersion))
+        {
+            return Result.Fail(CustomerErrors.VersionMismatch());
+        }
+
+        db.Customers.Remove(customer);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Result.Fail(CustomerErrors.VersionMismatch());
+        }
+
+        return Result.Ok();
+    }
+
+    /// <summary>
+    /// Compares the loaded version with If-Match, and pins it as the EF original value so a write that raced in
+    /// between the load and the save also fails (the UPDATE/DELETE carries <c>WHERE xmin = @expected</c>).
+    /// </summary>
+    private bool MatchesExpected(Customer customer, long? expectedVersion)
+    {
+        if (expectedVersion is not { } expected)
+        {
+            return true;
+        }
+
+        if (expected != customer.RowVersion)
+        {
+            return false;
+        }
+
+        db.Entry(customer).Property(c => c.RowVersion).OriginalValue = (uint)expected;
+        return true;
+    }
+
+    // xid has no cast to bigint in SQL, so the projection keeps the raw uint and widens it in memory.
+    private static readonly Expression<Func<Customer, Row>> Projection = c => new Row(
+        c.Id, c.Name, c.Email, c.Phone, c.Status, c.CreatedAt, c.CreatedBy, c.UpdatedAt, c.UpdatedBy, c.RowVersion);
+
+    private sealed record Row(
+        CustomerId Id, string Name, string Email, string? Phone, CustomerStatus Status,
+        DateTimeOffset CreatedAt, string CreatedBy, DateTimeOffset UpdatedAt, string UpdatedBy, uint RowVersion)
+    {
+        public CustomerDto ToDto() => new(Id, Name, Email, Phone, Status, CreatedAt, CreatedBy, UpdatedAt, UpdatedBy, RowVersion);
+    }
+
+    private static CustomerDto ToDto(Customer c, long version) => new(
+        c.Id, c.Name, c.Email, c.Phone, c.Status, c.CreatedAt, c.CreatedBy, c.UpdatedAt, c.UpdatedBy, version);
+
+    private static string EscapeLike(string value) =>
+        value.Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("%", "\\%", StringComparison.Ordinal)
+            .Replace("_", "\\_", StringComparison.Ordinal);
+}
