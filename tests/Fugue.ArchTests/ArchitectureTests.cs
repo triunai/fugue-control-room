@@ -9,6 +9,7 @@ namespace Fugue.ArchTests;
 public sealed class ArchitectureTests
 {
     private static readonly Assembly Domain = typeof(ICurrentUser).Assembly;
+    private static readonly Assembly Application = typeof(Fugue.Application.AssemblyMarker).Assembly;
     private static readonly Assembly Api = typeof(ApiControllerBase).Assembly;
 
     private static IEnumerable<Type> Controllers() =>
@@ -18,9 +19,31 @@ public sealed class ArchitectureTests
             .Where(t => t != typeof(ApiControllerBase) && !t.IsNested && !t.Name.Contains('<', StringComparison.Ordinal));
 
     [Fact]
-    public void Domain_does_not_depend_on_api_infrastructure_or_aspnet()
+    public void Domain_does_not_depend_on_other_layers_or_aspnet()
     {
         TestResult result = Types.InAssembly(Domain)
+            .ShouldNot().HaveDependencyOnAny("Fugue.Application", "Fugue.Api", "Fugue.Infrastructure", "Microsoft.AspNetCore")
+            .GetResult();
+
+        Assert.True(result.IsSuccessful, Describe(result));
+    }
+
+    [Fact]
+    public void Domain_references_only_FluentResults_among_third_party_assemblies()
+    {
+        string[] allowedPrefixes = ["System", "Microsoft", "netstandard", "FluentResults", "Fugue.Domain"];
+        string[] offenders = Domain.GetReferencedAssemblies()
+            .Select(a => a.Name ?? string.Empty)
+            .Where(n => !allowedPrefixes.Any(p => n.StartsWith(p, StringComparison.Ordinal)))
+            .ToArray();
+
+        Assert.True(offenders.Length == 0, "Unexpected Domain references: " + string.Join(", ", offenders));
+    }
+
+    [Fact]
+    public void Application_does_not_depend_on_aspnet_api_or_infrastructure()
+    {
+        TestResult result = Types.InAssembly(Application)
             .ShouldNot().HaveDependencyOnAny("Fugue.Api", "Fugue.Infrastructure", "Microsoft.AspNetCore")
             .GetResult();
 

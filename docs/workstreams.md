@@ -16,3 +16,8 @@ Glyph legend:
 Status: spine files, router and gates installed.
 Resume: none. Start the next thread with "new task: …".
 Refs: `hygiene.md`, `docs/conventions/doc-spine.md`, D-001
+
+### WS-02 — S0 retarget .NET 8, FluentResults, Application layer, neutral docs — ✅ DONE (2026-11-25)
+Status: net8 + `Fugue.sln`, `Fugue.Application`, FluentResults/`FugueError`, neutral docs, ADR-003/004, roadmap, runbook 01, AI journal. Expected red: `MapStatus` tests (owner's to write).
+Resume: none. Next thread is WS-03.
+Refs: `docs/plans/roadmap.md`, ADR-003, ADR-004, D-002

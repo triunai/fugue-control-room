@@ -1,4 +1,3 @@
-using Fugue.Domain.Results;
 using Mediator;
 
 namespace Fugue.Tests.Api;

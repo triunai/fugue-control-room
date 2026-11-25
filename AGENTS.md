@@ -5,7 +5,7 @@ Instructions for coding agents working in this repo. Pairs with **`CLAUDE.md`** 
 ## Setup
 
 - `npm install` installs lefthook and commitlint (the `prepare` script runs `lefthook install`). Do not set `core.hooksPath`.
-- `dotnet restore && dotnet build --no-restore && dotnet test --no-build` once a solution exists (Phase 1).
+- Prefix .NET commands with `export DOTNET_ROOT=$HOME/.dotnet PATH=$HOME/.dotnet:$PATH DOTNET_CLI_TELEMETRY_OPTOUT=1;` then `dotnet restore && dotnet build --no-restore && dotnet test --no-build` (solution: `Fugue.sln`, .NET 8). Full walkthrough: `docs/runbooks/01-local-setup.md`.
 - Copy `.env.example` to `.env` (untracked) or use `dotnet user-secrets`. Never commit real values.
 
 ## The guardrail stack
@@ -41,7 +41,7 @@ A fact lives in one file; others link to it.
 
 ## Review gate matrix
 
-Critical seams (always get an independent review before merge): **migrations**, **auth** (JWT validation, policies, password hashing), **tenancy** (tenant resolution, query filters, anything touching `tenant_id`), `ApiControllerBase`, payments and idempotency.
+Critical seams (always get an independent review before merge): **migrations**, **auth** (JWT validation, policies, password hashing), **tenancy** (when enabled: tenant resolution, query filters, anything touching `tenant_id`), `ApiControllerBase`, idempotency and webhook signing.
 
 - Plan gate: before coding anything on a critical seam, write the plan in `docs/plans/`.
 - Final-diff gate: a different agent or model family reviews the diff of a critical seam; Critical, High and Medium findings go into a fix round and get re-reviewed.
@@ -54,14 +54,16 @@ A review catch you do not pin is a bug you rent. No High/Medium finding closes w
 
 ## Hard rules (full detail in CLAUDE.md)
 
-- Tenant comes from the verified JWT claim after authentication. Never from a header, query or body.
-- `tenant_id` on every tenant-owned row; EF global query filter; cross-tenant-leak test per module.
+- Single-tenant by default; tenancy is a toggle (ADR-003). If enabled, the tenant comes from the verified JWT claim after authentication, never from a header, query or body.
 - Fallback authorization policy is "authenticated".
 - Controllers inherit `ApiControllerBase`; actions are one-liners that dispatch; logic lives in handlers.
-- Money is `bigint` minor units + currency code. Keyset pagination. Idempotency keys on `POST /orders` and payments.
-- Passwords via `PasswordHasher<T>` / Argon2id only.
+- Layering: Domain (FluentResults only) <- Application (no ASP.NET Core) <- Infrastructure / Api. Arch tests enforce it.
+- Handlers return FluentResults with `FugueError` (ADR-004). Slice shape is in `src/Fugue.Application/Features/README.md`.
+- `ApiControllerBase.MapStatus` is the owner's to implement. Never fill it in.
+- Keyset pagination. Passwords via `PasswordHasher<T>` / Argon2id only.
 - Any migration updates `docs/migrations/migration-catalog.md` in the same commit.
 - No secrets in the repo; no commit or push unless the owner asks.
+- AI decisions are logged in `docs/ai-journal.md`.
 
 ## Session wrap
 

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using FluentResults;
 using Fugue.Api.Http;
 using Fugue.Domain.Abstractions;
 using Fugue.Domain.Results;
@@ -13,7 +14,7 @@ namespace Fugue.Api.Controllers;
 
 /// <summary>
 /// Base class for every controller. It owns the HTTP plumbing so actions stay one-line dispatches:
-/// <c>Result&lt;T&gt;</c> to response or RFC 9457 problem, ETag / <c>If-Match</c>, keyset pagination headers,
+/// <c>FluentResults.Result&lt;T&gt;</c> to response or RFC 9457 problem, ETag / <c>If-Match</c>, keyset pagination headers,
 /// the idempotency key, the current user, and mediator dispatch.
 /// </summary>
 /// <remarks>
@@ -78,13 +79,17 @@ public abstract class ApiControllerBase : ControllerBase
         }
     }
 
+    // Return types are ActionResult<T> (not IActionResult) so OpenAPI generators infer the 200/201 body
+    // schema from the action signature without a [ProducesResponseType] on every action. Failures are
+    // ProblemResult, which is an ActionResult, so the one-liner action style is unchanged.
+
     /// <summary>200 with the value as the body, plus an <c>ETag</c> when the value is <see cref="IVersioned"/>.</summary>
-    protected async Task<IActionResult> Send<T>(IRequest<Result<T>> request, CancellationToken ct)
+    protected async Task<ActionResult<T>> Send<T>(IRequest<Result<T>> request, CancellationToken ct)
     {
         Result<T> result = await Sender.Send(request, ct);
-        if (result.IsFailure)
+        if (result.IsFailed)
         {
-            return Problem(result.Error);
+            return Problem(result.Errors[0]);
         }
 
         SetETag(result.Value);
@@ -92,16 +97,16 @@ public abstract class ApiControllerBase : ControllerBase
     }
 
     /// <summary>201 with a <c>Location</c> built from <paramref name="actionName"/> and an <c>ETag</c> when versioned.</summary>
-    protected async Task<IActionResult> SendCreated<T>(
+    protected async Task<ActionResult<T>> SendCreated<T>(
         IRequest<Result<T>> request,
         string actionName,
         Func<T, object> routeValues,
         CancellationToken ct)
     {
         Result<T> result = await Sender.Send(request, ct);
-        if (result.IsFailure)
+        if (result.IsFailed)
         {
-            return Problem(result.Error);
+            return Problem(result.Errors[0]);
         }
 
         SetETag(result.Value);
@@ -112,19 +117,21 @@ public abstract class ApiControllerBase : ControllerBase
     protected async Task<IActionResult> SendNoContent(IRequest<Result> request, CancellationToken ct)
     {
         Result result = await Sender.Send(request, ct);
-        return result.IsFailure ? Problem(result.Error) : NoContent();
+        return result.IsFailed ? Problem(result.Errors[0]) : NoContent();
     }
 
     /// <summary>
     /// 200 with the items array as the body. When another page exists, adds <c>X-Next-Cursor</c> and an
     /// RFC 8288 <c>Link: &lt;url&gt;; rel="next"</c> built from the current request URL.
     /// </summary>
-    protected async Task<IActionResult> SendPaged<T>(IRequest<Result<PagedResult<T>>> request, CancellationToken ct)
+    protected async Task<ActionResult<IReadOnlyList<T>>> SendPaged<T>(
+        IRequest<Result<PagedResult<T>>> request,
+        CancellationToken ct)
     {
         Result<PagedResult<T>> result = await Sender.Send(request, ct);
-        if (result.IsFailure)
+        if (result.IsFailed)
         {
-            return Problem(result.Error);
+            return Problem(result.Errors[0]);
         }
 
         PagedResult<T> page = result.Value;
@@ -137,17 +144,23 @@ public abstract class ApiControllerBase : ControllerBase
         return Ok(page.Items);
     }
 
-    /// <summary>Maps a failure to an RFC 9457 problem. Validation errors carry their per-field messages.</summary>
-    protected IActionResult Problem(Error error)
+    /// <summary>
+    /// Maps a failure to an RFC 9457 problem. A <see cref="FugueError"/> supplies its own type, code and
+    /// per-field messages; any other <see cref="IError"/> is treated as an unexpected failure and its
+    /// message is not exposed.
+    /// </summary>
+    protected ActionResult Problem(IError error)
     {
-        int status = MapStatus(error.Type);
-        string type = ErrorTypeBase + ToKebab(error.Code);
+        FugueError fugue = error as FugueError
+            ?? FugueErrors.Failure("unexpected", "An unexpected error occurred.");
+        int status = MapStatus(fugue.Type);
+        string type = ErrorTypeBase + ToKebab(fugue.Code);
 
         ProblemDetails problem;
-        if (error.Type == ErrorType.Validation)
+        if (fugue.Type == ErrorType.Validation)
         {
             var modelState = new ModelStateDictionary();
-            foreach ((string field, string[] messages) in error.Fields ?? new Dictionary<string, string[]>())
+            foreach ((string field, string[] messages) in fugue.Fields ?? new Dictionary<string, string[]>())
             {
                 foreach (string message in messages)
                 {
@@ -156,14 +169,14 @@ public abstract class ApiControllerBase : ControllerBase
             }
 
             problem = ProblemDetailsFactory.CreateValidationProblemDetails(
-                HttpContext, modelState, status, error.Message, type);
+                HttpContext, modelState, status, fugue.Message, type);
         }
         else
         {
-            problem = ProblemDetailsFactory.CreateProblemDetails(HttpContext, status, error.Message, type);
+            problem = ProblemDetailsFactory.CreateProblemDetails(HttpContext, status, fugue.Message, type);
         }
 
-        problem.Extensions["code"] = error.Code;
+        problem.Extensions["code"] = fugue.Code;
         problem.Extensions["traceId"] = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
         if (CurrentUser.TenantId is { } tenantId)
         {

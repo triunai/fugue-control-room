@@ -11,11 +11,11 @@ BLOCKED_PATHS='(^|/)\.env($|\.)|\.(pfx|p12|jks|pem|key|keystore)$|(^|/)id_(rsa|d
 PATH_OK='\.env\.example$|\.env\.template$|\.env\.sample$'
 # Matched case-insensitively (grep -i). Intervals need grep -E, so awk is not used to match.
 SECRET_PATTERNS='(password|passwd|pwd)[[:space:]]*[=:][[:space:]]*[^[:space:]"'"'"']{6,}|accountkey=|sharedaccesssignature=|-----begin [a-z ]*private key-----|(api[_-]?key|apikey|client[_-]?secret|access[_-]?token)[[:space:]]*[=:][[:space:]]*["'"'"'][^"'"'"']{12,}|akia[0-9a-z]{16}|gh[pousr]_[a-z0-9]{30,}|xox[baprs]-[a-z0-9-]{10,}'
-# .NET / Supabase / Stripe additions (2026-11-11). Matched case-insensitively.
+# .NET additions (2026-11-11). Matched case-insensitively.
 #   - connection-string Password= (appsettings, code, docs), with or without a leading quote
 #   - "SigningKey" / "SecretKey" / "ServiceRoleKey" JSON properties holding a value
-#   - Stripe live/test secret keys that look real (16+ chars after the prefix)
-#   - Supabase service-role / any JWT: three base64url segments, first starts eyJ
+#   - Payment-provider live/test secret keys that look real (16+ chars after the prefix)
+#   - Hosted-Postgres service-role / any JWT: three base64url segments, first starts eyJ
 SECRET_PATTERNS="$SECRET_PATTERNS"'|"?password"?[[:space:]]*[=:][[:space:]]*"?[^[:space:]";]{4,}|;password=[^;[:space:]"]{4,}|"(signingkey|secretkey|servicerolekey|service_role_key)"[[:space:]]*:[[:space:]]*"[^"]{8,}"|sk_(live|test)_[a-z0-9]{16,}|rk_(live|test)_[a-z0-9]{16,}|eyj[a-z0-9_-]{15,}\.eyj[a-z0-9_-]{15,}\.[a-z0-9_-]{10,}'
 # Visible placeholders are not secrets. A hit line containing any of these is dropped.
 PLACEHOLDER_OK='replace_me|changeme|your[_-]?(password|key|secret)|<[a-z_ -]+>|\$\{[a-z_]+\}|example|xxxxx'

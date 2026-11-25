@@ -4,6 +4,17 @@ Tracks notable changes across migrations, API contracts, and project documentati
 
 > **ADR links.** An entry that reflects a real architectural decision cites it as `(ADR-NNN)`; the ADR lives in `docs/adr/`.
 
+## 2026-11-25 — S0 — retarget .NET 8, FluentResults, Application layer, neutral docs
+
+### Changed
+- Target framework .NET 8 (`global.json` SDK 8.0.428); solution is now `Fugue.sln`. `CheckEolTargetFramework=false` is deliberate (ADR-004 context in `Directory.Build.props`).
+- Hand-rolled `Result`/`Result<T>`/`Error` replaced by FluentResults + `FugueError`/`FugueErrors`; `ErrorType` kept (ADR-004). `ApiControllerBase.Send*` now return `ActionResult<T>`.
+- Docs are domain-neutral. ADR-001 superseded by ADR-003 (single-tenant default, tenancy toggle).
+
+### Added
+- `Fugue.Application` project with `Features/` and `Common/Behaviors/`.
+- ADR-003, ADR-004, `docs/plans/roadmap.md`, `docs/runbooks/`, `docs/ai-journal.md`.
+
 ## 2026-11-11 — Phase 1a — solution skeleton + ApiControllerBase
 
 ### Added

@@ -1,11 +1,13 @@
 # ADR-001: Shared database with a `tenant_id` column
 
-- Status: Accepted
+- Status: Superseded by ADR-003
 - Date: 2026-11-11
 
 ## Context
 
-Fugue is a multi-tenant e-commerce API. A prior design resolved the tenant from a client-supplied header that nothing verified, so any caller could name any tenant. The data tier is Supabase-hosted Postgres reached through a connection pooler, which makes per-tenant databases and per-request `SET` session state awkward.
+An early design assumed Fugue was multi-tenant. A previous work-derived .NET template resolved the tenant from a client-supplied header that nothing verified, so any caller could name any tenant. The data tier was Postgres reached through a connection pooler, which makes per-tenant databases and per-request `SET` session state awkward.
+
+> Superseded by ADR-003: Fugue is single-tenant by default and tenancy is a configuration toggle. The mechanics below (JWT-derived tenant, EF query filter, leak tests) still describe how the toggle is implemented when switched on.
 
 ## Decision
 

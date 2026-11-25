@@ -6,6 +6,13 @@ Heading form: `## <YYYY-MM-DD> — <title>`. Entry key = `<date>#<n>`, where n i
 First non-blank body line must be `WS: WS-NN` (comma-separate several) or `WS: (pre-WS)`.
 Then: what was done · what was decided (cite D-NNN) · what is open (cite #NNN).
 
+## 2026-11-25 — S0: net8, FluentResults, Application layer, neutral docs
+WS: WS-02
+Retargeted to .NET 8 (`Fugue.sln`, SDK pinned 8.0.428), added `Fugue.Application`, replaced the hand-rolled Result with FluentResults + `FugueError`, made `Send*` return `ActionResult<T>`, neutralised the docs, wrote ADR-003/004, the roadmap, runbook 01 and the AI journal.
+Decided: D-002.
+Next: WS-03 (S1: validation, exception handler, Serilog, correlation and saga IDs).
+Superseded RESUME block (2026-11-11): spine just installed, nothing in flight.
+
 ## 2026-11-11 — Doc spine installed
 WS: WS-01
 Installed the router, the spine files, the git hooks and the spine scripts. The link checker runs clean.

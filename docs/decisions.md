@@ -6,6 +6,14 @@ Heading form: `## D-NNN — <title> — <YYYY-MM-DD>`. NNN is three digits. Only
 First non-blank body line must be `WS: WS-NN` (comma-separate several) or `WS: (pre-WS)` for decisions older than the rule. Never guess.
 Then: Context (one or two lines) · Decision · Why · Consequences · Supersedes (if any).
 
+## D-002 — Retarget .NET 8, adopt FluentResults, single-tenant default — 2026-11-25
+WS: WS-02
+Context: scaffold targeted .NET 10 with a hand-rolled Result type and multi-tenant e-commerce framing; an external review and the owner's interview context changed the goals.
+Decision: target .NET 8 (EOL check disabled on purpose, NuGet audit kept); FluentResults with our `ErrorType` kept (ADR-004); single-tenant by default with a `Tenancy:Enabled` toggle (ADR-003); add an Application layer; `MapStatus` stays the owner's.
+Why: CV/interview alignment, ecosystem familiarity, domain-neutral template; reasons in the ADRs and `docs/ai-journal.md`.
+Consequences: ADR-001 is superseded; Application must not reference ASP.NET Core (arch test).
+Supersedes: ADR-001 (not a D-entry).
+
 ## D-001 — Adopt the doc spine — 2026-11-11
 WS: WS-01
 Context: AI sessions lose context between runs; hand-written notes drift.

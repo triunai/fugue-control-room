@@ -1,3 +1,4 @@
+using FluentResults;
 using Fugue.Domain.Results;
 using Mediator;
 
@@ -17,7 +18,7 @@ public sealed record ListThings(int? Limit) : IRequest<Result<PagedResult<string
 
 public sealed record EchoHeaders(long? IfMatch, string? IdempotencyKey) : IRequest<Result<Echo>>;
 
-public sealed record FailWith(Error Error) : IRequest<Result<Thing>>;
+public sealed record FailWith(FugueError Error) : IRequest<Result<Thing>>;
 
 /// <summary>Fake handlers for the probe requests, keyed by request type.</summary>
 public static class ProbeHandlers
@@ -25,11 +26,11 @@ public static class ProbeHandlers
     public static IReadOnlyDictionary<Type, Func<object, object>> Table { get; } =
         new Dictionary<Type, Func<object, object>>
         {
-            [typeof(GetThing)] = r => (Result<Thing>)new Thing(((GetThing)r).Id, "widget", Version: 3),
-            [typeof(CreateThing)] = r => (Result<Thing>)new Thing(42, ((CreateThing)r).Name, Version: 1),
-            [typeof(DeleteThing)] = _ => Result.Success(),
-            [typeof(ListThings)] = _ => (Result<PagedResult<string>>)new PagedResult<string>(["a", "b"], "abc 1"),
-            [typeof(EchoHeaders)] = r => (Result<Echo>)new Echo(((EchoHeaders)r).IfMatch, ((EchoHeaders)r).IdempotencyKey),
-            [typeof(FailWith)] = r => (Result<Thing>)((FailWith)r).Error,
+            [typeof(GetThing)] = r => Result.Ok(new Thing(((GetThing)r).Id, "widget", Version: 3)),
+            [typeof(CreateThing)] = r => Result.Ok(new Thing(42, ((CreateThing)r).Name, Version: 1)),
+            [typeof(DeleteThing)] = _ => Result.Ok(),
+            [typeof(ListThings)] = _ => Result.Ok(new PagedResult<string>(["a", "b"], "abc 1")),
+            [typeof(EchoHeaders)] = r => Result.Ok(new Echo(((EchoHeaders)r).IfMatch, ((EchoHeaders)r).IdempotencyKey)),
+            [typeof(FailWith)] = r => Result.Fail<Thing>(((FailWith)r).Error),
         };
 }

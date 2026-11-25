@@ -2,11 +2,11 @@
 
 Rules: ONE current `▶ RESUME HERE` block, at most ONE `(previous)` block. When a new block is written, the older one moves into today's `docs/project-log.md` entry. No state lives anywhere else. Keep this file under about 150 lines.
 
-## ▶ RESUME HERE — 2026-11-11
+## ▶ RESUME HERE — 2026-11-25
 - Tree: `main` (path: repo root)
-- Doing: spine just installed. Nothing in flight.
-- Next action: add a thread for the first real task (say "new task: …").
-- Open threads: none. (When a thread opens, replace this with one line per thread: `- WS-NN — <title> — <STATUS> — resume: <one line>`. Keep it in step with `docs/workstreams.md`.)
+- Doing: S0 finished (net8, FluentResults, Application layer, neutral docs).
+- Next action: S1 per `docs/plans/roadmap.md`.
+- Open threads: none active. Known red tests: `MapStatus` theory + two error-shape HTTP tests, until the owner writes `ApiControllerBase.MapStatus`.
 
 ## Owed inbox
 One line per item that the next wrap must handle. Format: `- [ ] <what> — <who/why> — <since YYYY-MM-DD>`. Tick and remove when done.
