@@ -6,6 +6,8 @@ using Fugue.Application;
 using Fugue.Application.Abstractions;
 using Fugue.Application.Common.Behaviors;
 using Fugue.Domain.Abstractions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Serilog;
 
 // Bootstrap logger: covers startup failures before the configured logger exists.
@@ -17,7 +19,19 @@ try
 
     builder.Host.UseFugueSerilog();
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers()
+        .ConfigureApiBehaviorOptions(options =>
+            // Framework-generated 400s (model binding, invalid model state) go through the same ProblemResult
+            // and enrichment as handler failures: application/problem+json with code, traceId, correlationId.
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                var factory = context.HttpContext.RequestServices.GetRequiredService<ProblemDetailsFactory>();
+                ValidationProblemDetails problem = factory.CreateValidationProblemDetails(
+                    context.HttpContext, context.ModelState, StatusCodes.Status400BadRequest);
+                problem.Extensions["code"] = "validation.failed";
+                ProblemDetailsEnrichment.AddCorrelation(problem, context.HttpContext);
+                return new ProblemResult(problem);
+            });
     builder.Services.AddProblemDetails(options =>
         options.CustomizeProblemDetails = context =>
             ProblemDetailsEnrichment.AddCorrelation(context.ProblemDetails, context.HttpContext));
@@ -40,6 +54,7 @@ try
     app.UseMiddleware<CorrelationIdMiddleware>();
     app.UseFugueRequestLogging();
     app.UseExceptionHandler();
+    app.UseStatusCodePages(); // empty 404/405/415 etc. become problem+json via AddProblemDetails
     app.MapControllers();
 
     app.Run();

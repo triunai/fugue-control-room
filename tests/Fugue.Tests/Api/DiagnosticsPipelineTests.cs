@@ -32,4 +32,27 @@ public sealed class DiagnosticsPipelineTests(WebApplicationFactory<Program> fact
             ["Count must be between 0 and 100."],
             json.RootElement.GetProperty("errors").GetProperty("count").EnumerateArray().Select(e => e.GetString()!).ToArray());
     }
+
+    /// <summary>Pinned catch: the framework's own 400 (model binding) must be problem+json, not application/json.</summary>
+    [Fact]
+    public async Task Framework_model_binding_400_is_problem_json_with_code_and_ids()
+    {
+        HttpResponseMessage response = await _client.GetAsync("/api/v1/diagnostics/ping?count=abc");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+        using JsonDocument json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal("validation.failed", json.RootElement.GetProperty("code").GetString());
+        Assert.True(json.RootElement.TryGetProperty("traceId", out _));
+        Assert.True(json.RootElement.TryGetProperty("correlationId", out _));
+    }
+
+    [Fact]
+    public async Task Unknown_route_404_is_problem_json()
+    {
+        HttpResponseMessage response = await _client.GetAsync("/api/v1/nope");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
+    }
 }

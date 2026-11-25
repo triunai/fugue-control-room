@@ -23,7 +23,6 @@ namespace Fugue.Api.Controllers;
 /// </remarks>
 [ApiController]
 [Route("api/v1/[controller]")]
-[Produces("application/json")]
 public abstract class ApiControllerBase : ControllerBase
 {
     private const string ErrorTypeBase = "https://fugue.dev/errors/";
