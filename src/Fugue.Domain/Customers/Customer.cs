@@ -23,7 +23,7 @@ public sealed class Customer : IAuditable, IVersioned
 
     public string Name { get; private set; }
 
-    /// <summary>Unique, stored lower-cased.</summary>
+    /// <summary>Stored lower-cased; unique per owner (D-034).</summary>
     public string Email { get; private set; }
 
     /// <summary>Optional, E.164 (validated at the application boundary).</summary>

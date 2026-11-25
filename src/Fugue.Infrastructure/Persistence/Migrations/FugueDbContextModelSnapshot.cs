@@ -220,13 +220,18 @@ namespace Fugue.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique()
-                        .HasDatabaseName("ux_customers_email");
+                        .HasDatabaseName("ux_customers_unowned_email")
+                        .HasFilter("user_id IS NULL");
 
                     b.HasIndex("UserId")
                         .HasDatabaseName("ix_customers_user_id");
 
                     b.HasIndex("CreatedAt", "Id")
                         .HasDatabaseName("ix_customers_created_at_id");
+
+                    b.HasIndex("UserId", "Email")
+                        .IsUnique()
+                        .HasDatabaseName("ux_customers_owner_email");
 
                     b.ToTable("customers", (string)null);
                 });

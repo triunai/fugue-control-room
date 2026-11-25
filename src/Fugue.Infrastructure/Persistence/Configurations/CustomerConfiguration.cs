@@ -28,7 +28,10 @@ internal sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
 
         builder.HasOne<Fugue.Domain.Identity.User>().WithMany().HasForeignKey(c => c.UserId).OnDelete(DeleteBehavior.SetNull);
         builder.HasIndex(c => c.UserId).HasDatabaseName("ix_customers_user_id"); // ownership filter (not unique)
-        builder.HasIndex(c => c.Email).IsUnique().HasDatabaseName("ux_customers_email");
+        // D-034: email is unique per owner, so a self-service caller can only collide with their own rows (no cross-owner oracle).
+        // A plain (user_id, email) unique index treats NULL owners as distinct, so unowned rows get their own partial index.
+        builder.HasIndex(c => new { c.UserId, c.Email }).IsUnique().HasDatabaseName("ux_customers_owner_email");
+        builder.HasIndex(c => c.Email).IsUnique().HasFilter("user_id IS NULL").HasDatabaseName("ux_customers_unowned_email");
         builder.HasIndex(c => new { c.CreatedAt, c.Id }).HasDatabaseName("ix_customers_created_at_id"); // keyset paging
     }
 }

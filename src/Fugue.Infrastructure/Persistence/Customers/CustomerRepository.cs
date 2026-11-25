@@ -15,7 +15,7 @@ namespace Fugue.Infrastructure.Persistence.Customers;
 
 /// <summary>
 /// ADR-006: Dapper inserts, EF reads (AsNoTracking projections) and EF tracked updates guarded by the xmin
-/// concurrency token. Unique-violation (SQLSTATE 23505) on the email index becomes <c>customer.email_taken</c>.
+/// concurrency token. Unique-violation (SQLSTATE 23505) on the per-owner email indexes becomes <c>customer.email_taken</c>.
 /// </summary>
 internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAuditStamp stamp, IAuditTrail audit) : ICustomerRepository
 {

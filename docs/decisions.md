@@ -44,8 +44,30 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-031 | W-012: read API behind `AUDIT_READ`, admin only, keyset paged | [ADR-010](adr/ADR-010-audit-log.md) |
 | D-032 | W-012: `grant_audit` and `access_audit` stay specialised; relationship to `audit_log` | [ADR-010](adr/ADR-010-audit-log.md) |
 | D-033 | W-012: retention and archival deferred | - |
+| D-034 | W-013: customer email is unique per owner (owner call) | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
+| D-035 | W-013: login limiter keyed on (IP, email) plus a loose per-email ceiling (owner call) | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-035 — W-013 login limiter: strict (IP, email) partition plus a loose per-email ceiling — 2026-11-26
+WS: WS-13
+Context: S-M3. The per-email limiter charged every attempt, so an attacker could hold a victim at 429 from any IP (a lockout lever, the thing D-020 refused to build).
+Decision: three limiters, all evaluated before password verification and chained so a request must pass each: per IP (unchanged), strict per (client IP, canonical email), and a loose per-email ceiling (default 50 per 15 minutes, configurable). A throttled request is a 429 problem+json with Retry-After. Refresh shares the policy where it already shares the limiter.
+Why: one IP hammering a victim exhausts only its own (IP, email) bucket, so the victim from another IP still signs in; the loose ceiling still bounds a distributed guesser while leaving real headroom.
+Consequences: a botnet of 50+ distinct IPs can still push a victim to 429 for the window (accepted; it needs real distribution and is bounded by the ceiling). Partition state is in memory per process.
+Who: owner
+Status: accepted
+Promote: yes (ADR-008)
+
+## D-034 — W-013 customer email is unique per owner — 2026-11-26
+WS: WS-13
+Context: C3 / S-M1. A global unique index on customers.email made create a cross-owner existence oracle (409 vs 201) for restricted callers.
+Decision: unique on (user_id, canonical email) for owned rows, plus a partial unique index on email `WHERE user_id IS NULL` for unowned (staff-created) rows. Customers are hard-deleted, so every row counts. The 409 `customer.email_taken` stays but can only fire inside the target owner's scope; a CUSTOMERS_ALL caller creating for another owner can still hit it (they see everything anyway).
+Why: per-owner uniqueness removes the oracle without a generic-response trick; two users can legitimately hold the same contact.
+Consequences: migration `CustomerEmailPerOwner` swaps the index (Down restores the global index and fails if per-owner duplicates exist by then). Deleting a user sets their customers' owner to NULL (FK SET NULL) and could collide with an unowned row; users are not hard-deleted today.
+Who: owner
+Status: accepted
+Promote: yes (ADR-008)
 
 ## D-033 — W-012 retention and archival of the audit log are deferred — 2026-11-26
 WS: WS-12
