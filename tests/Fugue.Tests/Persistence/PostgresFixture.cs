@@ -26,6 +26,8 @@ public sealed class TestCurrentUser : ICurrentUser
     public Guid? TenantId => null;
 
     public bool IsAuthenticated => UserId is not null;
+
+    public bool HasPermission(string code) => true;
 }
 
 /// <summary>

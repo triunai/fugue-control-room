@@ -77,6 +77,10 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(64)")
                         .HasColumnName("updated_by");
 
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
                     b.HasKey("Id")
                         .HasName("pk_customers");
 
@@ -84,10 +88,1657 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("ux_customers_email");
 
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_customers_user_id");
+
                     b.HasIndex("CreatedAt", "Id")
                         .HasDatabaseName("ix_customers_created_at_id");
 
                     b.ToTable("customers", (string)null);
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.AccessAudit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CorrelationId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("correlation_id");
+
+                    b.Property<string>("EmailHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("email_hash");
+
+                    b.Property<string>("Event")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("event");
+
+                    b.Property<string>("Ip")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("ip");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("outcome");
+
+                    b.Property<string>("ReasonCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("reason_code");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("user_agent");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_access_audit");
+
+                    b.HasIndex("OccurredAt")
+                        .HasDatabaseName("ix_access_audit_occurred_at");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_access_audit_user_id");
+
+                    b.ToTable("access_audit", (string)null);
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.GrantAudit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("action");
+
+                    b.Property<string>("Actor")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("actor");
+
+                    b.Property<string>("AfterJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("after_json");
+
+                    b.Property<string>("BeforeJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("before_json");
+
+                    b.Property<string>("CorrelationId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("correlation_id");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
+
+                    b.Property<string>("SagaId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("saga_id");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("subject_id");
+
+                    b.Property<string>("SubjectType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("subject_type");
+
+                    b.Property<Guid?>("TargetUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("target_user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_grant_audit");
+
+                    b.HasIndex("OccurredAt")
+                        .HasDatabaseName("ix_grant_audit_occurred_at");
+
+                    b.HasIndex("TargetUserId")
+                        .HasDatabaseName("ix_grant_audit_target_user_id");
+
+                    b.ToTable("grant_audit", (string)null);
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.Group", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_groups");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ux_groups_code");
+
+                    b.ToTable("groups", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8007-000000000001"),
+                            Code = "SUPPORT",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsActive = true,
+                            Name = "Support",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        });
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.GroupMember", b =>
+                {
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("group_id");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("GroupId", "UserId")
+                        .HasName("pk_group_members");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_group_members_user_id");
+
+                    b.ToTable("group_members", (string)null);
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.GroupRole", b =>
+                {
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("group_id");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("role_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("GroupId", "RoleId")
+                        .HasName("pk_group_roles");
+
+                    b.HasIndex("RoleId")
+                        .HasDatabaseName("ix_group_roles_role_id");
+
+                    b.ToTable("group_roles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            GroupId = new Guid("01900000-0000-7000-8007-000000000001"),
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000002"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        });
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.Module", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_modules");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ux_modules_code");
+
+                    b.ToTable("modules", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8001-000000000001"),
+                            Code = "SYSTEM",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "System",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8001-000000000002"),
+                            Code = "CUSTOMERS",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "Customers",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8001-000000000003"),
+                            Code = "IDENTITY",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "Identity",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        });
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.PermissionAction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_actions");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ux_actions_code");
+
+                    b.ToTable("actions", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8003-000000000001"),
+                            Code = "VIEW",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            Name = "View",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8003-000000000002"),
+                            Code = "INSERT",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            Name = "Insert",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8003-000000000003"),
+                            Code = "EDIT",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            Name = "Edit",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8003-000000000004"),
+                            Code = "DELETE",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            Name = "Delete",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8003-000000000005"),
+                            Code = "SUSPEND",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            Name = "Suspend",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8003-000000000006"),
+                            Code = "ALL",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            Name = "All",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8003-000000000007"),
+                            Code = "MANAGE",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            Name = "Manage",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        });
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.PermissionDefinition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ActionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("action_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
+
+                    b.Property<Guid>("ResourceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("resource_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_permissions");
+
+                    b.HasIndex("ActionId")
+                        .HasDatabaseName("ix_permissions_action_id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ux_permissions_code");
+
+                    b.HasIndex("ResourceId", "ActionId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_permissions_resource_action");
+
+                    b.ToTable("permissions", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000001"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000001"),
+                            Code = "CUSTOMERS_VIEW",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000002"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000002"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000002"),
+                            Code = "CUSTOMERS_INSERT",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000002"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000003"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000003"),
+                            Code = "CUSTOMERS_EDIT",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000002"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000004"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000004"),
+                            Code = "CUSTOMERS_DELETE",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000002"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000005"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000005"),
+                            Code = "CUSTOMERS_SUSPEND",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000002"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000006"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000006"),
+                            Code = "CUSTOMERS_ALL",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000002"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000007"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000001"),
+                            Code = "GROUPS_VIEW",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000003"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000008"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000007"),
+                            Code = "GROUPS_MANAGE",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000003"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000009"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000001"),
+                            Code = "OVERRIDES_VIEW",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000004"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000010"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000007"),
+                            Code = "OVERRIDES_MANAGE",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000004"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000011"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000001"),
+                            Code = "MODULES_VIEW",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000001"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000012"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000007"),
+                            Code = "MODULES_MANAGE",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000001"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        });
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("CreatedIp")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_ip");
+
+                    b.Property<string>("CreatedUserAgent")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("created_user_agent");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("family_id");
+
+                    b.Property<Guid?>("ReplacedById")
+                        .HasColumnType("uuid")
+                        .HasColumnName("replaced_by_id");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_refresh_tokens");
+
+                    b.HasIndex("FamilyId")
+                        .HasDatabaseName("ix_refresh_tokens_family_id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ux_refresh_tokens_hash");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_refresh_tokens_user_id");
+
+                    b.ToTable("refresh_tokens", (string)null);
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.Resource", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<Guid>("ModuleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("module_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_resources");
+
+                    b.HasIndex("ModuleId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("ux_resources_module_code");
+
+                    b.ToTable("resources", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8002-000000000001"),
+                            Code = "MODULES",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            ModuleId = new Guid("01900000-0000-7000-8001-000000000001"),
+                            Name = "Modules",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8002-000000000002"),
+                            Code = "CUSTOMERS",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            ModuleId = new Guid("01900000-0000-7000-8001-000000000002"),
+                            Name = "Customers",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8002-000000000003"),
+                            Code = "GROUPS",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            ModuleId = new Guid("01900000-0000-7000-8001-000000000003"),
+                            Name = "Groups",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8002-000000000004"),
+                            Code = "OVERRIDES",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            ModuleId = new Guid("01900000-0000-7000-8001-000000000003"),
+                            Name = "PermissionDefinition overrides",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        });
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.Role", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("IsSystem")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_system");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_roles");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ux_roles_code");
+
+                    b.ToTable("roles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8005-000000000001"),
+                            Code = "ADMIN",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsActive = true,
+                            IsSystem = true,
+                            Name = "Administrator",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8005-000000000002"),
+                            Code = "STAFF",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsActive = true,
+                            IsSystem = true,
+                            Name = "Staff",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8005-000000000003"),
+                            Code = "SELF_SERVICE",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsActive = true,
+                            IsSystem = true,
+                            Name = "Self service",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        });
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.RoleGrant", b =>
+                {
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("role_id");
+
+                    b.Property<Guid>("PermissionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("permission_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("RoleId", "PermissionId")
+                        .HasName("pk_role_permissions");
+
+                    b.HasIndex("PermissionId")
+                        .HasDatabaseName("ix_role_permissions_permission_id");
+
+                    b.ToTable("role_permissions", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000001"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000002"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000003"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000004"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000005"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000006"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000007"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000008"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000009"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000010"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000011"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000012"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000002"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000001"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000002"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000002"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000002"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000003"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000002"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000004"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000002"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000005"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000002"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000006"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000003"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000001"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000003"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000003"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        });
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.Tenant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tenants");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ux_tenants_code");
+
+                    b.ToTable("tenants", (string)null);
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ContactNumber")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("contact_number");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("display_name");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool>("LocalLoginEnabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("local_login_enabled");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("password_hash");
+
+                    b.Property<DateTimeOffset>("PasswordLastChangedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("password_last_changed_at");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_users");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("ux_users_email_active")
+                        .HasFilter("NOT is_deleted");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_users_tenant_id");
+
+                    b.ToTable("users", (string)null);
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.UserPermissionOverride", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTimeOffset?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<bool>("IsAllowed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_allowed");
+
+                    b.Property<Guid>("PermissionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("permission_id");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_permission_overrides");
+
+                    b.HasIndex("PermissionId")
+                        .HasDatabaseName("ix_user_permission_overrides_permission_id");
+
+                    b.HasIndex("UserId", "PermissionId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_overrides_user_permission");
+
+                    b.ToTable("user_permission_overrides", (string)null);
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.UserRole", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("AssignedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("assigned_at");
+
+                    b.Property<Guid?>("AssignedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_by_user_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("role_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_roles");
+
+                    b.HasIndex("RoleId")
+                        .HasDatabaseName("ix_user_roles_role_id");
+
+                    b.HasIndex("UserId", "RoleId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_user_roles_user_role");
+
+                    b.ToTable("user_roles", (string)null);
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Customers.Customer", b =>
+                {
+                    b.HasOne("Fugue.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_customers_users_user_id");
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.GroupMember", b =>
+                {
+                    b.HasOne("Fugue.Domain.Identity.Group", null)
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_group_members_groups_group_id");
+
+                    b.HasOne("Fugue.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_group_members_users_user_id");
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.GroupRole", b =>
+                {
+                    b.HasOne("Fugue.Domain.Identity.Group", null)
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_group_roles_groups_group_id");
+
+                    b.HasOne("Fugue.Domain.Identity.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_group_roles_roles_role_id");
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.PermissionDefinition", b =>
+                {
+                    b.HasOne("Fugue.Domain.Identity.PermissionAction", null)
+                        .WithMany()
+                        .HasForeignKey("ActionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_permissions_actions_action_id");
+
+                    b.HasOne("Fugue.Domain.Identity.Resource", null)
+                        .WithMany()
+                        .HasForeignKey("ResourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_permissions_resources_resource_id");
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.RefreshToken", b =>
+                {
+                    b.HasOne("Fugue.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_refresh_tokens_users_user_id");
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.Resource", b =>
+                {
+                    b.HasOne("Fugue.Domain.Identity.Module", null)
+                        .WithMany()
+                        .HasForeignKey("ModuleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_resources_modules_module_id");
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.RoleGrant", b =>
+                {
+                    b.HasOne("Fugue.Domain.Identity.PermissionDefinition", null)
+                        .WithMany()
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_role_permissions_permissions_permission_id");
+
+                    b.HasOne("Fugue.Domain.Identity.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_role_permissions_roles_role_id");
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.User", b =>
+                {
+                    b.HasOne("Fugue.Domain.Identity.Tenant", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_users_tenants_tenant_id");
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.UserPermissionOverride", b =>
+                {
+                    b.HasOne("Fugue.Domain.Identity.PermissionDefinition", null)
+                        .WithMany()
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_permission_overrides_permissions_permission_id");
+
+                    b.HasOne("Fugue.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_permission_overrides_users_user_id");
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Identity.UserRole", b =>
+                {
+                    b.HasOne("Fugue.Domain.Identity.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_roles_roles_role_id");
+
+                    b.HasOne("Fugue.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_roles_users_user_id");
                 });
 #pragma warning restore 612, 618
         }

@@ -14,6 +14,12 @@ public sealed class ClaimsCurrentUser(IHttpContextAccessor accessor) : ICurrentU
 
     public Guid? TenantId => IsAuthenticated ? ReadGuid("tenant_id") : null;
 
+    /// <summary>The claim type under which <c>OnTokenValidated</c> adds each effective permission code (in memory only).</summary>
+    public const string PermissionClaim = "perm";
+
+    public bool HasPermission(string code) =>
+        IsAuthenticated && Principal!.HasClaim(PermissionClaim, code);
+
     private Guid? ReadGuid(params string[] claimTypes)
     {
         foreach (string type in claimTypes)

@@ -31,6 +31,9 @@ public sealed class Customer : IAuditable, IVersioned
 
     public CustomerStatus Status { get; private set; }
 
+    /// <summary>The owning user; null for an unowned record. Visible only to its owner or to <c>CUSTOMERS_ALL</c> holders.</summary>
+    public UserId? UserId { get; private set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public string CreatedBy { get; set; }
@@ -44,7 +47,7 @@ public sealed class Customer : IAuditable, IVersioned
 
     long IVersioned.Version => RowVersion;
 
-    public static Customer Create(string name, string email, string? phone) =>
+    public static Customer Create(string name, string email, string? phone, UserId? owner = null) =>
         new()
         {
             Id = CustomerId.New(),
@@ -52,6 +55,7 @@ public sealed class Customer : IAuditable, IVersioned
             Email = NormalizeEmail(email),
             Phone = NormalizePhone(phone),
             Status = CustomerStatus.Active,
+            UserId = owner,
         };
 
     public void Update(string name, string email, string? phone)
@@ -82,7 +86,7 @@ public sealed class Customer : IAuditable, IVersioned
 
     private static string Normalize(string value) => value.Trim();
 
-    private static string NormalizeEmail(string value) => value.Trim().ToLowerInvariant();
+    private static string NormalizeEmail(string value) => Identity.EmailKey.Canonicalize(value);
 
     private static string? NormalizePhone(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

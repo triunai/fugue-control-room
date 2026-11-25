@@ -63,7 +63,7 @@ internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAu
         IQueryable<Customer> query = after is { } cursor
             // Row-value comparison is not expressible in LINQ; the rest of the query composes on top of this.
             ? db.Customers.FromSql($"""
-                SELECT id, name, email, phone, status, created_at, created_by, updated_at, updated_by, xmin
+                SELECT id, name, email, phone, status, user_id, created_at, created_by, updated_at, updated_by, xmin
                 FROM customers WHERE (created_at, id) > ({cursor.CreatedAt}, {cursor.Id})
                 """)
             : db.Customers;

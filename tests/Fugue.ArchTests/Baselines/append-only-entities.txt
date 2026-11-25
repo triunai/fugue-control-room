@@ -1,0 +1,4 @@
+# Shrink-only baseline for Fitness rule "append-only-entities": the allowlist of entities that are NOT IAuditable because they are append-only (they carry OccurredAt + an actor instead).
+# A line that is no longer a violation FAILS the test: delete it (ratchet).
+GrantAudit
+AccessAudit

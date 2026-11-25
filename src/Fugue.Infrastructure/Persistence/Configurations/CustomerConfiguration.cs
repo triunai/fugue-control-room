@@ -26,6 +26,8 @@ internal sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
             .HasColumnType("xid")
             .IsRowVersion(); // Npgsql: system column, never created by migrations
 
+        builder.HasOne<Fugue.Domain.Identity.User>().WithMany().HasForeignKey(c => c.UserId).OnDelete(DeleteBehavior.SetNull);
+        builder.HasIndex(c => c.UserId).HasDatabaseName("ix_customers_user_id"); // ownership filter (not unique)
         builder.HasIndex(c => c.Email).IsUnique().HasDatabaseName("ux_customers_email");
         builder.HasIndex(c => new { c.CreatedAt, c.Id }).HasDatabaseName("ix_customers_created_at_id"); // keyset paging
     }

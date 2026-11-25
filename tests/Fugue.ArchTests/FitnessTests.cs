@@ -133,6 +133,22 @@ public sealed class FitnessTests
     }
 
     [Fact]
+    public void Fitness_Persistence_every_entity_is_IAuditable_unless_append_only()
+    {
+        // Base entity contract (D-026). The baseline IS the append-only allowlist; each listed entity must carry OccurredAt instead.
+        using var context = new FugueDbContext(new DbContextOptionsBuilder<FugueDbContext>().UseNpgsql("Host=localhost;Database=fitness").Options);
+        Type[] entities = context.Model.GetEntityTypes().Select(e => e.ClrType).ToArray();
+
+        IEnumerable<string> bad = entities.Where(t => !typeof(IAuditable).IsAssignableFrom(t)).Select(t => t.Name);
+        AssertRatchet("append-only-entities", bad);
+
+        string[] noOccurredAt = entities
+            .Where(t => !typeof(IAuditable).IsAssignableFrom(t) && t.GetProperty("OccurredAt") is null)
+            .Select(t => t.Name).ToArray();
+        Assert.True(noOccurredAt.Length == 0, "append-only entities need OccurredAt: " + string.Join(", ", noOccurredAt));
+    }
+
+    [Fact]
     public void Fitness_Persistence_every_typed_id_is_parsable_json_convertible_and_in_the_EF_convention()
     {
         Type[] ids = Domain.GetTypes()
