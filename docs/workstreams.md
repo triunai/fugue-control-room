@@ -33,14 +33,14 @@ Status: not started; needs S4.
 Resume: plan after S4 lands.
 Refs: `docs/plans/roadmap.md`
 
-### WS-08 — H1 port the AI engineering harness — 🟢 ACTIVE (2026-11-25)
-ID: W-008
-Status: gates, guard, skills, fitness functions, doc lifecycle scripts and narrative written; verifying and committing.
-Resume: run the verify list, commit in slices, then close with `scripts/spine/close-workstream.mjs W-008`.
-Refs: D-012, D-013, D-014, D-015, ADR-007, `docs/ai/how-we-use-ai.md`
-
 ### WS-09 — MapStatus: ErrorType to HTTP status (owner's hand-written decision) — ⛔ BLOCKED (2026-11-25)
 ID: W-009
 Status: blocked on the owner. Agents never implement it (D-009). Known-red tests are listed in `docs/hot-state.md`.
 Resume: owner implements `ApiControllerBase.MapStatus`, then re-run `dotnet test` and `npm run api:test`.
 Refs: D-009, ADR-004
+
+### WS-10 — Verify the Codex gate end to end — ⏸ PARKED (2026-11-25)
+ID: W-010
+Status: `scripts/codex-gate.mjs` invocation (`codex exec review --base <sha> ... -`) taken from `--help`, never run against a real seam push.
+Resume: make a throwaway seam change on a branch, run `node scripts/codex-gate.mjs --dry-run --base=<ref>`, then once for real; confirm `docs/reviews/codex/` receives text and the failure path records "failed". Also confirm lefthook gives git's stdin to both `spine-nudge` and `codex-gate` on a real push.
+Refs: D-014, ADR-007

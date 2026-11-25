@@ -4,6 +4,18 @@ Tracks notable changes across migrations, API contracts, and project documentati
 
 > **ADR links.** An entry that reflects a real architectural decision cites it as `(ADR-NNN)`; the ADR lives in `docs/adr/`.
 
+## 2026-11-25 — Closed W-008: H1 port the AI engineering harness
+WS: WS-08
+Closed: W-008 (WS-08) H1 port the AI engineering harness
+Outcome: Ported the AI engineering harness from my two other repos, public-safe: local beads, W-/D-/ADR- ids, refs-trailer and fix-has-test commit gates, a PreToolUse safety guard, an advisory seam-triggered Codex gate, four project skills, fitness functions with shrink-only baselines, doc-lifecycle scripts (close-workstream, commit-link-check, prune-check, adr-check, archive-project-log), failure modes, branch ledger, handoff and the how-we-use-ai narrative. The Codex invocation is confirmed from --help only.
+Commits:
+- a3a936a feat(spine): beads-local tracking, refs and fix-has-test commit gates
+- c4f9dc1 feat(spine): safe-command guard, advisory codex gate, project skills
+- ad58e29 test(arch): fitness functions for critical modules with shrink-only baselines
+- b26f99c docs(spine): control-plane gaps and how-we-use-ai narrative
+Decisions: D-012, D-013, D-014, D-015, ADR-007
+Follow-ups: First real Codex seam run (verify invocation); S3 identity (W-005); MapStatus (W-009, owner)
+
 ## 2026-11-25 — Closed W-004: S2 persistence: Postgres, EF Core + Dapper, audit, typed ids, Customers slice
 WS: WS-04
 Closed: W-004 (WS-04) S2 persistence: Postgres, EF Core + Dapper, audit, typed ids, Customers slice

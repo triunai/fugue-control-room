@@ -8,7 +8,7 @@ Last green sha: ad58e29
 (build 0 warnings; arch tests 17 green; Fugue.Tests 48 green 16 red-by-design; only docs follow it.)
 
 ## Last action done
-H1 harness (W-008) finished and committed in slices; S0 to S2 closed into the project log and CHANGELOG.
+H1 harness (W-008) finished, committed in slices and closed; S0 to S2 closed into the project log and CHANGELOG.
 
 ## Next action (exact)
 1. `git status --short --branch`; `git config core.hooksPath` must print nothing.
@@ -19,7 +19,7 @@ H1 harness (W-008) finished and committed in slices; S0 to S2 closed into the pr
 None expected after the final H1 commit. Local-only and ignored: `.beads/` (local queue), `.fugue-local/` (codex gate ledger), `.env`.
 
 ## In flight (open W ids)
-W-005 S3 identity, W-006 S4 outbox and webhooks, W-007 S5 REST hardening (all parked, not started); W-009 MapStatus (blocked on owner).
+W-005 S3 identity, W-006 S4 outbox and webhooks, W-007 S5 REST hardening, W-010 verify the Codex gate (all parked, not started); W-009 MapStatus (blocked on owner).
 
 ## Pending owner questions
 - Implement `ApiControllerBase.MapStatus` (D-009, W-009).
