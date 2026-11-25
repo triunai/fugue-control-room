@@ -27,4 +27,7 @@ public sealed class UserPermissionOverride : IAuditable
     public DateTimeOffset UpdatedAt { get; set; }
 
     public string UpdatedBy { get; set; } = string.Empty;
+
+    /// <summary>Postgres <c>xmin</c>; the optimistic-concurrency token (the ETag of an override).</summary>
+    public uint RowVersion { get; private set; }
 }

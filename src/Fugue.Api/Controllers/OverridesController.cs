@@ -22,10 +22,10 @@ public sealed class OverridesController : ApiControllerBase
     [HttpPut("{userId}/{permission}")]
     [HasPermission(Permissions.OverridesManage)]
     public Task<IActionResult> Set(UserId userId, string permission, SetOverrideRequest body, CancellationToken ct) =>
-        SendNoContent(new SetOverrideCommand(userId, permission, body.IsAllowed, body.Reason, body.ExpiresAt), ct);
+        SendNoContent(new SetOverrideCommand(userId, permission, body.IsAllowed, body.Reason, body.ExpiresAt, IfMatchVersion), ct);
 
     [HttpDelete("{userId}/{permission}")]
     [HasPermission(Permissions.OverridesManage)]
     public Task<IActionResult> Remove(UserId userId, string permission, CancellationToken ct) =>
-        SendNoContent(new RemoveOverrideCommand(userId, permission), ct);
+        SendNoContent(new RemoveOverrideCommand(userId, permission, IfMatchVersion), ct);
 }

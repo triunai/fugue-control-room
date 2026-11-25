@@ -18,8 +18,15 @@ body:json {
   }
 }
 
+script:post-response {
+  if (res.status === 204) {
+    bru.setVar("overrideEtag", res.headers["etag"]);
+  }
+}
+
 tests {
-  test("204", function () {
+  test("204 with the ETag a later change must send back", function () {
     expect(res.status).to.equal(204);
+    expect(res.headers["etag"]).to.be.a("string");
   });
 }

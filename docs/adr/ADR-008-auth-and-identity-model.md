@@ -31,6 +31,7 @@ S3 needs sign-in, per-user permissions and ownership scoping on a domain-neutral
 * `CLAUDE.md` says "`PasswordHasher<T>` / Argon2id": `PasswordHasher<T>` is PBKDF2; the wording is the owner's to amend.
 * Follow-ups: an `expired` grant-audit sweeper; per-token rate limiting on refresh; HybridCache for permissions; the rich `audit_log` (next batch) builds on the shared transaction and `ICorrelationContext`.
 * **W-013 amendments (owner calls).** D-034: customer email is unique per owner (`ux_customers_owner_email`) and among unowned rows (`ux_customers_unowned_email`), closing the create-path existence oracle. D-035: login is throttled by IP, by (IP, email) and by a loose per-email ceiling, all before password verification, so no single IP can lock a victim out.
+* **W-013 hardening (D-036).** Overrides are optimistic-concurrency guarded (`If-Match`/xmin); group membership has a self-target guard; module config fails closed and `SYSTEM` is never config-disabled; an inactive tenant locks its users out; `access_audit` clips to column widths and hashes email under an HMAC subkey.
 
 ## Supersedes
 None.

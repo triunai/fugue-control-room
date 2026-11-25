@@ -7,7 +7,8 @@ using Mediator;
 namespace Fugue.Application.Features.Overrides.Commands;
 
 /// <summary>Contract.</summary>
-public sealed record SetOverrideCommand(UserId UserId, string Permission, bool IsAllowed, string? Reason, DateTimeOffset? ExpiresAt) : ICommand<Result>;
+public sealed record SetOverrideCommand(UserId UserId, string Permission, bool IsAllowed, string? Reason, DateTimeOffset? ExpiresAt, long? ExpectedVersion = null)
+    : ICommand<Result<OverrideDto>>;
 
 public sealed class SetOverrideValidator : AbstractValidator<SetOverrideCommand>
 {
@@ -19,27 +20,27 @@ public sealed class SetOverrideValidator : AbstractValidator<SetOverrideCommand>
     }
 }
 
-public sealed class SetOverrideHandler(IOverrideAdmin overrides, ICurrentUser currentUser, TimeProvider time) : ICommandHandler<SetOverrideCommand, Result>
+public sealed class SetOverrideHandler(IOverrideAdmin overrides, ICurrentUser currentUser, TimeProvider time) : ICommandHandler<SetOverrideCommand, Result<OverrideDto>>
 {
-    public async ValueTask<Result> Handle(SetOverrideCommand command, CancellationToken cancellationToken)
+    public async ValueTask<Result<OverrideDto>> Handle(SetOverrideCommand command, CancellationToken cancellationToken)
     {
         if (currentUser.UserId == command.UserId.Value)
         {
-            return Result.Fail(OverrideErrors.SelfTarget());
+            return Result.Fail<OverrideDto>(OverrideErrors.SelfTarget());
         }
 
         if (command.ExpiresAt is { } expiry && expiry <= time.GetUtcNow())
         {
-            return Result.Fail(OverrideErrors.ExpiryInPast());
+            return Result.Fail<OverrideDto>(OverrideErrors.ExpiryInPast());
         }
 
         return await overrides.SetAsync(
-            command.UserId, command.Permission.Trim().ToUpperInvariant(), command.IsAllowed, command.Reason, command.ExpiresAt?.ToUniversalTime(), cancellationToken);
+            command.UserId, command.Permission.Trim().ToUpperInvariant(), command.IsAllowed, command.Reason, command.ExpiresAt?.ToUniversalTime(), command.ExpectedVersion, cancellationToken);
     }
 }
 
 /// <summary>Contract.</summary>
-public sealed record RemoveOverrideCommand(UserId UserId, string Permission) : ICommand<Result>;
+public sealed record RemoveOverrideCommand(UserId UserId, string Permission, long? ExpectedVersion = null) : ICommand<Result>;
 
 public sealed class RemoveOverrideValidator : AbstractValidator<RemoveOverrideCommand>
 {
@@ -55,5 +56,5 @@ public sealed class RemoveOverrideHandler(IOverrideAdmin overrides, ICurrentUser
     public async ValueTask<Result> Handle(RemoveOverrideCommand command, CancellationToken cancellationToken) =>
         currentUser.UserId == command.UserId.Value
             ? Result.Fail(OverrideErrors.SelfTarget())
-            : await overrides.RemoveAsync(command.UserId, command.Permission.Trim().ToUpperInvariant(), cancellationToken);
+            : await overrides.RemoveAsync(command.UserId, command.Permission.Trim().ToUpperInvariant(), command.ExpectedVersion, cancellationToken);
 }

@@ -15,8 +15,27 @@ public sealed class OverridesTests(PostgresFixture db)
 {
     private static readonly DateTimeOffset BaseClock = new(2030, 1, 2, 3, 4, 5, TimeSpan.Zero);
 
-    private static HttpRequestMessage Put(UserId user, string permission, object body) =>
-        new(HttpMethod.Put, $"/api/v1/overrides/{user}/{permission}") { Content = JsonContent.Create(body) };
+    private static HttpRequestMessage Put(UserId user, string permission, object body, string? ifMatch = null)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/overrides/{user}/{permission}") { Content = JsonContent.Create(body) };
+        if (ifMatch is not null)
+        {
+            request.Headers.TryAddWithoutValidation("If-Match", ifMatch);
+        }
+
+        return request;
+    }
+
+    private static HttpRequestMessage Delete(UserId user, string permission, string? ifMatch = null)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/overrides/{user}/{permission}");
+        if (ifMatch is not null)
+        {
+            request.Headers.TryAddWithoutValidation("If-Match", ifMatch);
+        }
+
+        return request;
+    }
 
     private async Task<List<(string Action, string? Before, string? After, string Actor)>> Audits(UserId target)
     {
@@ -42,13 +61,15 @@ public sealed class OverridesTests(PostgresFixture db)
         using HttpClient target = db.ClientAs(email);
         Assert.Equal(HttpStatusCode.OK, (await target.GetAsync("/api/v1/customers?limit=1")).StatusCode);
 
-        Assert.Equal(HttpStatusCode.NoContent, (await admin.SendAsync(Put(user, "customers_view", new { isAllowed = false, reason = "audit hold" }))).StatusCode);
+        HttpResponseMessage set = await admin.SendAsync(Put(user, "customers_view", new { isAllowed = false, reason = "audit hold" }));
+        Assert.Equal(HttpStatusCode.NoContent, set.StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await target.GetAsync("/api/v1/customers?limit=1")).StatusCode);
 
         OverrideDto listed = (await admin.GetFromJsonAsync<OverrideDto[]>($"/api/v1/overrides/{user}"))!.Single();
         Assert.Equal(("CUSTOMERS_VIEW", false, "audit hold", false), (listed.Permission, listed.IsAllowed, listed.Reason, listed.Expired));
 
-        Assert.Equal(HttpStatusCode.NoContent, (await admin.DeleteAsync($"/api/v1/overrides/{user}/CUSTOMERS_VIEW")).StatusCode);
+        Assert.Equal($"\"{listed.Version}\"", set.Headers.ETag!.Tag); // the PUT answers with the version a later If-Match needs
+        Assert.Equal(HttpStatusCode.NoContent, (await admin.SendAsync(Delete(user, "CUSTOMERS_VIEW", set.Headers.ETag!.Tag))).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await target.GetAsync("/api/v1/customers?limit=1")).StatusCode);
 
         var audits = await Audits(user);
@@ -92,8 +113,8 @@ public sealed class OverridesTests(PostgresFixture db)
         (_, UserId user) = await db.NewUserAsync();
         using HttpClient admin = db.ClientAs(DevUsers.Admin);
 
-        await admin.SendAsync(Put(user, "GROUPS_VIEW", new { isAllowed = true, reason = "first" }));
-        await admin.SendAsync(Put(user, "GROUPS_VIEW", new { isAllowed = false, reason = "second" }));
+        HttpResponseMessage first = await admin.SendAsync(Put(user, "GROUPS_VIEW", new { isAllowed = true, reason = "first" }));
+        await admin.SendAsync(Put(user, "GROUPS_VIEW", new { isAllowed = false, reason = "second" }, first.Headers.ETag!.Tag));
 
         OverrideDto only = (await admin.GetFromJsonAsync<OverrideDto[]>($"/api/v1/overrides/{user}"))!.Single();
         Assert.False(only.IsAllowed);
@@ -143,5 +164,58 @@ public sealed class OverridesTests(PostgresFixture db)
         HttpResponseMessage response = await admin.SendAsync(Put(user, "GROUPS_VIEW", new { isAllowed = true, expiresAt = local }));
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Changing_an_existing_override_needs_the_current_etag()
+    {
+        (_, UserId user) = await db.NewUserAsync();
+        using HttpClient admin = db.ClientAs(DevUsers.Admin);
+        HttpResponseMessage created = await admin.SendAsync(Put(user, "GROUPS_VIEW", new { isAllowed = true, reason = "v1" }));
+        string v1 = created.Headers.ETag!.Tag;
+
+        HttpResponseMessage missing = await admin.SendAsync(Put(user, "GROUPS_VIEW", new { isAllowed = false, reason = "blind" }));
+        Assert.Equal(HttpStatusCode.PreconditionRequired, missing.StatusCode);
+        Assert.Equal("override.if_match_required", await Code(missing));
+
+        HttpResponseMessage second = await admin.SendAsync(Put(user, "GROUPS_VIEW", new { isAllowed = false, reason = "v2" }, v1));
+        Assert.Equal(HttpStatusCode.NoContent, second.StatusCode);
+        Assert.NotEqual(v1, second.Headers.ETag!.Tag);
+
+        // A stale writer (still holding v1) loses instead of silently overwriting v2.
+        HttpResponseMessage stale = await admin.SendAsync(Put(user, "GROUPS_VIEW", new { isAllowed = true, reason = "stale" }, v1));
+        Assert.Equal(HttpStatusCode.PreconditionFailed, stale.StatusCode);
+        Assert.Equal("override.version_mismatch", await Code(stale));
+        OverrideDto current = (await admin.GetFromJsonAsync<OverrideDto[]>($"/api/v1/overrides/{user}"))!.Single();
+        Assert.Equal("v2", current.Reason);
+        Assert.Equal(second.Headers.ETag!.Tag, $"\"{current.Version}\"");
+        Assert.Equal(2, (await Audits(user)).Count); // the refused write left no grant_audit row
+    }
+
+    [Fact]
+    public async Task Removing_needs_the_current_etag_and_a_version_for_a_row_that_is_gone_is_a_mismatch()
+    {
+        (_, UserId user) = await db.NewUserAsync();
+        using HttpClient admin = db.ClientAs(DevUsers.Admin);
+        HttpResponseMessage created = await admin.SendAsync(Put(user, "GROUPS_VIEW", new { isAllowed = true }));
+        string v1 = created.Headers.ETag!.Tag;
+
+        HttpResponseMessage noHeader = await admin.SendAsync(Delete(user, "GROUPS_VIEW"));
+        Assert.Equal(HttpStatusCode.PreconditionRequired, noHeader.StatusCode);
+        HttpResponseMessage stale = await admin.SendAsync(Delete(user, "GROUPS_VIEW", "\"1\""));
+        Assert.Equal(HttpStatusCode.PreconditionFailed, stale.StatusCode);
+        Assert.Single(await admin.GetFromJsonAsync<OverrideDto[]>($"/api/v1/overrides/{user}") ?? []);
+
+        Assert.Equal(HttpStatusCode.NoContent, (await admin.SendAsync(Delete(user, "GROUPS_VIEW", v1))).StatusCode);
+
+        // The caller still holds v1 of a row that no longer exists: re-creating with it is a mismatch, not a blind create.
+        HttpResponseMessage ghost = await admin.SendAsync(Put(user, "GROUPS_VIEW", new { isAllowed = true }, v1));
+        Assert.Equal(HttpStatusCode.PreconditionFailed, ghost.StatusCode);
+    }
+
+    private static async Task<string> Code(HttpResponseMessage response)
+    {
+        using JsonDocument json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        return json.RootElement.GetProperty("code").GetString()!;
     }
 }

@@ -211,6 +211,7 @@ internal sealed class UserPermissionOverrideConfiguration : IEntityTypeConfigura
         b.HasKey(e => e.Id);
         b.Property(e => e.Id).ValueGeneratedNever();
         b.Property(e => e.Reason).HasMaxLength(500);
+        b.Property(e => e.RowVersion).HasColumnName("xmin").HasColumnType("xid").IsRowVersion(); // system column, ETag
         b.HasOne<User>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
         b.HasOne<PermissionDefinition>().WithMany().HasForeignKey(e => e.PermissionId).OnDelete(DeleteBehavior.Cascade);
         b.HasIndex(e => new { e.UserId, e.PermissionId }).IsUnique().HasDatabaseName("ux_overrides_user_permission");

@@ -46,8 +46,19 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-033 | W-012: retention and archival deferred | - |
 | D-034 | W-013: customer email is unique per owner (owner call) | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
 | D-035 | W-013: login limiter keyed on (IP, email) plus a loose per-email ceiling (owner call) | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
+| D-036 | W-013: S3 review hardening (override If-Match, group self-target, fail-closed module config, tenant is_active, audit key hygiene) | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-036 — W-013 S3 review hardening of the admin surface — 2026-11-26
+WS: WS-13
+Context: the remaining MED and LOW findings of the S3 build review (rv-s3-build.md) after the two owner calls.
+Decision: (1) override PUT/DELETE on an existing row require `If-Match` (xmin; 428 without, 412 stale, 412 for a concurrent create or a version sent for a vanished row), creating sends none; the list carries `version`. (2) group membership cannot target oneself (409 `group.self_target`), as overrides already could not. (3) unique-violation and lost-update races in group add/remove and override set are answered (add: success, remove: 404, override: 412), not 500. (4) module configuration fails closed: only true/1/yes/on, blank or absent keep a module enabled; `SYSTEM` can never be config-disabled. (5) `tenants.is_active = false` blocks login, refresh and live tokens, with the same uniform 401. (6) `access_audit` clips reason, ip, user agent and correlation id to their columns instead of losing the row; the email hash uses an HMAC subkey derived from the signing key, and with no usable key stores no hash (the old constant-key fallback was dictionary-reversible). (7) the refresh port takes a `RotationRequest`, not a placeholder token.
+Why: each is a way for a stale client, a typo or a race to produce a wrong state or a lost audit row; fail-closed is the safe direction for a kill switch.
+Consequences: override API clients must send `If-Match` when changing a row (Bruno and runbook 05 updated); email hashes written before this change cannot be correlated with new ones (the key changed); `audit_log` already records module PATCH (the interceptor), now pinned. Recorded without a fix: raw user GUIDs in `createdBy` (actor ids are the stamp format by design), the anonymous `access_audit` growth (deferred.md, with the audit retention item).
+Who: AI (owner calls D-034 and D-035 set the scope)
+Status: accepted
+Promote: yes (ADR-008)
 
 ## D-035 — W-013 login limiter: strict (IP, email) partition plus a loose per-email ceiling — 2026-11-26
 WS: WS-13
