@@ -20,6 +20,7 @@ public static class AuthProblems
             {
                 StatusCodes.Status401Unauthorized => "Unauthorized",
                 StatusCodes.Status403Forbidden => "Forbidden",
+                StatusCodes.Status404NotFound => "Not Found",
                 StatusCodes.Status429TooManyRequests => "Too Many Requests",
                 _ => "Error",
             },

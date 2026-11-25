@@ -1,0 +1,27 @@
+meta {
+  name: Re-enable CUSTOMERS (204)
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/modules/CUSTOMERS
+  body: json
+  auth: inherit
+}
+
+headers {
+  If-Match: "{{customersModuleVersion}}"
+}
+
+body:json {
+  {
+    "isActive": true
+  }
+}
+
+tests {
+  test("204: the module is back on for the rest of the suite", function () {
+    expect(res.status).to.equal(204);
+  });
+}

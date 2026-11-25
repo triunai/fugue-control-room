@@ -52,3 +52,26 @@ Expect: the list holds only rows whose `ownerId` is the caller; `DELETE` is `403
 ## 4. Reference
 
 Permissions are `RESOURCE_ACTION` codes seeded by migration `AddIdentity`; effective permissions = roles (direct and through groups) + unexpired allow overrides - unexpired deny overrides, then dropped when the module is inactive, deleted or switched off in configuration. Tokens are HS256, validated for issuer, audience, signature and lifetime (30 s skew); anything else is `401`.
+
+## 5. Modules: switch a feature off
+
+A **module** is a feature area (`CUSTOMERS`, `IDENTITY`, and the protected `SYSTEM`). A feature controller declares `[Module("CUSTOMERS")]`. Two independent switches decide whether it answers:
+
+| Switch | Where | Meaning |
+|---|---|---|
+| Configuration | `Modules:CUSTOMERS:Enabled` (appsettings or env `Modules__CUSTOMERS__Enabled=false`), default on | the hard kill switch; restart or config reload to change; the database cannot override it |
+| Registry | `modules.is_active`, changed by `PATCH /api/v1/modules/{code}` | the runtime switch |
+
+**Effective enabled = configuration on AND registry on.** A disabled module answers `404` with `"code":"module.disabled"` (never 403: that would confirm the feature exists) and logs one Information line; its permissions also drop out of everyone's effective set. Anonymous callers still get `401`.
+
+```bash
+T=$(login admin@fugue.test | sed 's/.*"accessToken":"\([^"]*\)".*/\1/')
+curl -s -H "Authorization: Bearer $T" http://localhost:5080/api/v1/modules
+```
+Expect: `[{"code":"CUSTOMERS","name":"Customers","configEnabled":true,"dbActive":true,"effective":true,"version":N}, ...]`. `version` is the ETag.
+```bash
+curl -si -X PATCH http://localhost:5080/api/v1/modules/CUSTOMERS -H "Authorization: Bearer $T" \
+  -H 'Content-Type: application/json' -H 'If-Match: "N"' -d '{"isActive":false}' | head -3
+curl -si -H "Authorization: Bearer $T" http://localhost:5080/api/v1/customers | head -1
+```
+Expect: `204` plus a new `ETag`, then `404` `module.disabled`. Re-enable with the new ETag. `PATCH` needs `MODULES_MANAGE` (admin), `GET` needs `MODULES_VIEW`; a missing `If-Match` is `428`, a stale one `412`, an unknown code `404 module.not_found`, and disabling `SYSTEM` is `409 module.system_protected` (it holds module management itself). Try the config switch: start the API with `Modules__CUSTOMERS__Enabled=false` and see `configEnabled:false` with `dbActive:true`, `effective:false`.

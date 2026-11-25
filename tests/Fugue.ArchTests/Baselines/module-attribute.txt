@@ -1,0 +1,5 @@
+# Shrink-only baseline for Fitness rule "module-attribute": the SYSTEM controllers allowed to have no [Module] (auth, diagnostics, modules).
+# A line that is no longer a violation FAILS the test: delete it (ratchet).
+AuthController
+DiagnosticsController
+ModulesController

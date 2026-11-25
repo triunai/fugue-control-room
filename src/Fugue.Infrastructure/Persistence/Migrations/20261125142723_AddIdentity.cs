@@ -114,7 +114,8 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                     updated_by = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     is_deleted = table.Column<bool>(type: "boolean", nullable: false),
                     deleted_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    deleted_by = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true)
+                    deleted_by = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {

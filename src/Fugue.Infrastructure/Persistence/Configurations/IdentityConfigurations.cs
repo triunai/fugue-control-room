@@ -80,6 +80,7 @@ internal sealed class ModuleConfiguration : IEntityTypeConfiguration<Module>
         b.Property(e => e.Code).HasMaxLength(64).IsRequired();
         b.Property(e => e.Name).HasMaxLength(200).IsRequired();
         b.Property(e => e.Description).HasMaxLength(500);
+        b.Property(e => e.RowVersion).HasColumnName("xmin").HasColumnType("xid").IsRowVersion(); // system column, ETag
         b.HasIndex(e => e.Code).IsUnique().HasDatabaseName("ux_modules_code");
         IdentityMapping.Audit(b);
         IdentityMapping.Soft(b);

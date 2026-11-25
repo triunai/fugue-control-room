@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Fugue.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(FugueDbContext))]
-    [Migration("20261125141352_AddIdentity")]
+    [Migration("20261125142723_AddIdentity")]
     partial class AddIdentity
     {
         /// <inheritdoc />
@@ -438,6 +438,12 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("name");
 
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -467,6 +473,7 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                             IsActive = true,
                             IsDeleted = false,
                             Name = "System",
+                            RowVersion = 0u,
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = "migration"
                         },
@@ -479,6 +486,7 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                             IsActive = true,
                             IsDeleted = false,
                             Name = "Customers",
+                            RowVersion = 0u,
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = "migration"
                         },
@@ -491,6 +499,7 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                             IsActive = true,
                             IsDeleted = false,
                             Name = "Identity",
+                            RowVersion = 0u,
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = "migration"
                         });

@@ -1,0 +1,26 @@
+meta {
+  name: List modules (config, db and effective state)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/modules
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  if (res.status === 200) {
+    const c = res.body.find(function (m) { return m.code === "CUSTOMERS"; });
+    bru.setVar("customersModuleVersion", String(c.version));
+  }
+}
+
+tests {
+  test("200 with SYSTEM, CUSTOMERS and IDENTITY, all effective", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.map(function (m) { return m.code; })).to.eql(["CUSTOMERS", "IDENTITY", "SYSTEM"]);
+    res.body.forEach(function (m) { expect(m.effective).to.equal(m.configEnabled && m.dbActive); });
+  });
+}

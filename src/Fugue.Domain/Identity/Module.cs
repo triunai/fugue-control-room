@@ -1,10 +1,11 @@
 using Fugue.Domain.Abstractions;
 using Fugue.Domain.Ids;
+using Fugue.Domain.Results;
 
 namespace Fugue.Domain.Identity;
 
 /// <summary>A feature area of the API; the unit that can be switched off.</summary>
-public sealed class Module : IAuditable, ISoftDeletable
+public sealed class Module : IAuditable, ISoftDeletable, IVersioned
 {
     public ModuleId Id { get; set; }
 
@@ -30,4 +31,9 @@ public sealed class Module : IAuditable, ISoftDeletable
     public DateTimeOffset? DeletedAt { get; set; }
 
     public string? DeletedBy { get; set; }
+
+    /// <summary>Postgres <c>xmin</c>; the optimistic-concurrency token (the ETag of a module).</summary>
+    public uint RowVersion { get; private set; }
+
+    long IVersioned.Version => RowVersion;
 }

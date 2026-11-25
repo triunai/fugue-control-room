@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using FluentValidation;
 using Fugue.Api.Auth;
 using Fugue.Api.Controllers;
+using Fugue.Api.Modules;
 using Fugue.Domain.Abstractions;
 using Fugue.Domain.Ids;
 using Fugue.Infrastructure.Persistence;
@@ -152,6 +153,28 @@ public sealed class FitnessTests
             .Where(x => !catalog.Contains(x.a.Permission)).Select(x => $"{x.m.DeclaringType!.Name}.{x.m.Name}:{x.a.Permission}");
 
         AssertRatchet("permission-literals", bad);
+    }
+
+    [Fact]
+    public void Fitness_Modules_every_feature_controller_carries_exactly_one_Module_attribute()
+    {
+        // System controllers (token issuance, diagnostics, module management itself) are the allowlist baseline.
+        IEnumerable<string> bad = Controllers()
+            .Where(c => c.GetCustomAttributes<ModuleAttribute>(inherit: false).Count() != 1)
+            .Select(c => c.Name);
+
+        AssertRatchet("module-attribute", bad);
+    }
+
+    [Fact]
+    public void Fitness_Modules_every_Module_attribute_names_a_seeded_module()
+    {
+        string[] seeded = [Fugue.Domain.Identity.ModuleCodes.System, Fugue.Domain.Identity.ModuleCodes.Customers, Fugue.Domain.Identity.ModuleCodes.Identity];
+        IEnumerable<string> bad = Controllers()
+            .SelectMany(c => c.GetCustomAttributes<ModuleAttribute>(inherit: false).Select(a => (c, a)))
+            .Where(x => !seeded.Contains(x.a.Code)).Select(x => $"{x.c.Name}:{x.a.Code}");
+
+        AssertRatchet("module-codes", bad);
     }
 
     [Fact]

@@ -1,5 +1,6 @@
 using Fugue.Api.Auth;
 using Fugue.Api.Contracts;
+using Fugue.Api.Modules;
 using Fugue.Application.Features.Customers;
 using Fugue.Application.Features.Customers.Commands;
 using Fugue.Application.Features.Customers.Queries;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Fugue.Api.Controllers;
 
 /// <summary>Customers: a stateful aggregate rehearsing ETag/If-Match, keyset paging and guarded transitions. One-liners only.</summary>
+[Module(ModuleCodes.Customers)]
 public sealed class CustomersController : ApiControllerBase
 {
     [HttpPost]

@@ -1,0 +1,2 @@
+# Shrink-only baseline for Fitness rule "module-codes". One violation per line; empty is the goal.
+# A line that is no longer a violation FAILS the test: delete it (ratchet).

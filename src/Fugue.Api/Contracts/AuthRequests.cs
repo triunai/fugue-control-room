@@ -7,3 +7,5 @@ public interface ILoginIdentifier
 }
 
 public sealed record LoginRequest(string Email, string Password) : ILoginIdentifier;
+
+public sealed record SetModuleActiveRequest(bool IsActive);

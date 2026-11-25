@@ -81,6 +81,7 @@ try
     app.UseExceptionHandler();
     app.UseStatusCodePages(); // empty 404/405/415 etc. become problem+json via AddProblemDetails
     app.UseAuthentication();
+    app.UseMiddleware<Fugue.Api.Modules.ModuleGateMiddleware>();
     app.UseRateLimiter();
     app.UseAuthorization();
     app.MapControllers();

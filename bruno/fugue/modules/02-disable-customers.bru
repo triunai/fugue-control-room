@@ -1,0 +1,33 @@
+meta {
+  name: Disable CUSTOMERS (204, If-Match)
+  type: http
+  seq: 2
+}
+
+patch {
+  url: {{baseUrl}}/api/v1/modules/CUSTOMERS
+  body: json
+  auth: inherit
+}
+
+headers {
+  If-Match: "{{customersModuleVersion}}"
+}
+
+body:json {
+  {
+    "isActive": false
+  }
+}
+
+script:post-response {
+  if (res.status === 204) {
+    bru.setVar("customersModuleVersion", res.headers["etag"].replace(/"/g, ""));
+  }
+}
+
+tests {
+  test("204 and a new ETag", function () {
+    expect(res.status).to.equal(204);
+  });
+}
