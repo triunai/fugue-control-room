@@ -50,9 +50,3 @@ ID: W-013
 Status: not started. MED/LOW findings of the S3 build review that were deferred, not fixed: create-path email oracle (per-owner uniqueness or generic 409), per-email limiter charging successes, group/override self-target and 23505 races, access_audit reason_code truncation and HMAC subkey, module PATCH audit, module config parsing and SYSTEM config-disable, tenant is_active, anonymous audit retention.
 Resume: read `docs/reviews/s3/rv-s3-build.md`, decide the email-uniqueness rule (owner call), then fix MEDs first with pins.
 Refs: `docs/reviews/s3/rv-s3-build.md`, ADR-008
-
-### WS-14 — Commit traceability index — 🟢 ACTIVE (2026-11-26)
-ID: W-014
-Status: owner asked to link project logs, ADRs and workstreams with commits, both ways. Building multi-id `Refs:` in the commit gate and `scripts/spine/trace-index.mjs`, which generates `docs/traceability.md` from git history.
-Resume: wire into wrap-session, close-workstream and a pre-push advisory stale check; run `npm run trace`.
-Refs: D-013, ADR-007, `hygiene.md`

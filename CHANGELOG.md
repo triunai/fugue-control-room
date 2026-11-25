@@ -4,6 +4,16 @@ Tracks notable changes across migrations, API contracts, and project documentati
 
 > **ADR links.** An entry that reflects a real architectural decision cites it as `(ADR-NNN)`; the ADR lives in `docs/adr/`.
 
+## 2026-11-25 — Closed W-014: Commit traceability index
+WS: WS-14
+Closed: W-014 (WS-14) Commit traceability index
+Outcome: Refs: now takes several ids per trailer and resolves closed W via log, archive or CHANGELOG. trace-index.mjs generates docs/traceability.md (commit <-> W <-> ADR <-> D) from git log and the committed docs; npm run trace, a pre-push advisory stale check, and wrap-session wiring added. close-workstream now records D/ADR ids from a W's commits. test:scripts 83 green.
+Commits:
+- 5704fc6 docs(spine): open W-014 commit traceability index on the board
+- e0b8f3c feat(spine): multi-id Refs gate and a generated commit traceability index
+Decisions: D-013, ADR-007
+Follow-ups: none
+
 ## 2026-11-25 — Closed W-005: S3 identity: JWT auth, lean UAM v3, module management
 WS: WS-05
 Closed: W-005 (WS-05) S3 identity: JWT auth, lean UAM v3, module management
