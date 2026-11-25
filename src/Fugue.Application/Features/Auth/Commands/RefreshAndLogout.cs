@@ -23,9 +23,9 @@ public sealed class RefreshTokenHandler(IRefreshTokenStore store, IAccessTokenIs
         DateTimeOffset now = time.GetUtcNow();
         (string next, string nextHash) = RefreshTokenSecret.Generate();
 
-        // The store needs the user and family of the old token to build the new one; it fills them in on success.
-        var placeholder = new NewRefreshToken(default, nextHash, Guid.Empty, now + issuer.RefreshLifetime, command.Client);
-        RotationResult result = await store.RotateAsync(RefreshTokenSecret.Hash(command.RefreshToken), placeholder, now, cancellationToken);
+        // The store takes the user and family from the token it claims; only the replacement's secret, lifetime and client come from here.
+        RotationResult result = await store.RotateAsync(
+            RefreshTokenSecret.Hash(command.RefreshToken), new RotationRequest(nextHash, now + issuer.RefreshLifetime, command.Client), now, cancellationToken);
         if (result.Outcome != RotationOutcome.Rotated || result.UserId is not { } userId)
         {
             string name = result.Outcome == RotationOutcome.Reused ? "refresh_reuse" : "refresh";

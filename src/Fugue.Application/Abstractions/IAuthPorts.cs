@@ -49,6 +49,9 @@ public interface IAccessTokenIssuer
 /// <summary>A refresh token about to be stored: only <see cref="TokenHash"/> ever reaches the database.</summary>
 public sealed record NewRefreshToken(UserId UserId, string TokenHash, Guid FamilyId, DateTimeOffset ExpiresAt, ClientInfo Client);
 
+/// <summary>The replacement token of a rotation: the store supplies the user and family from the token it claims.</summary>
+public sealed record RotationRequest(string NewTokenHash, DateTimeOffset ExpiresAt, ClientInfo Client);
+
 public enum RotationOutcome
 {
     Rotated,
@@ -68,7 +71,7 @@ public interface IRefreshTokenStore
     Task CreateAsync(NewRefreshToken token, CancellationToken ct);
 
     /// <summary>Atomically revokes <paramref name="oldHash"/> and stores <paramref name="next"/> in the same family, or classifies why not (reuse revokes the family).</summary>
-    Task<RotationResult> RotateAsync(string oldHash, NewRefreshToken next, DateTimeOffset now, CancellationToken ct);
+    Task<RotationResult> RotateAsync(string oldHash, RotationRequest next, DateTimeOffset now, CancellationToken ct);
 
     /// <summary>Revokes the whole family of the token with this hash. Unknown hashes are ignored (no oracle).</summary>
     Task RevokeFamilyAsync(string tokenHash, DateTimeOffset now, CancellationToken ct);

@@ -1,5 +1,6 @@
 using FluentResults;
 using FluentValidation;
+using Fugue.Domain.Abstractions;
 using Fugue.Domain.Ids;
 using Mediator;
 
@@ -17,10 +18,12 @@ public sealed class AddGroupMemberValidator : AbstractValidator<AddGroupMemberCo
     }
 }
 
-public sealed class AddGroupMemberHandler(IGroupAdmin groups) : ICommandHandler<AddGroupMemberCommand, Result>
+public sealed class AddGroupMemberHandler(IGroupAdmin groups, ICurrentUser currentUser) : ICommandHandler<AddGroupMemberCommand, Result>
 {
     public async ValueTask<Result> Handle(AddGroupMemberCommand command, CancellationToken cancellationToken) =>
-        await groups.AddMemberAsync(command.GroupCode.Trim().ToUpperInvariant(), command.UserId, cancellationToken);
+        currentUser.UserId == command.UserId.Value
+            ? Result.Fail(GroupErrors.SelfTarget())
+            : await groups.AddMemberAsync(command.GroupCode.Trim().ToUpperInvariant(), command.UserId, cancellationToken);
 }
 
 /// <summary>Contract.</summary>
@@ -35,8 +38,10 @@ public sealed class RemoveGroupMemberValidator : AbstractValidator<RemoveGroupMe
     }
 }
 
-public sealed class RemoveGroupMemberHandler(IGroupAdmin groups) : ICommandHandler<RemoveGroupMemberCommand, Result>
+public sealed class RemoveGroupMemberHandler(IGroupAdmin groups, ICurrentUser currentUser) : ICommandHandler<RemoveGroupMemberCommand, Result>
 {
     public async ValueTask<Result> Handle(RemoveGroupMemberCommand command, CancellationToken cancellationToken) =>
-        await groups.RemoveMemberAsync(command.GroupCode.Trim().ToUpperInvariant(), command.UserId, cancellationToken);
+        currentUser.UserId == command.UserId.Value
+            ? Result.Fail(GroupErrors.SelfTarget())
+            : await groups.RemoveMemberAsync(command.GroupCode.Trim().ToUpperInvariant(), command.UserId, cancellationToken);
 }

@@ -10,7 +10,7 @@ namespace Fugue.Infrastructure.Identity;
 /// role grants (direct roles, plus roles of active groups the user belongs to; only active roles) plus unexpired allow
 /// overrides, minus unexpired deny overrides (deny > allow > role); an override is expired when
 /// <c>expires_at &lt;= now</c> (now from <see cref="TimeProvider"/>); permissions under deleted modules, resources or
-/// actions, inactive modules, or modules switched off in configuration are dropped. No cache.
+/// actions, inactive modules, users of an inactive tenant, or modules switched off in configuration are dropped. No cache.
 /// </summary>
 internal sealed class UserAccessReader(FugueDbContext db, TimeProvider time, IModuleConfig moduleConfig) : IUserAccessReader
 {
@@ -21,7 +21,9 @@ internal sealed class UserAccessReader(FugueDbContext db, TimeProvider time, IMo
 
         List<Row> rows = await db.Database.SqlQuery<Row>($"""
             WITH u AS (
-              SELECT id, tenant_id FROM users WHERE id = {userId.Value} AND is_active AND NOT is_deleted
+              SELECT u0.id, u0.tenant_id FROM users u0
+                WHERE u0.id = {userId.Value} AND u0.is_active AND NOT u0.is_deleted
+                  AND (u0.tenant_id IS NULL OR EXISTS (SELECT 1 FROM tenants t WHERE t.id = u0.tenant_id AND t.is_active))
             ),
             role_ids AS (
               SELECT ur.role_id FROM user_roles ur JOIN u ON u.id = ur.user_id

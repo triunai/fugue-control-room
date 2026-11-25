@@ -39,12 +39,12 @@ internal sealed class AccessAuditWriter(
                     OccurredAt = stamp.Capture().Now,
                     entry.Event,
                     entry.Outcome,
-                    entry.ReasonCode,
+                    ReasonCode = Fit(entry.ReasonCode, 64),
                     UserId = entry.UserId?.Value,
                     EmailHash = entry.Email is null ? null : HashEmail(entry.Email),
-                    Ip = entry.Client?.Ip,
-                    UserAgent = entry.Client?.UserAgent,
-                    CorrelationId = correlation.CorrelationId,
+                    Ip = Fit(entry.Client?.Ip, 64),
+                    UserAgent = Fit(entry.Client?.UserAgent, 256),
+                    CorrelationId = Fit(correlation.CorrelationId, 64),
                 },
                 ct);
         }
@@ -54,12 +54,31 @@ internal sealed class AccessAuditWriter(
         }
     }
 
-    private string HashEmail(string email)
+    /// <summary>
+    /// Clips a value to its column width. An over-long reason (a permission or module code is caller-influenced) would otherwise fail the
+    /// insert with 22001, and a best-effort writer would swallow that and lose the row.
+    /// </summary>
+    internal static string? Fit(string? value, int max) => value is { } v && v.Length > max ? v[..max] : value;
+
+    /// <summary>
+    /// HMAC of the canonical email under a SUBKEY derived from the signing key (never the signing key itself, so a leaked hash set says
+    /// nothing about token signing). With no usable signing key no hash is stored: a constant fallback key would make the hashes
+    /// reversible by a dictionary.
+    /// </summary>
+    private string? HashEmail(string email)
     {
         string? key = configuration["Auth:SigningKey"];
-        byte[] keyBytes = key is not null && TryDecode(key) is { } decoded ? decoded : Encoding.UTF8.GetBytes("fugue-access-audit");
-        return Convert.ToHexString(HMACSHA256.HashData(keyBytes, Encoding.UTF8.GetBytes(EmailKey.Canonicalize(email)))).ToLowerInvariant();
+        if (key is null || TryDecode(key) is not { } keyBytes)
+        {
+            return null;
+        }
+
+        byte[] subkey = HMACSHA256.HashData(keyBytes, Encoding.UTF8.GetBytes(SubkeyLabel));
+        return Convert.ToHexString(HMACSHA256.HashData(subkey, Encoding.UTF8.GetBytes(EmailKey.Canonicalize(email)))).ToLowerInvariant();
     }
+
+    /// <summary>The derivation label; changing it changes every future hash (a new version suffix).</summary>
+    internal const string SubkeyLabel = "fugue:access-audit:email:v1";
 
     private static byte[]? TryDecode(string key)
     {

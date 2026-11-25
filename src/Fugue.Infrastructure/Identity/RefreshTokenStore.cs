@@ -17,11 +17,11 @@ internal sealed class RefreshTokenStore(FugueDbContext db, IAuditStamp stamp) : 
 {
     public async Task CreateAsync(NewRefreshToken token, CancellationToken ct)
     {
-        db.RefreshTokens.Add(Build(RefreshTokenId.New(), token.UserId, token.FamilyId, token));
+        db.RefreshTokens.Add(Build(RefreshTokenId.New(), token.UserId, token.FamilyId, token.TokenHash, token.ExpiresAt, token.Client));
         await db.SaveChangesAsync(ct);
     }
 
-    public async Task<RotationResult> RotateAsync(string oldHash, NewRefreshToken next, DateTimeOffset now, CancellationToken ct)
+    public async Task<RotationResult> RotateAsync(string oldHash, RotationRequest next, DateTimeOffset now, CancellationToken ct)
     {
         RefreshToken? old = await db.RefreshTokens.AsNoTracking().FirstOrDefaultAsync(t => t.TokenHash == oldHash, ct);
         if (old is null)
@@ -38,12 +38,13 @@ internal sealed class RefreshTokenStore(FugueDbContext db, IAuditStamp stamp) : 
             int claimed = await db.Database.ExecuteSqlInterpolatedAsync($"""
                 UPDATE refresh_tokens SET revoked_at = {now}, replaced_by_id = {newId.Value}, updated_at = {s.Now}, updated_by = {s.Actor}
                 WHERE id = {old.Id.Value} AND revoked_at IS NULL AND expires_at > {now}
-                  AND EXISTS (SELECT 1 FROM users u WHERE u.id = refresh_tokens.user_id AND u.is_active AND NOT u.is_deleted)
+                  AND EXISTS (SELECT 1 FROM users u WHERE u.id = refresh_tokens.user_id AND u.is_active AND NOT u.is_deleted
+                              AND (u.tenant_id IS NULL OR EXISTS (SELECT 1 FROM tenants t WHERE t.id = u.tenant_id AND t.is_active)))
                 """, ct);
 
             if (claimed == 1)
             {
-                db.RefreshTokens.Add(Build(newId, old.UserId, old.FamilyId, next));
+                db.RefreshTokens.Add(Build(newId, old.UserId, old.FamilyId, next.NewTokenHash, next.ExpiresAt, next.Client));
                 await db.SaveChangesAsync(ct);
                 if (own is not null)
                 {
@@ -126,14 +127,14 @@ internal sealed class RefreshTokenStore(FugueDbContext db, IAuditStamp stamp) : 
     private Task<int> LockFamilyAsync(Guid family, CancellationToken ct) =>
         db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({family.ToString()}, 0))", ct);
 
-    private static RefreshToken Build(RefreshTokenId id, UserId user, Guid family, NewRefreshToken t) => new()
+    private static RefreshToken Build(RefreshTokenId id, UserId user, Guid family, string tokenHash, DateTimeOffset expiresAt, ClientInfo client) => new()
     {
         Id = id,
         UserId = user,
-        TokenHash = t.TokenHash,
+        TokenHash = tokenHash,
         FamilyId = family,
-        ExpiresAt = t.ExpiresAt,
-        CreatedIp = t.Client.Ip,
-        CreatedUserAgent = t.Client.UserAgent,
+        ExpiresAt = expiresAt,
+        CreatedIp = client.Ip,
+        CreatedUserAgent = client.UserAgent,
     };
 }

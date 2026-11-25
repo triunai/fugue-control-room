@@ -5,6 +5,7 @@ using Fugue.Domain.Identity;
 using Fugue.Domain.Ids;
 using Fugue.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Fugue.Infrastructure.Identity;
 
@@ -45,7 +46,15 @@ internal sealed class GroupAdmin(FugueDbContext db, IGrantAuditWriter audit) : I
 
         db.GroupMembers.Add(new GroupMember { GroupId = group.Id, UserId = userId });
         audit.Record("group", group.Id.Value, userId.Value, "granted", null, afterJson: $"{{\"group\":\"{group.Code}\"}}");
-        await db.SaveChangesAsync(ct); // membership and its grant_audit row commit together
+        try
+        {
+            await db.SaveChangesAsync(ct); // membership and its grant_audit row commit together
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
+        {
+            return Result.Ok(); // a concurrent add of the same member won: same end state, and that request wrote the audit row
+        }
+
         return Result.Ok();
     }
 
@@ -65,7 +74,15 @@ internal sealed class GroupAdmin(FugueDbContext db, IGrantAuditWriter audit) : I
 
         db.GroupMembers.Remove(member);
         audit.Record("group", group.Id.Value, userId.Value, "revoked", null, beforeJson: $"{{\"group\":\"{group.Code}\"}}");
-        await db.SaveChangesAsync(ct);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Result.Fail(GroupErrors.MemberNotFound()); // a concurrent remove won
+        }
+
         return Result.Ok();
     }
 }

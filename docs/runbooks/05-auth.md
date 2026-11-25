@@ -59,7 +59,7 @@ A **module** is a feature area (`CUSTOMERS`, `IDENTITY`, and the protected `SYST
 
 | Switch | Where | Meaning |
 |---|---|---|
-| Configuration | `Modules:CUSTOMERS:Enabled` (appsettings or env `Modules__CUSTOMERS__Enabled=false`), default on | the hard kill switch; restart or config reload to change; the database cannot override it |
+| Configuration | `Modules:CUSTOMERS:Enabled` (appsettings or env `Modules__CUSTOMERS__Enabled=false`), default on | the hard kill switch; restart or config reload to change; the database cannot override it. Fails closed: anything other than true, 1, yes, on (or blank/absent) switches the module off, so a typo never leaves it running. `SYSTEM` ignores it (module management cannot lock itself out) |
 | Registry | `modules.is_active`, changed by `PATCH /api/v1/modules/{code}` | the runtime switch |
 
 **Effective enabled = configuration on AND registry on.** A disabled module answers `404` with `"code":"module.disabled"` (never 403: that would confirm the feature exists) and logs one Information line; its permissions also drop out of everyone's effective set. Anonymous callers still get `401`.
@@ -104,14 +104,16 @@ docker compose exec postgres psql -U fugue -d fugue -c "select occurred_at, even
 ```
 Find one request everywhere with its `X-Correlation-Id` (runbook 02). A richer general `audit_log` (field-level diffs) is a later batch; these tables share the unit-of-work transaction and the correlation context it will build on.
 
+Group membership has the same guard: you cannot add or remove yourself (`409 group.self_target`). A user whose tenant has `is_active = false` cannot sign in, refresh or use a live token (`401`, the same uniform failure; no tenant oracle).
+
 ## 9. Overrides: a per-user allow or deny
 
-An override adds (`isAllowed: true`) or removes (`false`) ONE permission for ONE user, optionally until `expiresAt`. **Deny beats allow beats role.** An override whose `expiresAt` is at or before now is expired and ignored; there is one row per user and permission, so setting it again replaces it.
+An override adds (`isAllowed: true`) or removes (`false`) ONE permission for ONE user, optionally until `expiresAt`. **Deny beats allow beats role.** An override whose `expiresAt` is at or before now is expired and ignored; there is one row per user and permission, so setting it again replaces it. Changing or deleting an EXISTING override needs `If-Match` with its current version (the `ETag` of the PUT answer, or `version` in the listing): none is `428 override.if_match_required`, a stale one `412 override.version_mismatch` (also when a concurrent writer created or removed the row), so a stale admin screen cannot silently overwrite a newer change. Creating a new one sends no `If-Match`.
 ```bash
 USER=<the user's id>
-curl -si -X PUT http://localhost:5080/api/v1/overrides/$USER/GROUPS_VIEW -H "Authorization: Bearer $T" -H 'Content-Type: application/json' \
-  -d '{"isAllowed":true,"reason":"covering for support","expiresAt":"2099-01-01T00:00:00Z"}' | head -1
+TAG=$(curl -si -X PUT http://localhost:5080/api/v1/overrides/$USER/GROUPS_VIEW -H "Authorization: Bearer $T" -H 'Content-Type: application/json' \
+  -d '{"isAllowed":true,"reason":"covering for support","expiresAt":"2099-01-01T00:00:00Z"}' | tee /dev/stderr | grep -i '^etag:' | cut -d" " -f2 | tr -d '\r')
 curl -s -H "Authorization: Bearer $T" http://localhost:5080/api/v1/overrides/$USER
-curl -si -X DELETE http://localhost:5080/api/v1/overrides/$USER/GROUPS_VIEW -H "Authorization: Bearer $T" | head -1
+curl -si -X DELETE http://localhost:5080/api/v1/overrides/$USER/GROUPS_VIEW -H "Authorization: Bearer $T" -H "If-Match: $TAG" | head -1
 ```
-Expect: `204`, the listing with `"expired":false`, then `204`. Needs `OVERRIDES_MANAGE` (set, delete) or `OVERRIDES_VIEW` (list): admin only by default. The change is effective on the user's next request (nothing is cached) and writes a `grant_audit` row (`permission_override`, granted or revoked, before and after JSON). You cannot change your own overrides (`409 override.self_target`), an expiry in the past is `400`, unknown users and permissions are `404`. A deny on `CUSTOMERS_ALL` is the way to turn a staff user into a restricted one that only sees and creates its own customers. Expiry is evaluated when permissions are read; nothing writes an `expired` audit row (a sweeper is a follow-up).
+Expect: `204` with an `ETag`, the listing with `"expired":false`, then `204`. Needs `OVERRIDES_MANAGE` (set, delete) or `OVERRIDES_VIEW` (list): admin only by default. The change is effective on the user's next request (nothing is cached) and writes a `grant_audit` row (`permission_override`, granted or revoked, before and after JSON). You cannot change your own overrides (`409 override.self_target`), an expiry in the past is `400`, unknown users and permissions are `404`. A deny on `CUSTOMERS_ALL` is the way to turn a staff user into a restricted one that only sees and creates its own customers. Expiry is evaluated when permissions are read; nothing writes an `expired` audit row (a sweeper is a follow-up).
