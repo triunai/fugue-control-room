@@ -38,3 +38,15 @@ ID: W-010
 Status: `scripts/codex-gate.mjs` invocation (`codex exec review --base <sha> ... -`) taken from `--help`, never run against a real seam push.
 Resume: make a throwaway seam change on a branch, run `node scripts/codex-gate.mjs --dry-run --base=<ref>`, then once for real; confirm `docs/reviews/codex/` receives text and the failure path records "failed". Also confirm lefthook gives git's stdin to both `spine-nudge` and `codex-gate` on a real push.
 Refs: D-014, ADR-007
+
+### WS-11 — Project README — ▶ ACTIVE (2026-11-25)
+ID: W-011
+Status: written by a research agent, stale status lines corrected by the lead; committing now.
+Resume: refresh Status/Highlights whenever a batch lands.
+Refs: `README.md`
+
+### WS-12 — Rich append-only audit log — ⏸ PARKED (2026-11-25)
+ID: W-012
+Status: owner asked for a rich `audit_log` (field-level before/after JSONB, actor, action, outcome, correlation/saga/trace ids, HTTP context, PII masking via AuditOptions, never sampled, same transaction as the change, append-only trigger, query endpoint behind `AUDIT_READ`). Runs after S3 so migrations don't collide.
+Resume: plan after W-005 closes; build on S3's IUnitOfWork + grant/access audit seam.
+Refs: ADR-006
