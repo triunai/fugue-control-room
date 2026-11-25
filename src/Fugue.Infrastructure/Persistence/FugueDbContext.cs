@@ -1,3 +1,4 @@
+using Fugue.Domain.Audit;
 using Fugue.Domain.Customers;
 using Fugue.Domain.Identity;
 using Fugue.Infrastructure.Persistence.Ids;
@@ -40,6 +41,8 @@ public sealed class FugueDbContext(DbContextOptions<FugueDbContext> options) : D
     public DbSet<GrantAudit> GrantAudits => Set<GrantAudit>();
 
     public DbSet<AccessAudit> AccessAudits => Set<AccessAudit>();
+
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

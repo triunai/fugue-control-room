@@ -39,11 +39,11 @@ Status: written by a research agent, stale status lines corrected by the lead; c
 Resume: refresh Status/Highlights whenever a batch lands.
 Refs: `README.md`
 
-### WS-12 — Rich append-only audit log — ⏸ PARKED (2026-11-25)
+### WS-12 — Rich append-only audit log — 🟢 ACTIVE (2026-11-26)
 ID: W-012
 Status: owner asked for a rich `audit_log` (field-level before/after JSONB, actor, action, outcome, correlation/saga/trace ids, HTTP context, PII masking via AuditOptions, never sampled, same transaction as the change, append-only trigger, query endpoint behind `AUDIT_READ`). Runs after S3 so migrations don't collide.
-Resume: plan after W-005 closes; build on S3's IUnitOfWork + grant/access audit seam.
-Refs: ADR-006
+Resume: plan `docs/plans/w012-audit-log.md` written; build in three slices (schema + trigger, capture + failures, read API + docs), then Codex review.
+Refs: ADR-006, `docs/plans/w012-audit-log.md`
 
 ### WS-13 — S3 review follow-ups (create email oracle, login limiter DoS, audit hardening) — ⏸ PARKED (2026-11-25)
 ID: W-013

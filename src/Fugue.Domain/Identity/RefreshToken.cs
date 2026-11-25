@@ -1,9 +1,11 @@
 using Fugue.Domain.Abstractions;
+using Fugue.Domain.Audit;
 using Fugue.Domain.Ids;
 
 namespace Fugue.Domain.Identity;
 
-/// <summary>A refresh token session (UAM <c>user_sessions</c>).</summary>
+/// <summary>A refresh token session (UAM <c>user_sessions</c>). Not audited in <c>audit_log</c>: sign-in, refresh and logout live in <c>access_audit</c>.</summary>
+[NoAudit]
 public sealed class RefreshToken : IAuditable
 {
     public RefreshTokenId Id { get; set; }
@@ -11,6 +13,7 @@ public sealed class RefreshToken : IAuditable
     public UserId UserId { get; set; }
 
     /// <summary>SHA-256 of the opaque token (hex). The token itself is never stored.</summary>
+    [AuditMask]
     public string TokenHash { get; set; } = string.Empty;
 
     /// <summary>All tokens descended from one login share a family; reuse of a revoked one revokes the family.</summary>

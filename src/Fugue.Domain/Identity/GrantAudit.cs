@@ -1,9 +1,11 @@
 using Fugue.Domain.Abstractions;
+using Fugue.Domain.Audit;
 using Fugue.Domain.Ids;
 
 namespace Fugue.Domain.Identity;
 
 /// <summary>Append-only record of a role, group-membership or override grant or revoke, written in the grant's transaction.</summary>
+[NoAudit]
 public sealed class GrantAudit
 {
     public GrantAuditId Id { get; set; }

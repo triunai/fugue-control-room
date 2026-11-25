@@ -2,3 +2,4 @@
 # A line that is no longer a violation FAILS the test: delete it (ratchet).
 GrantAudit
 AccessAudit
+AuditLog

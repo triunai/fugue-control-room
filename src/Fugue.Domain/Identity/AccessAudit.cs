@@ -1,9 +1,11 @@
 using Fugue.Domain.Abstractions;
+using Fugue.Domain.Audit;
 using Fugue.Domain.Ids;
 
 namespace Fugue.Domain.Identity;
 
 /// <summary>Append-only authentication and authorization event. Never holds a password or token; email is hashed.</summary>
+[NoAudit]
 public sealed class AccessAudit
 {
     public AccessAuditId Id { get; set; }

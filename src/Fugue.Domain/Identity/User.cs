@@ -1,4 +1,5 @@
 using Fugue.Domain.Abstractions;
+using Fugue.Domain.Audit;
 using Fugue.Domain.Ids;
 
 namespace Fugue.Domain.Identity;
@@ -22,6 +23,7 @@ public sealed class User : IAuditable, ISoftDeletable
     public bool LocalLoginEnabled { get; set; } = true;
 
     /// <summary>The encoded <c>PasswordHasher</c> output (salt and parameters inside).</summary>
+    [AuditMask]
     public string PasswordHash { get; set; } = string.Empty;
 
     public DateTimeOffset PasswordLastChangedAt { get; set; }

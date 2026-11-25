@@ -18,9 +18,9 @@ script:post-response {
 }
 
 tests {
-  test("200 with SYSTEM, CUSTOMERS and IDENTITY, all effective", function () {
+  test("200 with AUDIT, CUSTOMERS, IDENTITY and SYSTEM, all effective", function () {
     expect(res.status).to.equal(200);
-    expect(res.body.map(function (m) { return m.code; })).to.eql(["CUSTOMERS", "IDENTITY", "SYSTEM"]);
+    expect(res.body.map(function (m) { return m.code; })).to.eql(["AUDIT", "CUSTOMERS", "IDENTITY", "SYSTEM"]);
     res.body.forEach(function (m) { expect(m.effective).to.equal(m.configEnabled && m.dbActive); });
   });
 }

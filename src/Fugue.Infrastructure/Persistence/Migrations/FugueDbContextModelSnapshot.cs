@@ -22,6 +22,140 @@ namespace Fugue.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Fugue.Domain.Audit.AuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("action");
+
+                    b.Property<string>("ActorDisplay")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("actor_display");
+
+                    b.Property<string>("ActorType")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("actor_type");
+
+                    b.Property<Guid?>("ActorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<string>("Changes")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("changes");
+
+                    b.Property<string>("ClientIp")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("client_ip");
+
+                    b.Property<string>("CorrelationId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("correlation_id");
+
+                    b.Property<string>("EntityId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("EntityType")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("entity_type");
+
+                    b.Property<string>("ErrorCode")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("error_code");
+
+                    b.Property<string>("HttpMethod")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("http_method");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("metadata");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("outcome");
+
+                    b.Property<string>("PermissionUsed")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("permission_used");
+
+                    b.Property<string>("RouteTemplate")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("route_template");
+
+                    b.Property<string>("SagaId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("saga_id");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<string>("TraceId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("trace_id");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("user_agent");
+
+                    b.HasKey("Id")
+                        .HasName("pk_audit_log");
+
+                    b.HasIndex("CorrelationId")
+                        .HasDatabaseName("ix_audit_log_correlation_id");
+
+                    b.HasIndex("OccurredAt", "Id")
+                        .IsDescending()
+                        .HasDatabaseName("ix_audit_log_occurred_at_id");
+
+                    b.HasIndex("Action", "OccurredAt", "Id")
+                        .IsDescending(false, true, true)
+                        .HasDatabaseName("ix_audit_log_action");
+
+                    b.HasIndex("ActorUserId", "OccurredAt", "Id")
+                        .IsDescending(false, true, true)
+                        .HasDatabaseName("ix_audit_log_actor");
+
+                    b.HasIndex("EntityType", "EntityId", "OccurredAt", "Id")
+                        .IsDescending(false, false, true, true)
+                        .HasDatabaseName("ix_audit_log_entity");
+
+                    b.ToTable("audit_log", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_audit_log_actor_type", "actor_type IN ('user', 'system', 'service')");
+
+                            t.HasCheckConstraint("ck_audit_log_outcome", "outcome IN ('success', 'failure')");
+                        });
+                });
+
             modelBuilder.Entity("Fugue.Domain.Customers.Customer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -499,6 +633,19 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                             RowVersion = 0u,
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8001-000000000004"),
+                            Code = "AUDIT",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "Audit",
+                            RowVersion = 0u,
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
                         });
                 });
 
@@ -637,6 +784,17 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                             CreatedBy = "migration",
                             IsDeleted = false,
                             Name = "Manage",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8003-000000000008"),
+                            Code = "READ",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            Name = "Read",
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = "migration"
                         });
@@ -835,6 +993,17 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                             ResourceId = new Guid("01900000-0000-7000-8002-000000000001"),
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000013"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000008"),
+                            Code = "AUDIT_READ",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000005"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
                         });
                 });
 
@@ -1026,6 +1195,18 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                             IsDeleted = false,
                             ModuleId = new Guid("01900000-0000-7000-8001-000000000003"),
                             Name = "PermissionDefinition overrides",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8002-000000000005"),
+                            Code = "AUDIT",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            ModuleId = new Guid("01900000-0000-7000-8001-000000000004"),
+                            Name = "Audit log",
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = "migration"
                         });
@@ -1272,6 +1453,15 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                         {
                             RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
                             PermissionId = new Guid("01900000-0000-7000-8004-000000000012"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000013"),
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "migration",
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
