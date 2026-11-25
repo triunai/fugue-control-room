@@ -33,12 +33,6 @@ Status: not started; needs S4.
 Resume: plan after S4 lands.
 Refs: `docs/plans/roadmap.md`
 
-### WS-09 — MapStatus: ErrorType to HTTP status (owner's hand-written decision) — ⛔ BLOCKED (2026-11-25)
-ID: W-009
-Status: blocked on the owner. Agents never implement it (D-009). Known-red tests are listed in `docs/hot-state.md`.
-Resume: owner implements `ApiControllerBase.MapStatus`, then re-run `dotnet test` and `npm run api:test`.
-Refs: D-009, ADR-004
-
 ### WS-10 — Verify the Codex gate end to end — ⏸ PARKED (2026-11-25)
 ID: W-010
 Status: `scripts/codex-gate.mjs` invocation (`codex exec review --base <sha> ... -`) taken from `--help`, never run against a real seam push.

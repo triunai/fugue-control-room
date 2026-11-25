@@ -6,6 +6,15 @@ Heading form: `## <YYYY-MM-DD> — <title>`. Entry key = `<date>#<n>`, where n i
 First non-blank body line must be `WS: WS-NN` (comma-separate several) or `WS: (pre-WS)`.
 Then: what was done · what was decided (cite D-NNN) · what is open (cite #NNN).
 
+## 2026-11-25 — Closed W-009: MapStatus: ErrorType to HTTP status
+WS: WS-09
+Closed: W-009 (WS-09) MapStatus: ErrorType to HTTP status
+Outcome: MapStatus implemented as an exhaustive ErrorType-to-status switch (owner-approved). New ErrorType.Unavailable maps to 503; GlobalExceptionHandler answers 503 + Retry-After for transient DbException/TimeoutException; SendNoContent<T> returns 204 + ETag. The 16 red-by-design tests are green; suite 82/82.
+Commits:
+- 4e8ee4e feat(api): map ErrorType to HTTP status, 503 for transient db failures
+Decisions: D-009
+Follow-ups: none
+
 ## 2026-11-25 — Closed W-008: H1 port the AI engineering harness
 WS: WS-08
 Closed: W-008 (WS-08) H1 port the AI engineering harness

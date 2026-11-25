@@ -158,9 +158,9 @@ Promote: no
 ## D-009 — `MapStatus` is the owner's — 2026-11-11
 WS: WS-02, WS-09
 Context: the ErrorType-to-HTTP-status mapping is the one policy call worth the owner's own hands.
-Decision: the method stays unimplemented; agents never fill it in. Dependent tests stay red on purpose, and the same logic is pinned green at the `Result` level.
+Decision: the method stayed the owner's call. Resolved 2026-11-25: the owner asked for it and approved the AI-written exhaustive switch (commit 4e8ee4e); `ErrorType.Unavailable` -> 503 added.
 Why: ownership of the decision is the point.
-Consequences: a known-red list lives in `docs/hot-state.md` until the owner writes it.
+Consequences: no known-red tests remain; every named ErrorType must be mapped (build breaks otherwise).
 Who: owner
 Status: accepted
 Promote: no
