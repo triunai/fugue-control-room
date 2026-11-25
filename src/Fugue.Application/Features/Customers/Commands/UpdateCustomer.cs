@@ -1,5 +1,7 @@
 using FluentResults;
 using FluentValidation;
+using Fugue.Domain.Abstractions;
+using Fugue.Domain.Identity;
 using Fugue.Domain.Ids;
 using Mediator;
 
@@ -19,7 +21,7 @@ public sealed class UpdateCustomerValidator : AbstractValidator<UpdateCustomerCo
     }
 }
 
-public sealed class UpdateCustomerHandler(ICustomerRepository customers)
+public sealed class UpdateCustomerHandler(ICustomerRepository customers, ICurrentUser currentUser)
     : ICommandHandler<UpdateCustomerCommand, Result<CustomerDto>>
 {
     public async ValueTask<Result<CustomerDto>> Handle(UpdateCustomerCommand command, CancellationToken cancellationToken)
@@ -29,10 +31,17 @@ public sealed class UpdateCustomerHandler(ICustomerRepository customers)
             return Result.Fail<CustomerDto>(CustomerErrors.IfMatchRequired());
         }
 
-        Domain.Customers.Customer? customer = await customers.FindForUpdateAsync(command.Id, cancellationToken);
+        Domain.Customers.Customer? customer = await customers.FindForUpdateAsync(command.Id, OwnerScope.From(currentUser), cancellationToken);
         if (customer is null)
         {
             return Result.Fail<CustomerDto>(CustomerErrors.NotFound(command.Id));
+        }
+
+        // Email change is staff-only (Codex finding 5): a self-service edit must not probe the global email index.
+        OwnerScope scope = OwnerScope.From(currentUser);
+        if (!scope.All && EmailKey.Canonicalize(command.Email) != customer.Email)
+        {
+            return Result.Fail<CustomerDto>(CustomerErrors.EmailChangeForbidden());
         }
 
         customer.Update(command.Name, command.Email, command.Phone);

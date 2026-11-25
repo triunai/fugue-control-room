@@ -1,0 +1,23 @@
+auth {
+  mode: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+script:pre-request {
+  // Log in once as the dev admin and reuse the token for every request that inherits collection auth.
+  // The access token lives 15 minutes; re-login when the run is old.
+  const age = Date.now() - Number(bru.getVar("tokenAt") || 0);
+  if (!bru.getVar("token") || age > 10 * 60 * 1000) {
+    const res = await bru.sendRequest({
+      method: "POST",
+      url: bru.getEnvVar("baseUrl") + "/api/v1/auth/token",
+      headers: { "Content-Type": "application/json" },
+      data: { email: bru.getEnvVar("adminEmail"), password: bru.getEnvVar("devPw") }, // secrets-scan:ignore
+    });
+    bru.setVar("token", res.data.accessToken);
+    bru.setVar("tokenAt", String(Date.now()));
+  }
+}

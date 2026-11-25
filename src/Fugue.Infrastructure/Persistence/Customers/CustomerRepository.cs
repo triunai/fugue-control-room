@@ -20,8 +20,8 @@ internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAu
     private const string UniqueViolation = "23505";
 
     private const string InsertSql = """
-        INSERT INTO customers (id, name, email, phone, status, created_at, created_by, updated_at, updated_by)
-        VALUES (@Id, @Name, @Email, @Phone, @Status, @Now, @Actor, @Now, @Actor)
+        INSERT INTO customers (id, name, email, phone, status, user_id, created_at, created_by, updated_at, updated_by)
+        VALUES (@Id, @Name, @Email, @Phone, @Status, @UserId, @Now, @Actor, @Now, @Actor)
         RETURNING xmin::text::bigint
         """;
 
@@ -42,6 +42,7 @@ internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAu
                     customer.Email,
                     customer.Phone,
                     Status = customer.Status.ToString(),
+                    customer.UserId,
                     now.Now,
                     now.Actor,
                 },
@@ -54,11 +55,11 @@ internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAu
         }
     }
 
-    public async Task<CustomerDto?> GetAsync(CustomerId id, CancellationToken ct) =>
-        (await db.Customers.AsNoTracking().Where(c => c.Id == id).Select(Projection).FirstOrDefaultAsync(ct))?.ToDto();
+    public async Task<CustomerDto?> GetAsync(CustomerId id, OwnerScope scope, CancellationToken ct) =>
+        (await Scoped(db.Customers.AsNoTracking(), scope).Where(c => c.Id == id).Select(Projection).FirstOrDefaultAsync(ct))?.ToDto();
 
     public async Task<IReadOnlyList<CustomerDto>> ListAsync(
-        KeysetCursor? after, CustomerStatus? status, string? search, int take, CancellationToken ct)
+        KeysetCursor? after, CustomerStatus? status, string? search, int take, OwnerScope scope, CancellationToken ct)
     {
         IQueryable<Customer> query = after is { } cursor
             // Row-value comparison is not expressible in LINQ; the rest of the query composes on top of this.
@@ -68,7 +69,7 @@ internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAu
                 """)
             : db.Customers;
 
-        query = query.AsNoTracking();
+        query = Scoped(query.AsNoTracking(), scope);
         if (status is { } s)
         {
             query = query.Where(c => c.Status == s);
@@ -84,8 +85,8 @@ internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAu
         return rows.Select(r => r.ToDto()).ToList();
     }
 
-    public Task<Customer?> FindForUpdateAsync(CustomerId id, CancellationToken ct) =>
-        db.Customers.FirstOrDefaultAsync(c => c.Id == id, ct);
+    public Task<Customer?> FindForUpdateAsync(CustomerId id, OwnerScope scope, CancellationToken ct) =>
+        Scoped(db.Customers, scope).FirstOrDefaultAsync(c => c.Id == id, ct);
 
     public async Task<Result<CustomerDto>> SaveAsync(Customer customer, long? expectedVersion, CancellationToken ct)
     {
@@ -151,18 +152,27 @@ internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAu
     }
 
     // xid has no cast to bigint in SQL, so the projection keeps the raw uint and widens it in memory.
+    /// <summary>
+    /// The ownership filter, applied to every read and find-for-update (so keyset pages are filtered too).
+    /// A caller with no owner id and no <c>CUSTOMERS_ALL</c> matches nothing; <c>user_id IS NULL</c> rows are never theirs.
+    /// </summary>
+    private static IQueryable<Customer> Scoped(IQueryable<Customer> query, OwnerScope scope) =>
+        scope.All ? query
+        : scope.OwnerId is { } owner ? query.Where(c => c.UserId == owner)
+        : query.Where(_ => false);
+
     private static readonly Expression<Func<Customer, Row>> Projection = c => new Row(
-        c.Id, c.Name, c.Email, c.Phone, c.Status, c.CreatedAt, c.CreatedBy, c.UpdatedAt, c.UpdatedBy, c.RowVersion);
+        c.Id, c.Name, c.Email, c.Phone, c.Status, c.CreatedAt, c.CreatedBy, c.UpdatedAt, c.UpdatedBy, c.RowVersion, c.UserId);
 
     private sealed record Row(
         CustomerId Id, string Name, string Email, string? Phone, CustomerStatus Status,
-        DateTimeOffset CreatedAt, string CreatedBy, DateTimeOffset UpdatedAt, string UpdatedBy, uint RowVersion)
+        DateTimeOffset CreatedAt, string CreatedBy, DateTimeOffset UpdatedAt, string UpdatedBy, uint RowVersion, UserId? OwnerId)
     {
-        public CustomerDto ToDto() => new(Id, Name, Email, Phone, Status, CreatedAt, CreatedBy, UpdatedAt, UpdatedBy, RowVersion);
+        public CustomerDto ToDto() => new(Id, Name, Email, Phone, Status, CreatedAt, CreatedBy, UpdatedAt, UpdatedBy, RowVersion, OwnerId);
     }
 
     private static CustomerDto ToDto(Customer c, long version) => new(
-        c.Id, c.Name, c.Email, c.Phone, c.Status, c.CreatedAt, c.CreatedBy, c.UpdatedAt, c.UpdatedBy, version);
+        c.Id, c.Name, c.Email, c.Phone, c.Status, c.CreatedAt, c.CreatedBy, c.UpdatedAt, c.UpdatedBy, version, c.UserId);
 
     private static string EscapeLike(string value) =>
         value.Replace("\\", "\\\\", StringComparison.Ordinal)

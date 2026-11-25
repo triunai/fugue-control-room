@@ -19,8 +19,10 @@ internal static class ProbeFactory
                 builder.UseEnvironment(environment);
             }
 
+            TestAuth.Apply(builder, TestAuth.NewKey());
             builder.ConfigureTestServices(services =>
             {
+                TestAuth.OpenFallback(services);
                 services.AddControllers().AddApplicationPart(typeof(ProbeController).Assembly);
                 services.RemoveAll<ISender>();
                 services.AddSingleton<ISender, FakeSender>();

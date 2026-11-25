@@ -3,6 +3,8 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Fugue.Application.Features.Customers;
 using Fugue.Domain.Customers;
+using Fugue.Domain.Identity;
+using Fugue.Domain.Ids;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 
@@ -17,7 +19,7 @@ namespace Fugue.Tests.Persistence;
 [Collection(PostgresCollectionDefinition.Name)]
 public sealed class CustomersApiTests(PostgresFixture db)
 {
-    private readonly HttpClient _client = db.Factory.CreateClient();
+    private readonly HttpClient _client = db.ClientAs(DevUsers.Admin);
 
     [Fact]
     public async Task Lifecycle_create_get_update_suspend_reactivate_delete()
@@ -38,24 +40,25 @@ public sealed class CustomersApiTests(PostgresFixture db)
         Assert.Equal(createdTag, fetched.Headers.ETag!.Tag);
 
         HttpResponseMessage updated = await Send(HttpMethod.Put, customer.Id, createdTag, new { name = "Ada King", email, phone = (string?)null });
-        Assert.Equal(HttpStatusCode.OK, updated.StatusCode);
-        string updatedTag = updated.Headers.ETag!.Tag;
+        Assert.Equal(HttpStatusCode.NoContent, updated.StatusCode);
+        string updatedTag = updated.Headers.ETag!.Tag; // 204 still carries the new ETag so the client can chain If-Match
         Assert.NotEqual(createdTag, updatedTag);
-        Assert.Equal("Ada King", (await updated.Content.ReadFromJsonAsync<CustomerDto>())!.Name);
+        Assert.Equal("Ada King", (await _client.GetFromJsonAsync<CustomerDto>($"/api/v1/customers/{customer.Id}"))!.Name);
 
         HttpResponseMessage suspended = await Send(HttpMethod.Post, $"{customer.Id}/suspend", null, null);
-        Assert.Equal(HttpStatusCode.OK, suspended.StatusCode);
-        Assert.Equal(CustomerStatus.Suspended, (await suspended.Content.ReadFromJsonAsync<CustomerDto>())!.Status);
+        Assert.Equal(HttpStatusCode.NoContent, suspended.StatusCode);
+        Assert.Equal(CustomerStatus.Suspended, (await _client.GetFromJsonAsync<CustomerDto>($"/api/v1/customers/{customer.Id}"))!.Status);
 
         HttpResponseMessage reactivated = await Send(HttpMethod.Post, $"{customer.Id}/reactivate", null, null);
-        Assert.Equal(CustomerStatus.Active, (await reactivated.Content.ReadFromJsonAsync<CustomerDto>())!.Status);
+        Assert.Equal(HttpStatusCode.NoContent, reactivated.StatusCode);
+        Assert.Equal(CustomerStatus.Active, (await _client.GetFromJsonAsync<CustomerDto>($"/api/v1/customers/{customer.Id}"))!.Status);
 
         HttpResponseMessage deleted = await Send(HttpMethod.Delete, customer.Id, reactivated.Headers.ETag!.Tag, null);
         Assert.Equal(HttpStatusCode.NoContent, deleted.StatusCode);
         Assert.Equal(0L, await Scalar<long>("SELECT count(*) FROM customers WHERE email = @e", ("e", email)));
     }
 
-    /// <summary>RED until MapStatus: stale If-Match is 412.</summary>
+    /// <summary>stale If-Match is 412.</summary>
     [Fact]
     public async Task Stale_if_match_is_412_version_mismatch()
     {
@@ -68,7 +71,7 @@ public sealed class CustomersApiTests(PostgresFixture db)
         await AssertProblem(stale, HttpStatusCode.PreconditionFailed, "customer.version_mismatch");
     }
 
-    /// <summary>RED until MapStatus: PUT and DELETE without If-Match are 428.</summary>
+    /// <summary>PUT and DELETE without If-Match are 428.</summary>
     [Fact]
     public async Task Missing_if_match_is_428()
     {
@@ -81,7 +84,7 @@ public sealed class CustomersApiTests(PostgresFixture db)
         await AssertProblem(delete, HttpStatusCode.PreconditionRequired, "customer.if_match_required");
     }
 
-    /// <summary>RED until MapStatus: suspending a suspended customer is 409.</summary>
+    /// <summary>suspending a suspended customer is 409.</summary>
     [Fact]
     public async Task Suspend_twice_is_409_invalid_transition()
     {
@@ -93,7 +96,7 @@ public sealed class CustomersApiTests(PostgresFixture db)
         await AssertProblem(again, HttpStatusCode.Conflict, "customer.invalid_transition");
     }
 
-    /// <summary>RED until MapStatus: a duplicate email is 409.</summary>
+    /// <summary>a duplicate email is 409.</summary>
     [Fact]
     public async Task Duplicate_email_is_409()
     {
@@ -104,13 +107,22 @@ public sealed class CustomersApiTests(PostgresFixture db)
         await AssertProblem(duplicate, HttpStatusCode.Conflict, "customer.email_taken");
     }
 
-    /// <summary>RED until MapStatus: an unknown id is 404.</summary>
+    /// <summary>an unknown id is 404.</summary>
     [Fact]
     public async Task Unknown_customer_is_404()
     {
         HttpResponseMessage response = await _client.GetAsync($"/api/v1/customers/{Guid.NewGuid()}");
 
         await AssertProblem(response, HttpStatusCode.NotFound, "customer.not_found");
+    }
+
+    [Fact]
+    public async Task Unknown_route_for_a_signed_in_caller_is_404_problem_json()
+    {
+        HttpResponseMessage response = await _client.GetAsync("/api/v1/nope");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
     }
 
     [Fact]
@@ -168,32 +180,28 @@ public sealed class CustomersApiTests(PostgresFixture db)
         Assert.Empty(wildcard); // a literal '%' matches nothing
     }
 
-    /// <summary>Both write paths stamp audit fields: Dapper on insert, the EF interceptor on update.</summary>
+    /// <summary>Both write paths stamp audit fields: Dapper on insert, the EF interceptor on update. The actor is the signed-in user.</summary>
     [Fact]
     public async Task Audit_fields_are_stamped_by_the_dapper_insert_and_the_ef_update()
     {
-        var creator = Guid.NewGuid();
-        var editor = Guid.NewGuid();
+        (string creatorEmail, UserId creator) = await db.NewUserAsync([RoleCodes.Staff]);
+        (string editorEmail, UserId editor) = await db.NewUserAsync([RoleCodes.Staff]);
+        using HttpClient creatorClient = db.ClientAs(creatorEmail);
+        using HttpClient editorClient = db.ClientAs(editorEmail);
         var createdAt = new DateTimeOffset(2031, 5, 6, 7, 8, 9, TimeSpan.Zero);
         var updatedAt = createdAt.AddHours(2);
 
         db.Clock.Now = createdAt;
-        db.User.UserId = creator;
-        CustomerDto customer;
-        try
-        {
-            customer = await Create();
-            Assert.Equal(creator.ToString(), customer.CreatedBy);
-            Assert.Equal(createdAt, customer.CreatedAt);
+        HttpResponseMessage created = await creatorClient.PostAsJsonAsync("/api/v1/customers", new { name = "Audit", email = UniqueEmail() });
+        CustomerDto customer = (await created.Content.ReadFromJsonAsync<CustomerDto>())!;
+        Assert.Equal(creator.Value.ToString(), customer.CreatedBy);
+        Assert.Equal(createdAt, customer.CreatedAt);
 
-            db.Clock.Now = updatedAt;
-            db.User.UserId = editor;
-            await Send(HttpMethod.Put, customer.Id, $"\"{customer.Version}\"", new { name = "Renamed", email = customer.Email, phone = (string?)null });
-        }
-        finally
-        {
-            db.User.UserId = null;
-        }
+        db.Clock.Now = updatedAt;
+        using var put = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/customers/{customer.Id}") { Content = JsonContent.Create(new { name = "Renamed", email = customer.Email, phone = (string?)null }) };
+        put.Headers.TryAddWithoutValidation("If-Match", $"\"{customer.Version}\"");
+        Assert.Equal(HttpStatusCode.NoContent, (await editorClient.SendAsync(put)).StatusCode);
+        db.Clock.Now = new DateTimeOffset(2030, 1, 2, 3, 4, 5, TimeSpan.Zero);
 
         await using NpgsqlConnection connection = new(db.ConnectionString);
         await connection.OpenAsync();
@@ -202,15 +210,18 @@ public sealed class CustomersApiTests(PostgresFixture db)
         await using NpgsqlDataReader row = await command.ExecuteReaderAsync();
         Assert.True(await row.ReadAsync());
         Assert.Equal(createdAt, row.GetFieldValue<DateTimeOffset>(0));
-        Assert.Equal(creator.ToString(), row.GetString(1));
+        Assert.Equal(creator.Value.ToString(), row.GetString(1));
         Assert.Equal(updatedAt, row.GetFieldValue<DateTimeOffset>(2));
-        Assert.Equal(editor.ToString(), row.GetString(3));
+        Assert.Equal(editor.Value.ToString(), row.GetString(3));
     }
 
+    /// <summary>With no HTTP user (seeder, background work) the actor is "system".</summary>
     [Fact]
     public async Task Without_an_http_user_the_actor_is_system()
     {
-        CustomerDto customer = await Create();
+        await using AsyncServiceScope scope = db.Factory.Services.CreateAsyncScope();
+        CustomerDto customer = (await scope.ServiceProvider.GetRequiredService<Mediator.ISender>()
+            .Send(new Fugue.Application.Features.Customers.Commands.CreateCustomerCommand("Sys", UniqueEmail(), null))).Value;
 
         Assert.Equal("system", customer.CreatedBy);
         Assert.Equal("system", customer.UpdatedBy);

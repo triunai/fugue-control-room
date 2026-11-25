@@ -9,7 +9,7 @@ namespace Fugue.Tests.Api;
 /// <summary>End to end through the REAL mediator (no fake sender): controller, logging and validation behaviors, handler.</summary>
 public sealed class DiagnosticsPipelineTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private readonly HttpClient _client = factory.WithWebHostBuilder(b => TestAuth.Apply(b, TestAuth.NewKey())).CreateClient();
 
     [Fact]
     public async Task Ping_returns_200_through_the_real_pipeline()
@@ -20,7 +20,6 @@ public sealed class DiagnosticsPipelineTests(WebApplicationFactory<Program> fact
         Assert.Equal(new PingResponse("pong", 3), await response.Content.ReadFromJsonAsync<PingResponse>());
     }
 
-    /// <summary>RED until the owner implements <c>ApiControllerBase.MapStatus</c> (expects 400 for Validation).</summary>
     [Fact]
     public async Task Ping_with_an_out_of_range_count_is_a_400_validation_problem()
     {
@@ -48,11 +47,12 @@ public sealed class DiagnosticsPipelineTests(WebApplicationFactory<Program> fact
     }
 
     [Fact]
-    public async Task Unknown_route_404_is_problem_json()
+    public async Task Unknown_route_for_an_anonymous_caller_is_401_problem_json()
     {
+        // The fallback policy answers before routing admits the route does not exist (it also hides which routes exist).
         HttpResponseMessage response = await _client.GetAsync("/api/v1/nope");
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
     }
 }

@@ -1,0 +1,35 @@
+meta {
+  name: Another self-service user cannot see it (404)
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v1/customers/{{selfCustomerId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{self2Token}}
+}
+
+script:pre-request {
+  async function login(email) {
+    const res = await bru.sendRequest({
+      method: "POST",
+      url: bru.getEnvVar("baseUrl") + "/api/v1/auth/token",
+      headers: { "Content-Type": "application/json" },
+      data: { email: email, password: bru.getEnvVar("devPw") }, // secrets-scan:ignore
+    });
+    return res.data.accessToken;
+  }
+  bru.setVar("self2Token", await login(bru.getEnvVar("self2Email")));
+}
+
+tests {
+  test("404 customer.not_found, never 403", function () {
+    expect(res.status).to.equal(404);
+    expect(res.body.code).to.equal("customer.not_found");
+  });
+}

@@ -7,18 +7,17 @@ meta {
 post {
   url: {{baseUrl}}/api/v1/customers/{{customerId}}/reactivate
   body: none
-  auth: none
+  auth: inherit
 }
 
 script:post-response {
-  if (res.status === 200) {
+  if (res.status === 204) {
     bru.setVar("etag", res.headers["etag"]);
   }
 }
 
 tests {
-  test("200 and Active again", function () {
-    expect(res.status).to.equal(200);
-    expect(res.body.status).to.equal("Active");
+  test("204 and no body", function () {
+    expect(res.status).to.equal(204);
   });
 }

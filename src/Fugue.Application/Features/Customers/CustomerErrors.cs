@@ -12,6 +12,10 @@ public static class CustomerErrors
     public static FugueError EmailTaken() =>
         FugueErrors.Conflict("customer.email_taken", "A customer with this email already exists.");
 
+    /// <summary>A self-service caller tried to change the email (staff-only, Codex finding 5).</summary>
+    public static FugueError EmailChangeForbidden() =>
+        FugueErrors.Forbidden("customer.email_change_forbidden", "Only staff can change a customer's email.");
+
     public static FugueError VersionMismatch() =>
         FugueErrors.PreconditionFailed(
             "customer.version_mismatch", "The customer changed since it was read. Re-read it and retry with the new ETag.");

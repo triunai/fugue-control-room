@@ -1,5 +1,6 @@
 using FluentResults;
 using FluentValidation;
+using Fugue.Domain.Abstractions;
 using Fugue.Domain.Ids;
 using Mediator;
 
@@ -13,7 +14,7 @@ public sealed class DeleteCustomerValidator : AbstractValidator<DeleteCustomerCo
     public DeleteCustomerValidator() => RuleFor(x => x.Id).Must(id => id.Value != Guid.Empty);
 }
 
-public sealed class DeleteCustomerHandler(ICustomerRepository customers) : ICommandHandler<DeleteCustomerCommand, Result>
+public sealed class DeleteCustomerHandler(ICustomerRepository customers, ICurrentUser currentUser) : ICommandHandler<DeleteCustomerCommand, Result>
 {
     public async ValueTask<Result> Handle(DeleteCustomerCommand command, CancellationToken cancellationToken)
     {
@@ -22,7 +23,7 @@ public sealed class DeleteCustomerHandler(ICustomerRepository customers) : IComm
             return Result.Fail(CustomerErrors.IfMatchRequired());
         }
 
-        Domain.Customers.Customer? customer = await customers.FindForUpdateAsync(command.Id, cancellationToken);
+        Domain.Customers.Customer? customer = await customers.FindForUpdateAsync(command.Id, OwnerScope.From(currentUser), cancellationToken);
         return customer is null
             ? Result.Fail(CustomerErrors.NotFound(command.Id))
             : await customers.DeleteAsync(customer, expected, cancellationToken);

@@ -6,11 +6,13 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using FluentValidation;
+using Fugue.Api.Auth;
 using Fugue.Api.Controllers;
 using Fugue.Domain.Abstractions;
 using Fugue.Domain.Ids;
 using Fugue.Infrastructure.Persistence;
 using Mediator;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NetArchTest.Rules;
@@ -85,7 +87,7 @@ public sealed class FitnessTests
     public void Fitness_Application_does_not_reference_EF_Npgsql_Dapper_or_AspNetCore()
     {
         TestResult result = Types.InAssembly(Application)
-            .ShouldNot().HaveDependencyOnAny("Microsoft.EntityFrameworkCore", "Npgsql", "Dapper", "Microsoft.AspNetCore")
+            .ShouldNot().HaveDependencyOnAny("Microsoft.EntityFrameworkCore", "Npgsql", "Dapper", "Microsoft.AspNetCore", "Microsoft.IdentityModel", "System.IdentityModel")
             .GetResult();
 
         Assert.True(result.IsSuccessful, string.Join(", ", result.FailingTypeNames ?? []));
@@ -118,6 +120,52 @@ public sealed class FitnessTests
             .Select(t => t.FullName ?? t.Name);
 
         AssertRatchet("dapper-placement", bad);
+    }
+
+    private static IEnumerable<MethodInfo> Actions() =>
+        Controllers().SelectMany(c => c.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName));
+
+    [Fact]
+    public void Fitness_Auth_every_controller_action_declares_HasPermission_or_AllowAnonymous()
+    {
+        IEnumerable<string> bad = Actions()
+            .Where(m => !m.GetCustomAttributes<HasPermissionAttribute>().Any() && m.GetCustomAttribute<AllowAnonymousAttribute>() is null)
+            .Select(m => $"{m.DeclaringType!.Name}.{m.Name}");
+
+        AssertRatchet("authorized-actions", bad);
+    }
+
+    [Fact]
+    public void Fitness_Auth_the_anonymous_endpoint_set_is_exactly_token_and_ping()
+    {
+        string[] anonymous = Actions().Where(m => m.GetCustomAttribute<AllowAnonymousAttribute>() is not null)
+            .Select(m => $"{m.DeclaringType!.Name}.{m.Name}").Order().ToArray();
+
+        Assert.Equal(["AuthController.Token", "DiagnosticsController.Ping"], anonymous);
+    }
+
+    [Fact]
+    public void Fitness_Auth_every_HasPermission_literal_exists_in_the_seeded_catalog()
+    {
+        HashSet<string> catalog = Fugue.Domain.Identity.Permissions.All.ToHashSet(StringComparer.Ordinal);
+        IEnumerable<string> bad = Actions().SelectMany(m => m.GetCustomAttributes<HasPermissionAttribute>().Select(a => (m, a)))
+            .Where(x => !catalog.Contains(x.a.Permission)).Select(x => $"{x.m.DeclaringType!.Name}.{x.m.Name}:{x.a.Permission}");
+
+        AssertRatchet("permission-literals", bad);
+    }
+
+    [Fact]
+    public void Fitness_Auth_password_hashing_lives_only_in_Infrastructure_Identity_and_never_by_hand()
+    {
+        IEnumerable<string> outside = new[] { Domain, Application, Api, Infrastructure }
+            .SelectMany(a => Types.InAssembly(a).That().HaveDependencyOn("Microsoft.AspNetCore.Identity").GetTypes())
+            .Where(t => t.Namespace != "Fugue.Infrastructure.Identity")
+            .Select(t => t.FullName ?? t.Name);
+        IEnumerable<string> byHand = new[] { Domain, Application, Api, Infrastructure }
+            .SelectMany(a => Types.InAssembly(a).That().HaveDependencyOn("System.Security.Cryptography.Rfc2898DeriveBytes").GetTypes())
+            .Select(t => t.FullName ?? t.Name);
+
+        AssertRatchet("password-hashing", outside.Concat(byHand));
     }
 
     [Fact]

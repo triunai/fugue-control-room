@@ -1,6 +1,7 @@
 using FluentResults;
 using FluentValidation;
 using Fugue.Application.Common;
+using Fugue.Domain.Abstractions;
 using Fugue.Domain.Customers;
 using Fugue.Domain.Results;
 using Mediator;
@@ -31,7 +32,7 @@ public sealed class ListCustomersValidator : AbstractValidator<ListCustomersQuer
     }
 }
 
-public sealed class ListCustomersHandler(ICustomerRepository customers)
+public sealed class ListCustomersHandler(ICustomerRepository customers, ICurrentUser currentUser)
     : IQueryHandler<ListCustomersQuery, Result<PagedResult<CustomerDto>>>
 {
     public async ValueTask<Result<PagedResult<CustomerDto>>> Handle(ListCustomersQuery query, CancellationToken cancellationToken)
@@ -40,7 +41,7 @@ public sealed class ListCustomersHandler(ICustomerRepository customers)
         KeysetCursor? after = KeysetCursor.TryDecode(query.Cursor, out KeysetCursor decoded) ? decoded : null;
         CustomerStatus? status = Enum.TryParse(query.Status, ignoreCase: true, out CustomerStatus parsed) && Enum.IsDefined(parsed) ? parsed : null;
 
-        IReadOnlyList<CustomerDto> rows = await customers.ListAsync(after, status, query.Search?.Trim(), limit + 1, cancellationToken);
+        IReadOnlyList<CustomerDto> rows = await customers.ListAsync(after, status, query.Search?.Trim(), limit + 1, OwnerScope.From(currentUser), cancellationToken);
 
         if (rows.Count <= limit)
         {

@@ -89,7 +89,7 @@ public sealed class CustomerSeamTests(PostgresFixture db)
             {
                 await unitOfWork.BeginAsync(default);
                 Assert.True((await repository.AddAsync(Customer.Create("Inserted", insertedEmail, null), default)).IsSuccess);
-                Customer tracked = (await repository.FindForUpdateAsync(existing.Id, default))!;
+                Customer tracked = (await repository.FindForUpdateAsync(existing.Id, new OwnerScope(true, null), default))!;
                 tracked.Update("After", existingEmail, null);
                 Assert.True((await repository.SaveAsync(tracked, existing.Version, default)).IsSuccess);
             }
@@ -107,7 +107,7 @@ public sealed class CustomerSeamTests(PostgresFixture db)
             {
                 await unitOfWork.BeginAsync(default);
                 await repository.AddAsync(Customer.Create("Inserted", insertedEmail, null), default);
-                Customer tracked = (await repository.FindForUpdateAsync(existing.Id, default))!;
+                Customer tracked = (await repository.FindForUpdateAsync(existing.Id, new OwnerScope(true, null), default))!;
                 tracked.Update("After", existingEmail, null);
                 await repository.SaveAsync(tracked, existing.Version, default);
                 await unitOfWork.CommitAsync(default);

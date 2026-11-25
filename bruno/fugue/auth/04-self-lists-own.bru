@@ -1,0 +1,43 @@
+meta {
+  name: Self-service lists only their own customers
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v1/customers?limit=100
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{selfToken}}
+}
+
+script:pre-request {
+  async function login(email) {
+    const res = await bru.sendRequest({
+      method: "POST",
+      url: bru.getEnvVar("baseUrl") + "/api/v1/auth/token",
+      headers: { "Content-Type": "application/json" },
+      data: { email: email, password: bru.getEnvVar("devPw") }, // secrets-scan:ignore
+    });
+    return res.data.accessToken;
+  }
+  bru.setVar("selfToken", await login(bru.getEnvVar("selfEmail")));
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.length > 0) {
+    bru.setVar("selfCustomerId", res.body[0].id);
+  }
+}
+
+tests {
+  test("200 and every row has the same owner", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body).to.be.an("array").that.is.not.empty;
+    const owners = new Set(res.body.map(function (c) { return c.ownerId; }));
+    expect(owners.size).to.equal(1);
+  });
+}

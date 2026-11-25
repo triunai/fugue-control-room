@@ -13,18 +13,18 @@ public interface ICustomerRepository
     /// <summary>Insert (Dapper). Fails with <c>customer.email_taken</c> (Conflict) on a duplicate email.</summary>
     Task<Result<CustomerDto>> AddAsync(Customer customer, CancellationToken ct);
 
-    /// <summary>Read (EF, no tracking).</summary>
-    Task<CustomerDto?> GetAsync(CustomerId id, CancellationToken ct);
+    /// <summary>Read (EF, no tracking). A row outside <paramref name="scope"/> is indistinguishable from an absent one.</summary>
+    Task<CustomerDto?> GetAsync(CustomerId id, OwnerScope scope, CancellationToken ct);
 
     /// <summary>
     /// Keyset page ordered by (created_at, id). Returns up to <paramref name="take"/> rows after
     /// <paramref name="after"/>; the caller asks for one extra row to learn whether another page exists.
     /// </summary>
     Task<IReadOnlyList<CustomerDto>> ListAsync(
-        Common.KeysetCursor? after, CustomerStatus? status, string? search, int take, CancellationToken ct);
+        Common.KeysetCursor? after, CustomerStatus? status, string? search, int take, OwnerScope scope, CancellationToken ct);
 
     /// <summary>Loads a tracked aggregate for a following <see cref="SaveAsync"/> or <see cref="DeleteAsync"/>.</summary>
-    Task<Customer?> FindForUpdateAsync(CustomerId id, CancellationToken ct);
+    Task<Customer?> FindForUpdateAsync(CustomerId id, OwnerScope scope, CancellationToken ct);
 
     /// <summary>
     /// Saves a tracked change (EF). When <paramref name="expectedVersion"/> is given and differs from the stored

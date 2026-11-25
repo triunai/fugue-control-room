@@ -1,0 +1,20 @@
+meta {
+  name: No token (401)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/customers
+  body: none
+  auth: none
+}
+
+tests {
+  test("401 problem+json auth.unauthenticated with a correlation id", function () {
+    expect(res.status).to.equal(401);
+    expect(res.headers["content-type"]).to.include("application/problem+json");
+    expect(res.body.code).to.equal("auth.unauthenticated");
+    expect(res.body.correlationId).to.be.a("string").and.not.empty;
+  });
+}

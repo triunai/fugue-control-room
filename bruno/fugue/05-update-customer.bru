@@ -7,7 +7,7 @@ meta {
 put {
   url: {{baseUrl}}/api/v1/customers/{{customerId}}
   body: json
-  auth: none
+  auth: inherit
 }
 
 headers {
@@ -27,15 +27,14 @@ script:pre-request {
 }
 
 script:post-response {
-  if (res.status === 200) {
+  if (res.status === 204) {
     bru.setVar("etag", res.headers["etag"]);
   }
 }
 
 tests {
-  test("200 with a new ETag", function () {
-    expect(res.status).to.equal(200);
+  test("204 with a new ETag and no body", function () {
+    expect(res.status).to.equal(204);
     expect(res.headers["etag"]).to.not.equal(bru.getVar("staleEtag"));
-    expect(res.body.name).to.equal("Bruno Renamed");
   });
 }

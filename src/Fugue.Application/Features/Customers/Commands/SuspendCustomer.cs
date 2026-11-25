@@ -1,5 +1,6 @@
 using FluentResults;
 using FluentValidation;
+using Fugue.Domain.Abstractions;
 using Fugue.Domain.Ids;
 using Mediator;
 
@@ -13,12 +14,12 @@ public sealed class SuspendCustomerValidator : AbstractValidator<SuspendCustomer
     public SuspendCustomerValidator() => RuleFor(x => x.Id).Must(id => id.Value != Guid.Empty);
 }
 
-public sealed class SuspendCustomerHandler(ICustomerRepository customers)
+public sealed class SuspendCustomerHandler(ICustomerRepository customers, ICurrentUser currentUser)
     : ICommandHandler<SuspendCustomerCommand, Result<CustomerDto>>
 {
     public async ValueTask<Result<CustomerDto>> Handle(SuspendCustomerCommand command, CancellationToken cancellationToken)
     {
-        Domain.Customers.Customer? customer = await customers.FindForUpdateAsync(command.Id, cancellationToken);
+        Domain.Customers.Customer? customer = await customers.FindForUpdateAsync(command.Id, OwnerScope.From(currentUser), cancellationToken);
         if (customer is null)
         {
             return Result.Fail<CustomerDto>(CustomerErrors.NotFound(command.Id));

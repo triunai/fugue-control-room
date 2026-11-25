@@ -1,0 +1,36 @@
+meta {
+  name: Self-service cannot delete (403)
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/customers/{{selfCustomerId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{selfToken}}
+}
+
+script:pre-request {
+  async function login(email) {
+    const res = await bru.sendRequest({
+      method: "POST",
+      url: bru.getEnvVar("baseUrl") + "/api/v1/auth/token",
+      headers: { "Content-Type": "application/json" },
+      data: { email: email, password: bru.getEnvVar("devPw") }, // secrets-scan:ignore
+    });
+    return res.data.accessToken;
+  }
+  bru.setVar("selfToken", await login(bru.getEnvVar("selfEmail")));
+}
+
+tests {
+  test("403 problem+json auth.forbidden", function () {
+    expect(res.status).to.equal(403);
+    expect(res.headers["content-type"]).to.include("application/problem+json");
+    expect(res.body.code).to.equal("auth.forbidden");
+  });
+}

@@ -8,8 +8,11 @@ using Fugue.Application.Abstractions;
 using Fugue.Application.Common.Behaviors;
 using Fugue.Domain.Abstractions;
 using Fugue.Infrastructure;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.Options;
 using Serilog;
 
 // Bootstrap logger: covers startup failures before the configured logger exists.
@@ -41,6 +44,18 @@ try
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<ICurrentUser, ClaimsCurrentUser>();
+
+    // Authentication (JWT HS256) and authorization (effective permissions). The fallback policy makes every endpoint
+    // require an authenticated caller; anonymous endpoints are explicit [AllowAnonymous] exceptions.
+    builder.Services.AddOptions<AuthOptions>().Bind(builder.Configuration.GetSection(AuthOptions.Section)).ValidateOnStart();
+    builder.Services.AddSingleton<IValidateOptions<AuthOptions>, AuthOptionsValidator>();
+    builder.Services.AddSingleton<IAccessTokenIssuer, JwtAccessTokenIssuer>();
+    builder.Services.AddSingleton<IConfigureOptions<JwtBearerOptions>, JwtBearerSetup>();
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+    builder.Services.AddAuthorizationBuilder().SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+    builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+    builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+    builder.Services.AddAuthRateLimiting(builder.Configuration);
     builder.Services.AddScoped<CorrelationContext>();
     builder.Services.AddScoped<ICorrelationContext>(sp => sp.GetRequiredService<CorrelationContext>());
     builder.Services.AddApplication();
@@ -65,6 +80,9 @@ try
     app.UseFugueRequestLogging();
     app.UseExceptionHandler();
     app.UseStatusCodePages(); // empty 404/405/415 etc. become problem+json via AddProblemDetails
+    app.UseAuthentication();
+    app.UseRateLimiter();
+    app.UseAuthorization();
     app.MapControllers();
 
     app.Run();

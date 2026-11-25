@@ -1,6 +1,7 @@
 using Fugue.Application.Abstractions;
 using Fugue.Application.Features.Customers;
 using Fugue.Domain.Abstractions;
+using Fugue.Infrastructure.Identity;
 using Fugue.Infrastructure.Persistence;
 using Fugue.Infrastructure.Persistence.Customers;
 using Fugue.Infrastructure.Persistence.Ids;
@@ -36,6 +37,21 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<ICustomerSeeder, CustomerSeeder>();
+
+        services.Configure<PasswordOptions>(o =>
+        {
+            if (int.TryParse(configuration["Auth:PasswordHashIterations"], out int iterations) && iterations > 0)
+            {
+                o.PasswordHashIterations = iterations;
+            }
+        });
+        services.AddSingleton<PasswordVerifier>();
+        services.AddSingleton<IPasswordVerifier>(sp => sp.GetRequiredService<PasswordVerifier>());
+        services.AddSingleton<IModuleConfig, ConfigModuleSwitch>();
+        services.AddScoped<IUserAccessReader, UserAccessReader>();
+        services.AddScoped<IAuthStore, AuthStore>();
+        services.AddScoped<IGrantAuditWriter, GrantAuditWriter>();
+        services.AddScoped<IIdentitySeeder, IdentitySeeder>();
         return services;
     }
 }

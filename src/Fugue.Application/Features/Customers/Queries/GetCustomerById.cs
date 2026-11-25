@@ -1,5 +1,6 @@
 using FluentResults;
 using FluentValidation;
+using Fugue.Domain.Abstractions;
 using Fugue.Domain.Ids;
 using Mediator;
 
@@ -13,11 +14,11 @@ public sealed class GetCustomerByIdValidator : AbstractValidator<GetCustomerById
     public GetCustomerByIdValidator() => RuleFor(x => x.Id).Must(id => id.Value != Guid.Empty);
 }
 
-public sealed class GetCustomerByIdHandler(ICustomerRepository customers)
+public sealed class GetCustomerByIdHandler(ICustomerRepository customers, ICurrentUser currentUser)
     : IQueryHandler<GetCustomerByIdQuery, Result<CustomerDto>>
 {
     public async ValueTask<Result<CustomerDto>> Handle(GetCustomerByIdQuery query, CancellationToken cancellationToken) =>
-        await customers.GetAsync(query.Id, cancellationToken) is { } dto
+        await customers.GetAsync(query.Id, OwnerScope.From(currentUser), cancellationToken) is { } dto
             ? Result.Ok(dto)
             : Result.Fail<CustomerDto>(CustomerErrors.NotFound(query.Id));
 }

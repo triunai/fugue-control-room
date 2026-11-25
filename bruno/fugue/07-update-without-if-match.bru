@@ -7,7 +7,7 @@ meta {
 put {
   url: {{baseUrl}}/api/v1/customers/{{customerId}}
   body: json
-  auth: none
+  auth: inherit
 }
 
 body:json {
@@ -23,7 +23,7 @@ tests {
     expect(res.headers["content-type"]).to.include("application/problem+json");
     expect(res.body.code).to.equal("customer.if_match_required");
   });
-  test("status is 428 (needs the owner's MapStatus)", function () {
+  test("status is 428", function () {
     expect(res.status).to.equal(428);
   });
 }

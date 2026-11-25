@@ -15,4 +15,5 @@ public sealed record CustomerDto(
     string CreatedBy,
     DateTimeOffset UpdatedAt,
     string UpdatedBy,
-    long Version) : IVersioned;
+    long Version,
+    UserId? OwnerId = null) : IVersioned;
