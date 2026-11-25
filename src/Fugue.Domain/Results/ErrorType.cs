@@ -11,4 +11,7 @@ public enum ErrorType
     Forbidden,
     PreconditionFailed,
     PreconditionRequired,
+
+    /// <summary>A dependency (database, downstream service) is temporarily unreachable; the caller may retry.</summary>
+    Unavailable,
 }

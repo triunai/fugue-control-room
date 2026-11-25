@@ -2,10 +2,7 @@ using Fugue.Domain.Results;
 
 namespace Fugue.Tests.Api;
 
-/// <summary>
-/// RED until the owner implements <c>ApiControllerBase.MapStatus</c>. The expected values follow the
-/// decision comment above that method.
-/// </summary>
+/// <summary>Pins D-009: the ErrorType to HTTP status mapping in <c>ApiControllerBase.MapStatus</c>.</summary>
 public sealed class MapStatusTests
 {
     [Theory]
@@ -17,6 +14,7 @@ public sealed class MapStatusTests
     [InlineData(ErrorType.Forbidden, 403)]
     [InlineData(ErrorType.PreconditionFailed, 412)]
     [InlineData(ErrorType.PreconditionRequired, 428)]
+    [InlineData(ErrorType.Unavailable, 503)]
     public void MapStatus_returns_the_expected_status(ErrorType type, int expected) =>
         Assert.Equal(expected, ProbeController.ExposeMapStatus(type));
 

@@ -24,4 +24,6 @@ public static class FugueErrors
 
     public static FugueError PreconditionRequired(string code, string message) =>
         new(code, message, ErrorType.PreconditionRequired);
+
+    public static FugueError Unavailable(string code, string message) => new(code, message, ErrorType.Unavailable);
 }

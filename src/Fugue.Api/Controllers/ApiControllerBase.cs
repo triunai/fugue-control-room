@@ -121,6 +121,13 @@ public abstract class ApiControllerBase : ControllerBase
         ToNoContent(await Sender.Send(command, ct));
 
     /// <summary>
+    /// 204 for a mutation whose handler returns the updated resource: the body is dropped, but when the value is
+    /// <see cref="IVersioned"/> its new version still goes out as <c>ETag</c> so the client can chain If-Match.
+    /// </summary>
+    protected async Task<IActionResult> SendNoContent<T>(ICommand<Result<T>> command, CancellationToken ct) =>
+        ToNoContent(await Sender.Send(command, ct));
+
+    /// <summary>
     /// 200 with the items array as the body. When another page exists, adds <c>X-Next-Cursor</c> and an
     /// RFC 8288 <c>Link: &lt;url&gt;; rel="next"</c> built from the current request URL.
     /// </summary>
@@ -159,6 +166,17 @@ public abstract class ApiControllerBase : ControllerBase
 
     private IActionResult ToNoContent(Result result) =>
         result.IsFailed ? Problem(result.Errors[0]) : NoContent();
+
+    private IActionResult ToNoContent<T>(Result<T> result)
+    {
+        if (result.IsFailed)
+        {
+            return Problem(result.Errors[0]);
+        }
+
+        SetETag(result.Value);
+        return NoContent();
+    }
 
     private ActionResult<IReadOnlyList<T>> ToPage<T>(Result<PagedResult<T>> result)
     {
@@ -219,27 +237,31 @@ public abstract class ApiControllerBase : ControllerBase
         return new ProblemResult(problem);
     }
 
-    // DECISION (owner): which HTTP status does each ErrorType map to? Suggested mapping:
+    // DECISION D-009 (AI-written at the owner's request, owner-approved): ErrorType -> HTTP status.
     //
-    //   Failure              -> 500  An unclassified failure is a server fault. Use 400 only if you decide
-    //                                that handlers return Failure for bad input (prefer Validation for that).
-    //   Validation           -> 400  (422 is the alternative; 400 matches ValidationProblemDetails defaults.)
-    //   NotFound             -> 404
-    //   Conflict             -> 409
-    //   Unauthorized         -> 401  Caller is not authenticated.
-    //   Forbidden            -> 403  Caller is authenticated but lacks permission.
-    //   PreconditionFailed   -> 412  If-Match did not match the current version.
-    //   PreconditionRequired -> 428  The operation demands If-Match and it was missing.
+    //   Failure     -> 500  unclassified = our fault; bad input must be Validation, never Failure.
+    //   Validation  -> 400  (not 422) to match ValidationProblemDetails and framework model-binding 400s.
+    //   Unavailable -> 503  transient dependency outage; the caller may retry (see GlobalExceptionHandler).
     //
-    // Trade-off on NotFound versus cross-tenant access: if tenant A asks for tenant B's resource, answering
-    // 403 confirms that the resource exists. Answering 404 leaks nothing, because the response is the same
-    // as for an id that never existed. The global query filter already makes B's rows invisible to A, so
-    // handlers naturally return NotFound; keep it that way and never turn a cross-tenant miss into Forbidden.
-    // Reserve 403 for same-tenant permission checks (role or policy), where existence is not a secret.
-    protected static int MapStatus(ErrorType type)
+    // Out-of-scope or cross-owner misses return NotFound (404), never Forbidden: a 403 would confirm the
+    // resource exists. 403 is reserved for "you may see this resource but lack the permission to act".
+    // No default arm on purpose: a NAMED ErrorType left unmapped is CS8509, which TreatWarningsAsErrors turns
+    // into a build break, so a new error kind can never silently fall through to 500. CS8524 (casts like
+    // (ErrorType)99) is suppressed because only named values are ever constructed via FugueErrors.
+#pragma warning disable CS8524
+    protected static int MapStatus(ErrorType type) => type switch
     {
-        throw new NotImplementedException("Owner: map ErrorType -> HTTP status");
-    }
+        ErrorType.Failure => StatusCodes.Status500InternalServerError,
+        ErrorType.Validation => StatusCodes.Status400BadRequest,
+        ErrorType.NotFound => StatusCodes.Status404NotFound,
+        ErrorType.Conflict => StatusCodes.Status409Conflict,
+        ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
+        ErrorType.Forbidden => StatusCodes.Status403Forbidden,
+        ErrorType.PreconditionFailed => StatusCodes.Status412PreconditionFailed,
+        ErrorType.PreconditionRequired => StatusCodes.Status428PreconditionRequired,
+        ErrorType.Unavailable => StatusCodes.Status503ServiceUnavailable,
+    };
+#pragma warning restore CS8524
 
     private void SetETag<T>(T value)
     {
