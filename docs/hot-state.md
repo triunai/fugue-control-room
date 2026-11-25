@@ -4,8 +4,8 @@ OVERWRITTEN at every wrap or pause, never appended; at most 40 lines. After a wr
 
 ## ▶ RESUME HERE — 2026-11-25
 Branch: `main` (no other worktrees).
-Last green sha: 8ed061b
-(build 0 warnings; test counts below; the H1 commits sit on top of it.)
+Last green sha: ad58e29
+(build 0 warnings; arch tests 17 green; Fugue.Tests 48 green 16 red-by-design; only docs follow it.)
 
 ## Last action done
 H1 harness (W-008) finished and committed in slices; S0 to S2 closed into the project log and CHANGELOG.

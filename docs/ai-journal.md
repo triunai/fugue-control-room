@@ -101,3 +101,14 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
   - Bruno CLI 4.4.0 pulls a transitive `@faker-js/faker` with a high advisory (`npm audit`); dev-only, local; left as is.
 - **Decision:** pending owner review (not yet accepted or challenged).
 - **Why:** these are the points where the brief left a choice or reality differed from it.
+
+## 2026-11-25 - H1: porting my AI engineering harness
+- **Asked:** bring the working practices from my multi-tenant consumer SaaS repo and my mobile app repo into Fugue as machine checks and project skills, public-safe.
+- **AI proposed / chose:**
+  - Commit gates (`Refs:` trailer, fix-has-test), a PreToolUse safety guard, an advisory seam-triggered Codex gate, four project skills, fitness functions with shrink-only baselines.
+  - The guard is a reduced port (the original is about 900 lines of hardening; this one keeps the protocol and seven narrow rules).
+  - `bd init` committed its own config to `main` and could have rewritten `core.hooksPath`; the AI reset that one local commit (mixed reset, nothing pushed), gitignored `.beads/` and re-installed lefthook. Recorded as failure mode 8.
+  - The Codex invocation was taken from `codex exec review --help` and was NOT run end to end (dry-run and unit tests only).
+  - Fitness rules found zero violations on first run, so every baseline starts empty; the ratchet was proved by adding a stale line and watching the test fail.
+- **Decision:** accepted; the owner fixed the shape: beads local only, `Refs:` ids limited to committed `W-`/`D-`/`ADR-`, the Codex gate advisory, project-log plus CHANGELOG as additive ledgers with a closing script, `hot-state.md` as the resume point.
+- **Why:** each rule matches a failure already seen in the sibling repos; owner calls (ledger shape, advisory gate) were not the AI's to make.
