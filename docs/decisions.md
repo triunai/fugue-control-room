@@ -37,8 +37,85 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-024 | S3: tenants, refresh tokens, groups, grant/access audit built basic | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
 | D-025 | Customers PUT/suspend/reactivate answer 204 + ETag | - |
 | D-026 | Base entity contract: IAuditable everywhere, append-only allowlist | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
+| D-027 | W-012: `audit_log` table shape, append-only trigger, keyset indexes (no BRIN) | [ADR-010](adr/ADR-010-audit-log.md) |
+| D-028 | W-012: capture in the same transaction (EF interceptor in the same SaveChanges; Dapper through `IAuditTrail`) | [ADR-010](adr/ADR-010-audit-log.md) |
+| D-029 | W-012: failures recorded by `AuditBehavior` as one failure row; auth commands exempt | [ADR-010](adr/ADR-010-audit-log.md) |
+| D-030 | W-012: safety knobs (masking at write time, partial masks, size bound, never sampled, not disable-able outside Development) | [ADR-010](adr/ADR-010-audit-log.md) |
+| D-031 | W-012: read API behind `AUDIT_READ`, admin only, keyset paged | [ADR-010](adr/ADR-010-audit-log.md) |
+| D-032 | W-012: `grant_audit` and `access_audit` stay specialised; relationship to `audit_log` | [ADR-010](adr/ADR-010-audit-log.md) |
+| D-033 | W-012: retention and archival deferred | - |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-033 — W-012 retention and archival of the audit log are deferred — 2026-11-26
+WS: WS-12
+Context: an append-only table grows forever; the owner asked for the log, not for its lifecycle.
+Decision: no retention, archival or partitioning in W-012; the revive trigger is in `docs/archive/deferred.md`.
+Why: partitioning by month plus a detach policy is a separate migration and an operational decision (how long, where to).
+Consequences: the table is unbounded until that thread opens; the append-only trigger must be reconsidered then (a retention job needs a controlled bypass).
+Who: AI (owner scoped it out in the brief)
+Status: accepted
+Promote: no
+
+## D-032 — W-012 grant_audit and access_audit stay specialised — 2026-11-26
+WS: WS-12
+Context: three audit tables risk overlap.
+Decision: `audit_log` = data changes plus command outcomes; `access_audit` = authN/authZ events; `grant_audit` = privilege changes. They stay separate and `audit_log` excludes them.
+Why: different shapes (hashed email, subject and target) and different write guarantees (best effort for anonymous callers); folding would churn S3's tests and let a login flood into the data log.
+Consequences: a grant leaves one `grant_audit` row and one `audit_log` row per changed entity (two views of one change).
+Who: AI
+Status: accepted
+Promote: yes (ADR-010)
+
+## D-031 — W-012 read API behind AUDIT_READ, admin only, keyset paged — 2026-11-26
+WS: WS-12
+Context: the log must be queryable by who, what, which row, when and which request.
+Decision: `GET /api/v1/audit` (`[Module("AUDIT")]`, `[HasPermission("AUDIT_READ")]`), exact-match filters, newest first, cursor over `(occurred_at, id)`. `AUDIT_READ` is granted to `ADMIN` only; staff do not get it (an override can grant it).
+Why: a row shows other users' data; least privilege is the safe default.
+Consequences: no write verb exists; the response never un-masks (masking is at write time); tenant filtering waits for the ADR-003 toggle.
+Who: AI (owner asked for the permission; "staff read?" was left open)
+Status: accepted
+Promote: yes (ADR-010)
+
+## D-030 — W-012 safety knobs for the audit log — 2026-11-26
+WS: WS-12
+Context: an audit table is a PII and secret magnet.
+Decision: mask at write time (built-in `PasswordHash`, `TokenHash`, `SigningKey`, a configurable list, `[AuditMask]`, `[NoAudit]`), partial-mask email and phone by default, bound `changes` with `MaxChangesBytes` and a `_truncated` marker, optional client IP, per-entity exclusions, never sample, refuse `Audit:Enabled=false` outside Development.
+Why: nothing sensitive is stored, so no read path can leak it; the size bound keeps one bad row from bloating the table.
+Consequences: a masked-field change shows as `*** -> ***` (it changed, the value is not recorded); partially masked emails cannot be searched by value.
+Who: owner (requirements) and AI (defaults)
+Status: accepted
+Promote: yes (ADR-010)
+
+## D-029 — W-012 failed commands are recorded by AuditBehavior — 2026-11-26
+WS: WS-12
+Context: a command that fails with a business error changes nothing, so the interceptor never sees it.
+Decision: `AuditBehavior` (order Logging, Audit, Validation) writes ONE failure row with the error code in a single autocommitted insert, and opens the ambient scope the interceptor reads; successes stay with the interceptor so there are no double rows. Authentication commands carry `[NoAudit]` (their record is `access_audit`).
+Why: a tracked context may be dirty after a failed save; a plain insert cannot re-save it. Validation failures are audited because the behavior wraps validation.
+Consequences: a failing audit write is logged, never surfaced; failure rows are best effort, success rows are transactional.
+Who: owner (requirement) and AI (placement)
+Status: accepted
+Promote: yes (ADR-010)
+
+## D-028 — W-012 audit rows are written in the same transaction as the change — 2026-11-26
+WS: WS-12
+Context: an audit row that can outlive a rolled-back change, or be missing from a committed one, is worse than none.
+Decision: an EF `SaveChangesInterceptor` adds the rows to the same SaveChanges; Dapper writes call `IAuditTrail` through `SqlExecutor` inside the same `IUnitOfWork` transaction (or a short one). A fitness rule makes every raw SQL write call `IAuditTrail` or sit on a baseline.
+Why: atomicity without a second transaction; the change tracker already holds old and new values.
+Consequences: a new Dapper write path fails the build until it records its audit row.
+Who: owner (requirement) and AI
+Status: accepted
+Promote: yes (ADR-010)
+
+## D-027 — W-012 audit_log table shape, append-only trigger, indexes — 2026-11-26
+WS: WS-12
+Context: one general, rich audit table on the S3 seam.
+Decision: columns for who, what, change (jsonb), context and metadata; CHECKs on `actor_type` and `outcome`; a trigger rejects UPDATE, DELETE and TRUNCATE; a btree per filter ending in `occurred_at DESC, id DESC`; no BRIN.
+Why: the trigger stops the app and accidents (not the table owner; a non-owner role is deferred); the index shape serves the keyset order directly.
+Consequences: rows are never edited, so a wrong masking rule cannot be fixed in place (fix forward).
+Who: owner (requirements) and AI
+Status: accepted
+Promote: yes (ADR-010)
 
 ## D-026 — S3 base entity contract: IAuditable everywhere, append-only allowlist — 2026-11-25
 WS: WS-05

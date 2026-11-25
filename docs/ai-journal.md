@@ -130,3 +130,14 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
 - **AI proposed:** the security vertical slice first, then modules, groups, refresh, audit, overrides; a Sonnet read plus a Codex read of the final diff.
 - **Decision:** accepted by the owner's scope; reviews found one HIGH the author's tests had missed (a refresh-family revoke racing a rotation under READ COMMITTED), fixed with an advisory lock and pinned. Two MEDs (create-path email oracle, limiter DoS) were deferred to W-013 because they need an owner call.
 - **Why:** sequential tests cannot see snapshot races; cross-family review earned its cost again. Also learned: a Bruno script that throws can skip its own cleanup, and secret scanners treat dev passwords as secrets.
+
+## 2026-11-26 - W-012 rich audit log
+- **Asked:** a "really good and rich" append-only audit log: who, what, field-level change, outcome, request context, PII safety, same transaction, a permissioned query API.
+- **AI proposed / chose:**
+  - One `audit_log` table beside `grant_audit` and `access_audit` (not folded in), an EF interceptor that adds the rows to the same SaveChanges, and `IAuditTrail` for the Dapper paths.
+  - A mediator behavior for FAILED commands only (successes come from the interceptor, so no double rows), ordered Logging, Audit, Validation so validation failures count.
+  - Masking at write time rather than read time, so the table and the API cannot leak; `AUDIT_READ` for admin only (the brief left "staff read?" open).
+  - A fitness rule that fails when a new raw-SQL write does not call `IAuditTrail`, because the interceptor cannot see Dapper.
+  - One trap hit while building: the behavior's eager DbContext dependency broke every host without a database (failure mode 18); another process trap, a pathspec commit that skipped new files (19).
+- **Decision:** accepted as ADR-010 (D-027 to D-033); the cross-family review verdict and fixes are in `docs/reviews/codex/2026-11-26-w012-audit.md`.
+- **Why:** the audit has to be atomic with the change or it lies; the three tables answer different questions, so merging them would trade clarity for one query surface.

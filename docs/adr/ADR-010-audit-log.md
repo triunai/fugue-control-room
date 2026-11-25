@@ -1,0 +1,39 @@
+# ADR-010 — Rich append-only audit log
+
+- Status: accepted
+- Date: 2026-11-26
+- Decision entry: D-027, D-028, D-029, D-030, D-031, D-032, D-033 in `docs/decisions.md`
+
+## Context
+The owner asked for a "really good and rich" audit log. S3 left two specialised tables (`grant_audit` for privilege changes, `access_audit` for authentication and authorization events) and a seam: one `IUnitOfWork` transaction, `ICorrelationContext`, and `IAuditStamp`. Plan: `docs/plans/w012-audit-log.md`; review: `docs/reviews/codex/2026-11-26-w012-audit.md`.
+
+## Decision
+* **Table.** `audit_log`: UUIDv7 id, `occurred_at` and an actor (not `IAuditable`; on the append-only allowlist). Who: `actor_user_id`, `actor_type` (`user`, `system`, `service`; `service` is reserved), `actor_display` (the name at the time), `tenant_id`, `permission_used` (the `[HasPermission]` codes of the endpoint). What: `action` (`<feature>.<verb>`, derived from the command type: `UpdateCustomerCommand` becomes `customers.update`), `entity_type`, `entity_id` (a string, so composite keys fit), `outcome`, `error_code`. Change: `changes` jsonb, `{ "field": { "old": ..., "new": ... } }`, only changed fields for an update, new values for an insert, old values for a delete. Context: `correlation_id`, `saga_id`, `trace_id`, `http_method`, `route_template` (the template, never the concrete URL), `client_ip`, `user_agent`, `metadata` jsonb. CHECK constraints pin `actor_type` and `outcome`.
+* **Append-only.** A trigger function raises `restrict_violation` on UPDATE and DELETE (per row) and TRUNCATE (per statement). The trigger stops the application, a migration slip and an accidental `psql` session. It does not stop the table owner or a superuser, who can disable it or drop the table; production should run the API as a role that does not own the table (deferred).
+* **Success path = same transaction.** An EF `SaveChangesInterceptor` (registered after the stamping interceptor) reads the change tracker and ADDS one `AuditLog` row per changed entity to the same context, so one `SaveChanges` writes the change and its audit rows atomically: a failed save leaves neither, a rolled-back unit of work removes both. Stamp columns and the `xmin` token never appear in a diff; an entity that was "touched" but did not really change writes no row. Dapper writes (the customer insert, the seeders) call `IAuditTrail` through `SqlExecutor`, so the row joins the caller's `IUnitOfWork` transaction, or a short transaction the repository opens when there is none.
+* **Failure path.** `AuditBehavior` (pipeline order Logging, Audit, Validation) opens an ambient `IAuditScope` (action, actor display, command name) that the interceptor and `IAuditTrail` read, so every row of one command carries the same action. When a command returns a failure (validation, not found, conflict, precondition) or throws, nothing changed, so the behavior writes ONE `outcome = failure` row with the error code through a single autocommitted Dapper insert (a tracked context may be dirty after a failed save, a plain insert cannot re-save it). The behavior never writes a success row, so there are no double rows. A failing audit write is logged and never changes the command's result. Authentication commands carry `[NoAudit]`: their record is `access_audit`, and a login flood must not flood `audit_log`.
+* **Safety.** `Audit:` options. Masking happens at write time, so stored rows and the API can never un-mask: built-in masks (`PasswordHash`, `TokenHash`, `SigningKey`) plus a configurable list and `[AuditMask]` (value becomes `***`, the field still shows as changed) and `[NoAudit]` (field or whole entity omitted); partial masking of `Email`, `Phone`, `ContactNumber` (`j***@example.test`, `***42`) with an off switch; `MaxChangesBytes` (default 16384) drops trailing fields and adds `"_truncated": true`; strings are cut at 1024 characters; `CaptureClientIp`; per-entity exclusions (built in: the three audit tables and refresh tokens). Rows are never sampled. `Audit:Enabled=false` fails startup outside Development.
+* **Indexes.** `(occurred_at DESC, id DESC)` for the unfiltered list and one index per filter, each ending in `occurred_at DESC, id DESC` so the keyset tiebreak is index ordered: `(entity_type, entity_id, ...)`, `(actor_user_id, ...)`, `(action, ...)`, `(correlation_id)`. No BRIN: an ordered top-N needs a btree, and a BRIN only pays for very large range scans; revisit with partitioning when retention is built.
+* **Read API.** `GET /api/v1/audit`, `[Module("AUDIT")]`, `[HasPermission("AUDIT_READ")]`. The permission is seeded and granted to `ADMIN` only: a row shows other users' data, so staff do not get it by default (an override can grant it). Exact-match parameterized filters: `entityType`, `entityId`, `actorUserId`, `action`, `correlationId`, `from` (inclusive), `to` (exclusive); newest first; keyset cursor over `(occurred_at, id)` with `X-Next-Cursor` and `Link` from `SendPaged`. There is no write verb.
+* **The three audit tables.** `audit_log` is data changes plus command outcomes; `access_audit` is authN/authZ events (hashed email, best effort, written for anonymous callers); `grant_audit` is privilege changes with subject and target. They stay separate: their shapes and write guarantees differ and S3 tests pin them. `audit_log` excludes them (no row about a row about a row). A grant therefore leaves one `grant_audit` row (the privilege event) and one `audit_log` row per changed entity (the data change); that is two views of one change, not a duplicate.
+* **Boundaries (fitness functions).** Application and Api never reference the `AuditLog` entity (they see a DTO and `IAuditLogReader`); exactly one source file inserts into `audit_log`; every raw SQL write is either in a class that calls `IAuditTrail` or on a shrink-only baseline (session rows, `access_audit` itself); the behavior sits between Logging and Validation; every command can be wrapped, and the `[NoAudit]` exemptions are a shrink-only allowlist.
+
+## Alternatives considered
+* Fold `grant_audit` and `access_audit` into `audit_log`: one query surface, but anonymous failed logins would flood it, hashed-email and best-effort semantics would leak into a transactional table, and S3 tests would churn.
+* Write audit rows from the behavior after the handler: a second transaction, so a crash between the change and the row loses the audit, and it cannot see field-level changes.
+* Database triggers on every table: complete, but they cannot know the actor, the command, the correlation id or the permission without `SET LOCAL` plumbing, and masking would live in SQL.
+* Postgres `pgaudit` or logical decoding: operational audit, not application audit (no actor or command), and unavailable on the local compose image.
+* A BRIN index on `occurred_at`: cannot serve ordered top-N, see Indexes.
+* Un-maskable stored values with masking at read time: a leak waiting for one missing filter; masking at write time makes the table itself safe.
+
+## Consequences
+* Every mutating command pays one `users` lookup (the display name) and one extra insert per changed entity inside the same transaction.
+* A new Dapper write path fails the build until it calls `IAuditTrail` or is baselined on purpose.
+* A new command is audited automatically; an authentication-style command must opt out with `[NoAudit]` and a baseline line.
+* Reads of the audit log are not themselves audited.
+* Tenancy: rows carry `tenant_id` (no foreign key, no query filter while ADR-003's toggle is off). When the toggle is turned on, the read API needs the tenant filter and a leak test (deferred with the toggle).
+* Retention, archival and partitioning are out of scope (`docs/archive/deferred.md`).
+* Seeders write one summary row per run, not one per customer.
+
+## Supersedes
+None. Builds on ADR-006 (shared transaction) and ADR-008 (the two specialised tables).

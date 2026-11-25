@@ -9,5 +9,6 @@ Step-by-step guides for someone who has never seen this repo. Every step is copy
 | [03-local-database.md](03-local-database.md) | Start Postgres, migrate, seed, connect a GUI, Docker env vars |
 | [04-customers-api.md](04-customers-api.md) | curl the Customers API (ETag, If-Match, 409/412/428), run Bruno |
 | [05-auth.md](05-auth.md) | Signing key, sign in, call as each role, ownership, modules |
+| [06-audit.md](06-audit.md) | Query the audit log (curl and psql), read a diff, see a failure row, try to tamper |
 
 Conventions: commands run from the repo root unless stated; "Expect" lines show the output that means the step worked.
