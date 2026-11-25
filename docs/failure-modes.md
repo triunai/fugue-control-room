@@ -16,5 +16,10 @@ One entry per trap we have actually hit. Format: symptom, cause, defusing move. 
 | 10 | A parallel agent's staged files ride along in someone else's commit | `git commit` takes the whole index | Scope commits by pathspec (`git commit -- <paths>`); one worktree per write lane |
 | 11 | A brief states a fact that is already false | Contracts are written from memory | The verify-the-premises clause in `agent-task-contract`; reconcile against git, not the report |
 | 12 | A rule only the prompt holds gets skipped | Prompts are advisory | Make it a gate (commit-msg, pre-push, PreToolUse guard, fitness test) |
+| 13 | Every endpoint returns 401 in a test host, or the host will not start | JWT options validate on start and the fallback policy requires a user | Give each test host `Auth:SigningKey` (random base64 32 bytes) via `TestAuth.Apply`; probe hosts open the fallback with `TestAuth.OpenFallback` |
+| 14 | A disabled module answers 403, not 404 `module.disabled` | The permissions of a disabled module are dropped, so authorization fails first | The gate is middleware between authentication and authorization (ADR-009), never an action filter |
+| 15 | A Bruno post-response script that calls a failing endpoint throws and skips the restore step | `bru.sendRequest` throws on any non-2xx | Put state changes and restores in their own requests, in order |
+| 16 | Permissions look stale after a role or override change | Nothing is cached in S3, so staleness means the token is for another user or the module is off | Check `modules` (config and db), the user's `is_active`, then the effective query; do not add a cache without the S5 trigger |
+| 17 | Rotating a refresh token twice at once leaves two live tokens | Read-then-write rotation races | One conditional UPDATE claims the old row; classify the failure afterwards (reuse revokes the family) |
 
 Related: `AGENTS.md` (gates), `docs/runbooks/` (local setup), `docs/ai-journal.md` (how each was found).

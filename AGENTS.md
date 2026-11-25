@@ -77,7 +77,7 @@ A review catch you do not pin is a bug you rent. No High/Medium finding closes w
 - Controllers inherit `ApiControllerBase`; actions are one-liners that dispatch; logic lives in handlers.
 - Layering: Domain (FluentResults only) <- Application (no ASP.NET Core) <- Infrastructure / Api. Arch tests enforce it.
 - Handlers return FluentResults with `FugueError` (ADR-004). Slice shape is in `src/Fugue.Application/Features/README.md`.
-- `ApiControllerBase.MapStatus` is the owner's to implement. Never fill it in.
+- `ApiControllerBase.MapStatus` is implemented (D-009); a new `ErrorType` must be mapped there.
 - Keyset pagination. Passwords via `PasswordHasher<T>` / Argon2id only.
 - Any migration updates `docs/migrations/migration-catalog.md` in the same commit.
 - No secrets in the repo; no commit or push unless the owner asks.

@@ -26,17 +26,17 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-013 | Beads is a local queue; commits cite only committed ids | [ADR-007](adr/ADR-007-ai-harness-gates.md) |
 | D-014 | Codex review gate is advisory, seam-triggered, capped | [ADR-007](adr/ADR-007-ai-harness-gates.md) |
 | D-015 | Commit gates and the safe-command guard | [ADR-007](adr/ADR-007-ai-harness-gates.md) |
-| D-016 | S3: JWT bearer (HS256), local token endpoint, refresh in S3 (D-024) | pending ADR-008 |
-| D-017 | S3: lean UAM v3 port and precedence deny > allow > role (owner overrode "defer overrides") | pending ADR-008 |
-| D-018 | S3: permissions via uncached DB lookup in `OnTokenValidated`, not token claims | pending ADR-008 |
-| D-019 | S3: ownership by repository scoping, 404 on cross-owner | pending ADR-008 |
-| D-020 | S3: uniform login failure, dummy hash, no lockout | pending ADR-008 |
+| D-016 | S3: JWT bearer (HS256), local token endpoint, refresh in S3 (D-024) | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
+| D-017 | S3: lean UAM v3 port and precedence deny > allow > role (owner overrode "defer overrides") | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
+| D-018 | S3: permissions via uncached DB lookup in `OnTokenValidated`, not token claims | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
+| D-019 | S3: ownership by repository scoping, 404 on cross-owner | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
+| D-020 | S3: uniform login failure, dummy hash, no lockout | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
 | D-021 | S3: deferrals and exclusions from UAM v3 | - |
-| D-022 | S3: abuse controls, create ownership, canonical email, key hygiene | pending ADR-008 |
-| D-023 | S3: module management (config kill switch + runtime registry) | pending ADR-009 |
-| D-024 | S3: tenants, refresh tokens, groups, grant/access audit built basic | pending ADR-008 |
+| D-022 | S3: abuse controls, create ownership, canonical email, key hygiene | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
+| D-023 | S3: module management (config kill switch + runtime registry) | [ADR-009](adr/ADR-009-module-management.md) |
+| D-024 | S3: tenants, refresh tokens, groups, grant/access audit built basic | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
 | D-025 | Customers PUT/suspend/reactivate answer 204 + ETag | - |
-| D-026 | Base entity contract: IAuditable everywhere, append-only allowlist | pending ADR-008 |
+| D-026 | Base entity contract: IAuditable everywhere, append-only allowlist | [ADR-008](adr/ADR-008-auth-and-identity-model.md) |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
@@ -48,7 +48,7 @@ Why: one stamping path, no entity forgotten.
 Consequences: `tests/Fugue.ArchTests/Baselines/append-only-entities.txt`.
 Who: owner
 Status: accepted
-Promote: pending (ADR-008)
+Promote: yes (ADR-008)
 
 ## D-025 — Customers PUT, suspend, reactivate answer 204 + ETag — 2026-11-25
 WS: WS-05
@@ -68,7 +68,7 @@ Why: owner call; each is small once the schema exists.
 Consequences: removed from `docs/archive/deferred.md`; if time runs out the build stops after groups.
 Who: owner
 Status: accepted
-Promote: pending (ADR-008)
+Promote: yes (ADR-008)
 
 ## D-023 — Module management: config kill switch plus runtime registry — 2026-11-25
 WS: WS-05
@@ -78,7 +78,7 @@ Why: a kill switch operators control without a deploy of data, plus a runtime to
 Consequences: fitness: every feature controller has exactly one `[Module]`.
 Who: owner
 Status: accepted
-Promote: pending (ADR-009)
+Promote: yes (ADR-009)
 
 ## D-022 — S3 abuse controls and key hygiene (Codex 2, 10) — 2026-11-25
 WS: WS-05
@@ -88,7 +88,7 @@ Why: each closes a reviewed hole with a test.
 Consequences: see `docs/plans/s3-identity.md` review resolutions.
 Who: review (Codex), owner accepted
 Status: accepted
-Promote: pending (ADR-008)
+Promote: yes (ADR-008)
 
 ## D-21 — S3 deferrals and exclusions from UAM v3 — 2026-11-25
 WS: WS-05
@@ -108,7 +108,7 @@ Why: removes the enumeration and timing oracle without new state or a lock-out-a
 Consequences: see `docs/plans/s3-identity.md`.
 Who: AI, reviewed by Codex (REJECT, 10 findings), owner accepted
 Status: accepted (revised after the Codex plan review; owner accepted all 10 findings)
-Promote: pending (ADR-008)
+Promote: yes (ADR-008)
 
 ## D-19 — S3 ownership by repository scoping, 404 on cross-owner — 2026-11-25
 WS: WS-05
@@ -118,7 +118,7 @@ Why: filters lists, leaks nothing, keeps layering; `IAuthorizationService` resou
 Consequences: see `docs/plans/s3-identity.md`.
 Who: AI, reviewed by Codex (REJECT, 10 findings), owner accepted
 Status: accepted (revised after the Codex plan review; owner accepted all 10 findings)
-Promote: pending (ADR-008)
+Promote: yes (ADR-008)
 
 ## D-18 — S3 permissions by uncached lookup in OnTokenValidated — 2026-11-25
 WS: WS-05
@@ -128,7 +128,7 @@ Why: immediate revocation, no invalidation races, expiry boundaries exact.
 Consequences: see `docs/plans/s3-identity.md`.
 Who: AI, reviewed by Codex (REJECT, 10 findings), owner accepted
 Status: accepted (revised after the Codex plan review; owner accepted all 10 findings)
-Promote: pending (ADR-008)
+Promote: yes (ADR-008)
 
 ## D-17 — S3 lean UAM v3 port; precedence deny > allow > role — 2026-11-25
 WS: WS-05
@@ -138,7 +138,7 @@ Why: precedence was unwritten in v3; the written rule and expiry close the audit
 Consequences: see `docs/plans/s3-identity.md`.
 Who: AI, reviewed by Codex (REJECT, 10 findings), owner accepted
 Status: accepted (revised after the Codex plan review; owner accepted all 10 findings)
-Promote: pending (ADR-008)
+Promote: yes (ADR-008)
 
 ## D-16 — S3 JWT bearer, HS256, local token endpoint, refresh in S3 (D-024) — 2026-11-25
 WS: WS-05
@@ -148,7 +148,7 @@ Why: one process is issuer and verifier, so an asymmetric key buys nothing yet.
 Consequences: see `docs/plans/s3-identity.md`.
 Who: AI, reviewed by Codex (REJECT, 10 findings), owner accepted
 Status: accepted (revised after the Codex plan review; owner accepted all 10 findings)
-Promote: pending (ADR-008)
+Promote: yes (ADR-008)
 
 ## D-015 — Commit gates and the safe-command guard — 2026-11-25
 WS: WS-08

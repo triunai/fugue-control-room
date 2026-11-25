@@ -54,7 +54,7 @@ That is all: EF value conversion and Dapper type handlers are registered by scan
 
 - **Single-tenant by default.** Tenancy is a configuration toggle (`Tenancy:Enabled=false`), implemented later as an EF query filter plus tenant-from-JWT. See `docs/adr/ADR-003-single-tenant-default-tenancy-toggle.md` (supersedes ADR-001).
 - When tenancy is enabled: the tenant comes from a **verified JWT claim AFTER authentication**, never from a client header, query string or body; every tenant-owned entity gets the query filter and a leak test.
-- **Fallback authorization policy = authenticated.** Anonymous endpoints are explicit `[AllowAnonymous]` exceptions.
+- **Fallback authorization policy = authenticated.** Anonymous endpoints are explicit `[AllowAnonymous]` exceptions (token, refresh, logout, ping). Every action carries `[HasPermission(Permissions.X)]`; effective permissions are read per request (no cache, ADR-008); customer rows are scoped by owner unless `CUSTOMERS_ALL`; feature controllers carry `[Module(...)]` (ADR-009).
 - Money (if a domain needs it) is `bigint` minor units + an ISO currency code. Never `float`/`double`/`decimal` on the wire.
 - **Keyset pagination** only (no offset).
 - Credentials are hashed with `PasswordHasher<T>` / Argon2id only. Never roll your own hashing; never log secrets, tokens or request payloads.
@@ -87,7 +87,7 @@ Domain code uses plain names. Theming is brand-only (the name Fugue appears in n
 - No offset pagination; no floating-point money.
 - No FastEndpoints, minimal-API endpoints or MediatR.
 - No `Skip =` on tests without a `RED:` comment; no deleting tests to go green.
-- Do not implement `ApiControllerBase.MapStatus` on the owner's behalf: it is the owner's hand-written decision (ErrorType -> HTTP status). Its tests are expected red until then.
+- `ApiControllerBase.MapStatus` (ErrorType -> HTTP status, D-009) is implemented and approved by the owner; every named `ErrorType` must stay mapped (the build breaks otherwise). No test is red by design.
 - No Dapper outside `SqlExecutor` (it must share EF's connection and transaction); no reads through Dapper.
 - Don't commit `.env`, real connection strings, keys, `.pfx`/`.pem`.
 - Don't push to a remote. Commit only when asked. Agent commits end with `Refs: W-NNN` (or `D-`/`ADR-`) and `Co-Authored-By:`; a `fix(...)` touching `src/` touches `tests/` or says `Tests: none (<reason>)`.
@@ -134,7 +134,8 @@ dotnet restore && dotnet build --no-restore    # 0 warnings expected (warnings a
 dotnet test --no-build                          # Fugue.Tests (Testcontainers Postgres) + Fugue.ArchTests
 docker compose up -d                            # local Postgres (needs .env; runbook 03)
 dotnet tool restore && dotnet ef database update --project src/Fugue.Infrastructure
-dotnet run --project src/Fugue.Api -- --seed    # Development: seeds 25 customers (set ASPNETCORE_URLS=http://localhost:5080 for Bruno)
+dotnet user-secrets set Auth:SigningKey "$(openssl rand -base64 32)" --project src/Fugue.Api   # once; the host refuses to start without a valid key
+dotnet run --project src/Fugue.Api -- --seed    # Development: seeds 25 customers + dev users (runbook 05; set ASPNETCORE_URLS=http://localhost:5080 for Bruno)
 npm run api:test                                # Bruno suite against the running API
 dotnet format --verify-no-changes               # fix with: dotnet format
 bash scripts/spine/ledger-check.sh      # doc spine link check
