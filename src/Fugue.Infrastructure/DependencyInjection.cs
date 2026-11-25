@@ -8,10 +8,13 @@ using Fugue.Infrastructure.Persistence;
 using Fugue.Infrastructure.Persistence.Customers;
 using Fugue.Infrastructure.Persistence.Ids;
 using Fugue.Infrastructure.Persistence.Seeding;
+using Fugue.Infrastructure.Webhooks;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Fugue.Infrastructure;
 
@@ -41,6 +44,16 @@ public static class DependencyInjection
         services.AddScoped<OutboxRowFactory>();
         services.AddScoped<OutboxSaveChangesInterceptor>();
         services.AddScoped<IOutbox, OutboxWriter>();
+
+        // Webhooks (ADR-011): options, the SSRF guard, subscription secrets in Data Protection (key ring in the database) and the subscription store.
+        services.AddOptions<WebhookOptions>().Bind(configuration.GetSection(WebhookOptions.Section)).ValidateOnStart();
+        services.AddSingleton<IValidateOptions<WebhookOptions>, WebhookOptionsValidator>();
+        services.AddSingleton<IHostResolver, DnsHostResolver>();
+        services.AddSingleton<Fugue.Application.Features.Webhooks.IWebhookUrlGuard, WebhookUrlGuard>();
+        services.AddDataProtection().Services.Configure<Microsoft.AspNetCore.DataProtection.DataProtectionOptions>(o => o.ApplicationDiscriminator = "Fugue");
+        services.AddOptions<KeyManagementOptions>().Configure<IServiceScopeFactory>((options, scopes) => options.XmlRepository = new DatabaseXmlRepository(scopes));
+        services.AddSingleton<Fugue.Application.Features.Webhooks.ISecretProtector, DataProtectionSecretProtector>();
+        services.AddScoped<Fugue.Application.Features.Webhooks.IWebhookSubscriptionStore, WebhookSubscriptionStore>();
 
         services.AddDbContext<FugueDbContext>((sp, options) =>
         {

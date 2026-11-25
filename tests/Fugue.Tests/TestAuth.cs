@@ -19,6 +19,7 @@ internal static class TestAuth
         new("RateLimiting:Auth:PerIpPermits", ipPermits.ToString(System.Globalization.CultureInfo.InvariantCulture)),
         new("RateLimiting:Auth:PerEmailPermits", emailPermits.ToString(System.Globalization.CultureInfo.InvariantCulture)),
         new("RateLimiting:Auth:PerEmailConcurrency", "64"),
+        new("Webhooks:Dispatcher:Enabled", "false"), // tests drive the dispatcher by hand (or not at all); a background loop would race them
     ];
 
     public static void Apply(IWebHostBuilder builder, string key)
