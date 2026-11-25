@@ -4,15 +4,15 @@ A domain-neutral .NET Web API scaffold for practising API/CRUD craft. It carries
 
 ## Tech Stack
 
-.NET 8 · ASP.NET Core Web API using **MVC controllers** (not FastEndpoints, not minimal APIs) · abstract `ApiControllerBase` · source-generated `Mediator` (martinothamar, MIT; not MediatR, which is commercial since v13) · **FluentResults** (+ our `FugueError`/`ErrorType`, ADR-004) · FluentValidation · Serilog · EF Core 8 + Npgsql against local Postgres (docker compose; planned, S2) · xUnit + Testcontainers · NetArchTest. Repo tooling only: lefthook + commitlint via npm. Plan and phase order: `docs/plans/roadmap.md`.
+.NET 8 · ASP.NET Core Web API using **MVC controllers** (not FastEndpoints, not minimal APIs) · abstract `ApiControllerBase` · source-generated `Mediator` (martinothamar, MIT; not MediatR, which is commercial since v13) · **FluentResults** (+ our `FugueError`/`ErrorType`, ADR-004) · FluentValidation · Serilog · EF Core 8 + Npgsql (snake_case) and Dapper against local Postgres 17 (docker compose; ADR-006) · xUnit + Testcontainers · NetArchTest · Bruno CLI for API regression (`npm run api:test`). Repo tooling only: lefthook + commitlint via npm. Plan and phase order: `docs/plans/roadmap.md`.
 
 ## Architecture
 
 Vertical slices inside a clean-architecture 4-project layout:
 
-- `Fugue.Domain`: entities, value objects, `ErrorType`, `FugueError`, `PagedResult<T>`, `IVersioned`. Depends on FluentResults only.
+- `Fugue.Domain`: entities, strongly-typed ids (`Ids/`), `IAuditable`/`IAuditStamp`, `ErrorType`, `FugueError`, `PagedResult<T>`, `IVersioned`. Depends on FluentResults only.
 - `Fugue.Application`: feature slices, validators, handlers, pipeline behaviors, repository interfaces. Depends on Domain. **Never references ASP.NET Core.**
-- `Fugue.Infrastructure`: EF Core, repository implementations, external adapters. Depends on Application and Domain.
+- `Fugue.Infrastructure`: `FugueDbContext`, migrations, Dapper `SqlExecutor`, `EfUnitOfWork`, audit stamping, repository implementations, seeder. Depends on Application and Domain.
 - `Fugue.Api`: controllers, `ApiControllerBase`, composition root. Depends on Application and Infrastructure.
 - `Fugue.Tests`, `Fugue.ArchTests`.
 
@@ -33,6 +33,22 @@ Pipeline behaviors (`Fugue.Application/Common/Behaviors`, registered in `Program
 Correlation (ADR-005): `CorrelationIdMiddleware` is first; `X-Correlation-Id` (request chain) and `X-Saga-Id` (business process, `ICorrelationContext.SetSaga`) are validated, echoed, and pushed to Serilog and `Activity`. Unhandled exceptions become a 500 `application/problem+json` via `GlobalExceptionHandler`. Mediator keeps `ICommand`/`IQuery`/`IRequest` separate; `ApiControllerBase.Send*` has an overload for each.
 
 Request flow: controller action (one line) -> `Send(command/query)` via the mediator -> pipeline behaviors (logging, validation) -> handler -> `FluentResults.Result<T>` -> `ApiControllerBase` maps to a response or `ProblemDetails`.
+
+## Data access (ADR-006)
+
+- **EF Core for all reads** (`AsNoTracking` projections, keyset paging) **and for concurrency-checked single-aggregate updates/deletes**: Postgres `xmin` is the concurrency token (`IsRowVersion`), the ETag is its value, `If-Match` supplies the expected version (stale = `PreconditionFailed`, missing on PUT/DELETE = `PreconditionRequired`).
+- **Dapper for inserts, upserts (`INSERT ... ON CONFLICT`) and complex or set-based writes.** Dapper runs ONLY through `SqlExecutor`, which uses EF's connection and current transaction.
+- **`IUnitOfWork`** (`BeginAsync`/`CommitAsync`; dispose without commit rolls back) wraps both so mixed writes are atomic. The S4 outbox uses this seam.
+- **Audit fields** (`IAuditable`: CreatedAt/By, UpdatedAt/By): EF writes are stamped by `AuditableSaveChangesInterceptor`; Dapper SQL must bind `IAuditStamp.Capture()` values explicitly. Actor is the user id or `"system"`.
+- `Fugue.Domain` and `Fugue.Application` never reference EF, Dapper or Npgsql (arch test). Unique violations (SQLSTATE `23505`) become `Conflict` in the repository.
+- Migrations: `dotnet ef migrations add <Name> --project src/Fugue.Infrastructure --output-dir Persistence/Migrations`, and update `docs/migrations/migration-catalog.md` in the same commit.
+
+### Adding a strongly-typed ID
+
+1. Copy `src/Fugue.Domain/Ids/CustomerId.cs` to `<Aggregate>Id.cs` and rename (`readonly record struct XId(Guid Value) : IStronglyTypedId<XId>, IParsable<XId>` with the same `[JsonConverter]` and `[TypeConverter]` attributes; `New()` uses `Uuid7`).
+2. Use `XId` as the entity key and in commands, DTOs and controller route parameters.
+
+That is all: EF value conversion and Dapper type handlers are registered by scanning the Domain assembly for `IStronglyTypedId<>` (`Persistence/Ids/TypedIds.cs`); JSON and MVC route/query binding come from the two attributes. Ids are UUIDv7 (`Uuid7`; .NET 8 has no `Guid.CreateVersion7`). No `Id` on a shared base type.
 
 ## Tenancy & Security Model
 
@@ -72,6 +88,7 @@ Domain code uses plain names. Theming is brand-only (the name Fugue appears in n
 - No FastEndpoints, minimal-API endpoints or MediatR.
 - No `Skip =` on tests without a `RED:` comment; no deleting tests to go green.
 - Do not implement `ApiControllerBase.MapStatus` on the owner's behalf: it is the owner's hand-written decision (ErrorType -> HTTP status). Its tests are expected red until then.
+- No Dapper outside `SqlExecutor` (it must share EF's connection and transaction); no reads through Dapper.
 - Don't commit `.env`, real connection strings, keys, `.pfx`/`.pem`.
 - Don't push to a remote. Commit only when asked.
 
@@ -108,10 +125,15 @@ xUnit + Testcontainers (real Postgres, not in-memory) for integration; unit test
 
 The .NET 8 SDK lives in `$HOME/.dotnet` and is not on PATH. Prefix .NET commands in a shell with:
 `export DOTNET_ROOT=$HOME/.dotnet PATH=$HOME/.dotnet:$PATH DOTNET_CLI_TELEMETRY_OPTOUT=1;`
+For Docker/Testcontainers on OrbStack also add `PATH=$HOME/.orbstack/bin:...`, `DOCKER_HOST=unix://$HOME/.orbstack/run/docker.sock`, `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock` (runbook 03). Load `.env` with `set -a; source .env; set +a` (the connection string is `ConnectionStrings__Postgres`).
 
 ```
 dotnet restore && dotnet build --no-restore    # 0 warnings expected (warnings are errors)
-dotnet test --no-build                          # Fugue.Tests + Fugue.ArchTests
+dotnet test --no-build                          # Fugue.Tests (Testcontainers Postgres) + Fugue.ArchTests
+docker compose up -d                            # local Postgres (needs .env; runbook 03)
+dotnet tool restore && dotnet ef database update --project src/Fugue.Infrastructure
+dotnet run --project src/Fugue.Api -- --seed    # Development: seeds 25 customers (set ASPNETCORE_URLS=http://localhost:5080 for Bruno)
+npm run api:test                                # Bruno suite against the running API
 dotnet format --verify-no-changes               # fix with: dotnet format
 bash scripts/spine/ledger-check.sh      # doc spine link check
 bash scripts/spine/secrets-scan.sh      # staged secrets scan

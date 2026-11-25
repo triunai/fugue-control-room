@@ -1,0 +1,22 @@
+meta {
+  name: Malformed id (framework 400)
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/api/v1/customers/not-a-guid
+  body: none
+  auth: none
+}
+
+tests {
+  test("400 as application/problem+json with a code", function () {
+    expect(res.status).to.equal(400);
+    expect(res.headers["content-type"]).to.include("application/problem+json");
+    expect(res.body.code).to.equal("validation.failed");
+  });
+  test("correlation id is in the header and the body", function () {
+    expect(res.headers["x-correlation-id"]).to.equal(res.body.correlationId);
+  });
+}

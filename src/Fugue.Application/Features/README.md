@@ -29,4 +29,4 @@ Rules:
 - Repository implementations live in `Fugue.Infrastructure/Persistence/<Feature>/`, not here.
 - Controllers in `Fugue.Api/Controllers/` stay one-liners: `Send(new GetWidget(id), ct)`.
 - Cross-cutting pipeline behaviors (validation, logging) live in `Common/Behaviors/`.
-- `Diagnostics/` (a ping query) is the only feature: it proves the pipeline and shows the slice shape. The scaffold carries no domain.
+- `Diagnostics/` (a ping query) proves the pipeline. `Customers/` is the domain-neutral rehearsal of a stateful aggregate (ETag/If-Match, keyset paging, guarded transitions, Dapper insert + EF update split, ADR-006): copy its shape for the next feature.

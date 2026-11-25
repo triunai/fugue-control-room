@@ -1,0 +1,41 @@
+meta {
+  name: Update customer (If-Match)
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}
+  body: json
+  auth: none
+}
+
+headers {
+  If-Match: {{etag}}
+}
+
+body:json {
+  {
+    "name": "Bruno Renamed",
+    "email": "{{emailLower}}",
+    "phone": null
+  }
+}
+
+script:pre-request {
+  bru.setVar("staleEtag", bru.getVar("etag"));
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("etag", res.headers["etag"]);
+  }
+}
+
+tests {
+  test("200 with a new ETag", function () {
+    expect(res.status).to.equal(200);
+    expect(res.headers["etag"]).to.not.equal(bru.getVar("staleEtag"));
+    expect(res.body.name).to.equal("Bruno Renamed");
+  });
+}

@@ -6,6 +6,13 @@ Heading form: `## D-NNN — <title> — <YYYY-MM-DD>`. NNN is three digits. Only
 First non-blank body line must be `WS: WS-NN` (comma-separate several) or `WS: (pre-WS)` for decisions older than the rule. Never guess.
 Then: Context (one or two lines) · Decision · Why · Consequences · Supersedes (if any).
 
+## D-004 — EF Core reads, Dapper writes, one shared transaction — 2026-11-25
+WS: WS-04
+Context: an external review suggested deferring Dapper; the owner wants the full toolbox practised.
+Decision: EF for reads and xmin-checked updates; Dapper for inserts, upserts and set-based writes; Dapper always on EF's connection and current transaction via `IUnitOfWork`; audit stamped on both paths (ADR-006).
+Why: each tool where it is strongest, without losing optimistic concurrency or atomicity.
+Consequences: the S4 outbox writes through the unit of work; Dapper never reads aggregates.
+
 ## D-003 — Three-layer correlation: trace, correlation id, saga id — 2026-11-25
 WS: WS-03
 Context: need to debug across logs, responses and later outbound webhooks; a review suggested dropping the saga id.

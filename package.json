@@ -5,11 +5,13 @@
   "description": "Repo tooling only (git hooks, commit linting). The application is .NET.",
   "scripts": {
     "prepare": "lefthook install",
-    "test:scripts": "node --test scripts/check-test-integrity.test.mjs"
+    "test:scripts": "node --test scripts/check-test-integrity.test.mjs",
+    "api:test": "cd bruno/fugue && bru run --env local"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",
     "@commitlint/config-conventional": "^19.0.0",
+    "@usebruno/cli": "^4.4.0",
     "lefthook": "^1.7.0"
   }
 }

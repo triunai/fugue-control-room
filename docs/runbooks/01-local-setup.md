@@ -29,7 +29,7 @@ Use OrbStack. Install it (`brew install --cask orbstack`) and start it once:
 open -a OrbStack
 docker version
 ```
-Expect: both a `Client:` and a `Server:` section. OrbStack keeps `/var/run/docker.sock` in place, so Testcontainers needs no configuration. Not required for S0/S1 tests.
+Expect: both a `Client:` and a `Server:` section. The tests from S2 onward start Postgres through Testcontainers. OrbStack does not always create `/var/run/docker.sock`; set `DOCKER_HOST` as shown in `03-local-database.md` if Testcontainers cannot find Docker.
 
 ## 4. Clone and install repo tooling (git hooks, commit linting)
 

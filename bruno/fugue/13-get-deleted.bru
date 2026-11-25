@@ -1,0 +1,21 @@
+meta {
+  name: Get deleted customer (404)
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("problem code is customer.not_found", function () {
+    expect(res.headers["content-type"]).to.include("application/problem+json");
+    expect(res.body.code).to.equal("customer.not_found");
+  });
+  test("status is 404 (needs the owner's MapStatus)", function () {
+    expect(res.status).to.equal(404);
+  });
+}

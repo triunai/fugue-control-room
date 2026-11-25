@@ -26,3 +26,8 @@ Refs: `docs/plans/roadmap.md`, ADR-003, ADR-004, D-002
 Status: behaviors, exception handler, Serilog, correlation middleware, ADR-005, runbook 02, tests. Expected red: `MapStatus`-dependent tests only.
 Resume: none. Next is S2 (persistence) per `docs/plans/roadmap.md`; open it with "new task: …".
 Refs: ADR-005, D-003, `docs/runbooks/02-tracing-a-request.md`
+
+### WS-04 — S2 persistence: Postgres, EF Core + Dapper, audit, typed ids, Customers slice — ✅ DONE (2026-11-25)
+Status: compose Postgres, `FugueDbContext` + `InitialCustomers` migration, `IUnitOfWork`/`SqlExecutor`, audit stamping on both paths, `Uuid7` + `CustomerId`, Customers slice, dev seeder, Testcontainers tests, Bruno suite, runbooks 03 and 04, ADR-006. Expected red: tests needing `MapStatus` (see hot-state).
+Resume: none. Next is S3 (identity) per `docs/plans/roadmap.md`; open it with "new task: …".
+Refs: ADR-006, D-004, `docs/runbooks/03-local-database.md`, `docs/runbooks/04-customers-api.md`, `docs/migrations/migration-catalog.md`

@@ -1,0 +1,26 @@
+meta {
+  name: List customers (keyset page)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v1/customers?limit=2
+  body: none
+  auth: none
+}
+
+tests {
+  test("200 with at most 2 items", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body).to.be.an("array");
+    expect(res.body.length).to.be.at.most(2);
+  });
+  test("a next page advertises X-Next-Cursor and a Link", function () {
+    // The seeded data (25 rows) guarantees a second page; skip the assertion on an empty database.
+    if (res.body.length === 2) {
+      expect(res.headers["x-next-cursor"]).to.be.a("string").and.not.empty;
+      expect(res.headers["link"]).to.include('rel="next"');
+    }
+  });
+}

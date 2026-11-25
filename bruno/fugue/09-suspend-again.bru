@@ -1,0 +1,21 @@
+meta {
+  name: Suspend again (409)
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}/suspend
+  body: none
+  auth: none
+}
+
+tests {
+  test("problem code is customer.invalid_transition", function () {
+    expect(res.headers["content-type"]).to.include("application/problem+json");
+    expect(res.body.code).to.equal("customer.invalid_transition");
+  });
+  test("status is 409 (needs the owner's MapStatus)", function () {
+    expect(res.status).to.equal(409);
+  });
+}

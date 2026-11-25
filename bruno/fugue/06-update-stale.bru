@@ -1,0 +1,33 @@
+meta {
+  name: Update with a stale ETag (412)
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}
+  body: json
+  auth: none
+}
+
+headers {
+  If-Match: {{staleEtag}}
+}
+
+body:json {
+  {
+    "name": "Should Not Apply",
+    "email": "{{emailLower}}",
+    "phone": null
+  }
+}
+
+tests {
+  test("problem code is customer.version_mismatch", function () {
+    expect(res.headers["content-type"]).to.include("application/problem+json");
+    expect(res.body.code).to.equal("customer.version_mismatch");
+  });
+  test("status is 412 (needs the owner's MapStatus)", function () {
+    expect(res.status).to.equal(412);
+  });
+}

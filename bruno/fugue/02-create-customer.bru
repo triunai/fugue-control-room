@@ -1,0 +1,50 @@
+meta {
+  name: Create customer
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Bruno Tester",
+    "email": "{{email}}",
+    "phone": "+14155550123"
+  }
+}
+
+script:pre-request {
+  bru.setVar("email", "Bruno-" + Date.now() + "@Example.Test");
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("customerId", res.body.id);
+    bru.setVar("etag", res.headers["etag"]);
+    bru.setVar("emailLower", res.body.email);
+  }
+}
+
+tests {
+  test("201 Created", function () {
+    expect(res.status).to.equal(201);
+  });
+  test("Location points at the new customer", function () {
+    expect(res.headers["location"]).to.include("/api/v1/customers/" + res.body.id);
+  });
+  test("ETag header is the version", function () {
+    expect(res.headers["etag"]).to.equal('"' + res.body.version + '"');
+  });
+  test("email is lower-cased and status Active", function () {
+    expect(res.body.email).to.equal(res.body.email.toLowerCase());
+    expect(res.body.status).to.equal("Active");
+  });
+  test("correlation id is returned", function () {
+    expect(res.headers["x-correlation-id"]).to.be.a("string").and.not.empty;
+  });
+}

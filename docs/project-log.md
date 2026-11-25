@@ -6,6 +6,13 @@ Heading form: `## <YYYY-MM-DD> — <title>`. Entry key = `<date>#<n>`, where n i
 First non-blank body line must be `WS: WS-NN` (comma-separate several) or `WS: (pre-WS)`.
 Then: what was done · what was decided (cite D-NNN) · what is open (cite #NNN).
 
+## 2026-11-25 — S2: Postgres, EF Core + Dapper, audit, typed ids, Customers
+WS: WS-04
+Fixed framework 400s to `application/problem+json`; added docker-compose Postgres, `FugueDbContext` and the first migration, `IUnitOfWork`/`SqlExecutor`, audit stamping on both write paths, `Uuid7` and `CustomerId`, the Customers vertical slice, a dev seeder, Testcontainers integration tests, a Bruno suite, runbooks 03 and 04 and ADR-006.
+Decided: D-004.
+Next: S3 identity. Owner action pending: implement `MapStatus`.
+Superseded RESUME block (2026-11-25, S0 and S1 done): S2 persistence was next.
+
 ## 2026-11-25 — S1: validation, exceptions, logging, correlation
 WS: WS-03
 Added the validation and logging behaviors, global exception handler, Serilog, correlation and saga ids (ADR-005), a ping feature that exercises the real pipeline, runbook 02 and tests.

@@ -1,0 +1,22 @@
+meta {
+  name: Get customer
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/customers/{{customerId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("200 with the same ETag", function () {
+    expect(res.status).to.equal(200);
+    expect(res.headers["etag"]).to.equal(bru.getVar("etag"));
+  });
+  test("audit fields are present", function () {
+    expect(res.body.createdBy).to.be.a("string").and.not.empty;
+    expect(res.body.updatedAt).to.be.a("string");
+  });
+}

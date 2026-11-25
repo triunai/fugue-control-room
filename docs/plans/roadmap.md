@@ -17,11 +17,12 @@ Each phase ends with a green build (0 warnings), tests, and a commit. Statuses l
 - `X-Correlation-Id` + `X-Saga-Id` + W3C trace context (ADR-005). Runbook 02.
 - `GET /api/v1/diagnostics/ping`: the one real endpoint, proving the pipeline end to end through the real mediator.
 
-## S2 - persistence
-- Local Postgres via docker compose; EF Core 8 + Npgsql.
-- `IAuditable` + `SaveChangesInterceptor` + `TimeProvider`.
-- Hand-written strongly-typed IDs (`readonly record struct`, EF value converter, route binding via `IParsable`, JSON converter) for a few aggregates only.
-- Testcontainers fixture; migration catalog discipline.
+## S2 - persistence (done; ADR-006)
+- Local Postgres 17 via docker compose; EF Core 8 + Npgsql (snake_case); `dotnet-ef` as a local tool.
+- Data-access split: EF for reads and `xmin`-checked updates, Dapper for inserts/upserts, one shared connection and transaction through `IUnitOfWork`.
+- `IAuditable` stamped by an EF interceptor (and by `IAuditStamp` in Dapper SQL), `TimeProvider`-based.
+- Hand-written strongly-typed ID pattern (UUIDv7) with `CustomerId` only.
+- Customers vertical slice (ETag/If-Match, keyset paging, guarded transitions), idempotent dev seeder, Testcontainers fixture, Bruno suite, migration catalog discipline.
 
 ## S3 - identity
 - JWT bearer + a dev token issuer (development only).
@@ -46,13 +47,12 @@ Each phase ends with a green build (0 warnings), tests, and a commit. Statuses l
 - OpenAPI + Swagger UI, plus an OpenAPI snapshot test for contract regression.
 - CORS with `Access-Control-Expose-Headers: ETag, Link, X-Next-Cursor, X-Correlation-Id`.
 - Dockerfile + one-command compose.
-- Bruno collection and a `bru run` regression suite.
+- Extend the Bruno suite to new endpoints (the collection and `npm run api:test` exist since S2).
 
 ## S6 (optional) - gateway
 - YARP API gateway in compose, load-balancing two API replicas.
 
 ## Deferred
-- Dapper (EF is enough until a measured hot read).
 - Per-user deny overrides in authorization.
 - Audit sampling: never. Audit records are not sampled.
 - Tenancy toggle implementation (`Tenancy:Enabled`, ADR-003): after S3 if a target domain needs it.

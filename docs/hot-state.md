@@ -4,9 +4,10 @@ Rules: ONE current `▶ RESUME HERE` block, at most ONE `(previous)` block. When
 
 ## ▶ RESUME HERE — 2026-11-25
 - Tree: `main` (path: repo root)
-- Doing: S0 and S1 finished (see `docs/plans/roadmap.md`). Nothing in flight.
-- Next action: S2 persistence (local Postgres, EF Core 8). Start with "new task: …".
-- Open threads: none active. Owner action: implement `ApiControllerBase.MapStatus`. Known red tests until then: the 8 `MapStatusTests` theory cases, `Failure_is_a_problem_json_with_code_type_and_trace_id`, `Validation_failure_carries_an_errors_dictionary`, `Ping_with_an_out_of_range_count_is_a_400_validation_problem`.
+- Doing: S0, S1 and S2 finished (see `docs/plans/roadmap.md`). Nothing in flight.
+- Next action: S3 identity (JWT, policies). Start with "new task: …".
+- Open threads: none active. Owner action: implement `ApiControllerBase.MapStatus`. Known red tests until then: the 8 `MapStatusTests` cases, `Failure_is_a_problem_json_with_code_type_and_trace_id`, `Validation_failure_carries_an_errors_dictionary`, `Ping_with_an_out_of_range_count_is_a_400_validation_problem`, and 5 in `CustomersApiTests` (stale 412, missing If-Match 428, suspend twice 409, duplicate email 409, unknown id 404). Bruno: requests 06, 07, 09, 13 (8 assertions).
+- Local env: runbook 03 (Docker env vars, `.env`, port clash on 5432 handled with `POSTGRES_PORT`).
 
 ## Owed inbox
 One line per item that the next wrap must handle. Format: `- [ ] <what> — <who/why> — <since YYYY-MM-DD>`. Tick and remove when done.

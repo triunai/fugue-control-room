@@ -12,7 +12,7 @@ internal sealed partial class DevelopmentSeedHostedService(IServiceScopeFactory 
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        using IServiceScope scope = scopes.CreateScope();
+        await using AsyncServiceScope scope = scopes.CreateAsyncScope();
         int count = await scope.ServiceProvider.GetRequiredService<ICustomerSeeder>().SeedAsync(cancellationToken);
         LogSeeded(count);
     }

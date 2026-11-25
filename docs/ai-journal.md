@@ -81,3 +81,23 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
   - Saga id set by a handler is pushed into the log context at call time; it appears on later log lines in the same request flow and on the response header, but not on lines logged before the call.
 - **Decision:** pending owner review (not yet accepted or challenged).
 - **Why:** these are the points where the brief left a choice. Also observed, not changed: framework-generated 400s from `[ApiController]` are served as `application/json`, not `application/problem+json`, because of the controller-level `[Produces]` (same cause as the earlier content-type bug).
+
+## 2026-11-25 - Dapper for writes, EF for reads (S2)
+- **Asked:** the data-access approach for persistence.
+- **AI proposed:** an external Fable review recommended deferring Dapper until a measured hot path (EF alone).
+- **Decision:** overrode: the owner chose EF for reads and concurrency-checked updates, Dapper for inserts, upserts and set-based writes. The AI added two conditions: optimistic concurrency stays on the EF path (Postgres `xmin` as the token, ETag/`If-Match`), and Dapper must run on EF's connection and current transaction through a small `IUnitOfWork`, so mixed writes are atomic and the S4 outbox has a seam (ADR-006, D-004).
+- **Why:** practising both tools is the point of the project; the two conditions remove the lost-update and split-commit hazards that the reviewer's concern was really about.
+
+## 2026-11-25 - S2 implementation choices (review these)
+- **Asked:** local Postgres, persistence foundation, a Customers vertical slice, seed, tests, Bruno suite.
+- **AI proposed / chose:**
+  - Framework 400s fixed two ways: dropped the controller-level `[Produces]` and routed `InvalidModelStateResponseFactory` through `ProblemResult` (adds `code: validation.failed`, trace and correlation ids). Also `UseStatusCodePages()` so empty 404/405/415 are problem+json, and lower-case URLs.
+  - `Version` on the DTO is `xmin` as `long`; the entity keeps it as `uint RowVersion`. `xid` cannot be cast to `bigint` in SQL, so Dapper uses `xmin::text::bigint` and EF projections widen in memory.
+  - `If-Match` is mandatory for PUT and DELETE (428 when missing) but optional for suspend/reactivate (POST), because the state machine already guards them; if sent it is enforced. The brief listed 428 only for PUT/PATCH/DELETE.
+  - Typed ids are registered by scanning the Domain assembly for `IStronglyTypedId<>` (zero lines to add the next id), using a C# 11 static abstract `From(Guid)`; MVC binding needs a `TypeConverter` (an `IParsable` struct is treated as a complex type by MVC), so both are provided.
+  - Seeding is a hosted service enabled only in Development with `--seed` (or `Seed:Enabled`), not in tests; it keeps the API running after seeding.
+  - A host Postgres already listened on 127.0.0.1:5432 on the AI's machine and shadowed the container; compose publishes `${POSTGRES_PORT:-5432}` and the local `.env` uses 5433. Not changed: the default stays 5432.
+  - Because `MapStatus` throws, every handler-failure HTTP assertion is red. The same failure logic is pinned green at the Result level in `CustomerSeamTests` so it is verified without writing `MapStatus`.
+  - Bruno CLI 4.4.0 pulls a transitive `@faker-js/faker` with a high advisory (`npm audit`); dev-only, local; left as is.
+- **Decision:** pending owner review (not yet accepted or challenged).
+- **Why:** these are the points where the brief left a choice or reality differed from it.
