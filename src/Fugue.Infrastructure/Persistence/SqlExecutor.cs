@@ -18,6 +18,18 @@ internal sealed class SqlExecutor(FugueDbContext db)
         RunAsync(async (connection, transaction) =>
             (await connection.ExecuteScalarAsync<T>(new CommandDefinition(sql, parameters, transaction, cancellationToken: ct)))!, ct);
 
+    /// <summary>
+    /// Runs one statement on its OWN connection and transaction, deliberately outside any unit of work. For rows that must survive the
+    /// rollback of the caller's transaction (the failure audit row) and must not be poisoned by an aborted one.
+    /// </summary>
+    public async Task<int> ExecuteIndependentAsync(string sql, object? parameters, CancellationToken ct)
+    {
+        string connectionString = db.Database.GetConnectionString() ?? throw new InvalidOperationException("The database has no connection string.");
+        await using var connection = new Npgsql.NpgsqlConnection(connectionString);
+        await connection.OpenAsync(ct);
+        return await connection.ExecuteAsync(new CommandDefinition(sql, parameters, cancellationToken: ct));
+    }
+
     private async Task<T> RunAsync<T>(Func<System.Data.Common.DbConnection, System.Data.Common.DbTransaction?, Task<T>> action, CancellationToken ct)
     {
         System.Data.Common.DbConnection connection = db.Database.GetDbConnection();

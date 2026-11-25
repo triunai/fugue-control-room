@@ -198,6 +198,24 @@ public sealed class AuditCaptureTests(PostgresFixture db)
     }
 
     [Fact]
+    public async Task A_later_save_on_the_same_context_never_writes_audit_rows_of_a_save_that_failed()
+    {
+        await using AsyncServiceScope scope = db.Factory.Services.CreateAsyncScope();
+        FugueDbContext context = scope.ServiceProvider.GetRequiredService<FugueDbContext>();
+        string email = NewEmail();
+        Customer first = Customer.Create("Twin A", email, null);
+        Customer second = Customer.Create("Twin B", email, null);
+        context.Customers.AddRange(first, second);
+        await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());
+
+        context.Entry(second).State = EntityState.Detached; // the caller gives up on the offender and saves again
+        await context.SaveChangesAsync();
+
+        Assert.Single(await AuditProbe.ByEntityAsync(db, "Customer", first.Id.ToString()));
+        Assert.Empty(await AuditProbe.ByEntityAsync(db, "Customer", second.Id.ToString())); // no stale row from the failed attempt
+    }
+
+    [Fact]
     public async Task Rolling_back_a_unit_of_work_removes_the_EF_audit_row_with_the_change()
     {
         await using AsyncServiceScope scope = db.Factory.Services.CreateAsyncScope();
@@ -235,21 +253,87 @@ public sealed class AuditCaptureTests(PostgresFixture db)
     }
 
     [Fact]
-    public async Task The_seeder_leaves_one_summary_row_per_run_not_one_per_customer()
+    public async Task The_seeder_audits_each_row_it_creates_or_overwrites_with_old_and_new_and_skips_unchanged_rows()
     {
+        string seededId = Fugue.Infrastructure.Persistence.Seeding.CustomerSeeder.IdFor(24).ToString();
+        List<AuditRow> first = await AuditProbe.ByEntityAsync(db, "Customer", seededId);
+        Assert.Equal("customers.seed", Assert.Single(first).Action); // created by the fixture's seed run: one row, new values
+        await SqlAsync("UPDATE customers SET name = 'Edited by hand' WHERE id = @id", ("id", Guid.Parse(seededId)));
         await using AsyncServiceScope scope = db.Factory.Services.CreateAsyncScope();
-        long before = await CountAsync("action = 'customers.seed'");
+        var seeder = scope.ServiceProvider.GetRequiredService<Fugue.Infrastructure.Persistence.Seeding.ICustomerSeeder>();
 
-        await scope.ServiceProvider.GetRequiredService<Fugue.Infrastructure.Persistence.Seeding.ICustomerSeeder>().SeedAsync(default);
+        await seeder.SeedAsync(default);
+        List<AuditRow> afterOverwrite = await AuditProbe.ByEntityAsync(db, "Customer", seededId);
+        await seeder.SeedAsync(default);
+        List<AuditRow> afterRerun = await AuditProbe.ByEntityAsync(db, "Customer", seededId);
 
-        Assert.Equal(before + 1, await CountAsync("action = 'customers.seed'"));
+        AuditRow overwrite = afterOverwrite[^1];
+        Assert.Equal(2, afterOverwrite.Count);
+        Assert.Equal(["name"], overwrite.ChangedFields); // only what was overwritten
+        Assert.Equal("Edited by hand", overwrite.Change("name").GetProperty("old").GetString());
+        Assert.Equal("Sample Customer 24", overwrite.Change("name").GetProperty("new").GetString());
+        Assert.Equal(2, afterRerun.Count); // nothing matched-and-unchanged is written again
     }
 
-    private async Task<long> CountAsync(string where)
+    [Fact]
+    public async Task A_forced_write_of_an_equal_value_is_audited_and_flagged_not_skipped()
+    {
+        (string email, Fugue.Domain.Ids.UserId target) = await db.NewUserAsync([RoleCodes.SelfService]);
+        _ = email;
+        await using AsyncServiceScope scope = db.Factory.Services.CreateAsyncScope();
+        FugueDbContext context = scope.ServiceProvider.GetRequiredService<FugueDbContext>();
+        var overrideRow = new UserPermissionOverride
+        {
+            Id = Fugue.Domain.Ids.UserPermissionOverrideId.New(),
+            UserId = target,
+            PermissionId = IdentityCatalog.PermissionIdFor(Permissions.CustomersView),
+            IsAllowed = true,
+        };
+        context.Overrides.Add(overrideRow);
+        await context.SaveChangesAsync();
+
+        // OverrideAdmin-style "last writer wins": the column is flagged although the loaded value equals the new one, because the
+        // database value may have changed since the load. The write must be audited, not skipped.
+        context.Entry(overrideRow).Property(o => o.IsAllowed).IsModified = true;
+        await context.SaveChangesAsync();
+
+        List<AuditRow> rows = await AuditProbe.ByEntityAsync(db, "UserPermissionOverride", overrideRow.Id.ToString());
+        Assert.Equal(2, rows.Count);
+        Assert.Equal("user_permission_overrides.update", rows[1].Action); // no command in scope: the table-derived default
+        Assert.Equal(["isAllowed"], rows[1].ChangedFields);
+        Assert.True(rows[1].Metadata!.Value.GetProperty("unconditionalWrite").GetBoolean());
+    }
+
+    [Fact]
+    public async Task A_failure_row_survives_the_rollback_of_a_surrounding_unit_of_work_and_an_aborted_transaction()
+    {
+        await using AsyncServiceScope scope = db.Factory.Services.CreateAsyncScope();
+        IAuditTrail trail = scope.ServiceProvider.GetRequiredService<IAuditTrail>();
+        ICustomerRepository customers = scope.ServiceProvider.GetRequiredService<ICustomerRepository>();
+        IUnitOfWork unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        string email = NewEmail();
+        string marker = "tx-" + Guid.NewGuid().ToString("N");
+
+        await unitOfWork.BeginAsync(default);
+        Assert.True((await customers.AddAsync(Customer.Create("First", email, null), default)).IsSuccess);
+        Assert.True((await customers.AddAsync(Customer.Create("Second", email, null), default)).IsFailed); // the 23505 aborts the open transaction
+        await trail.RecordFailureAsync(new AuditFailure("customers.create", "Customer", marker, "customer.email_taken", null), default);
+        await unitOfWork.DisposeAsync(); // rolls everything back
+
+        AuditRow row = Assert.Single(await AuditProbe.ByEntityAsync(db, "Customer", marker));
+        Assert.Equal("failure", row.Outcome);
+    }
+
+    private async Task SqlAsync(string sql, params (string Name, object Value)[] parameters)
     {
         await using var connection = new NpgsqlConnection(db.ConnectionString);
         await connection.OpenAsync();
-        await using var command = new NpgsqlCommand($"SELECT count(*) FROM audit_log WHERE {where}", connection);
-        return (long)(await command.ExecuteScalarAsync())!;
+        await using var command = new NpgsqlCommand(sql, connection);
+        foreach ((string name, object value) in parameters)
+        {
+            command.Parameters.AddWithValue(name, value);
+        }
+
+        await command.ExecuteNonQueryAsync();
     }
 }

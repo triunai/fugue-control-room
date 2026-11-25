@@ -104,4 +104,4 @@ On code: `[AuditMask]` on an entity property masks it, `[NoAudit]` on a property
 
 ## What is and is not audited
 
-Audited: every EF `SaveChanges` on a non-excluded entity (so users, roles, groups, overrides, modules, customers), the Dapper customer insert, the seeders (one summary row per customer seed run), and every failed mutating command. Not audited: reads, refresh-token rows (their record is `access_audit`), and the audit tables themselves. Audit rows are not sampled and there is no retention yet (`docs/archive/deferred.md`).
+Audited: every EF `SaveChanges` on a non-excluded entity (so users, roles, groups, overrides, modules, customers), the Dapper customer insert, the seeders (one row per customer created or overwritten, nothing on a re-run), forced "last writer wins" writes (flagged `unconditionalWrite` in `metadata`), and every failed mutating command. Not audited: reads, refresh-token rows (their record is `access_audit`), and the audit tables themselves. Audit rows are not sampled and there is no retention yet (`docs/archive/deferred.md`).

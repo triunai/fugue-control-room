@@ -6,7 +6,7 @@ namespace Fugue.Infrastructure.Audit;
 
 /// <summary>
 /// The Dapper write path of <c>audit_log</c> (ADR-006 insert path): runs through <see cref="SqlExecutor"/>, so inside a unit of work the
-/// row joins that transaction. Used for Dapper writes (Customer insert, seeders) and for the single autocommitted failure row.
+/// row joins that transaction. Used for Dapper writes (Customer insert, seeders); the failure row is the exception: it is written on its own connection.
 /// </summary>
 internal sealed class AuditTrail(SqlExecutor sql, AuditRowFactory factory, AuditRedactor redactor) : IAuditTrail
 {
@@ -27,7 +27,7 @@ internal sealed class AuditTrail(SqlExecutor sql, AuditRowFactory factory, Audit
         string? changes = redactor.Build(entry.EntityClrType, entry.Changes);
         AuditLog row = factory.Create(
             entry.DefaultAction, $"{entry.EntityType.ToLowerInvariant()}.write", entry.EntityType, entry.EntityId, AuditOutcomes.Success, null, changes, entry.Metadata);
-        await InsertAsync(row, ct);
+        await sql.ExecuteAsync(InsertSql, Parameters(row), ct); // joins the caller's transaction: commits or rolls back with the change
     }
 
     public async Task RecordFailureAsync(AuditFailure failure, CancellationToken ct)
@@ -39,35 +39,34 @@ internal sealed class AuditTrail(SqlExecutor sql, AuditRowFactory factory, Audit
 
         AuditLog row = factory.Create(
             failure.Action, failure.Action, failure.EntityType, failure.EntityId, AuditOutcomes.Failure, failure.ErrorCode, null, failure.Metadata);
-        await InsertAsync(row, ct);
+
+        // Own connection and transaction: a failure row must survive the rollback of a surrounding unit of work, and an aborted
+        // surrounding transaction (a unique violation) must not stop it being written.
+        await sql.ExecuteIndependentAsync(InsertSql, Parameters(row), ct);
     }
 
-    private Task<int> InsertAsync(AuditLog row, CancellationToken ct) =>
-        sql.ExecuteAsync(
-            InsertSql,
-            new
-            {
-                row.Id,
-                row.OccurredAt,
-                row.ActorUserId,
-                row.ActorType,
-                row.ActorDisplay,
-                row.TenantId,
-                row.PermissionUsed,
-                row.Action,
-                row.EntityType,
-                row.EntityId,
-                row.Outcome,
-                row.ErrorCode,
-                row.Changes,
-                row.CorrelationId,
-                row.SagaId,
-                row.TraceId,
-                row.HttpMethod,
-                row.RouteTemplate,
-                row.ClientIp,
-                row.UserAgent,
-                row.Metadata,
-            },
-            ct);
+    private static object Parameters(AuditLog row) => new
+    {
+        row.Id,
+        row.OccurredAt,
+        row.ActorUserId,
+        row.ActorType,
+        row.ActorDisplay,
+        row.TenantId,
+        row.PermissionUsed,
+        row.Action,
+        row.EntityType,
+        row.EntityId,
+        row.Outcome,
+        row.ErrorCode,
+        row.Changes,
+        row.CorrelationId,
+        row.SagaId,
+        row.TraceId,
+        row.HttpMethod,
+        row.RouteTemplate,
+        row.ClientIp,
+        row.UserAgent,
+        row.Metadata,
+    };
 }

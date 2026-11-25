@@ -90,8 +90,8 @@ Promote: yes (ADR-010)
 ## D-029 — W-012 failed commands are recorded by AuditBehavior — 2026-11-26
 WS: WS-12
 Context: a command that fails with a business error changes nothing, so the interceptor never sees it.
-Decision: `AuditBehavior` (order Logging, Audit, Validation) writes ONE failure row with the error code in a single autocommitted insert, and opens the ambient scope the interceptor reads; successes stay with the interceptor so there are no double rows. Authentication commands carry `[NoAudit]` (their record is `access_audit`).
-Why: a tracked context may be dirty after a failed save; a plain insert cannot re-save it. Validation failures are audited because the behavior wraps validation.
+Decision: `AuditBehavior` (order Logging, Audit, Validation) writes ONE failure row with the error code in one insert on its own connection and transaction (it survives a surrounding rollback), and opens the ambient scope the interceptor reads; successes stay with the interceptor so there are no double rows. Authentication commands carry `[NoAudit]` (their record is `access_audit`).
+Why: a tracked context may be dirty after a failed save and a surrounding transaction may be aborted; an independent plain insert depends on neither. Validation failures are audited because the behavior wraps validation.
 Consequences: a failing audit write is logged, never surfaced; failure rows are best effort, success rows are transactional.
 Who: owner (requirement) and AI (placement)
 Status: accepted

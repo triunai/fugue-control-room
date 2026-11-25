@@ -28,6 +28,45 @@ internal sealed class AuditLogSaveChangesInterceptor(AuditRowFactory factory, Au
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
+    // The audit rows only live inside one SaveChanges. Detach them afterwards: after a FAILED save they describe a change that never
+    // happened and a later SaveChanges on the same context must not write them, and after a successful save they only cost memory.
+    public override int SavedChanges(SaveChangesCompletedEventData eventData, int result)
+    {
+        DetachAuditRows(eventData.Context);
+        return base.SavedChanges(eventData, result);
+    }
+
+    public override ValueTask<int> SavedChangesAsync(SaveChangesCompletedEventData eventData, int result, CancellationToken cancellationToken = default)
+    {
+        DetachAuditRows(eventData.Context);
+        return base.SavedChangesAsync(eventData, result, cancellationToken);
+    }
+
+    public override void SaveChangesFailed(DbContextErrorEventData eventData)
+    {
+        DetachAuditRows(eventData.Context);
+        base.SaveChangesFailed(eventData);
+    }
+
+    public override Task SaveChangesFailedAsync(DbContextErrorEventData eventData, CancellationToken cancellationToken = default)
+    {
+        DetachAuditRows(eventData.Context);
+        return base.SaveChangesFailedAsync(eventData, cancellationToken);
+    }
+
+    private static void DetachAuditRows(DbContext? context)
+    {
+        if (context is null)
+        {
+            return;
+        }
+
+        foreach (EntityEntry<AuditLog> entry in context.ChangeTracker.Entries<AuditLog>().ToList())
+        {
+            entry.State = EntityState.Detached;
+        }
+    }
+
     private void Capture(DbContext? context)
     {
         if (context is null || !factory.Enabled)
@@ -41,10 +80,10 @@ internal sealed class AuditLogSaveChangesInterceptor(AuditRowFactory factory, Au
 
         foreach (EntityEntry entry in changed)
         {
-            Dictionary<string, AuditFieldChange> fields = Diff(entry);
+            Dictionary<string, AuditFieldChange> fields = Diff(entry, out bool unconditional);
             if (fields.Count == 0 && entry.State == EntityState.Modified)
             {
-                continue; // touched but nothing really changed (for example a forced IsModified with an identical value)
+                continue; // touched (for example by the stamp interceptor) but no business column was written
             }
 
             string table = entry.Metadata.GetTableName() ?? entry.Metadata.ClrType.Name.ToLowerInvariant();
@@ -56,12 +95,19 @@ internal sealed class AuditLogSaveChangesInterceptor(AuditRowFactory factory, Au
             };
 
             context.Add(factory.Create(
-                null, $"{table}.{verb}", entry.Metadata.ClrType.Name, KeyOf(entry), AuditOutcomes.Success, null, redactor.Build(entry.Metadata.ClrType, fields)));
+                null, $"{table}.{verb}", entry.Metadata.ClrType.Name, KeyOf(entry), AuditOutcomes.Success, null, redactor.Build(entry.Metadata.ClrType, fields),
+                unconditional ? new Dictionary<string, object?> { ["unconditionalWrite"] = true } : null));
         }
     }
 
-    private static Dictionary<string, AuditFieldChange> Diff(EntityEntry entry)
+    /// <summary>
+    /// <paramref name="unconditional"/> is true when a column was flagged modified although its value equals the loaded one: code that
+    /// forces a write ("last writer wins", as <c>OverrideAdmin</c> does). The database value may have changed since the load, so the
+    /// write is audited rather than skipped, and the row says so in its metadata.
+    /// </summary>
+    private static Dictionary<string, AuditFieldChange> Diff(EntityEntry entry, out bool unconditional)
     {
+        unconditional = false;
         var fields = new Dictionary<string, AuditFieldChange>();
         foreach (PropertyEntry property in entry.Properties)
         {
@@ -79,7 +125,8 @@ internal sealed class AuditLogSaveChangesInterceptor(AuditRowFactory factory, Au
                 case EntityState.Deleted when property.OriginalValue is { } removed:
                     fields[name] = AuditFieldChange.Removed(removed);
                     break;
-                case EntityState.Modified when property.IsModified && !Equals(property.OriginalValue, property.CurrentValue):
+                case EntityState.Modified when property.IsModified:
+                    unconditional |= Equals(property.OriginalValue, property.CurrentValue);
                     fields[name] = AuditFieldChange.Changed(property.OriginalValue, property.CurrentValue);
                     break;
             }

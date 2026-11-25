@@ -30,7 +30,7 @@ public sealed record AuditFailure(string Action, string? EntityType, string? Ent
 /// Writes <c>audit_log</c> rows that EF's change tracker cannot produce (ADR-010). Successful EF writes are captured automatically
 /// by the SaveChanges interceptor in the same SaveChanges; this port is for Dapper paths and failures.
 /// <see cref="RecordAsync"/> runs on EF's connection and current transaction (<c>SqlExecutor</c>), so inside an <see cref="IUnitOfWork"/>
-/// the row commits or rolls back with the change. <see cref="RecordFailureAsync"/> is a single autocommitted insert.
+/// the row commits or rolls back with the change. <see cref="RecordFailureAsync"/> is the exception: one insert on its own connection and transaction, so it survives the rollback of a surrounding unit of work.
 /// </summary>
 public interface IAuditTrail
 {
