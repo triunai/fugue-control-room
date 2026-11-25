@@ -75,3 +75,9 @@ curl -si -X PATCH http://localhost:5080/api/v1/modules/CUSTOMERS -H "Authorizati
 curl -si -H "Authorization: Bearer $T" http://localhost:5080/api/v1/customers | head -1
 ```
 Expect: `204` plus a new `ETag`, then `404` `module.disabled`. Re-enable with the new ETag. `PATCH` needs `MODULES_MANAGE` (admin), `GET` needs `MODULES_VIEW`; a missing `If-Match` is `428`, a stale one `412`, an unknown code `404 module.not_found`, and disabling `SYSTEM` is `409 module.system_protected` (it holds module management itself). Try the config switch: start the API with `Modules__CUSTOMERS__Enabled=false` and see `configEnabled:false` with `dbActive:true`, `effective:false`.
+
+## 6. Groups and tenants
+
+A **group** holds roles; every member inherits them (`support@fugue.test` has no role of its own, only membership of `SUPPORT`, which holds `STAFF`). `GET /api/v1/groups` needs `GROUPS_VIEW`; `PUT` or `DELETE /api/v1/groups/{code}/members/{userId}` need `GROUPS_MANAGE`. A membership change takes effect on the member's very next request (permissions are read per request, never cached) and writes a `grant_audit` row (who, what, to whom, granted or revoked, correlation id) in the same transaction as the change; the member list only changes if the audit row is written too.
+
+A **tenant** is a row in `tenants` that a user may point at through the nullable `users.tenant_id`. The tenant id reaches `ICurrentUser.TenantId` (and error responses) from the verified token's user, but nothing filters by it: the `Tenancy:Enabled` toggle of ADR-003 stays off.

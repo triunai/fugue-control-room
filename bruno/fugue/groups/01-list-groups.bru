@@ -1,0 +1,20 @@
+meta {
+  name: List groups (SUPPORT inherits STAFF)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/groups
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("200 and SUPPORT carries the STAFF role", function () {
+    expect(res.status).to.equal(200);
+    const support = res.body.find(function (g) { return g.code === "SUPPORT"; });
+    expect(support.roles).to.eql(["STAFF"]);
+    expect(support.memberCount).to.be.at.least(1);
+  });
+}
