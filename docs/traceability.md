@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 17 workstreams, 12 ADRs, 44 decisions, 57 commits (6 unlinked). Newest commit indexed: `b3d6c65`.
+Counts: 17 workstreams, 12 ADRs, 44 decisions, 70 commits (6 unlinked). Newest commit indexed: `5358c8e`.
 
 ## Workstreams
 
@@ -180,13 +180,26 @@ Counts: 17 workstreams, 12 ADRs, 44 decisions, 57 commits (6 unlinked). Newest c
 
 ### W-017
 
-**Fugue Console: Angular admin console for the API (web/)** — ACTIVE
-- Where: [board](workstreams.md)
-- Decisions and ADRs: none
-- Commits (3):
+**Fugue Console: Angular admin console for the API (web/)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-26--closed-w-017-fugue-console-angular-admin-console-for-the-api-web)
+- Decisions and ADRs: [ADR-008](#adr-008), [ADR-009](#adr-009), [ADR-010](#adr-010), [ADR-011](#adr-011)
+- Commits (16):
   - `2051ac9` docs(spine): open W-017 for the Fugue Console web client (2026-11-26)
   - `7d429aa` feat(web): scaffold Fugue Console with Vellum tokens, shell, auth and interceptors (2026-11-26)
   - `0b5bb59` test(web): pin ETag/If-Match, problem mapping, single-flight refresh and hasPermission (2026-11-26)
+  - `35580b2` feat(web): customers screen with keyset Load more, edit drawer and the 412 banner (2026-11-26)
+  - `b71b30b` fix(spine): stop npm lockfile package names tripping the secrets scan (2026-11-26)
+  - `d0dd12c` build(web): generate API models from the OpenAPI snapshot and commit the lockfile (2026-11-26)
+  - `242b5a8` feat(web): audit log with filters, day timeline and a field-level diff panel (2026-11-26)
+  - `2717242` feat(web): modules screen with configuration, switch and effective state per module (2026-11-26)
+  - `c755fb0` feat(web): webhooks screen with one-time secrets, deliveries and a live dev sink (2026-11-26)
+  - `dcc968d` feat(web): users and access (overrides, groups) and the self-service profile (2026-11-26)
+  - `3cead85` test(web): Playwright smoke for the 412 flow against the live API, plus screenshots (2026-11-26)
+  - `e8ba8e5` docs(web): console architecture README and runbook 09 with the six-minute demo path (2026-11-26)
+  - `21ebd0b` fix(web): close the console review findings on token scope, refresh races and 412 replay (2026-11-26)
+  - `e938e2e` docs(web): refresh the console screenshots after the review fixes (2026-11-26)
+  - `357c527` docs(spine): close W-017 (Fugue Console) into the project log (2026-11-26)
+  - `5358c8e` docs(runbooks): index the console runbook (2026-11-26)
 
 ## ADRs
 
@@ -267,7 +280,8 @@ Counts: 17 workstreams, 12 ADRs, 44 decisions, 57 commits (6 unlinked). Newest c
   - `863d4b8` fix(persistence): make email unique per owner, closing the create-path oracle (2026-11-26)
   - `977821f` fix(api): key the login limiter on (IP, email) plus a loose per-email ceiling (2026-11-26)
   - `feef681` fix(identity): require If-Match to change or delete an existing permission override (2026-11-26)
-- Workstreams: [W-005](#w-005), [W-013](#w-013)
+  - `dcc968d` feat(web): users and access (overrides, groups) and the self-service profile (2026-11-26)
+- Workstreams: [W-005](#w-005), [W-013](#w-013), [W-017](#w-017)
 - Decisions: [D-016](#d-016), [D-017](#d-017), [D-018](#d-018), [D-019](#d-019), [D-020](#d-020), [D-022](#d-022), [D-024](#d-024), [D-026](#d-026), [D-034](#d-034), [D-035](#d-035), [D-036](#d-036)
 
 ### ADR-009
@@ -275,8 +289,9 @@ Counts: 17 workstreams, 12 ADRs, 44 decisions, 57 commits (6 unlinked). Newest c
 **Module management: configuration kill switch plus runtime registry** — accepted — [`ADR-009-module-management.md`](adr/ADR-009-module-management.md)
 - Introduced by: `8a24bd7` docs(identity): ADR-008 auth model, ADR-009 module management, failure modes (2026-11-25)
 - Amended by: none
-- Cited in commit Refs: none
-- Workstreams: [W-005](#w-005)
+- Cited in commit Refs:
+  - `2717242` feat(web): modules screen with configuration, switch and effective state per module (2026-11-26)
+- Workstreams: [W-005](#w-005), [W-017](#w-017)
 - Decisions: [D-023](#d-023)
 
 ### ADR-010
@@ -289,7 +304,8 @@ Counts: 17 workstreams, 12 ADRs, 44 decisions, 57 commits (6 unlinked). Newest c
   - `f38e3bf` docs(audit): ADR-010, decisions, runbook 06, failure modes and deferred items (2026-11-26)
   - `c35a022` fix(persistence): audit forced writes, detach failed-save rows, independent failure row (2026-11-26)
   - `6126ab1` docs(spine): close W-012 into the project log, hot-state to W-013 (2026-11-26)
-- Workstreams: [W-012](#w-012)
+  - `242b5a8` feat(web): audit log with filters, day timeline and a field-level diff panel (2026-11-26)
+- Workstreams: [W-012](#w-012), [W-017](#w-017)
 - Decisions: [D-027](#d-027), [D-028](#d-028), [D-029](#d-029), [D-030](#d-030), [D-031](#d-031), [D-032](#d-032)
 
 ### ADR-011
@@ -305,7 +321,8 @@ Counts: 17 workstreams, 12 ADRs, 44 decisions, 57 commits (6 unlinked). Newest c
   - `dfbec7f` feat(api): signed webhook dispatcher, guarded sender, deliveries API and dev sink (2026-11-26)
   - `ad9df38` docs(api): webhooks runbook 07, Bruno webhooks folder and S4 journal entries (2026-11-26)
   - `596269e` fix(api): close the Codex S4 review findings on delivery fencing, leases, capture and sink (2026-11-26)
-- Workstreams: [W-006](#w-006)
+  - `c755fb0` feat(web): webhooks screen with one-time secrets, deliveries and a live dev sink (2026-11-26)
+- Workstreams: [W-006](#w-006), [W-017](#w-017)
 - Decisions: [D-037](#d-037), [D-038](#d-038), [D-039](#d-039), [D-040](#d-040), [D-041](#d-041)
 
 ### ADR-012
@@ -663,6 +680,19 @@ Counts: 17 workstreams, 12 ADRs, 44 decisions, 57 commits (6 unlinked). Newest c
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `5358c8e` | docs(runbooks): index the console runbook | 2026-11-26 | [W-017](#w-017) |
+| `357c527` | docs(spine): close W-017 (Fugue Console) into the project log | 2026-11-26 | [W-017](#w-017) |
+| `e938e2e` | docs(web): refresh the console screenshots after the review fixes | 2026-11-26 | [W-017](#w-017) |
+| `21ebd0b` | fix(web): close the console review findings on token scope, refresh races and 412 replay | 2026-11-26 | [W-017](#w-017) |
+| `e8ba8e5` | docs(web): console architecture README and runbook 09 with the six-minute demo path | 2026-11-26 | [W-017](#w-017) |
+| `3cead85` | test(web): Playwright smoke for the 412 flow against the live API, plus screenshots | 2026-11-26 | [W-017](#w-017) |
+| `dcc968d` | feat(web): users and access (overrides, groups) and the self-service profile | 2026-11-26 | [W-017](#w-017), [ADR-008](#adr-008) |
+| `c755fb0` | feat(web): webhooks screen with one-time secrets, deliveries and a live dev sink | 2026-11-26 | [W-017](#w-017), [ADR-011](#adr-011) |
+| `2717242` | feat(web): modules screen with configuration, switch and effective state per module | 2026-11-26 | [W-017](#w-017), [ADR-009](#adr-009) |
+| `242b5a8` | feat(web): audit log with filters, day timeline and a field-level diff panel | 2026-11-26 | [W-017](#w-017), [ADR-010](#adr-010) |
+| `d0dd12c` | build(web): generate API models from the OpenAPI snapshot and commit the lockfile | 2026-11-26 | [W-017](#w-017) |
+| `b71b30b` | fix(spine): stop npm lockfile package names tripping the secrets scan | 2026-11-26 | [W-017](#w-017) |
+| `35580b2` | feat(web): customers screen with keyset Load more, edit drawer and the 412 banner | 2026-11-26 | [W-017](#w-017) |
 | `b3d6c65` | docs(spine): close W-016 and overwrite hot-state | 2026-11-26 | [W-016](#w-016), [ADR-012](#adr-012), [D-042](#d-042), [D-043](#d-043), [D-044](#d-044) |
 | `0b5bb59` | test(web): pin ETag/If-Match, problem mapping, single-flight refresh and hasPermission | 2026-11-26 | [W-017](#w-017) |
 | `7d429aa` | feat(web): scaffold Fugue Console with Vellum tokens, shell, auth and interceptors | 2026-11-26 | [W-017](#w-017) |
