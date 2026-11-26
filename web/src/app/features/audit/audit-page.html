@@ -161,16 +161,16 @@
           <h3 class="d-label">Trace it</h3>
           <div class="flex flex-col items-start gap-2">
             @if (e.correlationId) {
-              <fg-ref-chip label="correlation" [value]="e.correlationId" maxWidth="30ch" />
+              <fg-ref-chip label="correlation" [value]="e.correlationId" maxWidth="38ch" />
             }
             @if (e.sagaId) {
-              <fg-ref-chip label="saga" [value]="e.sagaId" maxWidth="30ch" />
+              <fg-ref-chip label="saga" [value]="e.sagaId" maxWidth="38ch" />
             }
             @if (e.traceId) {
-              <fg-ref-chip label="trace" [value]="e.traceId" maxWidth="30ch" />
+              <fg-ref-chip label="trace" [value]="e.traceId" maxWidth="38ch" />
             }
             @if (e.entityId) {
-              <fg-ref-chip [label]="e.entityType ?? 'entity'" [value]="e.entityId" maxWidth="30ch" />
+              <fg-ref-chip [label]="e.entityType ?? 'entity'" [value]="e.entityId" maxWidth="38ch" />
             }
           </div>
           <div class="mt-3 flex flex-wrap gap-2">

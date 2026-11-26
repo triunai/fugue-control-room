@@ -45,19 +45,14 @@
     font-size: 1rem;
     line-height: 1.5;
     font-feature-settings: 'cv11', 'ss01';
+    /* Cormorant defaults to old-style figures; ids and times read better lining. */
+    font-variant-numeric: lining-nums;
     -webkit-font-smoothing: antialiased;
   }
   :focus-visible {
     outline: 2.5px solid var(--focus);
     outline-offset: 2px;
     border-radius: 4px;
-  }
-  h1,
-  h2,
-  h3,
-  .page-title,
-  .section-title {
-    font-variant-numeric: lining-nums;
   }
   ::selection {
     background: color-mix(in oklab, var(--accent) 22%, transparent);

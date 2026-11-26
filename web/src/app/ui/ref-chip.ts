@@ -27,11 +27,15 @@ export class RefChip {
   readonly label = input<string>('');
   /** Show only the first N characters (the full value is copied and in the tooltip). */
   readonly short = input<number>(0);
+  /** Show only the LAST N characters (UUIDv7 ids share their time-based prefix, so the tail is what tells them apart). */
+  readonly tail = input<number>(0);
   readonly maxWidth = input<string>('18ch');
   protected readonly copied = signal(false);
 
   protected display(): string {
     const v = this.value();
+    const t = this.tail();
+    if (t > 0 && v.length > t) return '…' + v.slice(-t);
     const n = this.short();
     return n > 0 && v.length > n ? v.slice(0, n) + '…' : v;
   }

@@ -1,0 +1,99 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1 class="page-title">Modules</h1>
+      <p class="page-lede">
+        A feature area runs only when both its configuration and this switch allow it. Switching one off removes its pages
+        and permissions for everyone at once, without deleting data.
+      </p>
+    </div>
+  </header>
+
+  @if (modules.isPending()) {
+    <div class="grid">
+      @for (i of [1, 2, 3, 4, 5]; track i) {
+        <div class="card panel">
+          <span class="skeleton" style="width: 40%; height: 1.4rem"></span>
+          <span class="skeleton mt-4" style="width: 90%"></span>
+          <span class="skeleton mt-2" style="width: 70%"></span>
+        </div>
+      }
+    </div>
+  } @else if (modules.isError()) {
+    <div class="panel"><fg-error-state [error]="modules.error()" (retry)="modules.refetch()" /></div>
+  } @else {
+    <div class="grid">
+      @for (m of modules.data(); track m.code) {
+        <article class="card panel" [class.off]="!m.effective" [attr.aria-labelledby]="'m-' + m.code">
+          <header class="card-head">
+            <div>
+              <h2 class="card-title" [id]="'m-' + m.code">{{ m.name }}</h2>
+              <span class="mono text-muted">{{ m.code }}</span>
+            </div>
+            @if (locked(m)) {
+              <span class="pill pill-muted pill-plain" title="Protected module">
+                <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">
+                  <rect
+                    x="3.5"
+                    y="7"
+                    width="9"
+                    height="7"
+                    rx="1.5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                  />
+                  <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="currentColor" stroke-width="1.6" />
+                </svg>
+                Locked
+              </span>
+            } @else {
+              <span class="pill" [class.pill-ok]="m.effective" [class.pill-err]="!m.effective">{{
+                m.effective ? 'Running' : 'Off'
+              }}</span>
+            }
+          </header>
+
+          <dl class="states" aria-label="Where the state comes from">
+            <div>
+              <dt>Configuration</dt>
+              <dd [class.no]="!m.configEnabled">{{ m.configEnabled ? 'allows' : 'forbids' }}</dd>
+            </div>
+            <span class="op" aria-hidden="true">and</span>
+            <div>
+              <dt>Switch</dt>
+              <dd [class.no]="!m.dbActive">{{ m.dbActive ? 'on' : 'off' }}</dd>
+            </div>
+            <span class="op" aria-hidden="true">=</span>
+            <div>
+              <dt>Effective</dt>
+              <dd [class.no]="!m.effective" class="font-semibold">{{ m.effective ? 'on' : 'off' }}</dd>
+            </div>
+          </dl>
+
+          <p class="explain">{{ explain(m) }}</p>
+
+          <footer class="card-foot">
+            <span class="mono text-muted text-sm">version {{ m.version }}</span>
+            @if (canToggle(m)) {
+              <button
+                type="button"
+                role="switch"
+                class="switch"
+                [attr.aria-checked]="m.dbActive"
+                [attr.aria-label]="'Switch ' + m.name"
+                [disabled]="toggle.isPending()"
+                (click)="flip(m)"
+              >
+                <span class="track"><span class="thumb"></span></span>
+                <span>{{ m.dbActive ? 'On' : 'Off' }}</span>
+              </button>
+            } @else if (!locked(m)) {
+              <span class="text-sm text-muted">View only</span>
+            }
+          </footer>
+        </article>
+      }
+    </div>
+  }
+</div>

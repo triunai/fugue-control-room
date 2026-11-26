@@ -1,0 +1,120 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: 1rem;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.15rem 1.2rem 1rem;
+}
+.card.off {
+  background: color-mix(in oklab, var(--bg) 60%, var(--surface));
+}
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+.card-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.6rem;
+  line-height: 1.05;
+}
+.states {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--radius-control);
+  background: var(--surface2);
+  border: 1px solid var(--line);
+}
+.states div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.states dt {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.states dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.9333rem;
+  color: var(--ok-ink);
+}
+.states dd.no {
+  color: var(--err-ink);
+}
+.op {
+  padding-bottom: 0.1rem;
+  color: var(--muted);
+  font-size: 0.8667rem;
+}
+.explain {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9333rem;
+  line-height: 1.5;
+  flex: 1;
+}
+.card-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--line);
+}
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.2rem;
+  border: 0;
+  background: none;
+  font: 600 0.9333rem var(--font-ui);
+  color: var(--text);
+  cursor: pointer;
+}
+.switch:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+.track {
+  position: relative;
+  width: 2.75rem;
+  height: 1.55rem;
+  border-radius: 999px;
+  background: var(--surface2);
+  border: 1.5px solid var(--control);
+  transition:
+    background-color 150ms,
+    border-color 150ms;
+}
+.thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  background: var(--control);
+  transition:
+    transform 160ms ease,
+    background-color 150ms;
+}
+.switch[aria-checked='true'] .track {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.switch[aria-checked='true'] .thumb {
+  transform: translateX(1.2rem);
+  background: var(--on-accent);
+}
