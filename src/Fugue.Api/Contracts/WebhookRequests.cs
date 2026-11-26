@@ -5,3 +5,6 @@ public sealed record CreateWebhookSubscriptionRequest(string Name, string Url, s
 
 /// <summary>Body of PUT /webhooks/subscriptions/{id}. Requires If-Match. The secret is changed only by rotating it.</summary>
 public sealed record UpdateWebhookSubscriptionRequest(string Name, string Url, string[] EventTypes, bool IsActive);
+
+/// <summary>Body of PUT /dev/webhook-sink/secret: the signing secret the Development sink should trust.</summary>
+public sealed record SetSinkSecretRequest(string Secret);

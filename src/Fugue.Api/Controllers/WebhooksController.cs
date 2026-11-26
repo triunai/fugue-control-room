@@ -46,4 +46,15 @@ public sealed class WebhooksController : ApiControllerBase
     [HasPermission(Permissions.WebhooksManage)]
     public Task<IActionResult> Delete(WebhookSubscriptionId id, CancellationToken ct) =>
         SendNoContent(new DeleteWebhookSubscriptionCommand(id, IfMatchVersion), ct);
+
+    [HttpGet("deliveries")]
+    [HasPermission(Permissions.WebhooksManage)]
+    public Task<ActionResult<IReadOnlyList<WebhookDeliveryDto>>> ListDeliveries(
+        [FromQuery] string? status, [FromQuery] Guid? subscriptionId, [FromQuery] string? eventType, [FromQuery] int? limit, [FromQuery] string? cursor, CancellationToken ct) =>
+        SendPaged(new ListWebhookDeliveriesQuery(status, subscriptionId, eventType, limit, cursor), ct);
+
+    [HttpPost("deliveries/{id}/redeliver")]
+    [HasPermission(Permissions.WebhooksManage)]
+    public Task<IActionResult> Redeliver(WebhookDeliveryId id, CancellationToken ct) =>
+        SendNoContent(new RedeliverWebhookDeliveryCommand(id), ct);
 }

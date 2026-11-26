@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
 
 namespace Fugue.Infrastructure;
@@ -54,6 +55,41 @@ public static class DependencyInjection
         services.AddOptions<KeyManagementOptions>().Configure<IServiceScopeFactory>((options, scopes) => options.XmlRepository = new DatabaseXmlRepository(scopes));
         services.AddSingleton<Fugue.Application.Features.Webhooks.ISecretProtector, DataProtectionSecretProtector>();
         services.AddScoped<Fugue.Application.Features.Webhooks.IWebhookSubscriptionStore, WebhookSubscriptionStore>();
+        services.AddScoped<Fugue.Application.Features.Webhooks.IWebhookDeliveryStore, WebhookDeliveryStore>();
+        services.AddSingleton<Fugue.Application.Features.Webhooks.Sink.IDevWebhookSink, DevWebhookSink>();
+
+        // Dispatcher (ADR-011): the relay hands outbox messages to IEventPublisher adapters (webhook fan-out first); deliveries go out through a typed client
+        // whose primary handler dials only verified addresses (SSRF, DNS rebinding) and never follows redirects. The standard resilience handler adds an
+        // attempt timeout, a total timeout, a rate limiter and a circuit breaker PER AUTHORITY (one failing receiver does not open the circuit for the others).
+        // Its retry is limited to one attempt and disabled for POST: the outbox is the retry authority (counted, backed off for minutes, visible in webhook_deliveries).
+        services.AddScoped<Fugue.Application.Abstractions.IEventPublisher, WebhookFanOutPublisher>();
+        services.AddSingleton<GuardedConnect>();
+        IHttpStandardResiliencePipelineBuilder pipeline = services.AddHttpClient<WebhookSender>(client => client.Timeout = Timeout.InfiniteTimeSpan) // the resilience handler owns the timeouts
+            .ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler
+            {
+                AllowAutoRedirect = false,
+                UseProxy = false, // a proxy would receive the connection instead of the verified address
+                UseCookies = false,
+                ConnectTimeout = TimeSpan.FromSeconds(5),
+                PooledConnectionLifetime = TimeSpan.FromMinutes(2), // re-resolve DNS regularly
+                ConnectCallback = sp.GetRequiredService<GuardedConnect>().ConnectAsync,
+            })
+            .AddStandardResilienceHandler();
+        services.AddOptions<HttpStandardResilienceOptions>(pipeline.PipelineName).Configure<IOptions<WebhookOptions>>((resilience, webhooks) =>
+        {
+            TimeSpan attempt = TimeSpan.FromSeconds(webhooks.Value.AttemptTimeoutSeconds);
+            resilience.AttemptTimeout.Timeout = attempt;
+            resilience.TotalRequestTimeout.Timeout = attempt * 2;
+            resilience.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(Math.Max(30, (webhooks.Value.AttemptTimeoutSeconds * 2) + 1));
+            resilience.Retry.MaxRetryAttempts = 1;
+            resilience.Retry.ShouldHandle = _ => ValueTask.FromResult(false); // no in-memory retry at all: the outbox retries (counted, backed off)
+        });
+        pipeline.SelectPipelineByAuthority();
+        services.AddSingleton<OutboxDispatcher>();
+        if (configuration.GetValue("Webhooks:Dispatcher:Enabled", true))
+        {
+            services.AddHostedService<OutboxDispatcherService>();
+        }
 
         services.AddDbContext<FugueDbContext>((sp, options) =>
         {

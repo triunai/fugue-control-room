@@ -19,6 +19,14 @@ internal sealed class SqlExecutor(FugueDbContext db)
             (await connection.ExecuteScalarAsync<T>(new CommandDefinition(sql, parameters, transaction, cancellationToken: ct)))!, ct);
 
     /// <summary>
+    /// A statement that returns rows: for write statements with <c>RETURNING</c> and for the <c>FOR UPDATE SKIP LOCKED</c> claims of the outbox
+    /// dispatcher (ADR-011). It is not a way to read domain aggregates (ADR-006): those reads stay in EF.
+    /// </summary>
+    public Task<IReadOnlyList<T>> QueryAsync<T>(string sql, object? parameters, CancellationToken ct) =>
+        RunAsync(async (connection, transaction) =>
+            (IReadOnlyList<T>)(await connection.QueryAsync<T>(new CommandDefinition(sql, parameters, transaction, cancellationToken: ct))).ToList(), ct);
+
+    /// <summary>
     /// Runs one statement on its OWN connection and transaction, deliberately outside any unit of work. For rows that must survive the
     /// rollback of the caller's transaction (the failure audit row) and must not be poisoned by an aborted one.
     /// </summary>

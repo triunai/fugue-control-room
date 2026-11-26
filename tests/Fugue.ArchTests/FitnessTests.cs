@@ -165,12 +165,15 @@ public sealed class FitnessTests
     }
 
     [Fact]
-    public void Fitness_Auth_the_anonymous_endpoint_set_is_exactly_token_refresh_logout_and_ping()
+    public void Fitness_Auth_the_anonymous_endpoint_set_is_exactly_token_refresh_logout_ping_and_the_development_only_sink()
     {
         string[] anonymous = Actions().Where(m => m.GetCustomAttribute<AllowAnonymousAttribute>() is not null)
             .Select(m => $"{m.DeclaringType!.Name}.{m.Name}").Order().ToArray();
 
-        Assert.Equal(["AuthController.Logout", "AuthController.Refresh", "AuthController.Token", "DiagnosticsController.Ping"], anonymous);
+        Assert.Equal(["AuthController.Logout", "AuthController.Refresh", "AuthController.Token", "DevWebhookSinkController.Receive", "DiagnosticsController.Ping"], anonymous);
+
+        // The one anonymous endpoint that is not auth plumbing must be gated to Development (ADR-011): its credential is the request signature.
+        Assert.NotNull(typeof(Fugue.Api.Controllers.DevWebhookSinkController).GetCustomAttribute<DevelopmentOnlyAttribute>());
     }
 
     [Fact]
