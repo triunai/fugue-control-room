@@ -1,0 +1,139 @@
+<div class="sink">
+  <aside class="setup panel" aria-labelledby="sink-setup">
+    <h2 id="sink-setup" class="section-title">Watch events arrive</h2>
+    <p class="mt-1 mb-0 text-muted">
+      In Development the API runs its own receiver. It checks each signature, refuses stale timestamps and ignores
+      duplicates, exactly as a real receiver must.
+    </p>
+    <ol class="steps" role="list">
+      <li>
+        <span class="n" aria-hidden="true">1</span>
+        <div>
+          <p class="step-title">Connect the sink</p>
+          @if (sinkSub(); as s) {
+            <p class="step-text">
+              Subscribed to <span class="mono">{{ s.eventTypes.join(', ') }}</span>. Reconnecting issues a new secret
+              and hands it to the sink.
+            </p>
+            <button type="button" class="btn btn-sm" (click)="connect.mutate()" [disabled]="connect.isPending()">
+              {{ connect.isPending() ? 'Reconnecting…' : 'Reconnect' }}
+            </button>
+          } @else {
+            <p class="step-text">
+              Creates a subscription for <span class="mono">customer.*</span> and gives the sink its secret.
+            </p>
+            <button
+              type="button"
+              class="btn btn-sm btn-primary"
+              (click)="connect.mutate()"
+              [disabled]="connect.isPending()"
+            >
+              {{ connect.isPending() ? 'Connecting…' : 'Connect the sink' }}
+            </button>
+          }
+        </div>
+      </li>
+      <li>
+        <span class="n" aria-hidden="true">2</span>
+        <div>
+          <p class="step-title">Change a customer</p>
+          <p class="step-text">Edit one in Customers, or create a throwaway one here.</p>
+          <button type="button" class="btn btn-sm" (click)="sendTest.mutate()" [disabled]="sendTest.isPending()">
+            {{ sendTest.isPending() ? 'Creating…' : 'Create a test customer' }}
+          </button>
+        </div>
+      </li>
+      <li>
+        <span class="n" aria-hidden="true">3</span>
+        <div>
+          <p class="step-title">See it signed and delivered</p>
+          <p class="step-text">The event carries the request's correlation id and the customer's id as its saga.</p>
+        </div>
+      </li>
+    </ol>
+    <div class="target">
+      <span class="text-sm text-muted">Receiver address</span>
+      <span class="mono text-sm">{{ target }}</span>
+    </div>
+  </aside>
+
+  <section class="feed panel" aria-labelledby="sink-feed">
+    <header class="feed-head">
+      <div class="flex items-center gap-3">
+        <span class="live" [class.paused]="feed.isError()" aria-hidden="true"></span>
+        <h2 id="sink-feed" class="section-title">Received</h2>
+        <span class="text-sm text-muted" aria-live="polite">
+          {{
+            feed.isError()
+              ? 'not listening'
+              : events().length + (events().length === 1 ? ' event' : ' events') + ', checking every 1.5 s'
+          }}
+        </span>
+      </div>
+      <button
+        type="button"
+        class="btn btn-sm btn-quiet"
+        (click)="clear.mutate()"
+        [disabled]="!events().length || clear.isPending()"
+      >
+        Clear
+      </button>
+    </header>
+
+    @if (feed.isPending()) {
+      <div class="p-6"><span class="skeleton" style="width: 60%"></span></div>
+    } @else if (feed.isError()) {
+      <fg-error-state [error]="feed.error()" (retry)="feed.refetch()" />
+    } @else if (!events().length) {
+      <div class="waiting">
+        <svg width="120" height="44" viewBox="0 0 120 44" aria-hidden="true">
+          @for (y of [6, 14, 22, 30, 38]; track y) {
+            <line x1="0" [attr.y1]="y" x2="120" [attr.y2]="y" stroke="var(--line)" stroke-width="1" />
+          }
+        </svg>
+        <p class="section-title">Waiting for the first event</p>
+        <p class="m-0 max-w-[40ch] text-muted">
+          {{
+            sinkSub()
+              ? 'Change a customer and it appears here within a few seconds.'
+              : 'Connect the sink first, then change a customer.'
+          }}
+        </p>
+      </div>
+    } @else {
+      <ol class="events" role="list" aria-live="polite">
+        @for (e of events(); track e.eventId) {
+          <li class="event" [class.fresh]="e.fresh" [class.mine]="matchesTest(e)">
+            <div class="event-top">
+              <span class="type mono">{{ e.eventType }}</span>
+              <span
+                class="pill pill-ok"
+                title="The sink keeps only events whose v1 HMAC-SHA256 signature matched and whose timestamp was fresh"
+              >
+                Signature verified
+              </span>
+              <span class="flex-1"></span>
+              <span class="text-sm text-muted" [title]="e.receivedAt | stamp">{{ e.receivedAt | relative }}</span>
+            </div>
+            @if (e.subject) {
+              <p class="subject">{{ e.subject }}</p>
+            }
+            <div class="chips">
+              @if (e.correlationId) {
+                <fg-ref-chip label="correlation" [value]="e.correlationId" maxWidth="16ch" />
+              }
+              @if (e.sagaId) {
+                <fg-ref-chip label="saga" [value]="e.sagaId" [tail]="12" />
+              }
+              <fg-ref-chip label="event" [value]="e.eventId" [tail]="12" />
+            </div>
+            <details>
+              <summary>Payload</summary>
+              <pre class="mono">{{ e.data }}</pre>
+            </details>
+          </li>
+        }
+      </ol>
+    }
+  </section>
+</div>
