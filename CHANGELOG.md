@@ -4,6 +4,28 @@ Tracks notable changes across migrations, API contracts, and project documentati
 
 > **ADR links.** An entry that reflects a real architectural decision cites it as `(ADR-NNN)`; the ADR lives in `docs/adr/`.
 
+## 2026-11-26 — Closed W-017: Fugue Console: Angular admin console for the API (web/)
+WS: WS-17
+Closed: W-017 (WS-17) Fugue Console: Angular admin console for the API (web/)
+Outcome: Fugue Console shipped in web/: Angular 22 (signals, OnPush, lazy routes), SignalStore client state, TanStack Query server state, Vellum tokens. Screens: sign-in, shell, customers (keyset Load more, edit drawer, 412 banner with replay), audit (filters, diff, correlation chips), modules, webhooks (one-time secrets, deliveries, live dev sink), users and access, profile. 18 unit tests, 5 Playwright e2e against the API; review findings fixed.
+Commits:
+- 2051ac9 docs(spine): open W-017 for the Fugue Console web client
+- 7d429aa feat(web): scaffold Fugue Console with Vellum tokens, shell, auth and interceptors
+- 0b5bb59 test(web): pin ETag/If-Match, problem mapping, single-flight refresh and hasPermission
+- 35580b2 feat(web): customers screen with keyset Load more, edit drawer and the 412 banner
+- b71b30b fix(spine): stop npm lockfile package names tripping the secrets scan
+- d0dd12c build(web): generate API models from the OpenAPI snapshot and commit the lockfile
+- 242b5a8 feat(web): audit log with filters, day timeline and a field-level diff panel
+- 2717242 feat(web): modules screen with configuration, switch and effective state per module
+- c755fb0 feat(web): webhooks screen with one-time secrets, deliveries and a live dev sink
+- dcc968d feat(web): users and access (overrides, groups) and the self-service profile
+- 3cead85 test(web): Playwright smoke for the 412 flow against the live API, plus screenshots
+- e8ba8e5 docs(web): console architecture README and runbook 09 with the six-minute demo path
+- 21ebd0b fix(web): close the console review findings on token scope, refresh races and 412 replay
+- e938e2e docs(web): refresh the console screenshots after the review fixes
+Decisions: ADR-008, ADR-011, ADR-009, ADR-010
+Follow-ups: Runbooks index row for 09-console.md (docs/runbooks/README.md); a users directory endpoint for the Access screen; BFF cookie for the refresh token (web/README.md); regenerate traceability.
+
 ## 2026-11-26 — Closed W-016: OpenAPI contract, CORS for the console, GET /me
 WS: WS-16
 Closed: W-016 (WS-16) OpenAPI contract, CORS for the console, GET /me
