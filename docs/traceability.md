@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 14 workstreams, 10 ADRs, 36 decisions, 41 commits (6 unlinked). Newest commit indexed: `3856dad`.
+Counts: 16 workstreams, 11 ADRs, 41 decisions, 51 commits (6 unlinked). Newest commit indexed: `88dc6a8`.
 
 ## Workstreams
 
@@ -65,11 +65,18 @@ Counts: 14 workstreams, 10 ADRs, 36 decisions, 41 commits (6 unlinked). Newest c
 
 ### W-006
 
-**S4 transactional outbox and signed webhooks** — PARKED
-- Where: [board](workstreams.md)
-- Decisions and ADRs: none
-- Commits (0):
-  - none yet
+**S4 transactional outbox and signed webhooks** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-26--closed-w-006-s4-transactional-outbox-and-signed-webhooks)
+- Decisions and ADRs: [ADR-011](#adr-011), [D-035](#d-035), [D-036](#d-036), [D-037](#d-037), [D-038](#d-038), [D-039](#d-039), [D-040](#d-040), [D-041](#d-041)
+- Commits (8):
+  - `aa51ca4` feat(persistence): outbox and webhook tables with the AddOutboxWebhooks migration (2026-11-26)
+  - `893a345` feat(persistence): capture domain events as outbox rows in the same transaction (2026-11-26)
+  - `01e0305` feat(api): webhook subscriptions with encrypted secrets and an SSRF guard (2026-11-26)
+  - `dfbec7f` feat(api): signed webhook dispatcher, guarded sender, deliveries API and dev sink (2026-11-26)
+  - `ad9df38` docs(api): webhooks runbook 07, Bruno webhooks folder and S4 journal entries (2026-11-26)
+  - `596269e` fix(api): close the Codex S4 review findings on delivery fencing, leases, capture and sink (2026-11-26)
+  - `f34d0b4` test(api): list the WEBHOOKS module in the Bruno modules check (2026-11-26)
+  - `88dc6a8` docs(spine): close W-015 and W-006 (2026-11-26)
 
 ### W-007
 
@@ -150,6 +157,23 @@ Counts: 14 workstreams, 10 ADRs, 36 decisions, 41 commits (6 unlinked). Newest c
   - `5704fc6` docs(spine): open W-014 commit traceability index on the board (2026-11-26)
   - `e0b8f3c` feat(spine): multi-id Refs gate and a generated commit traceability index (2026-11-26)
   - `bf48af9` docs(spine): close W-014 into the project log and CHANGELOG (2026-11-26)
+
+### W-015
+
+**Codex W-013 findings: no-op override PUT skips the xmin check, email ceiling charged late** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-26--closed-w-015-codex-w-013-findings-no-op-override-put-skips-the-xmin-check-email-ceiling-charged-late)
+- Decisions and ADRs: [D-035](#d-035), [D-036](#d-036), [D-041](#d-041)
+- Commits (2):
+  - `224b5b2` fix(identity): version-guard no-op override PUTs and reserve the email ceiling up front (2026-11-26)
+  - `88dc6a8` docs(spine): close W-015 and W-006 (2026-11-26)
+
+### W-017
+
+**Fugue Console: Angular admin console for the API (web/)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: none
+- Commits (1):
+  - `2051ac9` docs(spine): open W-017 for the Fugue Console web client (2026-11-26)
 
 ## ADRs
 
@@ -254,6 +278,22 @@ Counts: 14 workstreams, 10 ADRs, 36 decisions, 41 commits (6 unlinked). Newest c
   - `6126ab1` docs(spine): close W-012 into the project log, hot-state to W-013 (2026-11-26)
 - Workstreams: [W-012](#w-012)
 - Decisions: [D-027](#d-027), [D-028](#d-028), [D-029](#d-029), [D-030](#d-030), [D-031](#d-031), [D-032](#d-032)
+
+### ADR-011
+
+**Transactional outbox and signed outbound webhooks** — accepted — [`ADR-011-outbox-and-signed-webhooks.md`](adr/ADR-011-outbox-and-signed-webhooks.md)
+- Introduced by: `aa51ca4` feat(persistence): outbox and webhook tables with the AddOutboxWebhooks migration (2026-11-26)
+- Amended by:
+  - `596269e` fix(api): close the Codex S4 review findings on delivery fencing, leases, capture and sink (2026-11-26)
+- Cited in commit Refs:
+  - `aa51ca4` feat(persistence): outbox and webhook tables with the AddOutboxWebhooks migration (2026-11-26)
+  - `893a345` feat(persistence): capture domain events as outbox rows in the same transaction (2026-11-26)
+  - `01e0305` feat(api): webhook subscriptions with encrypted secrets and an SSRF guard (2026-11-26)
+  - `dfbec7f` feat(api): signed webhook dispatcher, guarded sender, deliveries API and dev sink (2026-11-26)
+  - `ad9df38` docs(api): webhooks runbook 07, Bruno webhooks folder and S4 journal entries (2026-11-26)
+  - `596269e` fix(api): close the Codex S4 review findings on delivery fencing, leases, capture and sink (2026-11-26)
+- Workstreams: [W-006](#w-006)
+- Decisions: [D-037](#d-037), [D-038](#d-038), [D-039](#d-039), [D-040](#d-040), [D-041](#d-041)
 
 ## Decisions
 
@@ -506,24 +546,81 @@ Counts: 14 workstreams, 10 ADRs, 36 decisions, 41 commits (6 unlinked). Newest c
 
 **W-013 login limiter: strict (IP, email) partition plus a loose per-email ceiling** — accepted — [decisions.md](decisions.md#d-035--w-013-login-limiter-strict-ip-email-partition-plus-a-loose-per-email-ceiling--2026-11-26)
 - ADR: [ADR-008](adr/ADR-008-auth-and-identity-model.md)
-- Workstreams: [W-013](#w-013)
+- Workstreams: [W-006](#w-006), [W-013](#w-013), [W-015](#w-015)
 - Cited in commit Refs:
   - `977821f` fix(api): key the login limiter on (IP, email) plus a loose per-email ceiling (2026-11-26)
+  - `224b5b2` fix(identity): version-guard no-op override PUTs and reserve the email ceiling up front (2026-11-26)
+  - `88dc6a8` docs(spine): close W-015 and W-006 (2026-11-26)
 
 ### D-036
 
 **W-013 S3 review hardening of the admin surface** — accepted — [decisions.md](decisions.md#d-036--w-013-s3-review-hardening-of-the-admin-surface--2026-11-26)
 - ADR: [ADR-008](adr/ADR-008-auth-and-identity-model.md)
-- Workstreams: [W-013](#w-013)
+- Workstreams: [W-006](#w-006), [W-013](#w-013), [W-015](#w-015)
 - Cited in commit Refs:
   - `feef681` fix(identity): require If-Match to change or delete an existing permission override (2026-11-26)
   - `3766cbc` fix(identity): close the remaining S3 review findings on admin and audit edges (2026-11-26)
   - `3856dad` docs(spine): close W-013 into the project log, hot-state to S4 (2026-11-26)
+  - `224b5b2` fix(identity): version-guard no-op override PUTs and reserve the email ceiling up front (2026-11-26)
+  - `88dc6a8` docs(spine): close W-015 and W-006 (2026-11-26)
+
+### D-037
+
+**W-006 the transactional outbox** — accepted — [decisions.md](decisions.md#d-037--w-006-the-transactional-outbox--2026-11-26)
+- ADR: [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md)
+- Workstreams: [W-006](#w-006)
+- Cited in commit Refs:
+  - `aa51ca4` feat(persistence): outbox and webhook tables with the AddOutboxWebhooks migration (2026-11-26)
+  - `893a345` feat(persistence): capture domain events as outbox rows in the same transaction (2026-11-26)
+
+### D-038
+
+**W-006 subscription secrets and the SSRF guard** — accepted — [decisions.md](decisions.md#d-038--w-006-subscription-secrets-and-the-ssrf-guard--2026-11-26)
+- ADR: [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md)
+- Workstreams: [W-006](#w-006)
+- Cited in commit Refs:
+  - `aa51ca4` feat(persistence): outbox and webhook tables with the AddOutboxWebhooks migration (2026-11-26)
+  - `01e0305` feat(api): webhook subscriptions with encrypted secrets and an SSRF guard (2026-11-26)
+
+### D-039
+
+**W-006 the dispatcher: two stages, leases, SKIP LOCKED, outbox as the retry authority** — accepted — [decisions.md](decisions.md#d-039--w-006-the-dispatcher-two-stages-leases-skip-locked-outbox-as-the-retry-authority--2026-11-26)
+- ADR: [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md)
+- Workstreams: [W-006](#w-006)
+- Cited in commit Refs:
+  - `aa51ca4` feat(persistence): outbox and webhook tables with the AddOutboxWebhooks migration (2026-11-26)
+
+### D-040
+
+**W-006 the publisher seam, a possible Kafka adapter, and a Development-only sink** — accepted — [decisions.md](decisions.md#d-040--w-006-the-publisher-seam-a-possible-kafka-adapter-and-a-development-only-sink--2026-11-26)
+- ADR: [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md)
+- Workstreams: [W-006](#w-006)
+- Cited in commit Refs:
+  - `aa51ca4` feat(persistence): outbox and webhook tables with the AddOutboxWebhooks migration (2026-11-26)
+
+### D-041
+
+**W-006 Codex review of the S4 diff: fence, budget, lease, cancel, envelope** — accepted — [decisions.md](decisions.md#d-041--w-006-codex-review-of-the-s4-diff-fence-budget-lease-cancel-envelope--2026-11-26)
+- ADR: [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md)
+- Workstreams: [W-006](#w-006), [W-015](#w-015)
+- Cited in commit Refs:
+  - `596269e` fix(api): close the Codex S4 review findings on delivery fencing, leases, capture and sink (2026-11-26)
+  - `88dc6a8` docs(spine): close W-015 and W-006 (2026-11-26)
 
 ## Commit to ids
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `88dc6a8` | docs(spine): close W-015 and W-006 | 2026-11-26 | [W-006](#w-006), [W-015](#w-015), [D-035](#d-035), [D-036](#d-036), [D-041](#d-041) |
+| `f34d0b4` | test(api): list the WEBHOOKS module in the Bruno modules check | 2026-11-26 | [W-006](#w-006) |
+| `2051ac9` | docs(spine): open W-017 for the Fugue Console web client | 2026-11-26 | [W-017](#w-017) |
+| `596269e` | fix(api): close the Codex S4 review findings on delivery fencing, leases, capture and sink | 2026-11-26 | [W-006](#w-006), [ADR-011](#adr-011), [D-041](#d-041) |
+| `224b5b2` | fix(identity): version-guard no-op override PUTs and reserve the email ceiling up front | 2026-11-26 | [W-015](#w-015), [D-035](#d-035), [D-036](#d-036) |
+| `ad9df38` | docs(api): webhooks runbook 07, Bruno webhooks folder and S4 journal entries | 2026-11-26 | [W-006](#w-006), [ADR-011](#adr-011) |
+| `dfbec7f` | feat(api): signed webhook dispatcher, guarded sender, deliveries API and dev sink | 2026-11-26 | [W-006](#w-006), [ADR-011](#adr-011) |
+| `01e0305` | feat(api): webhook subscriptions with encrypted secrets and an SSRF guard | 2026-11-26 | [W-006](#w-006), [ADR-011](#adr-011), [D-038](#d-038) |
+| `893a345` | feat(persistence): capture domain events as outbox rows in the same transaction | 2026-11-26 | [W-006](#w-006), [ADR-011](#adr-011), [D-037](#d-037) |
+| `aa51ca4` | feat(persistence): outbox and webhook tables with the AddOutboxWebhooks migration | 2026-11-26 | [W-006](#w-006), [ADR-011](#adr-011), [D-037](#d-037), [D-038](#d-038), [D-039](#d-039), [D-040](#d-040) |
 | `3856dad` | docs(spine): close W-013 into the project log, hot-state to S4 | 2026-11-26 | [W-013](#w-013), [D-036](#d-036) |
 | `3766cbc` | fix(identity): close the remaining S3 review findings on admin and audit edges | 2026-11-26 | [W-013](#w-013), [D-036](#d-036) |
 | `feef681` | fix(identity): require If-Match to change or delete an existing permission override | 2026-11-26 | [W-013](#w-013), [D-036](#d-036), [ADR-008](#adr-008) |
