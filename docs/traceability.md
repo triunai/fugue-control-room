@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 16 workstreams, 11 ADRs, 41 decisions, 51 commits (6 unlinked). Newest commit indexed: `88dc6a8`.
+Counts: 17 workstreams, 12 ADRs, 44 decisions, 57 commits (6 unlinked). Newest commit indexed: `b3d6c65`.
 
 ## Workstreams
 
@@ -167,13 +167,26 @@ Counts: 16 workstreams, 11 ADRs, 41 decisions, 51 commits (6 unlinked). Newest c
   - `224b5b2` fix(identity): version-guard no-op override PUTs and reserve the email ceiling up front (2026-11-26)
   - `88dc6a8` docs(spine): close W-015 and W-006 (2026-11-26)
 
+### W-016
+
+**OpenAPI contract, CORS for the console, GET /me** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-26--closed-w-016-openapi-contract-cors-for-the-console-get-me)
+- Decisions and ADRs: [ADR-012](#adr-012), [D-042](#d-042), [D-043](#d-043), [D-044](#d-044)
+- Commits (4):
+  - `7daf73b` docs(spine): open W-016 for the OpenAPI contract, CORS and /me (2026-11-26)
+  - `bc1783c` feat(api): openapi contract snapshot, cors for the console, /me (2026-11-26)
+  - `ac9845d` fix(api): reject a fragment in a CORS origin and record the Codex W-016 review (2026-11-26)
+  - `b3d6c65` docs(spine): close W-016 and overwrite hot-state (2026-11-26)
+
 ### W-017
 
 **Fugue Console: Angular admin console for the API (web/)** — ACTIVE
 - Where: [board](workstreams.md)
 - Decisions and ADRs: none
-- Commits (1):
+- Commits (3):
   - `2051ac9` docs(spine): open W-017 for the Fugue Console web client (2026-11-26)
+  - `7d429aa` feat(web): scaffold Fugue Console with Vellum tokens, shell, auth and interceptors (2026-11-26)
+  - `0b5bb59` test(web): pin ETag/If-Match, problem mapping, single-flight refresh and hasPermission (2026-11-26)
 
 ## ADRs
 
@@ -294,6 +307,17 @@ Counts: 16 workstreams, 11 ADRs, 41 decisions, 51 commits (6 unlinked). Newest c
   - `596269e` fix(api): close the Codex S4 review findings on delivery fencing, leases, capture and sink (2026-11-26)
 - Workstreams: [W-006](#w-006)
 - Decisions: [D-037](#d-037), [D-038](#d-038), [D-039](#d-039), [D-040](#d-040), [D-041](#d-041)
+
+### ADR-012
+
+**OpenAPI contract, console CORS and GET /me** — accepted — [`ADR-012-openapi-contract-and-console-boundary.md`](adr/ADR-012-openapi-contract-and-console-boundary.md)
+- Introduced by: `bc1783c` feat(api): openapi contract snapshot, cors for the console, /me (2026-11-26)
+- Amended by: none
+- Cited in commit Refs:
+  - `bc1783c` feat(api): openapi contract snapshot, cors for the console, /me (2026-11-26)
+  - `b3d6c65` docs(spine): close W-016 and overwrite hot-state (2026-11-26)
+- Workstreams: [W-016](#w-016)
+- Decisions: [D-042](#d-042), [D-043](#d-043), [D-044](#d-044)
 
 ## Decisions
 
@@ -607,10 +631,44 @@ Counts: 16 workstreams, 11 ADRs, 41 decisions, 51 commits (6 unlinked). Newest c
   - `596269e` fix(api): close the Codex S4 review findings on delivery fencing, leases, capture and sink (2026-11-26)
   - `88dc6a8` docs(spine): close W-015 and W-006 (2026-11-26)
 
+### D-042
+
+**W-016 the backend owns the API contract; the OpenAPI snapshot is a test-gated file** — accepted — [decisions.md](decisions.md#d-042--w-016-the-backend-owns-the-api-contract-the-openapi-snapshot-is-a-test-gated-file--2026-11-26)
+- ADR: [ADR-012](adr/ADR-012-openapi-contract-and-console-boundary.md)
+- Workstreams: [W-016](#w-016)
+- Cited in commit Refs:
+  - `bc1783c` feat(api): openapi contract snapshot, cors for the console, /me (2026-11-26)
+  - `b3d6c65` docs(spine): close W-016 and overwrite hot-state (2026-11-26)
+
+### D-043
+
+**W-016 console CORS policy: exact origins, no credentials, named headers** — accepted — [decisions.md](decisions.md#d-043--w-016-console-cors-policy-exact-origins-no-credentials-named-headers--2026-11-26)
+- ADR: [ADR-012](adr/ADR-012-openapi-contract-and-console-boundary.md)
+- Workstreams: [W-016](#w-016)
+- Cited in commit Refs:
+  - `bc1783c` feat(api): openapi contract snapshot, cors for the console, /me (2026-11-26)
+  - `ac9845d` fix(api): reject a fragment in a CORS origin and record the Codex W-016 review (2026-11-26)
+  - `b3d6c65` docs(spine): close W-016 and overwrite hot-state (2026-11-26)
+
+### D-044
+
+**W-016 GET /api/v1/me is the console's source for navigation and permission checks** — accepted — [decisions.md](decisions.md#d-044--w-016-get-apiv1me-is-the-consoles-source-for-navigation-and-permission-checks--2026-11-26)
+- ADR: [ADR-012](adr/ADR-012-openapi-contract-and-console-boundary.md)
+- Workstreams: [W-016](#w-016)
+- Cited in commit Refs:
+  - `bc1783c` feat(api): openapi contract snapshot, cors for the console, /me (2026-11-26)
+  - `b3d6c65` docs(spine): close W-016 and overwrite hot-state (2026-11-26)
+
 ## Commit to ids
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `b3d6c65` | docs(spine): close W-016 and overwrite hot-state | 2026-11-26 | [W-016](#w-016), [ADR-012](#adr-012), [D-042](#d-042), [D-043](#d-043), [D-044](#d-044) |
+| `0b5bb59` | test(web): pin ETag/If-Match, problem mapping, single-flight refresh and hasPermission | 2026-11-26 | [W-017](#w-017) |
+| `7d429aa` | feat(web): scaffold Fugue Console with Vellum tokens, shell, auth and interceptors | 2026-11-26 | [W-017](#w-017) |
+| `ac9845d` | fix(api): reject a fragment in a CORS origin and record the Codex W-016 review | 2026-11-26 | [W-016](#w-016), [D-043](#d-043) |
+| `bc1783c` | feat(api): openapi contract snapshot, cors for the console, /me | 2026-11-26 | [W-016](#w-016), [ADR-012](#adr-012), [D-042](#d-042), [D-043](#d-043), [D-044](#d-044) |
+| `7daf73b` | docs(spine): open W-016 for the OpenAPI contract, CORS and /me | 2026-11-26 | [W-016](#w-016) |
 | `88dc6a8` | docs(spine): close W-015 and W-006 | 2026-11-26 | [W-006](#w-006), [W-015](#w-015), [D-035](#d-035), [D-036](#d-036), [D-041](#d-041) |
 | `f34d0b4` | test(api): list the WEBHOOKS module in the Bruno modules check | 2026-11-26 | [W-006](#w-006) |
 | `2051ac9` | docs(spine): open W-017 for the Fugue Console web client | 2026-11-26 | [W-017](#w-017) |
