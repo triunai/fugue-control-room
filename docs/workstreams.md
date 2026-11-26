@@ -33,6 +33,12 @@ Status: written by a research agent, stale status lines corrected by the lead; c
 Resume: refresh Status/Highlights whenever a batch lands.
 Refs: `README.md`
 
+### WS-16 — OpenAPI contract, CORS for the console, GET /me — 🟢 ACTIVE (2026-11-26)
+ID: W-016
+Status: building; Swashbuckle document with a committed snapshot `docs/api/openapi.v1.json` (test-gated), named CORS policy, `GET /api/v1/me`, permission-code fitness rule. The console (W-017) generates its client from the snapshot.
+Resume: `git log --grep "Refs: W-016"`; refresh the snapshot with `npm run api:openapi`; runbook 08.
+Refs: `docs/runbooks/08-openapi-and-console-contract.md`, ADR-008, ADR-009
+
 ### WS-17 — Fugue Console: Angular admin console for the API (web/) — 🟢 ACTIVE (2026-11-26)
 ID: W-017
 Status: building in `web/` (Angular, SignalStore for client state, TanStack Query for server state, Tailwind, Vellum tokens). Touches only `web/**`, `docs/runbooks/09-console.md`, web lines in `.gitignore` and this block. Needs W-016 (`docs/api/openapi.v1.json`, `GET /api/v1/me`, CORS).
