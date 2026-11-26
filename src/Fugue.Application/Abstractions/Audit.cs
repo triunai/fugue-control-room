@@ -40,7 +40,7 @@ public interface IAuditTrail
 }
 
 /// <summary>
-/// The ambient audit context of the command being handled. <see cref="Behaviors.AuditBehavior{TMessage,TResponse}"/> sets it; the
+/// The ambient audit context of the command being handled. <c>AuditBehavior</c> sets it; the
 /// interceptor and <see cref="IAuditTrail"/> read it, so every row of one command carries the same action. Empty outside a command.
 /// </summary>
 public interface IAuditScope

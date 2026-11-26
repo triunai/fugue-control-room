@@ -52,8 +52,41 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-039 | W-006: two-stage dispatcher (relay, leased delivery), SKIP LOCKED, outbox is the retry authority, signature v1, at-least-once | [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md) |
 | D-040 | W-006: `IEventPublisher` is the broker seam (Kafka adapter documented, not built), Development-only sink | [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md) |
 | D-041 | W-006: Codex S4 review fixes (per-claim token fence, spent-lease dead letter, lease re-check before send, cancelled-save cleanup, sink envelope check) | [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md) |
+| D-042 | W-016: the backend owns the API contract; the OpenAPI snapshot is a test-gated file | [ADR-012](adr/ADR-012-openapi-contract-and-console-boundary.md) |
+| D-043 | W-016: console CORS policy (exact origins, no credentials, named headers) | [ADR-012](adr/ADR-012-openapi-contract-and-console-boundary.md) |
+| D-044 | W-016: `GET /api/v1/me` is the console's source for navigation and permission checks | [ADR-012](adr/ADR-012-openapi-contract-and-console-boundary.md) |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-044 — W-016 GET /api/v1/me is the console's source for navigation and permission checks — 2026-11-26
+WS: WS-16
+Context: the console must hide what a user cannot do and show what is switched on, without learning it from 403s or duplicating role rules.
+Decision: `GET /api/v1/me` (any signed-in user, module SYSTEM, `no-store`) returns the caller's own identity, active roles and groups, the effective permission codes from the same query the authorizer runs, and the effectively enabled modules (code, name). The subject is the token's user only; no header or body can name another.
+Why: one server-side definition of "effective" (deny > allow > role, expiry, disabled modules) feeds both enforcement and the UI; the cost is one more indexed query per call.
+Consequences: a tenant id and email are returned to their owner only; the console treats the permission list as a hint (the API still enforces); the signed-in-only action set is closed by a fitness test.
+Who: AI, owner brief
+Status: accepted
+Promote: no (in ADR-012)
+
+## D-043 — W-016 console CORS policy: exact origins, no credentials, named headers — 2026-11-26
+WS: WS-16
+Context: the Angular console runs on its own origin and sends `Authorization`, `If-Match` and correlation headers, and must read `ETag`, `Link`, `X-Next-Cursor` and friends.
+Decision: one named policy `Console` from `Cors:Origins` plus `http://localhost:4200` in Development only; each origin must be exact (a wildcard, path or trailing slash stops the host); no credentials; methods GET POST PUT PATCH DELETE; the request and exposed header lists in ADR-012. The middleware sits before authentication.
+Why: a bearer token in a header needs no credentialed CORS, so the narrowest policy that works is the safe one; failing at start beats a silent over- or under-match.
+Consequences: a new console origin is a config change, not code; production with no configured origin allows no cross-origin browser caller.
+Who: AI, owner brief
+Status: accepted
+Promote: no (in ADR-012)
+
+## D-042 — W-016 the backend owns the API contract; the OpenAPI snapshot is a test-gated file — 2026-11-26
+WS: WS-16
+Context: the console generates its TypeScript client from the API description; an informal description drifts.
+Decision: Swashbuckle generates the `v1` document; `docs/api/openapi.v1.json` is its deterministic rendering and is committed. A test regenerates it in memory and fails on any difference with a message naming the refresh command (`npm run api:openapi`). Swagger UI and the live JSON are Development only. Action attributes declare success and the problems an action decides itself; the pipeline-derived statuses and headers come from one operation filter.
+Why: the diff of the snapshot is the review of the contract; the console cannot be broken by an unreviewed change.
+Consequences: every API change touches the snapshot; new actions need summaries and `[ProducesResponseType]` (fitness); XML doc files are generated for Api and Application.
+Who: AI, owner brief
+Status: accepted
+Promote: yes (ADR-012)
 
 ## D-041 — W-006 Codex review of the S4 diff: fence, budget, lease, cancel, envelope — 2026-11-26
 WS: WS-06

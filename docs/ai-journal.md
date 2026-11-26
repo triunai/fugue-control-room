@@ -171,3 +171,14 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
   - The per-email login ceiling became a small fixed-window counter that reserves a slot before password verification and refunds it on success, so concurrent attempts cannot all pass the check.
 - **Decision:** covered by D-035 and D-036; both regression tests were shown RED first.
 - **Why:** a guard that only runs when a write happens, and a limit that is checked before it is charged, are both bypassable by the exact race they exist for.
+
+## 2026-11-26 - W-016 OpenAPI contract, console CORS and /me
+- **Asked:** the console (W-017) needs a machine-readable contract, CORS and a `/me` endpoint before it can build against the API.
+- **AI proposed / chose:**
+  - Swashbuckle 6.9 (net8) with the document pinned by a committed snapshot and a test that regenerates it in memory; one command refreshes it, and the diff is the contract review.
+  - Statuses and headers that follow from the pipeline (401, 403, module-gate 404, 412, 428, 429, 503, ETag, Location, paging, Retry-After) come from one operation filter and shared component responses; an action declares only what it decides itself, so 35 actions stay readable.
+  - CORS: exact origins validated at start, no credentials (bearer in a header), localhost:4200 in Development only; `/me` reads the same effective-permission query the authorizer uses, so the console and the API cannot disagree.
+  - The fitness rule for permission literals now reads the migration's seed data (not just the constants list); "signed in only" became an explicit, closed set.
+  - Traps hit: Bruno's module check still expected four modules after S4 added WEBHOOKS; XML doc generation turned two doc-comment slips into build errors; the empty `security: []` of an anonymous operation is dropped by the serializer, so the bearer requirement is added per operation instead of globally.
+- **Decision:** accepted as D-042 to D-044 (ADR-012).
+- **Why:** a contract that the build checks cannot drift silently, and one server-side definition of "effective permission" keeps the UI honest.

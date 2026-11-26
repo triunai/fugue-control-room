@@ -1,5 +1,6 @@
 using Fugue.Api.Auth;
 using Fugue.Api.Modules;
+using Fugue.Api.OpenApi;
 using Fugue.Application.Features.Audit;
 using Fugue.Application.Features.Audit.Queries;
 using Fugue.Domain.Identity;
@@ -14,8 +15,10 @@ namespace Fugue.Api.Controllers;
 [Module(ModuleCodes.Audit)]
 public sealed class AuditController : ApiControllerBase
 {
+    /// <summary>List audit rows, newest first, keyset paged. Every filter is optional and they combine.</summary>
     [HttpGet]
     [HasPermission(Permissions.AuditRead)]
+    [ProducesResponseType(typeof(IReadOnlyList<AuditLogDto>), StatusCodes.Status200OK)]
     public Task<ActionResult<IReadOnlyList<AuditLogDto>>> List(
         [FromQuery] string? entityType,
         [FromQuery] string? entityId,

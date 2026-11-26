@@ -1,0 +1,25 @@
+meta {
+  name: Me as admin (identity, permissions, enabled modules)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/me
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("200 with the admin's identity, role and effective access", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.email).to.equal(bru.getEnvVar("adminEmail"));
+    expect(res.body.roles).to.eql(["ADMIN"]);
+    expect(res.body.permissions).to.include("MODULES_MANAGE");
+    expect(res.body.modules.map(function (m) { return m.code; })).to.include("CUSTOMERS");
+  });
+  test("never cached, and the correlation id is echoed", function () {
+    expect(res.headers["cache-control"]).to.contain("no-store");
+    expect(res.headers["x-correlation-id"]).to.be.a("string");
+  });
+}

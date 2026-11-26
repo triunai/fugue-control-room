@@ -155,10 +155,11 @@ public sealed class FitnessTests
         Controllers().SelectMany(c => c.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(m => !m.IsSpecialName));
 
     [Fact]
-    public void Fitness_Auth_every_controller_action_declares_HasPermission_or_AllowAnonymous()
+    public void Fitness_Auth_every_controller_action_declares_HasPermission_Authorize_or_AllowAnonymous()
     {
+        // HasPermission derives from Authorize, so one check covers "needs a permission" and "needs any signed-in user" (/me).
         IEnumerable<string> bad = Actions()
-            .Where(m => !m.GetCustomAttributes<HasPermissionAttribute>().Any() && m.GetCustomAttribute<AllowAnonymousAttribute>() is null)
+            .Where(m => !m.GetCustomAttributes<AuthorizeAttribute>().Any() && m.GetCustomAttribute<AllowAnonymousAttribute>() is null)
             .Select(m => $"{m.DeclaringType!.Name}.{m.Name}");
 
         AssertRatchet("authorized-actions", bad);
@@ -177,13 +178,68 @@ public sealed class FitnessTests
     }
 
     [Fact]
+    public void Fitness_Auth_the_signed_in_only_endpoint_set_is_exactly_me()
+    {
+        // An action with [Authorize] but no permission lets every authenticated user in. The set is closed on purpose: widening it is a decision.
+        string[] open = Actions()
+            .Where(m => m.GetCustomAttributes<AuthorizeAttribute>().Any() && !m.GetCustomAttributes<HasPermissionAttribute>().Any() && m.GetCustomAttribute<AllowAnonymousAttribute>() is null)
+            .Select(m => $"{m.DeclaringType!.Name}.{m.Name}").Order().ToArray();
+
+        Assert.Equal(["MeController.Get"], open);
+    }
+
+    [Fact]
     public void Fitness_Auth_every_HasPermission_literal_exists_in_the_seeded_catalog()
     {
-        HashSet<string> catalog = Fugue.Domain.Identity.Permissions.All.ToHashSet(StringComparer.Ordinal);
+        // The catalog is what the AddIdentity migration seeds (read from the EF model's seed data), not just the constants list:
+        // a literal that is not seeded would 403 for everyone, admin included, and a typo must fail the build.
+        HashSet<string> seeded = SeededPermissionCodes();
+        Assert.NotEmpty(seeded);
+
         IEnumerable<string> bad = Actions().SelectMany(m => m.GetCustomAttributes<HasPermissionAttribute>().Select(a => (m, a)))
-            .Where(x => !catalog.Contains(x.a.Permission)).Select(x => $"{x.m.DeclaringType!.Name}.{x.m.Name}:{x.a.Permission}");
+            .Where(x => !seeded.Contains(x.a.Permission)).Select(x => $"{x.m.DeclaringType!.Name}.{x.m.Name}:{x.a.Permission}");
 
         AssertRatchet("permission-literals", bad);
+    }
+
+    [Fact]
+    public void Fitness_Auth_the_Permissions_constants_and_the_seeded_catalog_are_the_same_set()
+    {
+        string[] constants = typeof(Fugue.Domain.Identity.Permissions).GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Where(f => f is { IsLiteral: true } && f.FieldType == typeof(string)).Select(f => (string)f.GetRawConstantValue()!).Order(StringComparer.Ordinal).ToArray();
+
+        Assert.Equal(constants, Fugue.Domain.Identity.Permissions.All.Order(StringComparer.Ordinal));
+        Assert.Equal(constants, SeededPermissionCodes().Order(StringComparer.Ordinal));
+    }
+
+    private static HashSet<string> SeededPermissionCodes()
+    {
+        using var context = new FugueDbContext(new DbContextOptionsBuilder<FugueDbContext>().UseNpgsql("Host=localhost;Database=fitness").Options);
+        Microsoft.EntityFrameworkCore.Metadata.IEntityType permission = Microsoft.EntityFrameworkCore.Infrastructure.AccessorExtensions
+            .GetService<Microsoft.EntityFrameworkCore.Metadata.IDesignTimeModel>(context).Model.FindEntityType(typeof(Fugue.Domain.Identity.PermissionDefinition))!;
+        return permission.GetSeedData().Select(row => (string)row["Code"]!).ToHashSet(StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void Fitness_OpenApi_every_action_declares_its_success_response()
+    {
+        // The contract is generated from the attributes: an action without a 2xx ProducesResponseType publishes a guess.
+        IEnumerable<string> bad = Actions()
+            .Where(m => !m.GetCustomAttributes<ProducesResponseTypeAttribute>().Any(a => a.StatusCode is >= 200 and < 300))
+            .Select(m => $"{m.DeclaringType!.Name}.{m.Name}");
+
+        AssertRatchet("openapi-success-response", bad);
+    }
+
+    [Fact]
+    public void Fitness_OpenApi_every_declared_error_response_is_problem_json()
+    {
+        // Errors are RFC 9457 problem+json everywhere (ProblemResult); an action must not document a 4xx or 5xx as anything else.
+        IEnumerable<string> bad = Actions().SelectMany(m => m.GetCustomAttributes<ProducesResponseTypeAttribute>().Where(a => a.StatusCode >= 400).Select(a => (m, a)))
+            .Where(x => x.a is not Fugue.Api.OpenApi.ProblemResponseAttribute)
+            .Select(x => $"{x.m.DeclaringType!.Name}.{x.m.Name}:{x.a.StatusCode}");
+
+        AssertRatchet("openapi-problem-responses", bad);
     }
 
     [Fact]

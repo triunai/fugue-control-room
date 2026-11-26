@@ -120,6 +120,7 @@ public static class DependencyInjection
         services.AddSingleton<IPasswordVerifier>(sp => sp.GetRequiredService<PasswordVerifier>());
         services.AddSingleton<IModuleConfig, ConfigModuleSwitch>();
         services.AddScoped<IUserAccessReader, UserAccessReader>();
+        services.AddScoped<Fugue.Application.Features.Me.IMeReader, MeReader>();
         services.AddScoped<IAuthStore, AuthStore>();
         services.AddScoped<IRefreshTokenStore, RefreshTokenStore>();
         services.AddScoped<IAccessAuditWriter, AccessAuditWriter>();

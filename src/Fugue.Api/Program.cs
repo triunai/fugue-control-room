@@ -1,8 +1,10 @@
 using Fugue.Api.Auditing;
 using Fugue.Api.Auth;
 using Fugue.Api.Correlation;
+using Fugue.Api.Cors;
 using Fugue.Api.Http;
 using Fugue.Api.Logging;
+using Fugue.Api.OpenApi;
 using Fugue.Api.Seeding;
 using Fugue.Application;
 using Fugue.Application.Abstractions;
@@ -44,6 +46,8 @@ try
         options.CustomizeProblemDetails = context =>
             ProblemDetailsEnrichment.AddCorrelation(context.ProblemDetails, context.HttpContext));
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+    builder.Services.AddFugueOpenApi();
+    builder.Services.AddConsoleCors(builder.Configuration, builder.Environment);
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<ICurrentUser, ClaimsCurrentUser>();
 
@@ -84,6 +88,8 @@ try
     app.UseMiddleware<CorrelationIdMiddleware>();
     app.UseFugueRequestLogging();
     app.UseExceptionHandler();
+    app.UseCors(ConsoleCors.PolicyName); // before authentication: a preflight carries no token and must be answered here
+    app.UseFugueOpenApi(); // Development only
     app.UseStatusCodePages(); // empty 404/405/415 etc. become problem+json via AddProblemDetails
     app.UseAuthentication();
     app.UseMiddleware<Fugue.Api.Modules.ModuleGateMiddleware>();

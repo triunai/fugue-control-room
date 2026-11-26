@@ -7,7 +7,8 @@
     "prepare": "lefthook install",
     "trace": "node scripts/spine/trace-index.mjs",
     "test:scripts": "node --test scripts/*.test.mjs scripts/spine/*.test.mjs",
-    "api:test": "cd bruno/fugue && bru run --env local"
+    "api:test": "cd bruno/fugue && bru run --env local",
+    "api:openapi": "FUGUE_OPENAPI_UPDATE=1 dotnet test tests/Fugue.Tests --filter \"FullyQualifiedName~OpenApiContractTests\""
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",
