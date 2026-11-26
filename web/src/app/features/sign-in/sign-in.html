@@ -1,0 +1,130 @@
+<div class="wrap">
+  <section class="editorial" aria-labelledby="headline">
+    <div class="brand">
+      <fg-brand-mark [size]="34" [inverse]="true" />
+      <span>Fugue Console</span>
+    </div>
+
+    <div class="copy">
+      <h1 id="headline">One request, heard in every voice.</h1>
+      <p>
+        The admin console for the Fugue API. Edit a customer and follow that single change through the audit trail and
+        out to a signed webhook, all under one correlation id.
+      </p>
+    </div>
+
+    <figure class="score" aria-label="One correlation id carried by the request, the audit row and the webhook">
+      <svg viewBox="0 0 440 150" role="img" aria-hidden="true">
+        @for (y of [22, 34, 46, 58, 70]; track y) {
+          <line x1="0" [attr.y1]="y" x2="440" [attr.y2]="y" class="staff" />
+        }
+        @for (y of [92, 104, 116, 128, 140]; track y) {
+          <line x1="0" [attr.y1]="y" x2="440" [attr.y2]="y" class="staff" />
+        }
+        <!-- subject: the request -->
+        <g class="voice v1">
+          <ellipse cx="22" cy="46" rx="6.5" ry="4.8" transform="rotate(-20 22 46)" />
+          <line x1="28" y1="45" x2="150" y2="45" />
+        </g>
+        <!-- answer: the audit row, entering later and higher -->
+        <g class="voice v2">
+          <ellipse cx="150" cy="28" rx="6.5" ry="4.8" transform="rotate(-20 150 28)" />
+          <line x1="156" y1="27" x2="290" y2="27" />
+        </g>
+        <!-- third voice: the signed event, in the lower staff -->
+        <g class="voice v3">
+          <ellipse cx="290" cy="110" rx="6.5" ry="4.8" transform="rotate(-20 290 110)" />
+          <line x1="296" y1="109" x2="432" y2="109" />
+        </g>
+      </svg>
+      <figcaption>
+        <span><b>Request</b> PUT /customers</span>
+        <span><b>Audit row</b> name: old → new</span>
+        <span><b>Signed event</b> customer.updated.v1</span>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="form-side">
+    <div class="form-card">
+      <h2 class="title">Sign in</h2>
+      <p class="lede">Use your Fugue account. Sessions last 15 minutes and renew quietly while you work.</p>
+
+      @if (reason() === 'expired') {
+        <div class="banner banner-info mt-5" role="status">
+          <span
+            ><span class="banner-title">Your session ended.</span> Sign in again to pick up where you left off.</span
+          >
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="mt-6 flex flex-col gap-4" novalidate>
+        <div class="field">
+          <label class="label" for="email">Email</label>
+          <input
+            id="email"
+            class="input"
+            type="email"
+            autocomplete="username"
+            formControlName="email"
+            [attr.aria-invalid]="form.controls.email.touched && form.controls.email.invalid"
+            aria-describedby="email-error"
+          />
+          @if (form.controls.email.touched && form.controls.email.invalid) {
+            <span id="email-error" class="field-error">Enter the email you sign in with.</span>
+          }
+        </div>
+        <div class="field">
+          <label class="label" for="password">Password</label>
+          <input
+            id="password"
+            class="input"
+            type="password"
+            autocomplete="current-password"
+            formControlName="password"
+            [attr.aria-invalid]="form.controls.password.touched && form.controls.password.invalid"
+          />
+          @if (form.controls.password.touched && form.controls.password.invalid) {
+            <span class="field-error">Enter your password.</span>
+          }
+        </div>
+
+        @if (failure(); as p) {
+          <div class="banner banner-err" role="alert">
+            <span
+              ><span class="banner-title">{{ failureText(p) }}</span></span
+            >
+            @if (p.correlationId) {
+              <fg-ref-chip label="ref" [value]="p.correlationId" />
+            }
+          </div>
+        }
+
+        <button type="submit" class="btn btn-primary mt-1 h-11 text-base" [disabled]="busy()">
+          {{ busy() ? 'Signing in…' : 'Sign in' }}
+        </button>
+      </form>
+
+      @if (demoAccounts.length) {
+        <div class="demo">
+          <p class="demo-head">
+            Demo accounts
+            <span class="pill pill-warn pill-plain">Development only</span>
+          </p>
+          <p class="demo-note">Seeded by the API with one shared development password. Choose one to sign in.</p>
+          <ul role="list">
+            @for (a of demoAccounts; track a.email) {
+              <li>
+                <button type="button" class="demo-row" (click)="useDemo(a.email)" [disabled]="busy()">
+                  <span class="mono">{{ a.email }}</span>
+                  <span class="demo-role">{{ a.role }}</span>
+                  <span class="demo-shows">{{ a.shows }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  </section>
+</div>

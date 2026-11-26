@@ -1,0 +1,48 @@
+/*
+ * Fugue Console design tokens: Vellum (light). The ONLY place colours are defined.
+ * A dark theme is a token swap: add a [data-theme='dark'] block with the same names.
+ * Red, amber and green are status colours only, never brand. Tints are derived with color-mix().
+ * Contrast (WCAG 2.2): text 14.8:1, muted 4.8:1, accent 9.0:1 on --bg; *-ink pairs >= 5.6:1 on their pill tint;
+ * --control (input and button borders) >= 3:1 against --surface2 for non-text contrast.
+ */
+:root {
+  color-scheme: light;
+
+  --bg: #f3eee3;
+  --surface: #fbf8f1;
+  --surface2: #ffffff;
+  --line: #ddd4c2;
+  --control: #9c8f78;
+  --text: #1e1b16;
+  --muted: #6e675a;
+  --accent: #22406b;
+  --accent-text: #22406b;
+  --accent-soft: rgba(34, 64, 107, 0.1);
+  --on-accent: #f7f3ea;
+  --focus: #3a63a0;
+
+  --ok: #3f7a4e;
+  --warn: #9a6b12;
+  --err: #a8382f;
+  --ok-ink: #33653f;
+  --warn-ink: #7a540c;
+  --err-ink: #97302a;
+
+  /* derived */
+  --accent-hover: color-mix(in oklab, var(--accent) 86%, black);
+  --row-hover: color-mix(in oklab, var(--accent) 4%, var(--surface));
+  --line-soft: color-mix(in oklab, var(--line) 60%, var(--surface));
+  --shadow-color: 30 27 22;
+  --shadow-overlay: 0 24px 48px -12px rgb(var(--shadow-color) / 0.22), 0 2px 6px rgb(var(--shadow-color) / 0.08);
+  --scrim: rgb(var(--shadow-color) / 0.32);
+
+  /* type */
+  --font-display: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
+  --font-ui: 'Inter Variable', Inter, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
+
+  /* shape: controls < panels < overlays */
+  --radius-control: 7px;
+  --radius-panel: 11px;
+  --radius-overlay: 16px;
+}

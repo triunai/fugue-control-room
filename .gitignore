@@ -46,3 +46,9 @@ node_modules/
 # Local agent state (advisory gate ledger, per-machine settings)
 .fugue-local/
 .claude/settings.local.json
+
+# Fugue Console (web/): build output, caches, Playwright reports (W-017)
+web/dist/
+web/.angular/
+web/test-results/
+web/playwright-report/
