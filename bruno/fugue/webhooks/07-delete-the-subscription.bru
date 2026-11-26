@@ -1,0 +1,21 @@
+meta {
+  name: Delete the subscription (its deliveries go with it)
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/webhooks/subscriptions/{{hookSubId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  If-Match: {{hookEtag}}
+}
+
+tests {
+  test("204 No Content", function () {
+    expect(res.status).to.equal(204);
+  });
+}

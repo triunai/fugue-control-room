@@ -8,9 +8,9 @@ The name is from Bach: a fugue is independent voices over one shared subject, mu
 
 Early and honest. Verified on 2026-11-25 (see [`docs/hot-state.md`](docs/hot-state.md)):
 
-- **Done:** S0 scaffold, S1 validation/logging/correlation, S2 persistence (Postgres, EF Core + Dapper, Customers slice), S3 identity (JWT, permissions, ownership, modules, groups, overrides), W-012 rich append-only audit log, H1 AI harness.
+- **Done:** S0 scaffold, S1 validation/logging/correlation, S2 persistence (Postgres, EF Core + Dapper, Customers slice), S3 identity (JWT, permissions, ownership, modules, groups, overrides), W-012 rich append-only audit log, S4 transactional outbox with signed webhooks, H1 AI harness.
 - **In progress:** nothing on the board that is not parked; S3 review follow-ups (W-013) are next. The S3 plan was rejected by a cross-model review with 10 findings, all accepted ([review](docs/reviews/codex/2026-11-25-s3-identity-plan.md)).
-- **Planned:** S4 transactional outbox and signed webhooks, S5 REST hardening.
+- **Planned:** S5 REST hardening.
 - **Tests:** the whole suite is expected green; anything red is a real bug.
 - No CI workflow yet; gates run locally through git hooks.
 
@@ -28,6 +28,7 @@ Each pattern points at where it lives.
 - **Typed UUIDv7 IDs** (`CustomerId`), wired through EF, Dapper, JSON and route binding.
 - **Audit stamping** on both the EF and Dapper write paths.
 - **Rich audit log** (`audit_log`): who, what, field-level old/new values, outcome and error code, request and trace ids; written in the SAME transaction as the change, append-only by trigger, masked before it is stored, queryable at `GET /api/v1/audit` behind `AUDIT_READ` ([ADR-010](docs/adr/ADR-010-audit-log.md), [runbook](docs/runbooks/06-audit.md)).
+- **Transactional outbox and signed webhooks**: events are written in the same transaction as the change, relayed with `SKIP LOCKED`, and sent as HMAC-SHA256 signed requests with backoff, dead letter, redeliver, and an SSRF guard that checks again at connect time ([ADR-011](docs/adr/ADR-011-outbox-and-signed-webhooks.md), [runbook](docs/runbooks/07-webhooks.md)).
 - **Real-database tests** via Testcontainers, plus a **Bruno CLI** HTTP regression suite.
 - **Architecture fitness functions** with shrink-only baselines (`tests/Fugue.ArchTests`).
 

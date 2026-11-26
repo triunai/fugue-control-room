@@ -1,0 +1,35 @@
+meta {
+  name: Subscribe the Development sink to customer events (secret shown once)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/webhooks/subscriptions
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "bruno dev sink",
+    "url": "{{baseUrl}}/api/v1/dev/webhook-sink",
+    "eventTypes": ["customer.*"]
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("hookSubId", res.body.id);
+    bru.setVar("hookSecret", res.body.secret);
+    bru.setVar("hookEtag", res.headers["etag"]);
+  }
+}
+
+tests {
+  test("201 with a whsec_ secret and the filter", function () {
+    expect(res.status).to.equal(201);
+    expect(res.body.secret).to.match(/^whsec_/);
+    expect(res.body.eventTypes).to.deep.equal(["customer.*"]);
+  });
+}

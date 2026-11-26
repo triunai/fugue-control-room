@@ -1,0 +1,17 @@
+meta {
+  name: Forget anything the sink already received
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/api/v1/dev/webhook-sink
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("204 No Content", function () {
+    expect(res.status).to.equal(204);
+  });
+}

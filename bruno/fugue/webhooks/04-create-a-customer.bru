@@ -1,0 +1,41 @@
+meta {
+  name: Create a customer under a known correlation id (writes an outbox row)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers
+  body: json
+  auth: inherit
+}
+
+headers {
+  X-Correlation-Id: {{hookCorrelation}}
+}
+
+body:json {
+  {
+    "name": "Webhook Subject",
+    "email": "{{hookEmail}}",
+    "phone": "+14155550166"
+  }
+}
+
+script:pre-request {
+  const run = String(Date.now());
+  bru.setVar("hookCorrelation", "bruno-hook-" + run);
+  bru.setVar("hookEmail", "hook-" + run + "@example.test");
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("hookCustomerId", res.body.id);
+  }
+}
+
+tests {
+  test("201 Created", function () {
+    expect(res.status).to.equal(201);
+  });
+}

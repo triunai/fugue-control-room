@@ -152,3 +152,14 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
 - **Decision:** accepted as D-034 to D-036 (ADR-008 amended). Not reviewed by another model family yet (auth and migrations are critical seams): in the hot-state inbox.
 - **Why:** each fix pins a state a stale client, a typo or a race could otherwise produce.
 
+## 2026-11-26 - W-006 S4 outbox and signed webhooks
+- **Asked:** a transactional outbox with signed outbound webhooks, the way a real integration would be built, but no broker yet.
+- **AI proposed / chose:**
+  - The outbox row is written in the same transaction as the change (an EF interceptor for entities, `IOutbox` for the Dapper path), then a two-stage dispatcher: relay with `FOR UPDATE SKIP LOCKED` and a savepoint per message, then leased deliveries with the HTTP call outside any transaction and a result write fenced by attempt number.
+  - The outbox is the single retry authority: the resilience handler keeps its timeout and circuit breaker but its own retry is off, so attempts are durable, counted and visible.
+  - SSRF checked at subscribe time and again at connect time (`ConnectCallback` dials the verified address), redirects off; secrets encrypted with Data Protection, key ring in the database, shown once.
+  - A Development-only anonymous sink whose credential is the signature, so the whole loop can be demonstrated without an outside receiver.
+  - Traps: Dapper cannot map `timestamptz` to a `DateTimeOffset` constructor parameter (failure mode 24); the Docker daemon stopped answering after the delivery tests were added (23, cause not proven).
+- **Decision:** accepted as D-037 to D-040 (ADR-011). The cross-family review verdict and fixes are in `docs/reviews/codex/2026-11-26-s4-webhooks.md`.
+- **Why:** a webhook sent from inside the request would lose events on a crash and block on slow receivers; the outbox makes delivery at least once and the signature plus event id make it safe for receivers.
+

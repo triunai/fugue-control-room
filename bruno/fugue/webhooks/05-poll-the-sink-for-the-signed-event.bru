@@ -1,0 +1,45 @@
+meta {
+  name: Poll the sink until the signed customer.created.v1 event arrives
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/v1/dev/webhook-sink
+  body: none
+  auth: inherit
+}
+
+script:pre-request {
+  // The dispatcher polls about once a second; wait up to 30 seconds for this run's event (matched by correlation id).
+  const correlation = bru.getVar("hookCorrelation");
+  for (let i = 0; i < 30; i++) {
+    const probe = await bru.sendRequest({
+      method: "GET",
+      url: bru.getEnvVar("baseUrl") + "/api/v1/dev/webhook-sink",
+      headers: { Authorization: "Bearer " + bru.getVar("token") },
+    });
+    if (Array.isArray(probe.data) && probe.data.some((e) => e.correlationId === correlation)) {
+      break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+}
+
+tests {
+  test("the event arrived, verified, with the request's correlation id and the customer as saga id", function () {
+    expect(res.status).to.equal(200);
+    const event = res.body.find((e) => e.correlationId === bru.getVar("hookCorrelation"));
+    expect(event).to.be.an("object");
+    expect(event.eventType).to.equal("customer.created.v1");
+    expect(event.sagaId).to.equal(bru.getVar("hookCustomerId"));
+    expect(event.traceparent).to.match(/^00-[0-9a-f]{32}-[0-9a-f]{16}-0[01]$/);
+  });
+  test("the body is the masked thin payload, never the raw email", function () {
+    const event = res.body.find((e) => e.correlationId === bru.getVar("hookCorrelation"));
+    const body = JSON.parse(event.body);
+    expect(body.aggregateId).to.equal(bru.getVar("hookCustomerId"));
+    expect(body.data.email).to.match(/^h\*\*\*@/);
+    expect(event.body).to.not.include(bru.getVar("hookEmail"));
+  });
+}
