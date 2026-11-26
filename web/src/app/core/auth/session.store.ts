@@ -51,6 +51,10 @@ export const SessionStore = signalStore(
     restoring(): void {
       patchState(store, { status: 'restoring' });
     },
+    /** A restore that failed for a transient reason: stay signed out, but keep the refresh token for the next try. */
+    restoreFailed(): void {
+      patchState(store, { status: 'anonymous' });
+    },
     cleared(status: SessionStatus = 'anonymous'): void {
       writeRefresh(null);
       patchState(store, { accessToken: null, refreshToken: null, expiresAt: null, status });

@@ -22,6 +22,8 @@ export class AuthService {
   private readonly etags = inject(EtagStore);
   private readonly base = inject(CONSOLE_CONFIG).apiBase;
   private inflight: Promise<string> | null = null;
+  /** Bumped by sign-out and expiry: a refresh that resolves after either must not sign the user back in. */
+  private epoch = 0;
 
   async signIn(email: string, password: string): Promise<void> {
     const token = await firstValueFrom(this.http.post<TokenDto>(`${this.base}/auth/token`, { email, password }));
@@ -41,15 +43,20 @@ export class AuthService {
   private async refresh(): Promise<string> {
     const refreshToken = this.session.refreshToken();
     if (!refreshToken) throw new Error('No refresh token');
+    const epoch = this.epoch;
+    let token: TokenDto;
     try {
-      const token = await firstValueFrom(this.http.post<TokenDto>(`${this.base}/auth/refresh`, { refreshToken }));
-      this.session.signedIn(token.accessToken, token.expiresIn, token.refreshToken ?? null);
-      void this.queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
-      return token.accessToken;
+      token = await firstValueFrom(this.http.post<TokenDto>(`${this.base}/auth/refresh`, { refreshToken }));
     } catch (err) {
-      this.expire();
+      // Only a refusal ends the session. A network blip, 5xx or 429 keeps the (still valid) refresh token.
+      const status = (err as { status?: number }).status;
+      if (status === 400 || status === 401 || status === 403) this.expire();
       throw err;
     }
+    if (epoch !== this.epoch) throw new Error('Signed out while the refresh was in flight');
+    this.session.signedIn(token.accessToken, token.expiresIn, token.refreshToken ?? null);
+    void this.queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
+    return token.accessToken;
   }
 
   /** Restores a session after a reload from the tab's refresh token. */
@@ -60,12 +67,14 @@ export class AuthService {
       await this.refreshOnce();
       return true;
     } catch {
+      if (this.session.status() === 'restoring') this.session.restoreFailed();
       return false;
     }
   }
 
   async signOut(): Promise<void> {
     const refreshToken = this.session.refreshToken();
+    this.epoch++;
     this.session.cleared();
     this.reset();
     if (refreshToken) {
@@ -77,6 +86,7 @@ export class AuthService {
   /** The session is over (refresh failed or was refused): drop everything and send the user to sign in. */
   expire(): void {
     if (!this.session.isAuthenticated() && this.session.status() !== 'restoring') return;
+    this.epoch++;
     this.session.cleared('expired');
     this.reset();
     const returnUrl = this.router.url.startsWith('/sign-in') ? undefined : this.router.url;

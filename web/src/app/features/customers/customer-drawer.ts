@@ -22,7 +22,14 @@ export interface CustomerDrawerData {
 }
 
 /** What changed between the version you opened and the one on the server, for the 412 banner. */
+/** The write that was refused with 412; Overwrite replays exactly this one, never a different operation. */
+type PendingOp =
+  | { kind: 'save'; body: UpdateCustomerRequest }
+  | { kind: 'transition'; to: 'Active' | 'Suspended' }
+  | { kind: 'remove' };
+
 interface Conflict {
+  op: PendingOp;
   yours: number | null;
   theirs: CustomerDto | null;
   changed: { field: string; value: string }[];
@@ -90,7 +97,7 @@ export class CustomerDrawer {
       void this.queryClient.invalidateQueries({ queryKey: customerKeys.all });
       this.ref.close(true);
     },
-    onError: (e) => this.handleError(e),
+    onError: (e, body) => this.handleError(e, { kind: 'save', body }),
   }));
 
   protected readonly transition = injectMutation(() => ({
@@ -104,7 +111,7 @@ export class CustomerDrawer {
       );
       void this.queryClient.invalidateQueries({ queryKey: customerKeys.all });
     },
-    onError: (e) => this.handleError(e),
+    onError: (e, to) => this.handleError(e, { kind: 'transition', to }),
   }));
 
   protected readonly remove = injectMutation(() => ({
@@ -115,7 +122,7 @@ export class CustomerDrawer {
       void this.queryClient.invalidateQueries({ queryKey: customerKeys.all });
       this.ref.close(true);
     },
-    onError: (e) => this.handleError(e),
+    onError: (e) => this.handleError(e, { kind: 'remove' }),
   }));
 
   constructor() {
@@ -159,18 +166,30 @@ export class CustomerDrawer {
     if (c) this.fill(c);
   }
 
-  /** Overwrite: fetch the CURRENT ETag, then resubmit your values against it (a deliberate last-writer-wins). */
+  /**
+   * Overwrite: fetch the CURRENT ETag, then replay the refused operation against it (a deliberate last-writer-wins).
+   * A save resubmits your form values; a refused delete or suspend is retried as that same delete or suspend.
+   */
   protected async overwrite(): Promise<void> {
-    const body = this.body();
+    const op = this.conflict()?.op;
+    if (!op) return;
+    const body = op.kind === 'save' ? this.body() : null;
     this.correlation.begin();
     this.conflict.set(null);
     this.suppressFill = true;
     try {
-      await this.customer.refetch();
+      const result = await this.customer.refetch();
+      if (result.isError) {
+        // Without a fresh ETag the replay would be refused again (or hit a deleted row): say so, change nothing.
+        if (isApiProblem(result.error)) this.toasts.problem(result.error);
+        return;
+      }
     } finally {
       this.suppressFill = false;
     }
-    this.save.mutate(body);
+    if (op.kind === 'save') this.save.mutate(body!);
+    else if (op.kind === 'transition') this.transition.mutate(op.to);
+    else this.remove.mutate();
   }
 
   protected async confirmDelete(): Promise<void> {
@@ -196,9 +215,9 @@ export class CustomerDrawer {
     this.formErrors.set([]);
   }
 
-  private async handleError(e: unknown): Promise<void> {
+  private async handleError(e: unknown, op: PendingOp): Promise<void> {
     if (!isApiProblem(e)) return;
-    if (e.status === 412) return this.showConflict(e);
+    if (e.status === 412) return this.showConflict(e, op);
     if (e.isValidation) {
       this.formErrors.set(applyServerErrors(this.form, e));
       return;
@@ -223,9 +242,9 @@ export class CustomerDrawer {
     this.toasts.problem(e);
   }
 
-  private async showConflict(e: ApiProblem): Promise<void> {
+  private async showConflict(e: ApiProblem, op: PendingOp): Promise<void> {
     const yours = this.version();
-    const conflict: Conflict = { yours, theirs: null, changed: [], ref: e.correlationId };
+    const conflict: Conflict = { op, yours, theirs: null, changed: [], ref: e.correlationId };
     this.conflict.set(conflict);
     try {
       // Peek without replacing the tracked ETag: until the user chooses, a save must still be refused.

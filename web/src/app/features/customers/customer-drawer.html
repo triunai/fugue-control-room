@@ -30,7 +30,8 @@
             @if (k.theirs) {
               <span class="mono">(version {{ k.yours }} → {{ k.theirs.version }})</span>
             }
-            while you were editing. Your changes are not saved yet.
+            while you were editing.
+            {{ k.op.kind === 'save' ? 'Your changes are not saved yet.' : 'Nothing was changed.' }}
           </span>
           @if (k.changed.length) {
             <ul class="changed" role="list">
@@ -48,7 +49,11 @@
         </div>
         <div class="flex gap-2">
           <button type="button" class="btn btn-sm" (click)="reload()">Reload their version</button>
-          <button type="button" class="btn btn-sm btn-danger" (click)="overwrite()">Overwrite with mine</button>
+          <button type="button" class="btn btn-sm btn-danger" (click)="overwrite()">
+            {{
+              k.op.kind === 'save' ? 'Overwrite with mine' : k.op.kind === 'remove' ? 'Delete anyway' : 'Apply anyway'
+            }}
+          </button>
         </div>
       </div>
     }

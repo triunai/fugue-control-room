@@ -17,7 +17,8 @@ import { EtagStore, resourceKey } from './etag.store';
 import { toApiProblem } from './problem';
 
 const CORRELATION_HEADER = 'X-Correlation-Id';
-const isApi = (req: HttpRequest<unknown>, base: string) => req.url.startsWith(base) || req.url.includes('/api/v1/');
+/** Only same-origin API calls (relative to the API base) get headers; a token never travels to another origin. */
+const isApi = (req: HttpRequest<unknown>, base: string) => req.url.startsWith(base);
 const isAuthEndpoint = (url: string) => /\/auth\/(token|refresh|logout)$/.test(url);
 
 /** 1. X-Correlation-Id from the current user action (or a pinned id). */

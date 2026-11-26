@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { QueryClient, provideTanStackQuery } from '@tanstack/angular-query';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../auth/auth.service';
 import { SessionStore } from '../auth/session.store';
 import { SEND_IF_MATCH, TRACK_ETAG } from './context';
 import { CorrelationService } from './correlation.service';
@@ -17,7 +18,7 @@ function setup() {
   sessionStorage.clear();
   TestBed.configureTestingModule({
     providers: [
-      provideRouter([]),
+      provideRouter([{ path: '**', children: [] }]),
       provideHttpClient(withInterceptors(consoleInterceptors)),
       provideHttpClientTesting(),
       provideTanStackQuery(() => new QueryClient()),
@@ -177,6 +178,18 @@ describe('problem helpers', () => {
 describe('auth interceptor: single-flight refresh', () => {
   afterEach(() => TestBed.inject(HttpTestingController).verify());
 
+  it('never sends the bearer token, correlation id or If-Match to another origin', async () => {
+    const { http, ctl, etags } = setup();
+    etags.set('https://elsewhere.example/api/v1/customers/c1', '"1"');
+    const call = firstValueFrom(http.put('https://elsewhere.example/api/v1/customers/c1', {}));
+    const req = ctl.expectOne('https://elsewhere.example/api/v1/customers/c1');
+    expect(req.request.headers.has('Authorization')).toBe(false);
+    expect(req.request.headers.has('X-Correlation-Id')).toBe(false);
+    expect(req.request.headers.has('If-Match')).toBe(false);
+    req.flush(null, { status: 204, statusText: 'No Content' });
+    await call;
+  });
+
   it('refreshes ONCE for concurrent 401s and replays every request with the new token', async () => {
     const { http, ctl, session } = setup();
     const a = firstValueFrom(http.get('/api/v1/customers/a'));
@@ -224,5 +237,35 @@ describe('auth interceptor: single-flight refresh', () => {
     expect(ctl.match('/api/v1/auth/refresh').length).toBe(0);
     expect(session.isAuthenticated()).toBe(false);
     ctl.match('/api/v1/me').forEach((r) => r.flush({}));
+  });
+
+  it('keeps the refresh token when the refresh fails for a transient reason (503)', async () => {
+    const { http, ctl, session } = setup();
+    const call = firstValueFrom(http.get('/api/v1/customers/a')).then(
+      () => null as unknown as ApiProblem,
+      (e: unknown) => e as ApiProblem,
+    );
+    ctl.expectOne('/api/v1/customers/a').flush({}, { status: 401, statusText: 'Unauthorized' });
+    ctl.expectOne('/api/v1/auth/refresh').flush({ title: 'Busy' }, { status: 503, statusText: 'Unavailable' });
+    expect((await call).status).toBe(503);
+    expect(session.refreshToken()).toBe('refresh-1');
+    expect(session.isAuthenticated()).toBe(true);
+  });
+
+  it('does not sign the user back in when sign-out happens during an in-flight refresh', async () => {
+    const { http, ctl, session } = setup();
+    const call = firstValueFrom(http.get('/api/v1/customers/a')).catch(() => undefined);
+    ctl.expectOne('/api/v1/customers/a').flush({}, { status: 401, statusText: 'Unauthorized' });
+    const refresh = ctl.expectOne('/api/v1/auth/refresh');
+
+    const signOut = TestBed.inject(AuthService).signOut();
+    ctl.expectOne('/api/v1/auth/logout').flush(null, { status: 204, statusText: 'No Content' });
+    await signOut;
+
+    refresh.flush({ accessToken: 'access-2', tokenType: 'Bearer', expiresIn: 900, refreshToken: 'refresh-2' });
+    await call;
+    expect(session.isAuthenticated()).toBe(false);
+    expect(sessionStorage.getItem('fugue.console.refresh')).toBeNull();
+    ctl.match(() => true).forEach((r) => r.flush({}));
   });
 });
