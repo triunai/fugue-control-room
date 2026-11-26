@@ -12,5 +12,6 @@ Step-by-step guides for someone who has never seen this repo. Every step is copy
 | [06-audit.md](06-audit.md) | Query the audit log (curl and psql), read a diff, see a failure row, try to tamper |
 | [07-webhooks.md](07-webhooks.md) | Subscribe the dev sink, see a signed event, verify the signature, force a dead letter, redeliver |
 | [08-openapi-and-console-contract.md](08-openapi-and-console-contract.md) | View Swagger, refresh the contract snapshot, how the console regenerates its client, call `/me`, check CORS |
+| [09-console.md](09-console.md) | Install and run the Angular console, regenerate the API client, demo accounts, the 6-minute demo path, run the e2e smoke |
 
 Conventions: commands run from the repo root unless stated; "Expect" lines show the output that means the step worked.
