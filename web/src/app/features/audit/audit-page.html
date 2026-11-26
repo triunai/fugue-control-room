@@ -1,0 +1,211 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1 class="page-title">Audit log</h1>
+      <p class="page-lede">
+        Every change and every refused command, newest first. Values are masked before they are stored, so personal data
+        never appears here in full.
+      </p>
+    </div>
+  </header>
+
+  <form class="filters panel" [formGroup]="form" (ngSubmit)="apply()" role="search" aria-label="Filter the audit log">
+    <div class="field">
+      <label class="label" for="f-type">Entity type</label>
+      <select id="f-type" class="select" formControlName="entityType">
+        <option value="">Any</option>
+        @for (t of entityTypes; track t) {
+          <option [value]="t">{{ t }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label class="label" for="f-id">Entity id</label>
+      <input id="f-id" class="input input-mono" formControlName="entityId" placeholder="uuid" />
+    </div>
+    <div class="field">
+      <label class="label" for="f-actor">Actor user id</label>
+      <input id="f-actor" class="input input-mono" formControlName="actorUserId" placeholder="uuid" />
+    </div>
+    <div class="field">
+      <label class="label" for="f-action">Action</label>
+      <input id="f-action" class="input input-mono" formControlName="action" placeholder="customers.update" />
+    </div>
+    <div class="field">
+      <label class="label" for="f-cid">Correlation id</label>
+      <input id="f-cid" class="input input-mono" formControlName="correlationId" placeholder="ref from a toast" />
+    </div>
+    <div class="field">
+      <label class="label" for="f-from">From</label>
+      <input id="f-from" class="input" type="datetime-local" formControlName="from" />
+    </div>
+    <div class="field">
+      <label class="label" for="f-to">Until</label>
+      <input id="f-to" class="input" type="datetime-local" formControlName="to" />
+    </div>
+    <div class="filter-actions">
+      <button type="submit" class="btn btn-primary">Apply filters</button>
+      @if (store.activeCount()) {
+        <button type="button" class="btn btn-quiet" (click)="clear()">Clear {{ store.activeCount() }}</button>
+      }
+    </div>
+  </form>
+
+  <div class="split">
+    <section class="timeline panel" aria-label="Entries">
+      @if (query.isPending()) {
+        <fg-skeleton-rows [rows]="10" [widths]="['14%', '30%', '22%', '12%']" />
+      } @else if (query.isError() && !entries().length) {
+        <fg-error-state [error]="query.error()" (retry)="query.refetch()" />
+      } @else if (!entries().length) {
+        <fg-empty-state
+          title="Nothing recorded for this filter"
+          body="Exact matches only: check the id or action, or widen the date range."
+        >
+          <button type="button" class="btn" (click)="clear()">Clear filters</button>
+        </fg-empty-state>
+      } @else {
+        <ol class="days" role="list" [class.dim]="query.isPlaceholderData()">
+          @for (day of days(); track day.label) {
+            <li>
+              <h2 class="day">{{ day.label }}</h2>
+              <ol role="list" class="entries">
+                @for (e of day.entries; track e.id) {
+                  <li>
+                    <button
+                      type="button"
+                      class="entry"
+                      [class.on]="selected()?.id === e.id"
+                      [attr.aria-current]="selected()?.id === e.id"
+                      (click)="store.select(e.id)"
+                    >
+                      <span class="time mono" [title]="e.occurredAt | stamp">{{ e.occurredAt | date: 'HH:mm:ss' }}</span>
+                      <span class="what">
+                        <span class="action mono">{{ e.action }}</span>
+                        <span class="who">{{ e.actorDisplay ?? e.actorType }}</span>
+                      </span>
+                      <span class="pill pill-plain" [class]="outcomeClass(e)">{{ e.outcome }}</span>
+                    </button>
+                  </li>
+                }
+              </ol>
+            </li>
+          }
+        </ol>
+        <div class="table-foot">
+          <span class="text-muted">{{ entries().length }} entries</span>
+          @if (query.hasNextPage()) {
+            <button type="button" class="btn btn-sm" (click)="query.fetchNextPage()" [disabled]="query.isFetchingNextPage()">
+              {{ query.isFetchingNextPage() ? 'Loading…' : 'Load older' }}
+            </button>
+          } @else {
+            <span class="text-sm text-muted">Start of the log</span>
+          }
+        </div>
+      }
+    </section>
+
+    <aside class="detail panel" aria-label="Entry detail" aria-live="polite">
+      @if (selected(); as e) {
+        <header class="d-head">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="pill" [class]="outcomeClass(e)">{{ e.outcome }}</span>
+            @if (e.errorCode) {
+              <span class="mono text-err-ink">{{ e.errorCode }}</span>
+            }
+          </div>
+          <h2 class="d-title">{{ e.action }}</h2>
+          <p class="m-0 text-muted">
+            {{ e.actorDisplay ?? e.actorType }}
+            @if (e.permissionUsed) {
+              using <span class="mono">{{ e.permissionUsed }}</span>
+            }
+            · {{ e.occurredAt | relative }}
+          </p>
+        </header>
+
+        <section class="d-section">
+          <h3 class="d-label">Field changes</h3>
+          @if (diff().length) {
+            <table class="diff">
+              <tbody>
+                @for (d of diff(); track d.field) {
+                  <tr [attr.data-kind]="d.kind">
+                    <th scope="row" class="mono">{{ d.field }}</th>
+                    <td>
+                      @if (d.old !== null) {
+                        <span class="old" [class.masked]="d.oldMasked">{{ d.old }}</span>
+                      }
+                      @if (d.kind === 'changed') {
+                        <span class="arrow" aria-label="changed to">→</span>
+                      }
+                      @if (d.new !== null) {
+                        <span class="new" [class.masked]="d.newMasked">{{ d.new }}</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            @if (truncated()) {
+              <p class="mt-2 mb-0 text-sm text-muted">Trailing fields were dropped to keep the row small.</p>
+            }
+          } @else {
+            <p class="m-0 text-muted">
+              {{ e.outcome === 'success' ? 'No field-level changes on this entry.' : 'The command was refused, so nothing changed.' }}
+            </p>
+          }
+        </section>
+
+        <section class="d-section">
+          <h3 class="d-label">Trace it</h3>
+          <div class="flex flex-col items-start gap-2">
+            @if (e.correlationId) {
+              <fg-ref-chip label="correlation" [value]="e.correlationId" maxWidth="30ch" />
+            }
+            @if (e.sagaId) {
+              <fg-ref-chip label="saga" [value]="e.sagaId" maxWidth="30ch" />
+            }
+            @if (e.traceId) {
+              <fg-ref-chip label="trace" [value]="e.traceId" maxWidth="30ch" />
+            }
+            @if (e.entityId) {
+              <fg-ref-chip [label]="e.entityType ?? 'entity'" [value]="e.entityId" maxWidth="30ch" />
+            }
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2">
+            @if (e.correlationId && store.filter().correlationId !== e.correlationId) {
+              <button type="button" class="btn btn-sm" (click)="store.byCorrelation(e.correlationId)">View all for this correlation id</button>
+            }
+            @if (e.entityId && store.filter().entityId !== e.entityId) {
+              <button type="button" class="btn btn-sm btn-quiet" (click)="store.byEntity(e.entityType ?? '', e.entityId)">
+                History of this {{ (e.entityType ?? 'entity').toLowerCase() }}
+              </button>
+            }
+          </div>
+        </section>
+
+        <section class="d-section">
+          <h3 class="d-label">Request</h3>
+          <dl class="facts">
+            @if (e.httpMethod) {
+              <div><dt>Route</dt><dd class="mono">{{ e.httpMethod }} {{ e.routeTemplate }}</dd></div>
+            }
+            <div><dt>When</dt><dd>{{ e.occurredAt | stamp }}</dd></div>
+            @if (e.clientIp) {
+              <div><dt>Client</dt><dd class="mono">{{ e.clientIp }}</dd></div>
+            }
+            @if (e.userAgent) {
+              <div><dt>Agent</dt><dd class="ua">{{ e.userAgent }}</dd></div>
+            }
+            @for (m of metadataEntries(e); track m[0]) {
+              <div><dt>{{ m[0] }}</dt><dd class="mono">{{ m[1] }}</dd></div>
+            }
+          </dl>
+        </section>
+      } @else if (!query.isPending()) {
+        <p class="p-6 text-muted">Choose an entry to see what changed.</p>
+      }
+    </aside>
+  </div>
+</div>
