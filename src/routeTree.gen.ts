@@ -10,33 +10,83 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ConsoleRouteImport } from './routes/_console'
+import { Route as ConsoleCustomersRouteImport } from './routes/_console/customers'
+import { Route as ConsoleModulesRouteImport } from './routes/_console/modules'
+import { Route as ConsoleUsersIndexRouteImport } from './routes/_console/users.index'
+import { Route as ConsoleUsersUserIdRouteImport } from './routes/_console/users.$userId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConsoleRoute = ConsoleRouteImport.update({
+  id: '/_console',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsoleCustomersRoute = ConsoleCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleModulesRoute = ConsoleModulesRouteImport.update({
+  id: '/modules',
+  path: '/modules',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleUsersIndexRoute = ConsoleUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleUsersUserIdRoute = ConsoleUsersUserIdRouteImport.update({
+  id: '/users/$userId',
+  path: '/users/$userId',
+  getParentRoute: () => ConsoleRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/customers': typeof ConsoleCustomersRoute
+  '/modules': typeof ConsoleModulesRoute
+  '/users/$userId': typeof ConsoleUsersUserIdRoute
+  '/users/': typeof ConsoleUsersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/customers': typeof ConsoleCustomersRoute
+  '/modules': typeof ConsoleModulesRoute
+  '/users/$userId': typeof ConsoleUsersUserIdRoute
+  '/users': typeof ConsoleUsersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_console': typeof ConsoleRouteWithChildren
+  '/_console/customers': typeof ConsoleCustomersRoute
+  '/_console/modules': typeof ConsoleModulesRoute
+  '/_console/users/$userId': typeof ConsoleUsersUserIdRoute
+  '/_console/users/': typeof ConsoleUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/customers' | '/modules' | '/users/$userId' | '/users/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/customers' | '/modules' | '/users/$userId' | '/users'
+  id:
+    | '__root__'
+    | '/'
+    | '/_console'
+    | '/_console/customers'
+    | '/_console/modules'
+    | '/_console/users/$userId'
+    | '/_console/users/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ConsoleRoute: typeof ConsoleRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +98,64 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_console': {
+      id: '/_console'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ConsoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_console/customers': {
+      id: '/_console/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof ConsoleCustomersRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/_console/modules': {
+      id: '/_console/modules'
+      path: '/modules'
+      fullPath: '/modules'
+      preLoaderRoute: typeof ConsoleModulesRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/_console/users/': {
+      id: '/_console/users/'
+      path: '/users'
+      fullPath: '/users/'
+      preLoaderRoute: typeof ConsoleUsersIndexRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/_console/users/$userId': {
+      id: '/_console/users/$userId'
+      path: '/users/$userId'
+      fullPath: '/users/$userId'
+      preLoaderRoute: typeof ConsoleUsersUserIdRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
   }
 }
 
+interface ConsoleRouteChildren {
+  ConsoleCustomersRoute: typeof ConsoleCustomersRoute
+  ConsoleModulesRoute: typeof ConsoleModulesRoute
+  ConsoleUsersUserIdRoute: typeof ConsoleUsersUserIdRoute
+  ConsoleUsersIndexRoute: typeof ConsoleUsersIndexRoute
+}
+
+const ConsoleRouteChildren: ConsoleRouteChildren = {
+  ConsoleCustomersRoute: ConsoleCustomersRoute,
+  ConsoleModulesRoute: ConsoleModulesRoute,
+  ConsoleUsersUserIdRoute: ConsoleUsersUserIdRoute,
+  ConsoleUsersIndexRoute: ConsoleUsersIndexRoute,
+}
+
+const ConsoleRouteWithChildren =
+  ConsoleRoute._addFileChildren(ConsoleRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ConsoleRoute: ConsoleRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
