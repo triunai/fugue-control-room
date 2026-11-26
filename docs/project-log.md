@@ -6,6 +6,17 @@ Heading form: `## <YYYY-MM-DD> — <title>`. Entry key = `<date>#<n>`, where n i
 First non-blank body line must be `WS: WS-NN` (comma-separate several) or `WS: (pre-WS)`.
 Then: what was done · what was decided (cite D-NNN) · what is open (cite #NNN).
 
+## 2026-11-26 — Closed W-016: OpenAPI contract, CORS for the console, GET /me
+WS: WS-16
+Closed: W-016 (WS-16) OpenAPI contract, CORS for the console, GET /me
+Outcome: The API now publishes its contract: a Swashbuckle OpenAPI v1 document pinned by the committed snapshot docs/api/openapi.v1.json (test-gated, refreshed with npm run api:openapi), Swagger UI only in Development, a named CORS policy for the console (exact origins, no credentials, exposed and allowed headers tested including a preflight), and GET /api/v1/me (identity, roles, groups, effective permissions, enabled modules). Permission literals are checked against the seeded catalog. Codex review: no HIGH or MED, one LOW fixed. dotnet test 406 green; Bruno live 49 requests, 67 tests green.
+Commits:
+- 7daf73b docs(spine): open W-016 for the OpenAPI contract, CORS and /me
+- bc1783c feat(api): openapi contract snapshot, cors for the console, /me
+- ac9845d fix(api): reject a fragment in a CORS origin and record the Codex W-016 review
+Decisions: D-043, ADR-012, D-042, D-044
+Follow-ups: W-017 console builds against the snapshot; W-007 adds idempotency keys and the rest of S5 (the contract already allows the Idempotency-Key header)
+
 ## 2026-11-26 — Closed W-006: S4 transactional outbox and signed webhooks
 WS: WS-06
 Closed: W-006 (WS-06) S4 transactional outbox and signed webhooks
