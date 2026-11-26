@@ -66,9 +66,10 @@ public static class AuthRateLimiting
 
 /// <summary>
 /// D-035. A strict fixed window and a concurrency limit per (client IP, canonical email), plus a loose per-email ceiling
-/// across all IPs. The strict bucket is charged on every attempt; the ceiling is only charged by attempts that did not
-/// succeed (so a victim's own good logins never count), and is only checked, never charged, by a request the strict bucket
-/// already rejected. One IP can therefore throttle only itself against a victim, until the ceiling is reached.
+/// across all IPs. The strict bucket is charged on every attempt. The ceiling slot is RESERVED before the password is checked
+/// (so attempts in flight count and many IPs cannot overshoot) and refunded when the attempt succeeds (so a victim's own good
+/// logins never count); a request the strict bucket already rejected never touches it. One IP can therefore throttle only
+/// itself against a victim, until the ceiling is reached.
 /// </summary>
 public sealed class EmailRateLimiter(IOptions<AuthRateLimitOptions> options) : IDisposable
 {
@@ -87,32 +88,96 @@ public sealed class EmailRateLimiter(IOptions<AuthRateLimitOptions> options) : I
             QueueLimit = 0,
         }));
 
-    private readonly PartitionedRateLimiter<string> _ceiling = PartitionedRateLimiter.Create<string, string>(key =>
-        RateLimitPartition.GetFixedWindowLimiter(key, _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = options.Value.EmailCeilingPermits,
-            Window = TimeSpan.FromSeconds(options.Value.EmailCeilingWindowSeconds),
-            QueueLimit = 0,
-        }));
+    private readonly CeilingWindows _ceiling = new(options, TimeProvider.System);
 
     public static string StrictKey(string clientIp, string emailKey) => $"{clientIp}|{emailKey}";
 
     public (RateLimitLease Window, RateLimitLease Concurrency) Acquire(string strictKey) =>
         (_window.AttemptAcquire(strictKey), _concurrency.AttemptAcquire(strictKey));
 
-    /// <summary>True while the per-email ceiling has headroom (a read: it does not charge).</summary>
-    public bool CeilingHasRoom(string emailKey) =>
-        _ceiling.GetStatistics(emailKey) is not { CurrentAvailablePermits: <= 0 };
-
-    /// <summary>Charges the ceiling for an attempt that did not succeed.</summary>
-    public void ChargeCeiling(string emailKey) => _ceiling.AttemptAcquire(emailKey).Dispose();
+    /// <summary>
+    /// Atomically reserves one ceiling slot BEFORE the password is checked, so attempts still in flight count against it (checking first and
+    /// charging afterwards let many IPs overshoot). Null when the ceiling is full. Refund the reservation when the attempt succeeds.
+    /// </summary>
+    public CeilingReservation? TryReserveCeiling(string emailKey) => _ceiling.TryReserve(emailKey);
 
     public void Dispose()
     {
         _window.Dispose();
         _concurrency.Dispose();
-        _ceiling.Dispose();
     }
+}
+
+/// <summary>One slot taken from an email's ceiling window; <see cref="Refund"/> gives it back (a no-op once the window has rolled over).</summary>
+public sealed class CeilingReservation
+{
+    private readonly CeilingWindows _owner;
+    private readonly string _key;
+    private readonly long _window;
+    private int _refunded;
+
+    internal CeilingReservation(CeilingWindows owner, string key, long window)
+    {
+        _owner = owner;
+        _key = key;
+        _window = window;
+    }
+
+    public void Refund()
+    {
+        if (Interlocked.Exchange(ref _refunded, 1) == 0)
+        {
+            _owner.Refund(_key, _window);
+        }
+    }
+}
+
+/// <summary>A fixed-window counter per email that supports reserve and refund (the built-in limiters cannot give a permit back). Idle keys are swept.</summary>
+internal sealed class CeilingWindows(IOptions<AuthRateLimitOptions> options, TimeProvider time)
+{
+    private readonly object _gate = new();
+    private readonly Dictionary<string, (long Window, int Used)> _used = [];
+    private long _sweptWindow = -1;
+
+    public CeilingReservation? TryReserve(string key)
+    {
+        AuthRateLimitOptions o = options.Value;
+        long window = CurrentWindow(o);
+        lock (_gate)
+        {
+            if (_sweptWindow != window)
+            {
+                foreach (string stale in _used.Where(e => e.Value.Window != window).Select(e => e.Key).ToList())
+                {
+                    _used.Remove(stale);
+                }
+
+                _sweptWindow = window;
+            }
+
+            (long Window, int Used) entry = _used.TryGetValue(key, out (long Window, int Used) existing) && existing.Window == window ? existing : (window, 0);
+            if (entry.Used >= o.EmailCeilingPermits)
+            {
+                return null;
+            }
+
+            _used[key] = (window, entry.Used + 1);
+            return new CeilingReservation(this, key, window);
+        }
+    }
+
+    public void Refund(string key, long window)
+    {
+        lock (_gate)
+        {
+            if (_used.TryGetValue(key, out (long Window, int Used) entry) && entry.Window == window && entry.Used > 0)
+            {
+                _used[key] = (window, entry.Used - 1);
+            }
+        }
+    }
+
+    private long CurrentWindow(AuthRateLimitOptions o) => time.GetUtcNow().ToUnixTimeSeconds() / Math.Max(1, o.EmailCeilingWindowSeconds);
 }
 
 /// <summary>
@@ -136,7 +201,13 @@ public sealed class EmailRateLimitFilter(EmailRateLimiter limiter) : IAsyncActio
         using (window)
         using (concurrency)
         {
-            if (!window.IsAcquired || !concurrency.IsAcquired || !limiter.CeilingHasRoom(emailKey))
+            CeilingReservation? reservation = null;
+            if (window.IsAcquired && concurrency.IsAcquired)
+            {
+                reservation = limiter.TryReserveCeiling(emailKey);
+            }
+
+            if (reservation is null)
             {
                 await AuthRateLimiting.WriteRejected(context.HttpContext, !window.IsAcquired ? window : concurrency);
                 context.Result = new Microsoft.AspNetCore.Mvc.EmptyResult();
@@ -144,9 +215,9 @@ public sealed class EmailRateLimitFilter(EmailRateLimiter limiter) : IAsyncActio
             }
 
             ActionExecutedContext executed = await next();
-            if (executed.Result is not ObjectResult { StatusCode: null or (>= 200 and < 300) })
+            if (executed.Result is ObjectResult { StatusCode: null or (>= 200 and < 300) })
             {
-                limiter.ChargeCeiling(emailKey);
+                reservation.Refund(); // a success never counts against the victim (D-035)
             }
         }
     }

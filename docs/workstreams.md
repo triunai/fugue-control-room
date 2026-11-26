@@ -21,6 +21,12 @@ Status: building; plan in `docs/plans/s4-outbox-webhooks.md`, decisions D-037 to
 Resume: `git log --grep "Refs: W-006"`; the plan's "Commits" list is the order.
 Refs: `docs/plans/s4-outbox-webhooks.md`, `docs/plans/roadmap.md`, ADR-005, ADR-006, ADR-010, ADR-011
 
+### WS-15 — Codex W-013 findings: no-op override PUT skips the xmin check, email ceiling charged late — 🟢 ACTIVE (2026-11-26)
+ID: W-015
+Status: two MED findings from `docs/reviews/codex/2026-11-26-w013-followups.md`; each gets a regression test shown RED before the fix.
+Resume: `git log --grep "Refs: W-015"`; fix `OverrideAdmin.cs` (force a version-guarded UPDATE on a no-op) and `AuthRateLimiting.cs` (reserve email capacity before verification, refund on success).
+Refs: D-035, D-036, `docs/reviews/codex/2026-11-26-w013-followups.md`
+
 ### WS-07 — S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry — ⏸ PARKED (2026-11-25)
 ID: W-007
 Status: not started; needs S4.

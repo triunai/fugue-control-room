@@ -88,6 +88,33 @@ public sealed class LoginLimiterTests(PostgresFixture db)
     }
 
     [Fact]
+    public async Task Simultaneous_failures_from_many_ips_cannot_overshoot_the_per_email_ceiling()
+    {
+        (string victim, _) = await db.NewUserAsync();
+        using WebApplicationFactoryHandle host = Host(("RateLimiting:Auth:EmailCeilingPermits", "5"), ("RateLimiting:Auth:PerIpPermits", "1000"));
+
+        // Every request comes from its own IP, so each has a fresh strict bucket and all of them reach the password check together.
+        HttpStatusCode[] statuses = await Task.WhenAll(Enumerable.Range(0, 40).Select(async i => (await Login(host.Client, $"10.4.{i / 250}.{i % 250 + 1}", victim, "wrong")).StatusCode));
+
+        Assert.Equal(5, statuses.Count(s => s == HttpStatusCode.Unauthorized)); // exactly the ceiling reached verification
+        Assert.Equal(35, statuses.Count(s => s == HttpStatusCode.TooManyRequests));
+    }
+
+    [Fact]
+    public async Task A_burst_of_good_logins_from_many_ips_is_never_refused_by_the_ceiling()
+    {
+        (string victim, _) = await db.NewUserAsync();
+        using WebApplicationFactoryHandle host = Host(("RateLimiting:Auth:EmailCeilingPermits", "2"), ("RateLimiting:Auth:PerIpPermits", "1000"));
+
+        // Reserving capacity up front must not let in-flight good logins crowd each other out: a success refunds its slot, but they overlap, so
+        // only the ceiling's headroom (2) may be in flight at once. Retry the refused ones once they have refunded; all must end up OK.
+        HttpStatusCode[] first = await Task.WhenAll(Enumerable.Range(0, 2).Select(async i => (await Login(host.Client, $"10.5.0.{i + 1}", victim, TestAuth.Password)).StatusCode));
+        Assert.All(first, s => Assert.Equal(HttpStatusCode.OK, s));
+        HttpStatusCode[] second = await Task.WhenAll(Enumerable.Range(0, 2).Select(async i => (await Login(host.Client, $"10.5.1.{i + 1}", victim, TestAuth.Password)).StatusCode));
+        Assert.All(second, s => Assert.Equal(HttpStatusCode.OK, s)); // the first two refunded, so the next two fit again
+    }
+
+    [Fact]
     public async Task The_per_ip_limit_still_bites_across_different_emails()
     {
         using WebApplicationFactoryHandle host = Host(("RateLimiting:Auth:PerIpPermits", "2"));

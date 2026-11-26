@@ -152,6 +152,27 @@ public sealed class AdminHardeningTests(PostgresFixture db)
         Assert.Equal("theirs", await ScalarAsync<string>("SELECT reason FROM user_permission_overrides WHERE user_id = @u", ("u", user.Value)));
     }
 
+    [Fact]
+    public async Task An_identical_put_still_checks_the_version_so_a_racing_change_is_a_412_not_a_stale_success()
+    {
+        (_, UserId user) = await db.NewUserAsync();
+        using HttpClient plain = db.ClientAs(DevUsers.Admin);
+        HttpResponseMessage created = await plain.PutAsJsonAsync($"/api/v1/overrides/{user}/GROUPS_VIEW", new { isAllowed = true, reason = "same" });
+        string tag = created.Headers.ETag!.Tag;
+        using HttpClient admin = RacingClient(
+            _ => SqlAsync("UPDATE user_permission_overrides SET is_allowed = false WHERE user_id = @u", ("u", user.Value)).GetAwaiter().GetResult(),
+            DevUsers.Admin);
+        var request = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/overrides/{user}/GROUPS_VIEW") { Content = JsonContent.Create(new { isAllowed = true, reason = "same" }) };
+        request.Headers.TryAddWithoutValidation("If-Match", tag);
+
+        HttpResponseMessage response = await admin.SendAsync(request); // every field equals the stored row, the racing write lands before the save
+
+        Assert.Equal(HttpStatusCode.PreconditionFailed, response.StatusCode);
+        Assert.Equal("override.version_mismatch", await Code(response));
+        Assert.False(await ScalarAsync<bool>("SELECT is_allowed FROM user_permission_overrides WHERE user_id = @u", ("u", user.Value))); // the winner's row stands
+        Assert.Equal(1L, await ScalarAsync<long>("SELECT count(*) FROM grant_audit WHERE target_user_id = @u AND action = 'granted'", ("u", user.Value))); // no audit row for the refused write
+    }
+
     private sealed class RacingWriter(IGrantAuditWriter inner, Action<string> onRecord) : IGrantAuditWriter
     {
         public void Record(string subjectType, Guid subjectId, Guid? targetUserId, string action, string? reason, string? beforeJson = null, string? afterJson = null)

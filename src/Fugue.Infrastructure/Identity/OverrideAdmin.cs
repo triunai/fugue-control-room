@@ -66,6 +66,13 @@ internal sealed class OverrideAdmin(FugueDbContext db, IGrantAuditWriter audit, 
         existing.IsAllowed = isAllowed;
         existing.Reason = reason;
         existing.ExpiresAt = expiresAt;
+        if (db.Entry(existing).State == EntityState.Unchanged)
+        {
+            // An identical PUT would issue no UPDATE, so the xmin check would never run and a racing change would be answered with a stale success.
+            // Forcing the write keeps the precondition honest (WHERE xmin = @expected) and bumps the version, like any other accepted PUT.
+            db.Entry(existing).Property(o => o.IsAllowed).IsModified = true;
+        }
+
         audit.Record("permission_override", existing.Id.Value, userId.Value, "granted", reason, before, Json(existing));
         try
         {
