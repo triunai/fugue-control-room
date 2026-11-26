@@ -1,0 +1,183 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1 class="page-title">Users and access</h1>
+      <p class="page-lede">
+        Roles arrive directly or through groups. Per-user overrides add or remove one permission, optionally until a
+        date; a deny always wins over an allow, and an allow over a role.
+      </p>
+    </div>
+  </header>
+
+  <div class="cols">
+    <section class="panel" aria-labelledby="ov-title">
+      <div class="panel-pad flex flex-col gap-3 border-b border-line">
+        <h2 id="ov-title" class="section-title">Overrides for one user</h2>
+        <form class="flex gap-2" (ngSubmit)="lookUp()">
+          <label class="sr-only" for="uid">User id</label>
+          <input
+            id="uid"
+            class="input input-mono"
+            placeholder="user id (uuid)"
+            [value]="userIdText()"
+            (input)="userIdText.set($any($event.target).value)"
+          />
+          <button type="submit" class="btn">Show</button>
+        </form>
+        @if (recentActors.data()?.length) {
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-sm text-muted">Recently active:</span>
+            @for (a of recentActors.data(); track a.id) {
+              <button
+                type="button"
+                class="pill pill-muted pill-plain cursor-pointer"
+                [class.pill-acc]="userId() === a.id"
+                (click)="pick(a.id, a.name)"
+              >
+                {{ a.name }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      @if (!userId()) {
+        <fg-empty-state title="Choose a user" body="Pick someone who acted recently, or paste a user id." />
+      } @else {
+        <div class="panel-pad flex flex-col gap-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="font-semibold">{{ userLabel() ?? 'User' }}</span>
+            <fg-ref-chip [value]="userId()!" [tail]="12" />
+            @if (isSelf()) {
+              <span class="pill pill-warn pill-plain">this is you</span>
+            }
+          </div>
+
+          @if (overrides.isPending()) {
+            <fg-skeleton-rows [rows]="2" [widths]="['40%', '30%']" />
+          } @else if (overrides.isError()) {
+            <fg-error-state [error]="overrides.error()" (retry)="overrides.refetch()" />
+          } @else {
+            <ul class="ov-list" role="list">
+              @for (o of overrides.data(); track o.permission) {
+                <li class="ov" [class.expired]="o.expired">
+                  <span class="pill" [class.pill-ok]="o.isAllowed" [class.pill-err]="!o.isAllowed">{{
+                    o.isAllowed ? 'allow' : 'deny'
+                  }}</span>
+                  <span class="mono font-semibold">{{ o.permission }}</span>
+                  @if (winningDenies().has(o.permission)) {
+                    <span class="pill pill-err pill-plain" title="Deny beats allow beats role">wins</span>
+                  }
+                  @if (o.expired) {
+                    <span class="pill pill-muted pill-plain">expired</span>
+                  } @else if (o.expiresAt) {
+                    <span class="text-sm text-muted">until {{ o.expiresAt | stamp }}</span>
+                  }
+                  <span class="flex-1"></span>
+                  @if (o.reason) {
+                    <span class="reason text-sm text-muted" [title]="o.reason">{{ o.reason }}</span>
+                  }
+                  <button
+                    *hasPermission="'OVERRIDES_MANAGE'"
+                    type="button"
+                    class="btn btn-sm btn-quiet"
+                    (click)="remove.mutate(o)"
+                    [disabled]="isSelf()"
+                  >
+                    Remove
+                  </button>
+                </li>
+              } @empty {
+                <li class="text-muted">No overrides: this user has exactly what their roles give.</li>
+              }
+            </ul>
+
+            <form *hasPermission="'OVERRIDES_MANAGE'" class="ov-form" [formGroup]="form" (ngSubmit)="submit()">
+              <div class="field">
+                <label class="label" for="ov-perm">Permission</label>
+                <select id="ov-perm" class="select mono" formControlName="permission">
+                  @for (c of codes; track c) {
+                    <option [value]="c">{{ c }}</option>
+                  }
+                </select>
+              </div>
+              <div class="field">
+                <label class="label" for="ov-eff">Effect</label>
+                <select id="ov-eff" class="select" formControlName="effect">
+                  <option value="deny">Deny</option>
+                  <option value="allow">Allow</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="label" for="ov-until">Until <span class="font-normal">(optional)</span></label>
+                <input id="ov-until" class="input" type="datetime-local" formControlName="expiresAt" />
+              </div>
+              <div class="field col-span-full">
+                <label class="label" for="ov-reason">Reason</label>
+                <input
+                  id="ov-reason"
+                  class="input"
+                  formControlName="reason"
+                  placeholder="Covering for support this week"
+                />
+              </div>
+              <div class="col-span-full flex items-center justify-between gap-3">
+                <span class="text-sm text-muted">
+                  {{
+                    isSelf()
+                      ? 'You cannot change your own overrides.'
+                      : 'Replacing an existing override checks its version first.'
+                  }}
+                </span>
+                <button type="submit" class="btn btn-primary" [disabled]="isSelf() || save.isPending()">
+                  Save override
+                </button>
+              </div>
+            </form>
+          }
+        </div>
+      }
+    </section>
+
+    <section *hasPermission="'GROUPS_VIEW'" class="table-wrap" aria-labelledby="g-title">
+      <h2 id="g-title" class="section-title px-4 pt-4 pb-2">Groups</h2>
+      @if (groups.isPending()) {
+        <fg-skeleton-rows [rows]="3" />
+      } @else if (groups.isError()) {
+        <fg-error-state [error]="groups.error()" (retry)="groups.refetch()" />
+      } @else {
+        <table class="table !min-w-0">
+          <thead>
+            <tr>
+              <th scope="col">Group</th>
+              <th scope="col">Roles</th>
+              <th scope="col">Members</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (g of groups.data(); track g.code) {
+              <tr>
+                <td>
+                  <span class="font-semibold">{{ g.name }}</span>
+                  <span class="mono block text-muted">{{ g.code }}</span>
+                </td>
+                <td>
+                  <div class="flex flex-wrap gap-1">
+                    @for (r of g.roles; track r) {
+                      <span class="pill pill-acc pill-plain">{{ r }}</span>
+                    }
+                  </div>
+                </td>
+                <td class="mono">{{ g.memberCount }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="3" class="text-muted">No groups.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+  </div>
+</div>
