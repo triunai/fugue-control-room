@@ -8,4 +8,6 @@ Then: what is wrong or missing · where (path) · size (S/M/L) · what would clo
 
 Code smells that do not block the work in hand go here, not into the current change.
 
-<!-- No entries yet. -->
+### #001 — Outbox, delivery and subscription-less event retention
+WS: WS-06
+`outbox_messages` rows (dispatched or dead) and their `webhook_deliveries` are never pruned, and events with no subscriber still accumulate. Size M. Close with a retention job that deletes dispatched messages older than N days (deliveries cascade) and a setting; the trigger already allows DELETE. Found by the Codex S4 review (LOW), deliberately out of S4 (plan non-goals).

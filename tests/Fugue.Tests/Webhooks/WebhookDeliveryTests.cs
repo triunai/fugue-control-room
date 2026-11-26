@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Fugue.Application.Abstractions;
 using Fugue.Domain.Identity;
+using Fugue.Infrastructure.Webhooks;
 using Fugue.Tests.Audit;
 using Fugue.Tests.Persistence;
 using Microsoft.Extensions.DependencyInjection;
@@ -139,6 +140,87 @@ public sealed class WebhookDeliveryTests(PostgresFixture db)
         DeliveryRow row = Assert.Single(await h.DeliveriesAsync(message));
         Assert.Equal(("pending", 1), (row.Status, row.Attempts));
         Assert.Contains("Timeout", row.LastError, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task A_stale_worker_cannot_overwrite_the_outcome_of_a_redelivered_attempt()
+    {
+        await using WebhookHarness h = await WebhookHarness.StartAsync(db, settings: new Dictionary<string, string> { ["Webhooks:AttemptTimeoutSeconds"] = "5", ["Webhooks:MaxAttempts"] = "1" });
+        string type = NewType();
+        await h.AddSubscriptionAsync([type]);
+        Guid message = await h.AddMessageAsync(type, "agg-fence");
+        h.Stub.Respond = n => n == 1 ? new StubResponse(200, DelayMs: 1500) : new StubResponse(500, DelayMs: 1500);
+
+        Task<DispatchSummary> workerA = Task.Run(() => h.Dispatcher.RunOnceAsync(default)); // claims attempt 1, then waits on the slow receiver
+        await WaitAsync(() => h.Stub.Requests.Count == 1);
+        await h.SqlAsync("UPDATE webhook_deliveries SET status = 'dead', dead_lettered_at = now(), locked_until = NULL WHERE message_id = @m", ("m", message));
+        HttpResponseMessage redeliver = await db.ClientAs(DevUsers.Admin).PostAsync($"/api/v1/webhooks/deliveries/{(await h.DeliveriesAsync(message)).Single().Id}/redeliver", null);
+        Assert.Equal(HttpStatusCode.NoContent, redeliver.StatusCode);
+        Task<DispatchSummary> workerB = Task.Run(() => h.Dispatcher.RunOnceAsync(default)); // claims the revived delivery as ITS attempt
+        await WaitAsync(() => h.Stub.Requests.Count == 2);
+
+        await Task.WhenAll(workerA, workerB); // A finishes first with a 200 that belongs to the old claim
+
+        DeliveryRow row = Assert.Single(await h.DeliveriesAsync(message));
+        Assert.Null(row.DeliveredAt); // A's late 200 must not mark B's attempt succeeded
+        Assert.Equal(500, row.LastStatusCode); // B's own outcome is the one recorded
+    }
+
+    [Fact]
+    public async Task An_expired_lease_on_the_final_attempt_dead_letters_without_another_send()
+    {
+        await using WebhookHarness h = await WebhookHarness.StartAsync(db); // MaxAttempts is 3
+        string type = NewType();
+        (Guid subscription, _) = await h.AddSubscriptionAsync([type]);
+        Guid message = await h.AddMessageAsync(type, "agg-lease");
+        await h.SqlAsync("UPDATE outbox_messages SET status = 'dispatched', dispatched_at = now() WHERE id = @m", ("m", message)); // skip the relay
+        await h.SqlAsync(
+            "INSERT INTO webhook_deliveries (id, message_id, subscription_id, occurred_at, status, attempts, next_attempt_at, locked_until) " +
+            "VALUES (@i, @m, @s, @at, 'in_flight', 3, @at, @lock)",
+            ("i", Guid.NewGuid()), ("m", message), ("s", subscription), ("at", h.T0), ("lock", h.T0.AddSeconds(-1)));
+
+        await h.RunAsync();
+
+        Assert.Empty(h.Stub.Requests); // the budget was spent; a crashed worker's expired lease must not buy a fourth send
+        DeliveryRow row = Assert.Single(await h.DeliveriesAsync(message));
+        Assert.Equal(("dead", 3), (row.Status, row.Attempts));
+        Assert.NotNull(row.DeadLetteredAt);
+    }
+
+    [Fact]
+    public async Task A_queued_delivery_whose_lease_ran_out_is_released_unsent_not_sent_on_a_lapsed_claim()
+    {
+        await using WebhookHarness h = await WebhookHarness.StartAsync(db, settings: new Dictionary<string, string> { ["Webhooks:Dispatcher:MaxConcurrentSends"] = "1" });
+        string type = NewType();
+        await h.AddSubscriptionAsync([type]);
+        Guid[] messages = [await h.AddMessageAsync(type, "q-1"), await h.AddMessageAsync(type, "q-2"), await h.AddMessageAsync(type, "q-3")];
+        h.Stub.Respond = _ =>
+        {
+            db.Clock.Now = db.Clock.Now.AddSeconds(100); // the first send "takes" far longer than the 30 second lease
+            return new StubResponse(200);
+        };
+
+        await h.Dispatcher.RunOnceAsync(default); // relays the three messages and claims all three deliveries in one batch
+
+        Assert.Single(h.Stub.Requests); // the other two were not sent on a claim another worker may already own
+        var rows = new List<DeliveryRow>();
+        foreach (Guid message in messages)
+        {
+            rows.AddRange(await h.DeliveriesAsync(message));
+        }
+
+        Assert.Equal(1, rows.Count(r => r.Status == "succeeded"));
+        Assert.All(rows.Where(r => r.Status != "succeeded"), r => Assert.Equal(("pending", 0), (r.Status, r.Attempts))); // released without costing an attempt
+    }
+
+    private static async Task WaitAsync(Func<bool> condition)
+    {
+        for (int i = 0; i < 100 && !condition(); i++)
+        {
+            await Task.Delay(50);
+        }
+
+        Assert.True(condition(), "The condition was not met within 5 seconds.");
     }
 
     [Fact]

@@ -23,8 +23,9 @@ public sealed class WebhookSinkTests(PostgresFixture db)
         return admin;
     }
 
-    private HttpRequestMessage Signed(string eventId, long? timestamp = null, string? secret = null, string body = "{\"id\":\"x\"}")
+    private HttpRequestMessage Signed(string eventId, long? timestamp = null, string? secret = null, string? body = null)
     {
+        body ??= $"{{\"id\":\"{eventId}\",\"type\":\"customer.created.v1\"}}"; // the signed envelope carries the same id and type as the headers
         long ts = timestamp ?? db.Clock.GetUtcNow().ToUnixTimeSeconds();
         byte[] bytes = Encoding.UTF8.GetBytes(body);
         var request = new HttpRequestMessage(HttpMethod.Post, Path) { Content = new ByteArrayContent(bytes) };
@@ -52,6 +53,32 @@ public sealed class WebhookSinkTests(PostgresFixture db)
         Assert.Equal("duplicate", JsonDocument.Parse(await again.Content.ReadAsStringAsync()).RootElement.GetProperty("status").GetString());
         JsonElement[] listed = (await admin.GetFromJsonAsync<JsonElement[]>(Path))!;
         Assert.Single(listed, e => e.GetProperty("eventId").GetString() == id);
+    }
+
+    [Fact]
+    public async Task A_replay_with_a_swapped_event_id_header_is_rejected_because_the_id_is_not_signed_separately()
+    {
+        HttpClient admin = await ArmedAdminAsync();
+        HttpClient anonymous = db.Anonymous();
+        string id = Guid.NewGuid().ToString();
+        HttpRequestMessage original = Signed(id);
+        byte[] raw = await original.Content!.ReadAsByteArrayAsync();
+        Assert.Equal(HttpStatusCode.OK, (await anonymous.SendAsync(original)).StatusCode);
+
+        // Same signed timestamp, body and signature; only the unsigned header differs, which would dodge the dedupe on the event id.
+        var replay = new HttpRequestMessage(HttpMethod.Post, Path) { Content = new ByteArrayContent(raw) };
+        foreach ((string name, IEnumerable<string> values) in original.Headers)
+        {
+            replay.Headers.TryAddWithoutValidation(name, values);
+        }
+
+        replay.Headers.Remove("X-Fugue-Event-Id");
+        replay.Headers.Add("X-Fugue-Event-Id", Guid.NewGuid().ToString());
+        HttpResponseMessage response = await anonymous.SendAsync(replay);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal("sink.envelope_mismatch", await CodeAsync(response));
+        Assert.Single((await admin.GetFromJsonAsync<JsonElement[]>(Path))!);
     }
 
     [Fact]

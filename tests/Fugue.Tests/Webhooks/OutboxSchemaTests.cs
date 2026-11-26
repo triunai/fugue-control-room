@@ -69,6 +69,14 @@ public sealed class OutboxSchemaTests(PostgresFixture db)
     }
 
     [Fact]
+    public async Task The_delivery_claim_token_is_a_nullable_uuid_the_result_write_is_fenced_on()
+    {
+        Assert.Equal(
+            "uuid,YES",
+            await ScalarAsync<string>("SELECT data_type || ',' || is_nullable FROM information_schema.columns WHERE table_name = 'webhook_deliveries' AND column_name = 'claim_token'"));
+    }
+
+    [Fact]
     public async Task The_delivery_table_is_unique_per_message_and_subscription_and_has_the_partial_due_index()
     {
         string indexes = await ScalarAsync<string>("SELECT string_agg(indexdef, E'\\n') FROM pg_indexes WHERE tablename = 'webhook_deliveries'");

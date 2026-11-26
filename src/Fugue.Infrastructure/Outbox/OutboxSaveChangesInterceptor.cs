@@ -10,7 +10,7 @@ namespace Fugue.Infrastructure.Outbox;
 /// EF write path of the outbox (ADR-011), the sibling of <c>AuditLogSaveChangesInterceptor</c>. Before SaveChanges it drains the domain events
 /// of every changed aggregate and ADDS one <see cref="OutboxMessage"/> per event to the same context, so the SAME SaveChanges (one transaction)
 /// writes the change and its events: a failed save leaves neither, a rolled-back unit of work removes both. After a successful save the
-/// aggregates' events are cleared; after a failed one they are kept (the rows are detached either way) so a retry on the same context re-captures them.
+/// aggregates' events are cleared; after a failed or cancelled one they are kept (the rows are detached either way) so a retry on the same context re-captures them.
 /// </summary>
 internal sealed class OutboxSaveChangesInterceptor(OutboxRowFactory factory) : SaveChangesInterceptor
 {
@@ -51,6 +51,18 @@ internal sealed class OutboxSaveChangesInterceptor(OutboxRowFactory factory) : S
     {
         Complete(eventData.Context, success: false);
         return base.SaveChangesFailedAsync(eventData, cancellationToken);
+    }
+
+    public override void SaveChangesCanceled(DbContextEventData eventData)
+    {
+        Complete(eventData.Context, success: false);
+        base.SaveChangesCanceled(eventData);
+    }
+
+    public override Task SaveChangesCanceledAsync(DbContextEventData eventData, CancellationToken cancellationToken = default)
+    {
+        Complete(eventData.Context, success: false);
+        return base.SaveChangesCanceledAsync(eventData, cancellationToken);
     }
 
     private void Capture(DbContext? context)

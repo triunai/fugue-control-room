@@ -51,8 +51,19 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-038 | W-006: subscription secrets in Data Protection (key ring in the database), SSRF guard at subscribe and connect time | [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md) |
 | D-039 | W-006: two-stage dispatcher (relay, leased delivery), SKIP LOCKED, outbox is the retry authority, signature v1, at-least-once | [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md) |
 | D-040 | W-006: `IEventPublisher` is the broker seam (Kafka adapter documented, not built), Development-only sink | [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md) |
+| D-041 | W-006: Codex S4 review fixes (per-claim token fence, spent-lease dead letter, lease re-check before send, cancelled-save cleanup, sink envelope check) | [ADR-011](adr/ADR-011-outbox-and-signed-webhooks.md) |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-041 — W-006 Codex review of the S4 diff: fence, budget, lease, cancel, envelope — 2026-11-26
+WS: WS-06
+Context: the cross-family review (`docs/reviews/codex/2026-11-26-s4-webhooks.md`) found one HIGH and four MED, each reproduced by a test before the fix.
+Decision: (HIGH) the result write is fenced by a random `claim_token` written at every claim, not by the attempt number, because redeliver restarts the number (migration `AddDeliveryClaimToken`); (MED) an expired lease on the final attempt dead-letters instead of being re-sent; (MED) a queued delivery whose lease cannot cover one more attempt is released unsent and uncounted; (MED) the outbox interceptor also cleans up on a cancelled save; (MED) the Development sink rejects a request whose event id or type header differs from the signed body. Outbox retention (LOW) stays deferred (backlog #001).
+Why: each bug let a late or replayed actor change an outcome or send beyond the budget; a token that never repeats is the only fence that survives a counter reset.
+Consequences: one nullable column; no change to the signature scheme; receivers are unaffected.
+Who: AI, reviewed by Codex
+Status: accepted
+Promote: no (amends ADR-011 in place)
 
 ## D-040 — W-006 the publisher seam, a possible Kafka adapter, and a Development-only sink — 2026-11-26
 WS: WS-06

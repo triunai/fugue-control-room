@@ -2001,6 +2001,10 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("attempts");
 
+                    b.Property<Guid?>("ClaimToken")
+                        .HasColumnType("uuid")
+                        .HasColumnName("claim_token");
+
                     b.Property<DateTimeOffset?>("DeadLetteredAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("dead_lettered_at");

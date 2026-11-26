@@ -46,6 +46,12 @@ public sealed class ReceiveDevWebhookHandler(IDevWebhookSink sink, TimeProvider 
             return Fail(FugueErrors.Unauthorized("sink.bad_signature", "The signature does not match."));
         }
 
+        // Only the body is signed. A replay that changes just the X-Fugue-Event-* headers would dodge the dedupe, so the headers must repeat the signed envelope.
+        if (!MatchesSignedEnvelope(request))
+        {
+            return Fail(FugueErrors.Unauthorized("sink.envelope_mismatch", "The event id and type headers must match the signed body."));
+        }
+
         DateTimeOffset now = time.GetUtcNow();
         if ((now - DateTimeOffset.FromUnixTimeSeconds(timestamp)).Duration() > WebhookSecretFormat.ReplayWindow)
         {
@@ -55,6 +61,21 @@ public sealed class ReceiveDevWebhookHandler(IDevWebhookSink sink, TimeProvider 
         bool first = sink.TryAdd(new ReceivedWebhookDto(
             request.EventId!, request.EventType!, now, timestamp, request.CorrelationId, request.SagaId, request.Traceparent, System.Text.Encoding.UTF8.GetString(request.Body)));
         return ValueTask.FromResult(Result.Ok(new DevWebhookReceiptDto(first ? "accepted" : "duplicate", request.EventId!)));
+    }
+
+    private static bool MatchesSignedEnvelope(ReceiveDevWebhookRequest request)
+    {
+        try
+        {
+            using var envelope = System.Text.Json.JsonDocument.Parse(request.Body);
+            return envelope.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object
+                && envelope.RootElement.TryGetProperty("id", out System.Text.Json.JsonElement id) && id.GetString() == request.EventId
+                && envelope.RootElement.TryGetProperty("type", out System.Text.Json.JsonElement type) && type.GetString() == request.EventType;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return false;
+        }
     }
 
     private static ValueTask<Result<DevWebhookReceiptDto>> Fail(FugueError error) => ValueTask.FromResult(Result.Fail<DevWebhookReceiptDto>(error));

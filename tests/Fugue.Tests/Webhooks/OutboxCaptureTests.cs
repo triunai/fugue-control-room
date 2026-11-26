@@ -179,4 +179,20 @@ public sealed class OutboxCaptureTests(PostgresFixture db)
 
         Assert.Single(await OutboxProbe.ByAggregateAsync(db, customer.Id.ToString()));
     }
+
+    [Fact]
+    public async Task A_cancelled_save_does_not_leave_the_captured_event_behind_for_the_retry_to_duplicate()
+    {
+        await using AsyncServiceScope scope = db.Factory.Services.CreateAsyncScope();
+        FugueDbContext context = scope.ServiceProvider.GetRequiredService<FugueDbContext>();
+        Customer customer = Customer.Create("Cancelled once", NewEmail(), null);
+        context.Customers.Add(customer);
+        using var cancelled = new CancellationTokenSource();
+        await cancelled.CancelAsync();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => context.SaveChangesAsync(cancelled.Token));
+        await context.SaveChangesAsync(); // the retry on the same context, with a fresh token
+
+        Assert.Single(await OutboxProbe.ByAggregateAsync(db, customer.Id.ToString())); // one event, not two with different ids
+    }
 }

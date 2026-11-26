@@ -37,3 +37,7 @@ Other systems need to learn what changed (a customer was created, suspended, ...
 
 ## Supersedes
 None. Builds on ADR-005 (ids on the wire), ADR-006 (unit of work), ADR-010 (interceptor and redaction pattern).
+
+## Amendment 2026-11-26 (D-041)
+
+The delivery result write is fenced by a per-claim random token (`claim_token`), not by the attempt number: redeliver restarts the counter, so a stale worker could match a newer attempt. An expired lease on the final attempt dead-letters the delivery; a queued delivery whose lease cannot cover another attempt is released unsent. The Development sink requires the event id and type headers to match the signed body.

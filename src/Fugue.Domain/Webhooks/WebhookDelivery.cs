@@ -28,6 +28,12 @@ public sealed class WebhookDelivery
     /// <summary>While <c>in_flight</c>: when the claim expires and another worker may take the delivery (crash recovery).</summary>
     public DateTimeOffset? LockedUntil { get; set; }
 
+    /// <summary>
+    /// A fresh random value written at every claim and required by the result write, so a worker whose claim was superseded (lease expiry, then a
+    /// redelivery that restarts <see cref="Attempts"/>) can never overwrite the outcome of a later attempt. Cleared when the attempt ends.
+    /// </summary>
+    public Guid? ClaimToken { get; set; }
+
     public int? LastStatusCode { get; set; }
 
     /// <summary>Clipped; never holds headers, the secret or the body.</summary>
