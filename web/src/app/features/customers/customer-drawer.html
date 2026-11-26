@@ -1,0 +1,194 @@
+<div class="drawer">
+  <header class="head">
+    <div class="min-w-0">
+      <p class="kicker">{{ isNew ? 'New customer' : canEdit() ? 'Edit customer' : 'Customer' }}</p>
+      <h2 class="title">{{ isNew ? 'Add a customer' : form.controls.name.value || data.name || 'Customer' }}</h2>
+      @if (!isNew && customer.data(); as c) {
+        <div class="meta">
+          <span class="pill" [class.pill-ok]="c.status === 'Active'" [class.pill-warn]="c.status === 'Suspended'">{{
+            c.status
+          }}</span>
+          <span class="mono text-muted" title="The ETag this form saves against">version {{ version() }}</span>
+          <span class="text-muted">updated {{ c.updatedAt | relative }}</span>
+        </div>
+      }
+    </div>
+    <button type="button" class="btn btn-quiet btn-icon" aria-label="Close" (click)="close()">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+      </svg>
+    </button>
+  </header>
+
+  <div class="body">
+    @if (conflict(); as k) {
+      <div class="banner conflict" role="alert" data-testid="conflict-banner">
+        <div class="flex min-w-0 flex-col gap-1.5">
+          <span>
+            <span class="banner-title">Changed since you opened it.</span>
+            Someone saved a newer version
+            @if (k.theirs) {
+              <span class="mono">(version {{ k.yours }} → {{ k.theirs.version }})</span>
+            }
+            while you were editing. Your changes are not saved yet.
+          </span>
+          @if (k.changed.length) {
+            <ul class="changed" role="list">
+              @for (ch of k.changed; track ch.field) {
+                <li>
+                  <span class="text-muted">{{ ch.field }} is now</span>
+                  <span class="font-semibold">{{ ch.value }}</span>
+                </li>
+              }
+            </ul>
+          }
+          @if (k.ref) {
+            <span><fg-ref-chip label="ref" [value]="k.ref" /></span>
+          }
+        </div>
+        <div class="flex gap-2">
+          <button type="button" class="btn btn-sm" (click)="reload()">Reload their version</button>
+          <button type="button" class="btn btn-sm btn-danger" (click)="overwrite()">Overwrite with mine</button>
+        </div>
+      </div>
+    }
+
+    @if (!isNew && customer.isPending()) {
+      <div class="flex flex-col gap-5 pt-2">
+        @for (w of ['60%', '80%', '45%']; track w) {
+          <div class="flex flex-col gap-2">
+            <span class="skeleton" style="width: 5rem"></span
+            ><span class="skeleton" style="height: 2.5rem" [style.width]="w"></span>
+          </div>
+        }
+      </div>
+    } @else if (!isNew && customer.isError()) {
+      <fg-error-state [error]="customer.error()" (retry)="customer.refetch()" />
+    } @else {
+      <form id="customer-form" [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-5" novalidate>
+        <div class="field">
+          <label class="label" for="c-name">Name</label>
+          <input
+            id="c-name"
+            class="input"
+            formControlName="name"
+            autocomplete="off"
+            [attr.aria-invalid]="!!err('name')"
+            aria-describedby="c-name-err"
+          />
+          @if (err('name'); as m) {
+            <span id="c-name-err" class="field-error">{{ m }}</span>
+          }
+        </div>
+        <div class="field">
+          <label class="label" for="c-email">Email</label>
+          <input
+            id="c-email"
+            class="input"
+            type="email"
+            formControlName="email"
+            autocomplete="off"
+            [attr.aria-invalid]="!!err('email')"
+            aria-describedby="c-email-err c-email-hint"
+          />
+          @if (err('email'); as m) {
+            <span id="c-email-err" class="field-error">{{ m }}</span>
+          } @else if (emailLocked()) {
+            <span id="c-email-hint" class="field-hint">Only staff can change an email address.</span>
+          } @else {
+            <span id="c-email-hint" class="field-hint">Stored lower-case. Unique among the owner's customers.</span>
+          }
+        </div>
+        <div class="field">
+          <label class="label" for="c-phone">Phone <span class="font-normal">(optional)</span></label>
+          <input
+            id="c-phone"
+            class="input"
+            type="tel"
+            formControlName="phone"
+            autocomplete="off"
+            placeholder="+14155550100"
+            [attr.aria-invalid]="!!err('phone')"
+          />
+          @if (err('phone'); as m) {
+            <span class="field-error">{{ m }}</span>
+          } @else {
+            <span class="field-hint">International format, starting with +.</span>
+          }
+        </div>
+        @if (formErrors().length) {
+          <div class="banner banner-err" role="alert">
+            <span><span class="banner-title">The API refused this.</span> {{ formErrors().join(' ') }}</span>
+          </div>
+        }
+      </form>
+
+      @if (!isNew && customer.data(); as c) {
+        <dl class="facts">
+          <div>
+            <dt>Customer id</dt>
+            <dd><fg-ref-chip [value]="c.id" maxWidth="40ch" /></dd>
+          </div>
+          <div>
+            <dt>Created</dt>
+            <dd>
+              {{ c.createdAt | relative }} by
+              <span class="mono">{{ c.createdBy === 'system' ? 'system' : '…' + c.createdBy.slice(-6) }}</span>
+            </dd>
+          </div>
+          <div>
+            <dt>Last change</dt>
+            <dd>
+              {{ c.updatedAt | relative }} by
+              <span class="mono">{{ c.updatedBy === 'system' ? 'system' : '…' + c.updatedBy.slice(-6) }}</span>
+            </dd>
+          </div>
+        </dl>
+      }
+    }
+  </div>
+
+  <footer class="foot">
+    @if (!isNew && customer.data(); as c) {
+      <div class="flex gap-2">
+        <button
+          *hasPermission="'CUSTOMERS_DELETE'"
+          type="button"
+          class="btn btn-danger"
+          (click)="confirmDelete()"
+          [disabled]="remove.isPending()"
+        >
+          Delete
+        </button>
+        <ng-container *hasPermission="'CUSTOMERS_SUSPEND'">
+          @if (c.status === 'Active') {
+            <button
+              type="button"
+              class="btn"
+              (click)="transition.mutate('Suspended')"
+              [disabled]="transition.isPending()"
+            >
+              Suspend
+            </button>
+          } @else {
+            <button type="button" class="btn" (click)="transition.mutate('Active')" [disabled]="transition.isPending()">
+              Reactivate
+            </button>
+          }
+        </ng-container>
+      </div>
+    }
+    <div class="flex-1"></div>
+    <button type="button" class="btn" (click)="close()">{{ canEdit() ? 'Cancel' : 'Close' }}</button>
+    @if (canEdit()) {
+      <button
+        type="submit"
+        form="customer-form"
+        class="btn btn-primary"
+        [disabled]="save.isPending() || (!isNew && !customer.data())"
+      >
+        {{ save.isPending() ? 'Saving…' : isNew ? 'Create customer' : 'Save changes' }}
+      </button>
+    }
+  </footer>
+</div>

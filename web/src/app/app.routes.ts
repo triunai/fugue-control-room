@@ -31,6 +31,13 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', canActivate: [landing], children: [] },
       {
+        path: 'customers',
+        canActivate: [permissionGuard],
+        data: { permission: 'CUSTOMERS_VIEW' },
+        title: 'Customers · Fugue Console',
+        loadComponent: () => import('./features/customers/customers-page').then((m) => m.CustomersPage),
+      },
+      {
         path: 'audit',
         canActivate: [permissionGuard],
         data: { permission: 'AUDIT_READ' },

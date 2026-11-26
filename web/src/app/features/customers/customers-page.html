@@ -1,0 +1,188 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1 class="page-title">Customers</h1>
+      <p class="page-lede">
+        @if (seesAll()) {
+          Every customer in the workspace. Open a row to edit it; changes are checked against the version you opened.
+        } @else {
+          The customers you own. Open one to update its details.
+        }
+      </p>
+    </div>
+    <button *hasPermission="'CUSTOMERS_INSERT'" type="button" class="btn btn-primary" (click)="open()">
+      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+      </svg>
+      New customer
+    </button>
+  </header>
+
+  <div class="toolbar" role="search">
+    <label class="search">
+      <span class="sr-only">Search customers</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6" />
+        <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+      </svg>
+      <input
+        class="input"
+        type="search"
+        placeholder="Search name or email"
+        [value]="searchText()"
+        (input)="searchText.set($any($event.target).value)"
+      />
+    </label>
+    <div class="segmented" role="radiogroup" aria-label="Status">
+      @for (
+        s of [
+          { v: '', l: 'All' },
+          { v: 'active', l: 'Active' },
+          { v: 'suspended', l: 'Suspended' },
+        ];
+        track s.v
+      ) {
+        <button
+          type="button"
+          role="radio"
+          [attr.aria-checked]="filters.status() === s.v"
+          (click)="filters.setStatus($any(s.v))"
+        >
+          {{ s.l }}
+        </button>
+      }
+    </div>
+    <div class="flex-1"></div>
+    <label class="mask-toggle">
+      <input
+        type="checkbox"
+        [checked]="prefs.maskEmails()"
+        (change)="prefs.setMaskEmails($any($event.target).checked)"
+      />
+      Mask emails
+    </label>
+    @if (query.isFetching() && !query.isPending()) {
+      <span class="text-sm text-muted" aria-live="polite">Refreshing…</span>
+    }
+  </div>
+
+  <div class="table-wrap">
+    @if (query.isPending()) {
+      <fg-skeleton-rows [rows]="8" />
+    } @else if (query.isError() && !rows().length) {
+      <fg-error-state [error]="query.error()" (retry)="query.refetch()" />
+    } @else if (!rows().length) {
+      @if (filtered()) {
+        <fg-empty-state
+          title="No customers match"
+          body="Nothing matches this search and status. Widen the filter to see more."
+        >
+          <button type="button" class="btn" (click)="clearFilters()">Clear filters</button>
+        </fg-empty-state>
+      } @else {
+        <fg-empty-state title="No customers yet" body="Customers you create appear here, newest first.">
+          <button *hasPermission="'CUSTOMERS_INSERT'" type="button" class="btn btn-primary" (click)="open()">
+            New customer
+          </button>
+        </fg-empty-state>
+      }
+    } @else {
+      <table class="table" [class.dim]="query.isPlaceholderData()">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Status</th>
+            <th scope="col">Owner</th>
+            <th scope="col">Updated</th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of rows(); track c.id) {
+            <tr class="row-link" (click)="open(c)">
+              <td>
+                <button type="button" class="name" (click)="$event.stopPropagation(); open(c)">{{ c.name }}</button>
+              </td>
+              <td class="mono text-muted">{{ c.email | maskEmail: prefs.maskEmails() }}</td>
+              <td>
+                <span
+                  class="pill"
+                  [class.pill-ok]="c.status === 'Active'"
+                  [class.pill-warn]="c.status === 'Suspended'"
+                  >{{ c.status }}</span
+                >
+              </td>
+              <td [class.text-muted]="ownerLabel(c) === 'Unassigned'" [class.mono]="ownerLabel(c).startsWith('…')">
+                {{ ownerLabel(c) }}
+              </td>
+              <td class="text-muted" [title]="c.updatedAt | stamp">{{ c.updatedAt | relative }}</td>
+              <td class="w-12 text-right">
+                <button
+                  type="button"
+                  class="btn btn-quiet btn-sm btn-icon"
+                  [attr.aria-label]="'Actions for ' + c.name"
+                  [cdkMenuTriggerFor]="rowMenu"
+                  [cdkMenuTriggerData]="{ $implicit: c }"
+                  (click)="$event.stopPropagation()"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                    <circle cx="3.5" cy="8" r="1.4" fill="currentColor" />
+                    <circle cx="8" cy="8" r="1.4" fill="currentColor" />
+                    <circle cx="12.5" cy="8" r="1.4" fill="currentColor" />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <div class="table-foot">
+        <span class="text-muted">{{ rows().length }} shown{{ query.hasNextPage() ? ', more available' : '' }}</span>
+        @if (query.hasNextPage()) {
+          <button type="button" class="btn" (click)="query.fetchNextPage()" [disabled]="query.isFetchingNextPage()">
+            {{ query.isFetchingNextPage() ? 'Loading…' : 'Load more' }}
+          </button>
+        } @else {
+          <span class="text-sm text-muted">End of list</span>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<ng-template #rowMenu let-c>
+  <div class="menu" cdkMenu>
+    <button type="button" class="menu-item" cdkMenuItem (cdkMenuItemTriggered)="open(c)">Open</button>
+    <ng-container *hasPermission="'CUSTOMERS_SUSPEND'">
+      @if (c.status === 'Active') {
+        <button
+          type="button"
+          class="menu-item"
+          cdkMenuItem
+          (cdkMenuItemTriggered)="transition.mutate({ c, to: 'Suspended' })"
+        >
+          Suspend
+        </button>
+      } @else {
+        <button
+          type="button"
+          class="menu-item"
+          cdkMenuItem
+          (cdkMenuItemTriggered)="transition.mutate({ c, to: 'Active' })"
+        >
+          Reactivate
+        </button>
+      }
+    </ng-container>
+    <button
+      *hasPermission="'CUSTOMERS_DELETE'"
+      type="button"
+      class="menu-item menu-item-danger"
+      cdkMenuItem
+      (cdkMenuItemTriggered)="confirmDelete(c)"
+    >
+      Delete…
+    </button>
+  </div>
+</ng-template>

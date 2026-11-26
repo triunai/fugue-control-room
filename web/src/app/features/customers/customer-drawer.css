@@ -1,0 +1,79 @@
+.drawer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.4rem 1.5rem 1.1rem;
+  border-bottom: 1px solid var(--line);
+}
+.kicker {
+  margin: 0 0 0.2rem;
+  font-size: 0.8667rem;
+  font-weight: 550;
+  color: var(--muted);
+}
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.95rem;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+}
+.body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.4rem 1.5rem;
+}
+.conflict {
+  flex-direction: column;
+  align-items: stretch;
+}
+.changed {
+  margin: 0.15rem 0 0;
+  padding: 0 0 0 1rem;
+  font-size: 0.9333rem;
+}
+.facts {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0.5rem 0 0;
+  padding: 1rem 0 0;
+  border-top: 1px dashed var(--line);
+  font-size: 0.9rem;
+}
+.facts div {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  align-items: center;
+}
+.facts dt {
+  color: var(--muted);
+}
+.facts dd {
+  margin: 0;
+}
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--line);
+  background: color-mix(in oklab, var(--bg) 50%, var(--surface));
+}
