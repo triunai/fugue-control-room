@@ -64,10 +64,17 @@ while IFS= read -r f; do
   [ -z "$f" ] && continue
   is_exempt "$f" && continue
   [ -f "$f" ] || continue
+  # 2026-11-26: npm lockfiles list package NAMES such as "@inquirer/password": "^5.3.0" or
+  # "node_modules/@inquirer/password": {, which match the password pattern. Drop only those
+  # name/version lines; every other lockfile line (e.g. a "resolved" URL carrying a token) is still scanned.
+  LOCK_NOISE='^$'
+  case "$f" in
+    *package-lock.json) LOCK_NOISE='^[0-9]+[[:space:]]+"(node_modules/)?(@[^"/]+/)?[^"/]+(/node_modules/(@[^"/]+/)?[^"/]+)*": *("[~^<>=*0-9]|\{)' ;;
+  esac
   HITS=$(git diff --cached -U0 --no-color -- "$f" | tr -d '\r' | awk '
     /^@@/ { inh = 1; match($0, /\+[0-9]+/); ln = substr($0, RSTART + 1, RLENGTH - 1) + 0; next }
     inh && /^\+/ { line = substr($0, 2); if (index(line, "secrets-scan:ignore") == 0) printf "%d\t%s\n", ln, substr(line, 1, 80); ln++ }
-  ' | grep -iE "$SECRET_PATTERNS" | grep -viE "$PLACEHOLDER_OK")
+  ' | grep -vE "$LOCK_NOISE" | grep -iE "$SECRET_PATTERNS" | grep -viE "$PLACEHOLDER_OK")
   if [ -n "$HITS" ]; then
     BAD=$((BAD+1))
     echo ""
