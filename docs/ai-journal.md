@@ -163,3 +163,11 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
 - **Decision:** accepted as D-037 to D-040 (ADR-011). The cross-family review verdict and fixes are in `docs/reviews/codex/2026-11-26-s4-webhooks.md`.
 - **Why:** a webhook sent from inside the request would lose events on a crash and block on slow receivers; the outbox makes delivery at least once and the signature plus event id make it safe for receivers.
 
+
+## 2026-11-26 - W-015 Codex W-013 findings
+- **Asked:** fix the two MED findings the cross-family review raised on the W-013 diff.
+- **AI proposed / chose:**
+  - A no-op override PUT now marks one property modified so EF still issues the UPDATE and the xmin guard runs; an accepted no-op bumps the version like any PUT.
+  - The per-email login ceiling became a small fixed-window counter that reserves a slot before password verification and refunds it on success, so concurrent attempts cannot all pass the check.
+- **Decision:** covered by D-035 and D-036; both regression tests were shown RED first.
+- **Why:** a guard that only runs when a write happens, and a limit that is checked before it is charged, are both bypassable by the exact race they exist for.

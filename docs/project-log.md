@@ -6,6 +6,30 @@ Heading form: `## <YYYY-MM-DD> — <title>`. Entry key = `<date>#<n>`, where n i
 First non-blank body line must be `WS: WS-NN` (comma-separate several) or `WS: (pre-WS)`.
 Then: what was done · what was decided (cite D-NNN) · what is open (cite #NNN).
 
+## 2026-11-26 — Closed W-006: S4 transactional outbox and signed webhooks
+WS: WS-06
+Closed: W-006 (WS-06) S4 transactional outbox and signed webhooks
+Outcome: Transactional outbox and signed webhooks shipped (ADR-011): outbox rows in the same transaction, a two-stage leased dispatcher with the outbox as the single retry authority, SSRF-guarded sender, encrypted subscription secrets, a Development-only sink, runbook 07 and Bruno. The Codex review (1 HIGH, 4 MED) is fixed and pinned. dotnet test 363 green; Bruno 47 requests, 64 tests green.
+Commits:
+- aa51ca4 feat(persistence): outbox and webhook tables with the AddOutboxWebhooks migration
+- 893a345 feat(persistence): capture domain events as outbox rows in the same transaction
+- 01e0305 feat(api): webhook subscriptions with encrypted secrets and an SSRF guard
+- dfbec7f feat(api): signed webhook dispatcher, guarded sender, deliveries API and dev sink
+- ad9df38 docs(api): webhooks runbook 07, Bruno webhooks folder and S4 journal entries
+- 596269e fix(api): close the Codex S4 review findings on delivery fencing, leases, capture and sink
+- f34d0b4 test(api): list the WEBHOOKS module in the Bruno modules check
+Decisions: ADR-011, D-041, D-038, D-037, D-039, D-040
+Follow-ups: Outbox retention and archival (backlog #001, deferred); a broker adapter behind the publisher seam if ever needed
+
+## 2026-11-26 — Closed W-015: Codex W-013 findings: no-op override PUT skips the xmin check, email ceiling charged late
+WS: WS-15
+Closed: W-015 (WS-15) Codex W-013 findings: no-op override PUT skips the xmin check, email ceiling charged late
+Outcome: Both Codex W-013 MED findings fixed with regression tests shown RED first: a no-op override PUT now runs the version-guarded UPDATE (412 on a racing change), and the per-email login ceiling reserves a slot before verification and refunds on success. dotnet test 363 green.
+Commits:
+- 224b5b2 fix(identity): version-guard no-op override PUTs and reserve the email ceiling up front
+Decisions: D-035, D-036
+Follow-ups: none
+
 ## 2026-11-26 — Closed W-013: S3 review follow-ups
 WS: WS-13
 Closed: W-013 (WS-13) S3 review follow-ups
