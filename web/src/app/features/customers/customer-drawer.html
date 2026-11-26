@@ -2,7 +2,7 @@
   <header class="head">
     <div class="min-w-0">
       <p class="kicker">{{ isNew ? 'New customer' : canEdit() ? 'Edit customer' : 'Customer' }}</p>
-      <h2 class="title">{{ isNew ? 'Add a customer' : form.controls.name.value || data.name || 'Customer' }}</h2>
+      <h2 class="title">{{ isNew ? 'Add a customer' : (customer.data()?.name ?? data.name ?? 'Customer') }}</h2>
       @if (!isNew && customer.data(); as c) {
         <div class="meta">
           <span class="pill" [class.pill-ok]="c.status === 'Active'" [class.pill-warn]="c.status === 'Suspended'">{{
@@ -36,8 +36,8 @@
             <ul class="changed" role="list">
               @for (ch of k.changed; track ch.field) {
                 <li>
-                  <span class="text-muted">{{ ch.field }} is now</span>
-                  <span class="font-semibold">{{ ch.value }}</span>
+                  <span class="text-muted">{{ ch.field }} is now&nbsp;</span
+                  ><span class="font-semibold">{{ ch.value }}</span>
                 </li>
               }
             </ul>

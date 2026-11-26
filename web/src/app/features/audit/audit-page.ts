@@ -23,7 +23,15 @@ interface DayGroup {
   entries: AuditLogDto[];
 }
 
-const ENTITY_TYPES = ['Customer', 'User', 'Module', 'Group', 'PermissionOverride', 'WebhookSubscription', 'WebhookDelivery'];
+const ENTITY_TYPES = [
+  'Customer',
+  'User',
+  'Module',
+  'Group',
+  'PermissionOverride',
+  'WebhookSubscription',
+  'WebhookDelivery',
+];
 
 @Component({
   selector: 'fg-audit-page',

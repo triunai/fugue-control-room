@@ -47,7 +47,8 @@
 }
 .changed {
   margin: 0.15rem 0 0;
-  padding: 0 0 0 1rem;
+  padding: 0;
+  list-style: none;
   font-size: 0.9333rem;
 }
 .facts {
