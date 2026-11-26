@@ -44,3 +44,9 @@ ID: W-011
 Status: written by a research agent, stale status lines corrected by the lead; committing now.
 Resume: refresh Status/Highlights whenever a batch lands.
 Refs: `README.md`
+
+### WS-17 — Fugue Console: Angular admin console for the API (web/) — 🟢 ACTIVE (2026-11-26)
+ID: W-017
+Status: building in `web/` (Angular, SignalStore for client state, TanStack Query for server state, Tailwind, Vellum tokens). Touches only `web/**`, `docs/runbooks/09-console.md`, web lines in `.gitignore` and this block. Needs W-016 (`docs/api/openapi.v1.json`, `GET /api/v1/me`, CORS).
+Resume: `git log --grep "Refs: W-017"`; screens in priority order: sign-in, shell, customers, audit, modules, webhooks (dev sink), then users and profile.
+Refs: `web/README.md`, `docs/runbooks/09-console.md`, ADR-008, ADR-009, ADR-010, ADR-011
