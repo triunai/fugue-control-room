@@ -25,7 +25,7 @@ export class AuthService {
 
   async signIn(email: string, password: string): Promise<void> {
     const token = await firstValueFrom(this.http.post<TokenDto>(`${this.base}/auth/token`, { email, password }));
-    this.session.signedIn(token.accessToken, token.expiresIn, token.refreshToken);
+    this.session.signedIn(token.accessToken, token.expiresIn, token.refreshToken ?? null);
     await this.queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
   }
 
@@ -43,7 +43,7 @@ export class AuthService {
     if (!refreshToken) throw new Error('No refresh token');
     try {
       const token = await firstValueFrom(this.http.post<TokenDto>(`${this.base}/auth/refresh`, { refreshToken }));
-      this.session.signedIn(token.accessToken, token.expiresIn, token.refreshToken);
+      this.session.signedIn(token.accessToken, token.expiresIn, token.refreshToken ?? null);
       void this.queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
       return token.accessToken;
     } catch (err) {

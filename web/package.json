@@ -9,7 +9,7 @@
     "test": "ng test --watch=false",
     "lint": "ng lint",
     "format": "prettier --write \"src/**/*.{ts,html,css}\"",
-    "api:gen": "orval --config orval.config.ts",
+    "api:gen": "orval --config orval.config.ts && node scripts/api-gen-post.mjs",
     "e2e": "playwright test",
     "screenshots": "playwright test e2e/screenshots.spec.ts"
   },
