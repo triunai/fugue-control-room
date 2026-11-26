@@ -24,7 +24,7 @@ public sealed class ApiCorsOptionsValidator : IValidateOptions<ApiCorsOptions>
         foreach (string origin in options.Origins)
         {
             if (origin == "*" || !Uri.TryCreate(origin, UriKind.Absolute, out Uri? uri)
-                || uri.Scheme is not ("http" or "https") || uri.PathAndQuery != "/" || origin.EndsWith('/') || uri.UserInfo.Length > 0)
+                || uri.Scheme is not ("http" or "https") || uri.PathAndQuery != "/" || uri.Fragment.Length > 0 || origin.EndsWith('/') || uri.UserInfo.Length > 0)
             {
                 failures.Add($"Cors:Origins entry '{origin}' must be an exact origin such as https://console.example.com (scheme, host, optional port; no wildcard, path or trailing slash).");
             }

@@ -143,6 +143,8 @@ public sealed class CorsTests
     [InlineData("console.example.test")]
     [InlineData("ftp://console.example.test")]
     [InlineData("https://user@console.example.test")]
+    [InlineData("https://console.example.test#oops")]
+    [InlineData("https://console.example.test?x=1")]
     public void A_wildcard_or_malformed_origin_stops_the_host_from_starting(string origin)
     {
         Exception ex = Record.Exception(() => Client("Production", ("Cors:Origins:0", origin)).Dispose());
