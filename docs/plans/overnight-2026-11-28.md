@@ -43,7 +43,7 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
       (hover popover per step and a "How a claim moves" modal).
 - [x] 7a. (merge 3149854, nth-fixes; CSS fix + step-track-css.spec; lane headless: the line ends at the last node at 1280 and 390 px, both tracks) Claim
       banner tracks: the connector line overshot the last node (Closed, Paid); counters must not collide; partly complete and phone width.
-- [x] 7b. (merge 3149854; claim-tracks-dialog.spec; live 03:58 as self@fugue.test the modal says Assessed, not Reserved) Item 6/7 caveats: the "How a claim moves" modal said
+- [x] 7b. (merge 3149854; claim-tracks-dialog.spec; live 03:53 as self@fugue.test the modal says Assessed, not Reserved) Item 6/7 caveats: the "How a claim moves" modal said
       "Reserved" to claimants; "Open in Excel" outside `web/` is history (journal, reviews, traceability) and stays; README done in 30e4ac1.
 - [x] 8. (00e5c76: rounded, token cells, today and events in palette) SLA calendar: rounded corners, warmer cells (tokens, not white), events and today styled in the console palette.
 - [x] 9. (00e5c76: Stack dialog; FOUND PostgreSQL 17 (postgres:17-alpine in docker-compose.yml), ids UUID v7 from the API (Uuid7.NewGuid): owner's 'Postgres 18' is wrong, 'timestamped GUIDs' is right) Env pill `dev · net8 · v1` opens a "Stack" modal: Angular + key libraries, .NET 8 + key packages, PostgreSQL version and
@@ -61,7 +61,7 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
       Users & access / groups / overrides, Customers, Claims queue, claim page, Team and exposure, Reserve sheet, SLA calendar,
       My profile, Home, search. Each: the flow end to end (request -> handler -> DB/outbox/audit -> events), ADR/D links, live
       calls. Real code and decisions only. Two lanes by page group if it does not fit one before 13:00 (record the split here).
-- [x] 11f. (merges 3149854 + 42a314a, nth-fixes, W-033; on :8080 03:58 admin: Claims cell "default (on)", AUDIT off -> cells "—" and 0 audit calls in 6 s, on -> 6 refetches; 0 console errors (the 6 audit 404s on switching off are gone); web 311 tests) /modules glitches (owner 03:19, admin, AUDIT off then on): "Last changed" for Claims stuck on "…"; a stray dark tooltip
+- [x] 11f. (merges 3149854 + 42a314a, nth-fixes, W-033; on :8080 03:53 admin: Claims cell "default (on)", AUDIT off -> cells "—" and 0 audit calls in 6 s, on -> 6 refetches; 0 console errors (the 6 audit 404s on switching off are gone); web 311 tests) /modules glitches (owner 03:19, admin, AUDIT off then on): "Last changed" for Claims stuck on "…"; a stray dark tooltip
       "/audit?limit&entityType&entityId" over the page header; the hood panel polls GET /audit while AUDIT is off (404 run): stop
       polling when the module is off. Headless: toggle AUDIT off and on, 0 console errors.
 - [ ] 11g. Optional, slack only: one-line description tooltip per permission chip on My profile, from the permission catalog if it
