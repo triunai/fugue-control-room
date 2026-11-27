@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 import { apiToken, SHOTS, signIn } from './support';
 
 /** Pixel positions of the reserve cells at 1440x900 (the claims are seeded, oldest first): row 10 is an officer's own claim. */
@@ -51,6 +52,21 @@ test.describe('reserve sheet and SLA calendar', () => {
     await enter(page, OWN_ROW_Y, `${amount + 1}.25`);
     await page.getByTestId('sheet-save').click();
     await expect(results.getByText('Saved', { exact: true })).toBeVisible();
+  });
+
+  test('Open in Excel downloads the sheet as an .xlsx', async ({ page }) => {
+    await signIn(page, 'staff@fugue.test');
+    await page.goto('/claims/sheet');
+    await expect(page.getByRole('button', { name: 'Open in Excel' })).toBeEnabled();
+    const download = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Open in Excel' }).click();
+    const d = await download;
+    expect(d.suggestedFilename()).toBe('reserve-sheet.xlsx');
+    expect(
+      readFileSync((await d.path())!)
+        .subarray(0, 2)
+        .toString(),
+    ).toBe('PK');
   });
 
   test('the SLA calendar lists open claims on their due dates and opens a claim', async ({ page }) => {

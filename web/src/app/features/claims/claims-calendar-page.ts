@@ -52,7 +52,7 @@ const CALENDAR_CSS = [
           </p>
         </div>
         @if (isStaff()) {
-          <div class="cal-seg" role="radiogroup" aria-label="Show">
+          <div class="cal-seg" data-tour="sla-filter" role="radiogroup" aria-label="Show">
             <button type="button" role="radio" [attr.aria-checked]="assigned() === 'any'" (click)="assigned.set('any')">
               All open
             </button>
@@ -66,7 +66,7 @@ const CALENDAR_CSS = [
       @if (query.isError()) {
         <div class="panel"><fg-error-state [error]="query.error()" (retry)="query.refetch()" /></div>
       }
-      <div class="panel panel-pad cal-wrap" data-testid="sla-calendar">
+      <div class="panel panel-pad cal-wrap" data-testid="sla-calendar" data-tour="sla-calendar">
         <div class="cal-host"></div>
       </div>
       @if (query.isSuccess()) {

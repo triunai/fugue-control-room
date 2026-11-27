@@ -11,6 +11,7 @@ import { ClaimsApi } from '../../api/claims.api';
 import { ClaimDto } from '../../api/models';
 import { AccessService } from '../../core/auth/access.service';
 import type { UniverHandle } from './univer-loader';
+import { XlsxCell, downloadXlsx } from './xlsx-export';
 import { loadStylesheet } from './lazy-css';
 import { fetchOpenClaims } from './open-claims';
 import { Actor, STATUS_LABEL, ageDays, currencyOf } from './claims-logic';
@@ -47,10 +48,14 @@ import {
             >{{ pending() }} unsaved change{{ pending() === 1 ? '' : 's' }}</span
           >
           <button type="button" class="btn" [disabled]="saving()" (click)="reload()">Reload</button>
+          <button type="button" class="btn" data-tour="sheet-excel" [disabled]="!ready()" (click)="openInExcel()">
+            Open in Excel
+          </button>
           <button
             type="button"
             class="btn btn-primary"
             data-testid="sheet-save"
+            data-tour="sheet-save"
             [disabled]="saving() || !ready()"
             (click)="save()"
           >
@@ -81,7 +86,7 @@ import {
         </section>
       }
 
-      <div class="sheet-host panel" aria-label="Reserve spreadsheet"></div>
+      <div class="sheet-host panel" data-tour="sheet-grid" aria-label="Reserve spreadsheet"></div>
     </div>
   `,
 })
@@ -172,6 +177,18 @@ export class ReserveSheetPage implements AfterViewInit, OnDestroy {
   private refreshPending(): void {
     const { commands, rejected } = diffReserves(this.rows, this.currentCells());
     this.pending.set(commands.length + rejected.length);
+  }
+
+  /** Downloads the sheet as it is now (including unsaved reserve edits) as a real .xlsx. */
+  async openInExcel(): Promise<void> {
+    const ws = this.univer?.univerAPI.getActiveWorkbook()?.getActiveSheet();
+    if (!ws || !this.rows.length) return;
+    const values: unknown[][] = ws.getRange(1, 0, this.rows.length, SHEET_COLUMNS.length).getValues();
+    const grid = [
+      [...SHEET_COLUMNS] as XlsxCell[],
+      ...values.map((r) => r.map((v) => (v === '' || v === undefined ? null : (v as XlsxCell)))),
+    ];
+    await downloadXlsx('reserve-sheet.xlsx', 'Open claims', grid);
   }
 
   /** One If-Match command per changed row, in sheet order, one after another; a failure never stops the next row. */
