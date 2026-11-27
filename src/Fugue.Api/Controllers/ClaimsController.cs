@@ -1,5 +1,6 @@
 using Fugue.Api.Auth;
 using Fugue.Api.Contracts;
+using Fugue.Api.Idempotency;
 using Fugue.Api.Modules;
 using Fugue.Api.OpenApi;
 using Fugue.Application.Features.Claims;
@@ -22,6 +23,7 @@ public sealed class ClaimsController : ApiControllerBase
     /// <summary>Submit a claim. The caller is the claimant; the claim starts Submitted. The incident date may not be in the future or more than a year back.</summary>
     [HttpPost]
     [HasPermission(Permissions.ClaimsSubmit)]
+    [Idempotent]
     [ProducesResponseType(typeof(ClaimDto), StatusCodes.Status201Created)]
     public Task<ActionResult<ClaimDto>> Submit(SubmitClaimRequest body, CancellationToken ct) =>
         SendCreated(
@@ -35,16 +37,8 @@ public sealed class ClaimsController : ApiControllerBase
     [HttpGet]
     [HasPermission(Permissions.ClaimsRead)]
     [ProducesResponseType(typeof(IReadOnlyList<ClaimDto>), StatusCodes.Status200OK)]
-    public Task<ActionResult<IReadOnlyList<ClaimDto>>> List(
-        [FromQuery] int? limit,
-        [FromQuery] string[]? status,
-        [FromQuery] string? assigned,
-        [FromQuery] string? market,
-        [FromQuery] string? line,
-        [FromQuery] string? q,
-        [FromQuery] string? cursor,
-        CancellationToken ct) =>
-        SendPaged(new ListClaimsQuery(limit, status, assigned, market, line, q, cursor), ct);
+    public Task<ActionResult<IReadOnlyList<ClaimDto>>> List([FromQuery] ClaimListFilter filter, CancellationToken ct) =>
+        SendPaged(filter.ToQuery(), ct);
 
     /// <summary>Workload board: per officer the open claims by status, the oldest open age, decisions in the last 7 and 30 days and the median days to decide; the unassigned count; ageing bands 0-2, 3-7, 8-14, 15+ days.</summary>
     [HttpGet("workload")]

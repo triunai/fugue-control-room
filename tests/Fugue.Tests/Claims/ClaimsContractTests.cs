@@ -41,6 +41,30 @@ public sealed class ClaimsContractTests(PostgresFixture db)
     }
 
     [Fact]
+    public async Task A_replayed_submit_with_the_same_idempotency_key_returns_the_same_claim_and_creates_one_row()
+    {
+        using HttpClient self = _h.Claimant();
+        string key = Guid.NewGuid().ToString("N");
+        string policy = ClaimsHarness.UniquePolicy();
+        object body = new { market = "SG", line = "Motor", policyNumber = policy, incidentDate = _h.Yesterday().Iso(), incidentDescription = "x" };
+
+        async Task<HttpResponseMessage> Submit()
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/claims") { Content = JsonContent.Create(body) };
+            request.Headers.TryAddWithoutValidation("Idempotency-Key", $"\"{key}\"");
+            return await self.SendAsync(request);
+        }
+
+        HttpResponseMessage first = await Submit();
+        HttpResponseMessage replay = await Submit();
+
+        Assert.Equal(HttpStatusCode.Created, first.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, replay.StatusCode);
+        Assert.Equal((await first.Content.ReadFromJsonAsync<ClaimDto>())!.Id, (await replay.Content.ReadFromJsonAsync<ClaimDto>())!.Id);
+        Assert.Equal(1L, await _h.ScalarAsync<long>("SELECT count(*) FROM claims WHERE policy_number = @p", ("p", policy)));
+    }
+
+    [Fact]
     public async Task A_claimant_never_sees_the_reserve_or_the_officer_but_staff_do()
     {
         using HttpClient self = _h.Claimant();

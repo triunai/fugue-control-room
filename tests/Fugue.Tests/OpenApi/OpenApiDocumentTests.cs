@@ -44,13 +44,13 @@ public sealed partial class OpenApiDocumentTests
     }
 
     [Fact]
-    public void Exactly_the_two_idempotent_creates_document_the_Idempotency_Key_header_and_its_problems()
+    public void Exactly_the_three_idempotent_creates_document_the_Idempotency_Key_header_and_its_problems()
     {
         string[] withHeader = [.. Operations()
             .Where(o => o.Operation["parameters"]?.AsArray().Any(p => p!["name"]!.GetValue<string>() == "Idempotency-Key" && p["in"]!.GetValue<string>() == "header" && p["required"] is null) == true)
             .Select(o => o.Operation["operationId"]!.GetValue<string>()).Order(StringComparer.Ordinal)];
 
-        Assert.Equal(["Customers_Create", "Webhooks_Create"], withHeader);
+        Assert.Equal(["Claims_Submit", "Customers_Create", "Webhooks_Create"], withHeader);
         foreach (string id in withHeader)
         {
             JsonObject operation = Operations().Single(o => o.Operation["operationId"]!.GetValue<string>() == id).Operation["responses"]!.AsObject();

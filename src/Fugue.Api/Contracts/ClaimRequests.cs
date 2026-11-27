@@ -18,3 +18,23 @@ public sealed record AnswerClaimInfoRequest(string Answer);
 
 /// <summary>Body of a decision. <c>AmountMinor</c> is required to approve (0 &lt; amount &lt;= reserve) and must be absent to reject.</summary>
 public sealed record DecideClaimRequest(ClaimOutcome Outcome, string Reason, long? AmountMinor = null);
+
+/// <summary>Query parameters of the claims list, bound as one object (they stay flat in the URL and in OpenAPI). <c>Status</c> repeats or is comma separated.</summary>
+public sealed record ClaimListFilter
+{
+    public int? Limit { get; init; }
+
+    public string[]? Status { get; init; }
+
+    public string? Assigned { get; init; }
+
+    public string? Market { get; init; }
+
+    public string? Line { get; init; }
+
+    public string? Q { get; init; }
+
+    public string? Cursor { get; init; }
+
+    public Fugue.Application.Features.Claims.Queries.ListClaimsQuery ToQuery() => new(Limit, Status, Assigned, Market, Line, Q, Cursor);
+}
