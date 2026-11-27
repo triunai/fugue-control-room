@@ -2,26 +2,26 @@
 
 OVERWRITTEN at every wrap or pause, never appended; at most 40 lines. After a wrap or days away: read this first, then do "Next action" exactly. History lives in `docs/project-log.md` and `CHANGELOG.md`.
 
-## ▶ RESUME HERE — 2026-11-27 20:50 +08 (release wrap; submission 2026-11-28 15:00)
-Released **v0.0.2** (tag) on `main`, pushed to `origin` = github.com/triunai/fugue-control-room with `--tags`. FEATURE FREEZE (D-062): fixes and polish only. Timed claims build = `claims-window-start..claims-window-end`.
-Last green sha: 03448e5 (src/ unchanged since 457597b, where ArchTests 37 + Tests 740 passed on Testcontainers Postgres; Bruno 101/101 requests, 123/123 tests on the Docker stack; web 218 Vitest, lint, build clean; headless browser signed in + after a reload + full load of /sign-in: zero console errors). Fresh-database start verified on project `fugue-demo` (migrate + seed from empty, sink delivery 1/1).
+## ▶ RESUME HERE — 2026-11-28 01:00 +08 (submission today 15:00)
+`main` = v0.0.2 (tag) + post-tag polish + header claims search (D-063, merge 133c962). FEATURE FREEZE (D-062) otherwise stands. Timed claims build = `claims-window-start..claims-window-end`.
+Verified on 133c962: web 226 Vitest, lint, build clean; claims search 7 + ArchTests 37 in isolation; full suite = the pre-push gate (check `git ls-remote origin main` equals `git rev-parse main`). Headless on the demo stack (:8080): claimant finds own claims by number, policy and place and never another claimant's; staff find any; zero console errors; top bar and sidebar brand row share one line at 54 px (full and rail).
 No worktrees but `main`; no lanes running.
 
 ## Next action (exact, in order) — demo start
-1. Right before the call, recreate the clean demo stack (the current one has one smoke-test claim):
-   `docker compose -p fugue-demo down -v && docker compose -p fugue-demo up -d --build` (the dev stack is already down; its data stays in `fugue_fugue-pgdata`; back to it later with `docker compose -p fugue-demo down -v && docker compose up -d`).
-2. Do NOT run Bruno against the demo stack (it adds BRU- claims); run it on the dev stack only.
-3. Two windows: claimant `self@fugue.test` left, staff `staff@fugue.test` right, `http://localhost:8080/?tour=off` (add `&hood=off` while presenting), password in runbook 05. Script: `docs/DEMO.md`; rehearsal checklist: section 6 of `docs/reviews/fable/2026-11-27-panel-stress-test.md`.
-4. Private prep: `~/Repos/personal-work/interview-prep/walkthrough-prep.md` sections 0b, 12, 13 (deploy answer, test counts, Excel import answer, prepared answers).
+1. Right before the call, recreate the clean demo stack: `docker compose -p fugue-demo down -v && docker compose -p fugue-demo up -d --build` (dev data stays in `fugue_fugue-pgdata`; back to it with `docker compose -p fugue-demo down -v && docker compose up -d`).
+2. Do NOT run Bruno against the demo stack (it adds BRU- claims).
+3. Two windows: claimant `self@fugue.test` left, staff `staff@fugue.test` right, `http://localhost:8080/?tour=off` (add `&hood=off` while presenting), password in runbook 05. Script: `docs/DEMO.md`; rehearsal checklist: section 6 of `docs/reviews/fable/2026-11-27-panel-stress-test.md`. New beat: type a claim number in the header search as the claimant, then another claimant's number (nothing), then the same as staff.
+4. Private prep: `~/Repos/personal-work/interview-prep/walkthrough-prep.md` sections 0b, 12, 13.
 
-## Owner decisions (today)
-Feature freeze; Kafka kept, off by default, out of the demo and README highlights (D-062). v0.0.2. Hood: guards with real code, "How the API does it", "Tested by", ADRs first. D-060 corrected: the shell was adapted, not ported; faithful port parked (backlog #003).
+## Not done (owner's call)
+- `./start.sh` from a fresh clone end to end (tested only with a stub docker). It clashes with `fugue-demo` container names: `docker compose -p fugue-demo down` first.
+- Hosting (owner: tomorrow, if time): API as a Render free Docker web service (sleeps after 15 min, ~1 min wake) + Neon free Postgres + console as a static site; fallback Azure App Service F1.
 
 ## Pending owner questions
-Trimming Univer and the calendar for memory-capped deploys (owner's own note, still owed). Panel leftovers to decide or just answer: backlog #009.
+Trimming Univer and the calendar for memory-capped deploys (owner's own note). Panel leftovers: backlog #009.
 
 ## Owed inbox
-nth-quality flagged: context threshold 50% (`docs/conventions/doc-spine.md`) vs 60% elsewhere; `.githooks/README.md` says set `core.hooksPath` (AGENTS.md forbids). nth-polish: banner/tracks/Help sit inside commit c193a2e (message names only the SLA fix); assessment label clipping not reproduced, not proven fixed.
+nth-quality flagged: context threshold 50% (`docs/conventions/doc-spine.md`) vs 60% elsewhere; `.githooks/README.md` says set `core.hooksPath` (AGENTS.md forbids). nth-polish: banner/tracks/Help sit inside commit c193a2e (message names only the SLA fix).
 
-## Traps hit today
-Failure mode 33 (a web merge passes unit/lint/build and still does not boot for a returning user: load the page signed in AND after a reload). Failure mode 34 (a push over SSH outlives its connection during the 10-minute pre-push test run: `GIT_SSH_COMMAND="ssh -o ServerAliveInterval=20 -o ServerAliveCountMax=90"`, then `git ls-remote origin main`). Login limiter 429 on back-to-back Bruno runs: `docker compose restart api` (failure mode 25).
+## Traps hit
+Failure modes 33 (signed-in AND reloaded browser check), 34 (push keepalive + `git ls-remote`), 35 (shared test clock and background indexer: prove a flaky fix by injecting its condition). Login limiter 429 on back-to-back Bruno runs: `docker compose restart api` (25). Git hooks need `dotnet` on PATH in the committing shell.

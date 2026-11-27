@@ -299,3 +299,10 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
 - **AI proposed:** measured first: every page's own `.page` wrapper sits inside the shell's `.page` wrapper (since the shell lane, c58eb38), doubling the top padding; at 700 px tall the nav holds 601 px in 537 px, and the overflowing group is the starter example. Claims over customers for search, because customers are the starter example the brief never asks for; the claimant scope must apply to search on the server.
 - **Decision:** D-063 (one feature past the freeze, merge only if green and seen in a browser); two lanes in separate worktrees: nth-shellfix (padding, nav fit, flags) and nth-claimsearch.
 - **Why:** the polish is visible on the first screen of the demo; search is the owner's call and reuses a reviewed pattern.
+
+## 2026-11-28 00:55 - Claims search lands; the top bar and sidebar become one frame
+- **Asked:** the owner asked whether header claims search was done, then (fourth time) for the top bar and left sidebar to read as one seamless unit, using the shell concept.
+- **AI proposed:** the search lane stopped before committing (past its 21:35 cutoff); the lead committed it on its branch, merged main in, and ran the full suite, which failed one test that passes alone. Two causes, each reproduced by injecting its condition: a shared frozen test clock moved back behind a later claim, and the app's own background indexer winning the race against the test's explicit call. For the frame: the brand row takes the top bar's height and bottom line, both sit on `--surface`, and the sidebar's right edge starts below that line.
+- **Decision:** merge search (D-063) after the fixed test, a headless check on the demo (claimant finds own claims by number, policy and place, never another claimant's; staff find any; zero console errors) and the pre-push full suite; frame fix under the freeze as polish (4254133). Failure mode 35.
+- **Why:** a filter that passes proves nothing when test order is not fixed; the frame was a repeated ask visible on every screen of the demo.
+
