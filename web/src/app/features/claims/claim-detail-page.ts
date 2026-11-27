@@ -17,7 +17,7 @@ import { ClaimStatusPill, MoneyPipe } from './claim-bits';
 import { ClaimNextStep } from './claim-next-step';
 import { ClaimRecordBanner } from './claim-record-banner';
 import { ClaimActionDialog, ClaimDialogData, ClaimDialogMode, ClaimDialogResult } from './claim-action-dialog';
-import { ActionState, Actor, ClaimAction, availableActions, marketName } from './claims-logic';
+import { ActionState, Actor, ClaimAction, marketName } from './claims-logic';
 
 /** A command the page can run; Reload-and-retry is the user's choice after a 412, never an automatic replay. */
 type Command =
@@ -33,15 +33,6 @@ const DONE: Record<Command['kind'], string> = {
   requestInfo: 'Question sent to the claimant',
   decide: 'Decision recorded',
   settle: 'Claim settled',
-};
-
-const LABEL: Record<ClaimAction, string> = {
-  pickup: 'Pick up',
-  reserve: 'Set reserve',
-  requestInfo: 'Request info',
-  approve: 'Approve',
-  reject: 'Reject',
-  settle: 'Settle',
 };
 
 /** One claim, for both audiences: the claimant's view (status in plain words, timeline, answer box) and the staff view (actions, internal facts). */
@@ -74,7 +65,7 @@ const LABEL: Record<ClaimAction, string> = {
       } @else if (claimQuery.isError() && !claim()) {
         <div class="panel"><fg-error-state [error]="claimQuery.error()" (retry)="claimQuery.refetch()" /></div>
       } @else if (claim(); as c) {
-        <fg-claim-record-banner [claim]="c" [staff]="isStaff()" />
+        <fg-claim-record-banner [claim]="c" [actor]="actor()" />
 
         @if (conflict(); as k) {
           <div class="banner conflict" role="alert" data-testid="conflict-banner">
@@ -100,24 +91,6 @@ const LABEL: Record<ClaimAction, string> = {
             />
 
             <!-- assessment worksheet slot -->
-
-            @if (actions().length) {
-              <div class="actions" role="group" aria-label="Actions for this claim">
-                @for (a of actions(); track a.action) {
-                  <button
-                    type="button"
-                    class="btn"
-                    [class.btn-danger]="a.action === 'reject'"
-                    [disabled]="!a.enabled || command.isPending()"
-                    [title]="a.hint ?? ''"
-                    [attr.data-action]="a.action"
-                    (click)="run(a)"
-                  >
-                    {{ label(a) }}
-                  </button>
-                }
-              </div>
-            }
 
             @if (c.decisionReason || (c.approvedAmountMinor !== null && c.approvedAmountMinor !== undefined)) {
               <section class="panel panel-pad" aria-labelledby="dec-h">
@@ -294,10 +267,6 @@ export class ClaimDetailPage {
 
   /** Staff work claims; a claimant (no CLAIMS_ALL) sees their own. */
   protected readonly isStaff = computed(() => this.access.has('CLAIMS_ALL'));
-  protected readonly actions = computed<ActionState[]>(() => {
-    const c = this.claim();
-    return c ? availableActions(c, this.actor()) : [];
-  });
 
   protected readonly actor = computed<Actor>(() => ({
     userId: this.access.me()?.userId,
@@ -352,10 +321,6 @@ export class ClaimDetailPage {
       this.id();
       untracked(() => this.conflict.set(null));
     });
-  }
-
-  protected label(a: ActionState): string {
-    return LABEL[a.action];
   }
 
   /** The card's one primary button: the claimant's answer box takes focus; everything else opens its existing dialog. */

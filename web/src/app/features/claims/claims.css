@@ -236,7 +236,7 @@ textarea.input {
 }
 .kpi-n {
   font: 600 2.1rem/1 var(--font-display);
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 .kpi-l {
   font-size: 0.8667rem;

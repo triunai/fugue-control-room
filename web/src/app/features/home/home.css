@@ -23,6 +23,7 @@
 .hero-title {
   margin: 0.2rem 0 0.35rem;
   font: 600 1.7rem/1.15 var(--font-display);
+  font-variant-numeric: lining-nums;
 }
 .hero-sub {
   margin: 0;

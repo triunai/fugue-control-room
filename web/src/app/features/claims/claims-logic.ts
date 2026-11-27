@@ -145,158 +145,285 @@ export function localToday(now = new Date()): string {
   return `${now.getFullYear()}-${m}-${d}`;
 }
 
-/** Decision SLA used by the team page: an open claim older than this many days since submission is "past SLA". */
+/** SLA constants, in days. One place: the calendar and the team page read the same numbers. */
+export const SLA_PICKUP_DAYS = 2;
 export const SLA_DECISION_DAYS = 14;
+export const SLA_ANSWER_DAYS = 7;
+const DAY = 86_400_000;
 
-// ---- Record banner: the two tracks ----
+export type SlaKind = 'pickup' | 'decision' | 'answer';
+
+/** The next SLA a claim owes, from its status: pickup 2 d after submit, decision 14 d after submit, answer 7 d after the question. */
+export function slaDue(
+  claim: Pick<ClaimDto, 'status' | 'submittedAt'> & { openInfoRequest?: ClaimDto['openInfoRequest'] | null },
+): { kind: SlaKind; due: Date } | null {
+  const at = (iso: string, days: number) => new Date(new Date(iso).getTime() + days * DAY);
+  switch (claim.status) {
+    case 'Submitted':
+      return { kind: 'pickup', due: at(claim.submittedAt, SLA_PICKUP_DAYS) };
+    case 'UnderReview':
+      return { kind: 'decision', due: at(claim.submittedAt, SLA_DECISION_DAYS) };
+    case 'InfoRequested':
+      return claim.openInfoRequest
+        ? { kind: 'answer', due: at(claim.openInfoRequest.requestedAt, SLA_ANSWER_DAYS) }
+        : null;
+    default:
+      return null;
+  }
+}
+
+// ---- Record banner: milestones reached, on two tracks ----
 
 export type StepState = 'done' | 'current' | 'next' | 'todo';
 
 export interface TrackStep {
   label: string;
   state: StepState;
-  /** The step is the current one AND in an error tone (a rejected decision). */
-  error?: boolean;
-  /** A sub-state dot on the step (InfoRequested on Under review). */
-  dot?: string;
+  /** Reached (ticked). The current step is the last reached one. */
+  checked: boolean;
+  tone?: 'warn' | 'error';
+  /** Under a ticked step: when it happened (ISO). */
+  date?: string | null;
+  /** Under the step: who owes the Next step, or why the step is flagged. */
+  caption?: string;
 }
 
 export interface Track {
   steps: TrackStep[];
-  /** "2 of 4" */
+  /** "2 of 4" ('' when the track is replaced by a note). */
   position: string;
+  /** Replaces the steps (a rejected claim has no money track). */
+  note?: string;
 }
 
-function buildTrack(labels: string[], current: number, over?: Partial<Record<number, Partial<TrackStep>>>): Track {
+type Milestone = Partial<Pick<TrackStep, 'label' | 'tone' | 'date' | 'caption'>>;
+
+function track(labels: string[], reached: number, extra: Record<number, Milestone> = {}): Track {
   const steps = labels.map<TrackStep>((label, i) => ({
     label,
-    state: i < current ? 'done' : i === current ? 'current' : i === current + 1 ? 'next' : 'todo',
-    ...over?.[i],
+    checked: i < reached,
+    state: i < reached - 1 ? 'done' : i === reached - 1 ? 'current' : i === reached ? 'next' : 'todo',
+    ...extra[i],
   }));
-  return { steps, position: `${current + 1} of ${labels.length}` };
+  return { steps, position: `${reached} of ${labels.length}` };
 }
 
-/** Claim track: Submitted, Under review, Decided, Closed. InfoRequested is a dot on Under review; Rejected ends the track at Decided. */
-export function claimTrack(status: ClaimStatus): Track {
-  switch (status) {
+type TrackClaim = Pick<
+  ClaimDto,
+  'status' | 'assignedOfficerId' | 'reserveMinor' | 'submittedAt' | 'assignedAt' | 'decidedAt' | 'settledAt'
+>;
+
+/** Who owes the Next milestone, as the viewer reads it: "you", or the role that does. */
+function owner(claim: TrackClaim, actor: Actor, what: 'pickup' | 'decide' | 'settle'): string {
+  const can = (p: string) => actor.permissions.has(p);
+  if (!can('CLAIMS_ALL')) return what === 'settle' ? 'manager' : 'claims team';
+  if (what === 'settle') return can('CLAIMS_SETTLE') ? 'you' : 'manager';
+  if (what === 'pickup') return can('CLAIMS_HANDLE') ? 'you' : 'claims team';
+  return availableActions(claim, actor).length ? 'you' : 'claims team';
+}
+
+/** Claim track: Reported, Picked up, Decided, Closed. A milestone is reached or it is not; InfoRequested does not move the count. */
+export function claimTrack(claim: TrackClaim, actor: Actor): Track {
+  const labels = ['Reported', 'Picked up', 'Decided', 'Closed'];
+  const staff = actor.permissions.has('CLAIMS_ALL');
+  const dates: Record<number, Milestone> = {
+    0: { date: claim.submittedAt },
+    1: { date: staff ? claim.assignedAt : undefined },
+    2: { date: claim.decidedAt },
+    3: { date: claim.settledAt ?? (claim.status === 'Rejected' ? claim.decidedAt : undefined) },
+  };
+  const next = (i: number, who: string): Record<number, Milestone> => ({ ...dates, [i]: { caption: who } });
+  switch (claim.status) {
     case 'Submitted':
-      return buildTrack(['Submitted', 'Under review', 'Decided', 'Closed'], 0);
+      return track(labels, 1, next(1, owner(claim, actor, 'pickup')));
     case 'UnderReview':
-      return buildTrack(['Submitted', 'Under review', 'Decided', 'Closed'], 1);
+      return track(labels, 2, next(2, owner(claim, actor, 'decide')));
     case 'InfoRequested':
-      return buildTrack(['Submitted', 'Under review', 'Decided', 'Closed'], 1, {
-        1: { dot: 'Waiting on the claimant' },
+      return track(labels, 2, {
+        ...next(2, 'claims team'),
+        1: { ...dates[1], tone: 'warn', caption: 'Waiting on claimant' },
       });
     case 'Approved':
-      return buildTrack(['Submitted', 'Under review', 'Decided', 'Closed'], 2);
+      return track(labels, 3, { ...next(3, owner(claim, actor, 'settle')), 2: { ...dates[2], label: 'Approved' } });
     case 'Rejected':
-      return buildTrack(['Submitted', 'Under review', 'Decided'], 2, { 2: { label: 'Rejected', error: true } });
+      return track(labels, 4, { ...dates, 2: { ...dates[2], label: 'Rejected', tone: 'error' } });
     case 'Settled':
-      return buildTrack(['Submitted', 'Under review', 'Decided', 'Closed'], 3);
+      return track(labels, 4, dates);
   }
 }
 
 /**
- * Money track. Staff: No reserve, Reserve set, Approved amount, Settled. The claimant never sees the reserve, so their
- * track is Assessing, Approved amount, Settled. A rejected claim ends the money track where it stood.
+ * Money track. Staff: Reserved, Approved, Paid. The claimant never sees a reserve, so theirs is Assessed, Approved, Paid
+ * and never an amount. A rejected claim has no money track, only a line saying so.
  */
 export function moneyTrack(
-  claim: Pick<ClaimDto, 'status' | 'reserveMinor' | 'approvedAmountMinor'>,
-  staff: boolean,
+  claim: Pick<
+    ClaimDto,
+    'status' | 'assignedOfficerId' | 'reserveMinor' | 'decidedAt' | 'settledAt' | 'submittedAt' | 'assignedAt'
+  >,
+  actor: Actor,
 ): Track {
+  const staff = actor.permissions.has('CLAIMS_ALL');
+  if (claim.status === 'Rejected') {
+    return { steps: [], position: '', note: staff ? 'No payment. Reserve released.' : 'No payment' };
+  }
   const hasReserve = claim.reserveMinor !== null && claim.reserveMinor !== undefined;
   const approved = claim.status === 'Approved' || claim.status === 'Settled';
-  if (staff) {
-    if (claim.status === 'Rejected') {
-      // The money track ends where it stood: no "Next" step after a rejection.
-      return buildTrack(hasReserve ? ['No reserve', 'Reserve set'] : ['No reserve'], hasReserve ? 1 : 0);
-    }
-    const labels = ['No reserve', 'Reserve set', 'Approved amount', 'Settled'];
-    return buildTrack(labels, claim.status === 'Settled' ? 3 : approved ? 2 : hasReserve ? 1 : 0);
+  const reached = claim.status === 'Settled' ? 3 : approved ? 2 : staff && hasReserve ? 1 : 0;
+  const labels = [staff ? 'Reserved' : 'Assessed', 'Approved', 'Paid'];
+  const who =
+    reached === 2
+      ? owner(claim, actor, 'settle')
+      : reached === 0 && staff
+        ? owner(claim, actor, 'decide')
+        : 'claims team';
+  const extra: Record<number, Milestone> = reached < 3 ? { [reached]: { caption: who } } : {};
+  if (reached >= 3) extra[2] = { date: claim.settledAt };
+  if (reached >= 2) extra[1] = { date: claim.decidedAt };
+  return track(labels, reached, extra);
+}
+
+/** The staff money chip: No reserve, Reserved <amount>, Approved <amount>, Paid. Claimants get none (no reserve to name). */
+export function moneyChip(
+  claim: Pick<ClaimDto, 'status' | 'reserveMinor' | 'approvedAmountMinor' | 'currency'>,
+): string {
+  switch (claim.status) {
+    case 'Rejected':
+      return 'No payment';
+    case 'Settled':
+      return 'Paid';
+    case 'Approved':
+      return `Approved ${formatMoney(claim.approvedAmountMinor, claim.currency)}`;
+    default:
+      return claim.reserveMinor === null || claim.reserveMinor === undefined
+        ? 'No reserve'
+        : `Reserved ${formatMoney(claim.reserveMinor, claim.currency)}`;
   }
-  if (claim.status === 'Rejected') return buildTrack(['Assessing'], 0);
-  return buildTrack(['Assessing', 'Approved amount', 'Settled'], claim.status === 'Settled' ? 2 : approved ? 1 : 0);
 }
 
 // ---- Next step card ----
 
-export type NextChip = 'Ready' | 'Waiting on claimant' | 'Waiting' | 'Blocked' | 'Done';
+export type NextChip =
+  | 'Ready'
+  | 'Overdue'
+  | 'Blocked'
+  | 'Not yours'
+  | 'Waiting'
+  | 'Waiting on claimant'
+  | 'Waiting on manager'
+  | 'Action needed'
+  | 'With us'
+  | 'Approved'
+  | 'Closed'
+  | 'Paid'
+  | 'Done';
 
 export interface Blocker {
   label: string;
   ok: boolean;
 }
 
+export type NextAction = ClaimAction | 'answer';
+
 export interface NextStep {
   chip: NextChip;
   tone: Tone;
   instruction: string;
   why: string;
+  /** "Day 5 of 14", "Acting as manager on X's claim". */
+  caption?: string;
+  /** The claimant's open question, shown on the card. */
+  question?: string;
   blockers: Blocker[];
-  /** The ONE primary button: an existing action's dialog, or 'answer' (focus the claimant's answer box). */
-  primary?: { kind: ClaimAction | 'answer'; label: string };
+  /** The ONE primary button. Absent when there is nothing to do: never a disabled primary. */
+  primary?: { kind: NextAction; label: string };
+  secondary: { kind: ClaimAction; label: string }[];
 }
 
 const CHIP_TONE: Record<NextChip, Tone> = {
   Ready: 'acc',
-  'Waiting on claimant': 'warn',
-  Waiting: 'muted',
+  Overdue: 'err',
   Blocked: 'err',
+  'Not yours': 'muted',
+  Waiting: 'muted',
+  'Waiting on claimant': 'warn',
+  'Waiting on manager': 'muted',
+  'Action needed': 'warn',
+  'With us': 'muted',
+  Approved: 'ok',
+  Closed: 'muted',
+  Paid: 'ok',
   Done: 'ok',
 };
 
-function step(s: Omit<NextStep, 'tone'>): NextStep {
-  return { ...s, tone: CHIP_TONE[s.chip] };
+type CardClaim = Pick<
+  ClaimDto,
+  | 'status'
+  | 'assignedOfficerId'
+  | 'assignedOfficerName'
+  | 'reserveMinor'
+  | 'approvedAmountMinor'
+  | 'submittedAt'
+  | 'currency'
+  | 'decisionReason'
+> & { openInfoRequest?: ClaimDto['openInfoRequest'] | null };
+
+function card(
+  c: Omit<NextStep, 'tone' | 'secondary' | 'blockers'> & Partial<Pick<NextStep, 'secondary' | 'blockers'>>,
+): NextStep {
+  return { blockers: [], secondary: [], ...c, tone: CHIP_TONE[c.chip] };
 }
 
-/** What the signed-in person should do with THIS claim now, from real data. One pure function: (claim, actor) -> card. */
-export function nextStep(
-  claim: Pick<
-    ClaimDto,
-    'status' | 'assignedOfficerId' | 'assignedOfficerName' | 'reserveMinor' | 'approvedAmountMinor'
-  > & { openInfoRequest?: ClaimDto['openInfoRequest'] | null },
-  actor: Actor,
-): NextStep {
+const daysBetween = (iso: string, now: number) => Math.max(0, Math.floor((now - new Date(iso).getTime()) / DAY));
+
+/** What the signed-in person should do with THIS claim now, from real data. One pure function: (claim, actor, now) -> card. */
+export function nextStep(claim: CardClaim, actor: Actor, now = Date.now()): NextStep {
   const can = (p: string) => actor.permissions.has(p);
   const staff = can('CLAIMS_ALL');
+  const money = (n: number | null | undefined) => formatMoney(n, claim.currency);
   const hasReserve = claim.reserveMinor !== null && claim.reserveMinor !== undefined;
   const open = claim.openInfoRequest !== null && claim.openInfoRequest !== undefined;
   const work = availableActions(claim, actor);
   const mayWork = work.length > 0;
+  const age = daysBetween(claim.submittedAt, now);
 
-  if (claim.status === 'Rejected' || claim.status === 'Settled') {
-    return step({
-      chip: 'Done',
-      instruction:
-        claim.status === 'Rejected' ? 'This claim is closed: rejected.' : 'This claim is settled and closed.',
-      why: staff ? 'Nothing more to do on it.' : WHAT_NEXT[claim.status],
-      blockers: [],
+  if (claim.status === 'Rejected') {
+    return card({
+      chip: staff ? 'Done' : 'Closed',
+      instruction: staff ? 'This claim is closed: rejected.' : 'Your claim was not approved.',
+      why: claim.decisionReason ?? WHAT_NEXT.Rejected,
+    });
+  }
+  if (claim.status === 'Settled') {
+    return card({
+      chip: staff ? 'Done' : 'Paid',
+      instruction: staff ? 'This claim is settled and closed.' : 'Your claim is paid.',
+      why: staff ? 'Nothing more to do on it.' : WHAT_NEXT.Settled,
     });
   }
 
   if (!staff) {
     switch (claim.status) {
       case 'InfoRequested':
-        return step({
-          chip: 'Ready',
+        return card({
+          chip: 'Action needed',
           instruction: 'We need one answer from you.',
           why: 'Your claim is paused until you reply. As soon as you do, the review carries on.',
-          blockers: [{ label: 'Answer the question below', ok: false }],
+          question: claim.openInfoRequest?.question,
+          blockers: [{ label: 'Answer the question', ok: false }],
           primary: can('CLAIMS_RESPOND') ? { kind: 'answer', label: 'Answer now' } : undefined,
         });
       case 'Approved':
-        return step({
-          chip: 'Waiting',
-          instruction: 'Your claim is approved. Nothing to do.',
+        return card({
+          chip: 'Approved',
+          instruction: `Approved: payment of ${money(claim.approvedAmountMinor)} is being arranged.`,
           why: WHAT_NEXT.Approved,
-          blockers: [],
         });
       default:
-        return step({
-          chip: 'Waiting',
+        return card({
+          chip: 'With us',
           instruction: claim.status === 'Submitted' ? 'We have your claim.' : 'An officer is reviewing your claim.',
           why: WHAT_NEXT[claim.status],
-          blockers: [],
         });
     }
   }
@@ -304,75 +431,86 @@ export function nextStep(
   switch (claim.status) {
     case 'Submitted':
       return mayWork
-        ? step({
-            chip: 'Ready',
+        ? card({
+            chip: age >= SLA_PICKUP_DAYS ? 'Overdue' : 'Ready',
             instruction: 'Pick up this claim.',
-            why: 'Nobody is assigned yet. Picking it up makes you the officer and starts the review.',
-            blockers: [{ label: 'Not yet assigned to an officer', ok: true }],
+            why:
+              age >= SLA_PICKUP_DAYS
+                ? `Nobody is assigned and it has waited ${age} days (pickup target is ${SLA_PICKUP_DAYS}).`
+                : 'Nobody is assigned yet. Picking it up makes you the officer and starts the review.',
             primary: { kind: 'pickup', label: 'Pick up' },
           })
-        : step({
+        : card({
             chip: 'Waiting',
             instruction: 'Waiting for an officer to pick it up.',
             why: 'You do not hold the permission to handle claims.',
-            blockers: [{ label: 'Needs CLAIMS_HANDLE', ok: false }],
           });
     case 'UnderReview': {
       if (!mayWork) {
-        return step({
-          chip: 'Waiting',
-          instruction: `${claim.assignedOfficerName ?? 'Another officer'} is working this claim.`,
-          why: 'Only the assigned officer, or a manager, can act on it.',
-          blockers: [{ label: 'Assigned to someone else', ok: false }],
+        return card({
+          chip: 'Not yours',
+          instruction: `Assigned to ${claim.assignedOfficerName ?? 'another officer'}.`,
+          why: 'Only they or a manager can act on it.',
         });
       }
+      const mine = claim.assignedOfficerId === actor.userId;
+      const caption = mine ? undefined : `Acting as manager on ${claim.assignedOfficerName ?? 'the officer'}'s claim`;
       const blockers: Blocker[] = [
-        { label: 'Reserve is set', ok: hasReserve },
-        { label: 'No open question to the claimant', ok: !open },
-        { label: 'Approved amount can stay within the reserve', ok: hasReserve },
+        { label: mine ? 'Assigned to you' : `Assigned to ${claim.assignedOfficerName ?? 'an officer'}`, ok: true },
+        { label: 'Reserve set', ok: hasReserve },
+        { label: 'No open question', ok: !open },
       ];
       return hasReserve
-        ? step({
+        ? card({
             chip: 'Ready',
-            instruction: 'Decide this claim.',
-            why: 'The reserve is set, so you can approve (up to the reserve) or reject. Ask the claimant first if you need more.',
+            instruction: `Decide: approve up to ${money(claim.reserveMinor)}, or reject.`,
+            why: 'The reserve is set. Ask the claimant first if you need more information.',
+            caption: [`Day ${age} of ${SLA_DECISION_DAYS}`, caption].filter(Boolean).join(' · '),
             blockers,
             primary: { kind: 'approve', label: 'Approve' },
+            secondary: [
+              { kind: 'reject', label: 'Reject' },
+              { kind: 'requestInfo', label: 'Request info' },
+              { kind: 'reserve', label: 'Change reserve' },
+            ],
           })
-        : step({
+        : card({
             chip: 'Blocked',
-            instruction: 'Set the reserve before you decide.',
-            why: 'A claim cannot be approved without a reserve, and the approved amount may not exceed it.',
+            instruction: 'Set a reserve.',
+            why: 'A claim cannot be approved without one, and exposure cannot count it until it is set.',
+            caption,
             blockers,
             primary: { kind: 'reserve', label: 'Set reserve' },
+            secondary: [
+              { kind: 'requestInfo', label: 'Request info' },
+              { kind: 'reject', label: 'Reject' },
+            ],
           });
     }
-    case 'InfoRequested':
-      return step({
+    case 'InfoRequested': {
+      const asked = claim.openInfoRequest ? daysBetween(claim.openInfoRequest.requestedAt, now) : null;
+      return card({
         chip: 'Waiting on claimant',
-        instruction: 'Waiting for the claimant to answer.',
-        why: 'The review resumes by itself the moment they reply. You can still adjust the reserve meanwhile.',
-        blockers: [{ label: 'Claimant has answered the open question', ok: false }],
+        instruction:
+          asked === null ? 'Waiting for the claimant to answer.' : `Waiting for the claimant: asked ${asked} days ago.`,
+        why: 'The review resumes by itself the moment they reply.',
+        question: claim.openInfoRequest?.question,
+        blockers: [{ label: 'Claimant has answered', ok: false }],
+        secondary: mayWork ? [{ kind: 'reserve', label: 'Change reserve' }] : [],
       });
+    }
     case 'Approved':
       return can('CLAIMS_SETTLE')
-        ? step({
+        ? card({
             chip: 'Ready',
-            instruction: 'Settle this claim.',
+            instruction: `Settle ${money(claim.approvedAmountMinor)}.`,
             why: 'It is approved. Settling records the payment as made and closes the claim.',
-            blockers: [
-              {
-                label: 'Approved amount recorded',
-                ok: claim.approvedAmountMinor !== null && claim.approvedAmountMinor !== undefined,
-              },
-            ],
             primary: { kind: 'settle', label: 'Settle' },
           })
-        : step({
-            chip: 'Waiting',
+        : card({
+            chip: 'Waiting on manager',
             instruction: 'Waiting for a manager to settle it.',
             why: 'Only a manager can record the payment.',
-            blockers: [{ label: 'Needs CLAIMS_SETTLE', ok: false }],
           });
   }
 }

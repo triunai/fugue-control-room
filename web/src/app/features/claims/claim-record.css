@@ -293,3 +293,35 @@
   border-radius: var(--radius-panel);
   background: var(--surface2);
 }
+.track-note {
+  margin: 0;
+  color: var(--muted);
+}
+.step-date {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.step.warn .step-dot {
+  border-color: var(--warn);
+  background: var(--warn);
+  color: var(--on-accent);
+}
+.step.warn::before {
+  background: var(--warn);
+}
+.step.warn .step-label {
+  color: var(--warn-ink);
+}
+.nc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.question {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  border-left: 3px solid var(--warn);
+  background: var(--surface);
+}
