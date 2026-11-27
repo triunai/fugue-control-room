@@ -113,7 +113,7 @@ flowchart TB
 - **A transactional outbox.** State, timeline row, audit row and event commit together or not at all. Events leave through signed webhooks; a Kafka publisher is optional and off by default.
 - **An append-only audit trail.** Field-level diffs, failure rows for rejected commands, and no way to write to it through the API.
 - **Search that degrades honestly.** Meilisearch backs audit search and claim search (claim number, policy number, place, description, claimant name; typo tolerant). Claim search applies the caller's scope itself. When the engine is down the endpoint answers 503, not an empty list.
-- **Excel in the console.** A reserve sheet and a claim assessment worksheet (Univer) with Open in Excel.
+- **Excel in the console.** A reserve sheet and a claim assessment worksheet (Univer) with Save to Excel.
 - **An SLA calendar** (FullCalendar, lazy-loaded).
 - **Team and exposure, per currency.** Per officer: open load, oldest claim, decisions in 7 and 30 days, median days to decision. Exposure per market, line and currency; there is no grand total, because SGD plus IDR needs a rate and a rate date.
 - **A console that explains itself.** Every page has an "Under the hood" panel: the live API calls, how the API does it, the guards with the real enforcing code, the tests that cover the page, and the ADRs.
@@ -319,7 +319,7 @@ The timed window starts at tag `claims-window-start` and ends at `claims-window-
 | Extra | Where |
 |---|---|
 | Console shell from the owner's reference design; a reviewer tour per persona and page (Help, `?tour=off`) | `web/src/app/features/shell/` |
-| Univer reserve sheet and assessment worksheet with Open in Excel; FullCalendar SLA calendar (bundle cost in `web/README.md`) | `web/src/app/features/claims/` |
+| Univer reserve sheet and assessment worksheet with Save to Excel; FullCalendar SLA calendar (bundle cost in `web/README.md`) | `web/src/app/features/claims/` |
 | Meilisearch audit search and claim search (optional service) | [runbook 06](docs/runbooks/06-audit.md) |
 | Kafka publisher behind the event port (optional compose profile) | [runbook 12](docs/runbooks/12-kafka.md), [ADR-011](docs/adr/ADR-011-outbox-and-signed-webhooks.md) |
 | Mutation testing (Stryker.NET), pairwise cases (PICT), k6 load scripts | [`docs/quality/`](docs/quality/README.md), `perf/k6/` |

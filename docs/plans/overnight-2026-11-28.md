@@ -19,12 +19,12 @@ Order inside P1: demo-visible first (5 to 9), then 11a and 11b, then 10, 11c. Fe
 - [ ] 5. Forms: no native OS popups. Console-styled select (CDK overlay listbox, keyboard + a11y) and date picker for every
       form; "Fill with an example" on every form, like the sign-in demo accounts (Report an incident: 3-4 realistic templates per
       market/line; request info; set reserve; decide/reject reason; claimant answer; webhook subscription; customers; add user).
-- [ ] 6. Claim page assessment worksheet: full workbook feel (footer, sheet tab, spare columns), an Export button;
+- [x] 6. (0439df5, verified on :8080 03:35: workbook footer+tab, Export CSV, Save to Excel icons, 0 errors) Claim page assessment worksheet: full workbook feel (footer, sheet tab, spare columns), an Export button;
       rename "Open in Excel" to "Save to Excel" everywhere; icons on Save to Excel and Use as reserve (and Reserve sheet buttons).
-- [ ] 7. Claim page copy: rewrite the "Next step" block (blocked state reads badly); explain the Handling and Payout tracks
+- [x] 7. (0439df5: next-step copy, step popovers on hover/focus, How a claim moves modal closes on Esc and outside click) Claim page copy: rewrite the "Next step" block (blocked state reads badly); explain the Handling and Payout tracks
       (hover popover per step and a "How a claim moves" modal).
-- [ ] 8. SLA calendar: rounded corners, warmer cells (tokens, not white), events and today styled in the console palette.
-- [ ] 9. Env pill `dev · net8 · v1` opens a "Stack" modal: Angular + key libraries, .NET 8 + key packages, PostgreSQL version and
+- [x] 8. (00e5c76: rounded, token cells, today and events in palette) SLA calendar: rounded corners, warmer cells (tokens, not white), events and today styled in the console palette.
+- [x] 9. (00e5c76: Stack dialog; FOUND PostgreSQL 17 (postgres:17-alpine in docker-compose.yml), ids UUID v7 from the API (Uuid7.NewGuid): owner's 'Postgres 18' is wrong, 'timestamped GUIDs' is right) Env pill `dev · net8 · v1` opens a "Stack" modal: Angular + key libraries, .NET 8 + key packages, PostgreSQL version and
       ID scheme. VERIFY first (compose image tag; owner believes Postgres 18 and timestamped GUIDs; state what the code really
       uses, fix the owner's belief in the handoff if it differs).
 - [ ] 10. Search hardening from `docs/research/2026-11-28-meilisearch.md`: market name and line searchable, synonyms (SG ->
