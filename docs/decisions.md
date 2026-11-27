@@ -73,8 +73,18 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-060 | Console shell adapted (not ported) from the owner's reference app; faithful port parked (correction in the entry) | - |
 | D-061 | Fable interview-readiness review: all 15 changes accepted, Kafka adapter included | [review](reviews/fable/2026-11-27-interview-readiness.md) |
 | D-062 | Feature freeze for v0.0.2; Kafka kept but ignored (off by default, out of the demo and README highlights) | - |
+| D-063 | Owner lifts the freeze for one feature: Meilisearch claims search, claimant scope enforced server-side | - |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-063 — Claims search on Meilisearch (one feature past the freeze) — 2026-11-27
+WS: WS-22
+Context: at 20:53, with v0.0.2 tagged, the owner asked what Meilisearch should index next ("claims? customers?") and to add it. Customers are the starter example the brief never asks for; claims are what officers look up by number, policy, claimant or place.
+Decision: index claims, not customers. Same pattern as audit search (D-058): a background indexer copies claim rows into a Meilisearch index; `GET /api/v1/claims/search` applies the claimant scope SERVER-SIDE as a Meilisearch filter (a claimant only ever gets their own claims; the browser never talks to Meilisearch), returns 503 `search.unavailable` when the engine is down, and the console falls back to the existing list. Built in lane nth-claimsearch and merged only if every gate and a browser check pass; otherwise parked as a prepared answer. The freeze (D-062) otherwise stands.
+Why: it answers the brief's "what does an officer need to manage their workload" with a real lookup, and it reuses a reviewed pattern instead of inventing one the night before.
+Who: owner (lifted the freeze, asked for it), AI lead (claims over customers, scope rule, merge gate)
+Status: accepted
+Promote: no
 
 ## D-062 — Feature freeze for v0.0.2; Kafka kept but ignored — 2026-11-27
 WS: WS-22
