@@ -19,3 +19,7 @@ The owner wants a driver.js walkthrough as the LAST console touch, only on certa
 ### #003 — KIV: console shell closer to the reference design (collapsible nav groups, user card, breadcrumbs)
 WS: WS-07
 Owner likes a reference shell: grouped sidebar with collapsible sections and count badges, the signed-in user card at the bottom with sign-out, a version footer, breadcrumbs in the top bar, a command search. Where: `web/src/app/features/shell/`. Size M (search palette L). Close with a scoped pass: breadcrumbs + bottom user card + collapsible groups first; search later.
+
+### #004 — KIV: role × permission matrix on the Access screen
+WS: WS-07
+The owner likes a reference "who can do what" grid: one column per role (with member counts and an Edit action), one row per permission grouped by area, ticks where the role grants it, system roles adjustable but not deletable. Fugue has the data (roles, role_permissions, permissions with modules) but no list endpoint for roles with their grants. Where: a `GET /api/v1/roles` read + `web/src/app/features/access/`. Size M. Close after the claims window.
