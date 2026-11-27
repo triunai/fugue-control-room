@@ -1,0 +1,22 @@
+meta {
+  name: Pickup without If-Match is 428
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/pickup
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{officerToken}}
+}
+
+tests {
+  test("428 claim.if_match_required", function () {
+    expect(res.status).to.equal(428);
+    expect(res.body.code).to.equal("claim.if_match_required");
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Staff without CLAIMS_SETTLE cannot settle: 403
+  type: http
+  seq: 19
+}
+
+post {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/settle
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{officerToken}}
+}
+
+headers {
+  If-Match: {{claimEtag}}
+}
+
+tests {
+  test("403", function () {
+    expect(res.status).to.equal(403);
+  });
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Only the assigned officer may ask: another officer gets 409
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/info-requests
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{secondOfficerToken}}
+}
+
+headers {
+  If-Match: {{claimEtag}}
+}
+
+body:json {
+  { "question": "Not my claim?" }
+}
+
+tests {
+  test("409 claim.not_assigned_to_you", function () {
+    expect(res.status).to.equal(409);
+    expect(res.body.code).to.equal("claim.not_assigned_to_you");
+  });
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Approving without a reserve is 409
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/decision
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{officerToken}}
+}
+
+headers {
+  If-Match: {{claimEtag}}
+}
+
+body:json {
+  { "outcome": "approve", "amountMinor": 1000, "reason": "Covered." }
+}
+
+tests {
+  test("409 claim.reserve_required", function () {
+    expect(res.status).to.equal(409);
+    expect(res.body.code).to.equal("claim.reserve_required");
+  });
+}

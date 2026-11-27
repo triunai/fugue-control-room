@@ -1,0 +1,26 @@
+meta {
+  name: A second officer with the old ETag gets 412
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/pickup
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{secondOfficerToken}}
+}
+
+headers {
+  If-Match: {{submitEtag}}
+}
+
+tests {
+  test("412 claim.version_mismatch", function () {
+    expect(res.status).to.equal(412);
+    expect(res.body.code).to.equal("claim.version_mismatch");
+  });
+}

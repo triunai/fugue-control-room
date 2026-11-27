@@ -1,0 +1,21 @@
+meta {
+  name: Staff cannot read exposure: 403
+  type: http
+  seq: 25
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/exposure
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{officerToken}}
+}
+
+tests {
+  test("403", function () {
+    expect(res.status).to.equal(403);
+  });
+}

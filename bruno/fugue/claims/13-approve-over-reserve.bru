@@ -1,0 +1,30 @@
+meta {
+  name: Approving more than the reserve is 400
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/decision
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{officerToken}}
+}
+
+headers {
+  If-Match: {{claimEtag}}
+}
+
+body:json {
+  { "outcome": "approve", "amountMinor": 100001, "reason": "Covered." }
+}
+
+tests {
+  test("400 claim.amount_invalid", function () {
+    expect(res.status).to.equal(400);
+    expect(res.body.code).to.equal("claim.amount_invalid");
+  });
+}

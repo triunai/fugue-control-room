@@ -1,0 +1,30 @@
+meta {
+  name: Another claimant cannot answer: 404
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/info-requests/{{infoRequestId}}/response
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{otherClaimantToken}}
+}
+
+headers {
+  If-Match: {{claimEtag}}
+}
+
+body:json {
+  { "answer": "I am not the claimant." }
+}
+
+tests {
+  test("404 claim.not_found", function () {
+    expect(res.status).to.equal(404);
+    expect(res.body.code).to.equal("claim.not_found");
+  });
+}

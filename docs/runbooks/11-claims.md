@@ -108,3 +108,7 @@ Expect on a freshly seeded database: `workload` lists `Dev Staff` and `Dev Manag
 ## 6. Events
 
 Every move also emits an outbox event keyed by the claim id (so per-claim order holds): `claim.submitted.v1`, `claim.assigned.v1`, `claim.info.requested.v1`, `claim.info.provided.v1`, `claim.decided.v1` (status says approved or rejected), `claim.settled.v1`. Payloads are thin on purpose: `id`, `number`, `status`, `market` (`line` on submitted); never the description, reserve or amounts. Subscribe to `claim.*` as in runbook 07.
+
+## 7. Regression suite (Bruno)
+
+`bruno/fugue/claims/` replays this walk-through as 25 requests with assertions: submit (201, Location, ETag), the claimant's own list, 404 for another claimant, the staff queue oldest first, 428, 412 stale then 409 fresh, reserve required (409), over the reserve (400), not the assigned officer (409), the question and the answer (and 404 for the wrong claimant), approve, 403 for staff settling, the manager settling, settle again (409), the claimant's timeline, workload, exposure and its 403. Run it with the API up and seeded (`npm run api:test`, or `cd bruno/fugue && npx bru run claims --env local`). The suite signs in five accounts per run and the sign-in limiter allows 20 per minute per IP, so wait a minute between two full runs.

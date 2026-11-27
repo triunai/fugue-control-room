@@ -1,0 +1,38 @@
+meta {
+  name: Officer asks the claimant a question (InfoRequested)
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/info-requests
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{officerToken}}
+}
+
+headers {
+  If-Match: {{claimEtag}}
+}
+
+body:json {
+  { "question": "Please upload photos of the damage." }
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("claimEtag", res.headers["etag"]);
+    bru.setVar("infoRequestId", res.body.openInfoRequest.id);
+  }
+}
+
+tests {
+  test("200, InfoRequested, the question is open", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.status).to.equal("InfoRequested");
+    expect(res.body.openInfoRequest.question).to.equal("Please upload photos of the damage.");
+  });
+}

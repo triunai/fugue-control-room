@@ -1,0 +1,24 @@
+meta {
+  name: Workload board (staff): officers, unassigned count, ageing bands
+  type: http
+  seq: 23
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/workload
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{officerToken}}
+}
+
+tests {
+  test("200 with the board's shape", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.officers).to.be.an("array");
+    expect(res.body.ageing.map(function (b) { return b.label; })).to.eql(["0-2", "3-7", "8-14", "15+"]);
+    expect(res.body.unassignedCount).to.be.a("number");
+  });
+}

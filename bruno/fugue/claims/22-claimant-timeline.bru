@@ -1,0 +1,27 @@
+meta {
+  name: The claimant reads the timeline: six rows, staff as the Claims team
+  type: http
+  seq: 22
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/timeline
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{claimantToken}}
+}
+
+tests {
+  test("200 with Submitted, UnderReview, InfoRequested, UnderReview, Approved, Settled", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.map(function (e) { return e.toStatus; })).to.eql(["Submitted", "UnderReview", "InfoRequested", "UnderReview", "Approved", "Settled"]);
+  });
+  test("staff actions read as the Claims team and no row carries money", function () {
+    expect(res.body[1].actorDisplay).to.equal("Claims team");
+    expect(res.body[0].actorDisplay).to.not.equal("Claims team");
+    expect(JSON.stringify(res.body)).to.not.include("100000");
+  });
+}
