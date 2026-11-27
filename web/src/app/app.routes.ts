@@ -4,12 +4,17 @@ import { AccessService } from './core/auth/access.service';
 import { authGuard, guestGuard, permissionGuard } from './core/auth/guards';
 import { ACCESS_HOOD } from './features/access/access-page.hood';
 import { AUDIT_HOOD } from './features/audit/audit-page.hood';
+import { SCORE_HOOD } from './features/audit/score-page.hood';
 import { CLAIM_DETAIL_HOOD } from './features/claims/claim-detail-page.hood';
 import { CLAIMS_QUEUE_HOOD } from './features/claims/claims-queue-page.hood';
 import { MY_CLAIMS_HOOD } from './features/claims/my-claims-page.hood';
 import { REPORT_HOOD } from './features/claims/report-page.hood';
 import { TEAM_HOOD } from './features/claims/team-page.hood';
+import { CUSTOMERS_HOOD } from './features/customers/customers-page.hood';
 import { HOME_HOOD } from './features/home/home-page.hood';
+import { MODULES_HOOD } from './features/modules/modules-page.hood';
+import { PROFILE_HOOD } from './features/profile/profile-page.hood';
+import { WEBHOOKS_HOOD } from './features/webhooks/webhooks-page.hood';
 import { landingKind } from './features/home/home-logic';
 import { NAV } from './features/shell/nav';
 
@@ -113,7 +118,7 @@ export const routes: Routes = [
       {
         path: 'customers',
         canActivate: [permissionGuard],
-        data: { permission: 'CUSTOMERS_VIEW', section: 'Data', breadcrumb: 'Customers' },
+        data: { hood: CUSTOMERS_HOOD, permission: 'CUSTOMERS_VIEW', section: 'Data', breadcrumb: 'Customers' },
         title: 'Customers · Fugue Console',
         loadComponent: () => import('./features/customers/customers-page').then((m) => m.CustomersPage),
       },
@@ -127,7 +132,7 @@ export const routes: Routes = [
       {
         path: 'audit/trace/:correlationId',
         canActivate: [permissionGuard],
-        data: { permission: 'AUDIT_READ', section: 'Data', breadcrumb: 'The Score' },
+        data: { hood: SCORE_HOOD, permission: 'AUDIT_READ', section: 'Data', breadcrumb: 'The Score' },
         title: 'The Score · Fugue Console',
         loadComponent: () => import('./features/audit/score-page').then((m) => m.ScorePage),
       },
@@ -146,7 +151,7 @@ export const routes: Routes = [
       {
         path: 'modules',
         canActivate: [permissionGuard],
-        data: { permission: 'MODULES_VIEW', section: 'Platform', breadcrumb: 'Modules' },
+        data: { hood: MODULES_HOOD, permission: 'MODULES_VIEW', section: 'Platform', breadcrumb: 'Modules' },
         title: 'Modules · Fugue Console',
         loadComponent: () => import('./features/modules/modules-page').then((m) => m.ModulesPage),
       },
@@ -160,13 +165,13 @@ export const routes: Routes = [
       {
         path: 'webhooks',
         canActivate: [permissionGuard],
-        data: { permission: 'WEBHOOKS_MANAGE', section: 'Platform', breadcrumb: 'Webhooks' },
+        data: { hood: WEBHOOKS_HOOD, permission: 'WEBHOOKS_MANAGE', section: 'Platform', breadcrumb: 'Webhooks' },
         title: 'Webhooks · Fugue Console',
         loadComponent: () => import('./features/webhooks/webhooks-page').then((m) => m.WebhooksPage),
       },
       {
         path: 'me',
-        data: { section: 'Access', breadcrumb: 'My profile' },
+        data: { hood: PROFILE_HOOD, section: 'Access', breadcrumb: 'My profile' },
         title: 'My profile · Fugue Console',
         loadComponent: () => import('./features/profile/profile-page').then((m) => m.ProfilePage),
       },

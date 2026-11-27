@@ -30,6 +30,18 @@ const NOTE: HoodNote = {
   ],
 };
 
+const FLOW_NOTE: HoodNote = {
+  ...NOTE,
+  flow: [
+    {
+      layer: 'api',
+      text: 'The controller dispatches the query.',
+      path: 'src/Fugue.Api/Controllers/AuditController.cs',
+    },
+    { layer: 'db', text: 'Postgres answers.' },
+  ],
+};
+
 @Component({ template: '' })
 class Blank {}
 
@@ -50,6 +62,7 @@ function render() {
       provideRouter([
         { path: 'a', component: Blank, data: { hood: NOTE } },
         { path: 'b', component: Blank },
+        { path: 'c', component: Blank, data: { hood: FLOW_NOTE } },
       ]),
     ],
   });
@@ -126,9 +139,18 @@ describe('Under the hood sidebar', () => {
     expect(f.nativeElement.textContent).toContain('First line.');
     expect(f.nativeElement.textContent).toContain('Calls GET /claims/{id}.');
     const heads = [...f.nativeElement.querySelectorAll('h3')].map((h) => (h as HTMLElement).textContent?.trim());
-    expect(heads).toEqual(['API calls live', 'Why this page', 'How the API does it', 'Guards', 'Tested by', 'Decisions']);
+    expect(heads).toEqual([
+      'API calls live',
+      'Why this page',
+      'How the API does it',
+      'Guards',
+      'Tested by',
+      'Decisions',
+    ]);
     expect(q(f, '[data-testid=hood-tests] .layer')?.textContent).toBe('integration');
-    expect(q(f, '[data-testid=hood-tests] a')?.getAttribute('href')).toContain('tests/Fugue.Tests/Claims/ClaimsWorkflowTests.cs');
+    expect(q(f, '[data-testid=hood-tests] a')?.getAttribute('href')).toContain(
+      'tests/Fugue.Tests/Claims/ClaimsWorkflowTests.cs',
+    );
     const guard = q(f, 'details.guard')!;
     expect(guard.querySelector('summary')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('412 stale');
     expect(guard.hasAttribute('open')).toBe(false);
@@ -147,6 +169,40 @@ describe('Under the hood sidebar', () => {
     f.detectChanges();
     expect(f.nativeElement.textContent).not.toContain('First line.');
     expect(q(f, '[data-testid=hood]')).not.toBeNull();
+  });
+
+  it('renders the flow as an ordered sequence before "how", each step tagged with its layer and linked to its file', async () => {
+    const f = render();
+    await TestBed.inject(Router).navigateByUrl('/c');
+    f.detectChanges();
+    const heads = [...f.nativeElement.querySelectorAll('h3')].map((h) => (h as HTMLElement).textContent?.trim());
+    expect(heads.indexOf('What happens')).toBe(heads.indexOf('How the API does it') - 1);
+    const steps = [...f.nativeElement.querySelectorAll('[data-testid=hood-flow] li')] as HTMLElement[];
+    expect(steps.map((s) => s.querySelector('.fl-layer')?.textContent)).toEqual(['api', 'db']);
+    expect(steps[0].querySelector('a.fl-path')?.textContent?.trim()).toBe('AuditController.cs');
+    expect(steps[0].querySelector('a.fl-path')?.getAttribute('href')).toBe(
+      'https://github.com/triunai/fugue-control-room/blob/main/src/Fugue.Api/Controllers/AuditController.cs',
+    );
+    expect(steps[1].querySelector('a')).toBeNull();
+  });
+
+  it('a note without a flow shows no "What happens" section', async () => {
+    const f = render();
+    await TestBed.inject(Router).navigateByUrl('/a');
+    f.detectChanges();
+    expect(q(f, '[data-testid=hood-flow]')).toBeNull();
+  });
+
+  it('a call row carries its full path in its own tip, not a native title tooltip', () => {
+    const f = render();
+    TestBed.inject(ApiCallLog).record({ ...CALL, path: '/audit?limit&entityType&entityId' });
+    f.detectChanges();
+    const row = q(f, '[data-testid=hood-calls] li')!;
+    expect(row.querySelector('[title]')).toBeNull();
+    expect(row.querySelector('[data-testid=hood-call-tip]')?.textContent).toBe('/audit?limit&entityType&entityId');
+    TestBed.inject(ApiCallLog).clear();
+    f.detectChanges();
+    expect(q(f, '[data-testid=hood-call-tip]')).toBeNull();
   });
 
   it('clears the call log when the path changes, not when only the query does', async () => {
