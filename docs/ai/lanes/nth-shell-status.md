@@ -56,3 +56,21 @@ Branch `nth-shell`, base b875f49. Refs W-022, D-060 (backlog #002, #003, #004).
   Settled by seeding one (the dev seed has one, the e2e walked the claimant tour to "The timeline" only).
 - Reduced-motion behaviour of the bar and entrance was reasoned from CSS and the matchMedia guard, not run.
 - Mobile layout (under 860px) was kept as it was and not re-screenshotted.
+
+## Addendum (owner follow-ups)
+- Tour hook symbol: `TourService.start(key: string)` in `web/src/app/features/shell/tour.service.ts`
+  (injectable, root). Also exposed as `window.startTour(key)` once the shell is up, for dynamic lookup.
+  Keys: `landing`, `queue`, `claim-detail`, `team-exposure`; no key (or `'persona'`) runs the persona tour.
+  Steps live in `PAGE_TOURS` in `tour-steps.ts`; targets are `[data-tour="queue-kpis"|"queue-tabs"|
+  "claim-actions"|"claim-timeline"|"claim-answer"|"exposure-totals"|"exposure-note"|"team-workload"]` with
+  today's test ids / classes as fallbacks. A missing target is skipped, never an error.
+- Header "Help" button starts the tour for the URL on screen (`tourKeyFor`); `/claims/team` maps to
+  `team-exposure` already.
+- Persona tour still navigates to `/claims/workload` and `/claims/exposure` for the manager; when nth-claimui
+  merges them into `/claims/team`, change those two `page.path` values in `tour-steps.ts`.
+- Nav: Customers is now in the last group `Starter example`, folded by default (PrefsStore default). Renaming
+  Workload and Exposure to one "Team and exposure" item is one edit in `nav.ts`.
+- Auto-start: shown once per persona (the first start marks it seen, so one dismiss is forever);
+  `?tour=off` on the entry URL suppresses it for the browser session.
+- Not re-run: the e2e suite and screenshots after this addendum (API and Postgres were already torn down).
+  Unit 83 passed, lint clean, build clean.
