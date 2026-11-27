@@ -7,11 +7,11 @@
  */
 
 export type ClaimsListParams = {
-  Limit?: number;
-  Status?: string[];
-  Assigned?: string;
-  Market?: string;
-  Line?: string;
-  Q?: string;
-  Cursor?: string;
+  limit?: number;
+  status?: string[];
+  assigned?: string;
+  market?: string;
+  line?: string;
+  q?: string;
+  cursor?: string;
 };

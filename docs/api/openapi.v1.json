@@ -1952,7 +1952,7 @@
         "parameters": [
           {
             "in": "query",
-            "name": "Limit",
+            "name": "limit",
             "schema": {
               "format": "int32",
               "type": "integer"
@@ -1960,7 +1960,7 @@
           },
           {
             "in": "query",
-            "name": "Status",
+            "name": "status",
             "schema": {
               "items": {
                 "type": "string"
@@ -1970,35 +1970,35 @@
           },
           {
             "in": "query",
-            "name": "Assigned",
+            "name": "assigned",
             "schema": {
               "type": "string"
             }
           },
           {
             "in": "query",
-            "name": "Market",
+            "name": "market",
             "schema": {
               "type": "string"
             }
           },
           {
             "in": "query",
-            "name": "Line",
+            "name": "line",
             "schema": {
               "type": "string"
             }
           },
           {
             "in": "query",
-            "name": "Q",
+            "name": "q",
             "schema": {
               "type": "string"
             }
           },
           {
             "in": "query",
-            "name": "Cursor",
+            "name": "cursor",
             "schema": {
               "type": "string"
             }
@@ -2018,8 +2018,14 @@
             },
             "description": "OK",
             "headers": {
+              "Link": {
+                "$ref": "#/components/headers/Link"
+              },
               "X-Correlation-Id": {
                 "$ref": "#/components/headers/X-Correlation-Id"
+              },
+              "X-Next-Cursor": {
+                "$ref": "#/components/headers/X-Next-Cursor"
               }
             }
           },

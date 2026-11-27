@@ -1,5 +1,6 @@
 using Fugue.Application.Features.Claims;
 using Fugue.Domain.Claims;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Fugue.Api.Contracts;
 
@@ -22,18 +23,25 @@ public sealed record DecideClaimRequest(ClaimOutcome Outcome, string Reason, lon
 /// <summary>Query parameters of the claims list, bound as one object (they stay flat in the URL and in OpenAPI). <c>Status</c> repeats or is comma separated.</summary>
 public sealed record ClaimListFilter
 {
+    [FromQuery(Name = "limit")]
     public int? Limit { get; init; }
 
+    [FromQuery(Name = "status")]
     public string[]? Status { get; init; }
 
+    [FromQuery(Name = "assigned")]
     public string? Assigned { get; init; }
 
+    [FromQuery(Name = "market")]
     public string? Market { get; init; }
 
+    [FromQuery(Name = "line")]
     public string? Line { get; init; }
 
+    [FromQuery(Name = "q")]
     public string? Q { get; init; }
 
+    [FromQuery(Name = "cursor")]
     public string? Cursor { get; init; }
 
     public Fugue.Application.Features.Claims.Queries.ListClaimsQuery ToQuery() => new(Limit, Status, Assigned, Market, Line, Q, Cursor);
