@@ -1,11 +1,5 @@
-# Shrink-only baseline for Fitness rule "raw-sql-writes": source files with a raw SQL write that do NOT call IAuditTrail.
-# RefreshTokenStore: session rows are covered by access_audit (ADR-010). AccessAuditWriter: it is an audit table itself.
-# OutboxWriter: outbox rows are [NoAudit] operational plumbing (ADR-011); the dispatcher files join below for the same reason.
-# IdempotencyStore: idempotency_keys rows are [NoAudit] operational plumbing (ADR-013); claim, completion and purge must write no audit_log rows (pinned by IdempotencyTests).
+# Shrink-only baseline for Fitness rule "raw-sql-writes": source files with a raw SQL write that do NOT call IAuditTrail and write at least one table
+# that is not a [NoAudit] entity. Writes to tables of [NoAudit] entities (outbox, deliveries, idempotency keys, access_audit) are exempt by the rule itself.
+# RefreshTokenStore: session rows are covered by access_audit (ADR-010).
 # A line that is no longer a violation FAILS the test: delete it (ratchet).
-AccessAuditWriter.cs
 RefreshTokenStore.cs
-OutboxWriter.cs
-OutboxDispatcher.cs
-WebhookFanOutPublisher.cs
-IdempotencyStore.cs

@@ -424,20 +424,57 @@ public sealed class FitnessTests
         Assert.Equal(["AuditTrail.cs"], hits);
     }
 
+    private static readonly System.Text.RegularExpressions.Regex RawWrite = new(@"\b(INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+(?<table>[a-z_]+)");
+
+    /// <summary>Tables (from the EF model) whose entity is marked <c>[NoAudit]</c>: operational plumbing that is deliberately not in audit_log.</summary>
+    private static HashSet<string> NoAuditTables()
+    {
+        using var context = new FugueDbContext(new DbContextOptionsBuilder<FugueDbContext>().UseNpgsql("Host=localhost;Database=fitness").Options);
+        return context.Model.GetEntityTypes()
+            .Where(e => e.ClrType.IsDefined(typeof(Fugue.Domain.Audit.NoAuditAttribute), inherit: false) && e.GetTableName() is not null)
+            .Select(e => e.GetTableName()!).ToHashSet(StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Files with a raw SQL write that neither call IAuditTrail nor write ONLY to tables of <c>[NoAudit]</c> entities. A raw write is invisible to the
+    /// EF change tracker, so audited tables must go through IAuditTrail; a statement on an audited table keeps the file in violation even when the
+    /// same file also writes an operational table.
+    /// </summary>
+    private static IEnumerable<string> RawWritesWithoutAudit(IEnumerable<(string File, string Text)> files, HashSet<string> noAuditTables) =>
+        files.Where(f => RawWrite.IsMatch(f.Text) && !f.Text.Contains("IAuditTrail", StringComparison.Ordinal))
+            .Where(f => RawWrite.Matches(f.Text).Any(m => !noAuditTables.Contains(m.Groups["table"].Value)))
+            .Select(f => f.File);
+
     [Fact]
     public void Fitness_Audit_every_raw_SQL_write_goes_through_the_audit_trail_or_is_baselined()
     {
-        // A Dapper or raw-SQL write is invisible to the EF change tracker, so its class must call IAuditTrail. The baseline is the list of
-        // classes that deliberately do not (session rows are covered by access_audit; access_audit is itself an audit table).
-        var write = new System.Text.RegularExpressions.Regex(@"\b(INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+[a-z_]+");
-        IEnumerable<string> bad = Directory.GetFiles(Path.Combine(RepoRoot(), "src"), "*.cs", SearchOption.AllDirectories)
+        // A Dapper or raw-SQL write is invisible to the EF change tracker, so its class must call IAuditTrail, unless every table it writes belongs to a
+        // [NoAudit] entity (outbox, deliveries, idempotency keys, session rows). The baseline lists the remaining classes that deliberately do not.
+        IEnumerable<(string File, string Text)> files = Directory.GetFiles(Path.Combine(RepoRoot(), "src"), "*.cs", SearchOption.AllDirectories)
             .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}Migrations{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
                 && !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
-            .Select(f => (File: Path.GetFileName(f), Text: File.ReadAllText(f)))
-            .Where(f => write.IsMatch(f.Text) && !f.Text.Contains("IAuditTrail", StringComparison.Ordinal))
-            .Select(f => f.File);
+            .Select(f => (File: Path.GetFileName(f), Text: File.ReadAllText(f)));
 
-        AssertRatchet("raw-sql-writes", bad);
+        AssertRatchet("raw-sql-writes", RawWritesWithoutAudit(files, NoAuditTables()));
+    }
+
+    [Fact]
+    public void Fitness_Audit_a_raw_write_to_an_audited_table_is_still_a_violation_outside_the_baseline()
+    {
+        HashSet<string> noAudit = NoAuditTables();
+        Assert.Contains("idempotency_keys", noAudit);
+        Assert.Contains("outbox_messages", noAudit);
+        Assert.DoesNotContain("customers", noAudit);
+
+        (string, string)[] files =
+        [
+            ("AuditedWrite.cs", "const string S = \"UPDATE customers SET name = @n\";"),
+            ("Mixed.cs", "const string A = \"INSERT INTO outbox_messages (id) VALUES (@i)\"; const string B = \"DELETE FROM customers WHERE id = @i\";"),
+            ("Operational.cs", "const string S = \"INSERT INTO idempotency_keys (id) VALUES (@i)\"; const string T = \"DELETE FROM outbox_messages\";"),
+            ("Covered.cs", "IAuditTrail trail; const string S = \"UPDATE customers SET name = @n\";"),
+        ];
+
+        Assert.Equal(["AuditedWrite.cs", "Mixed.cs"], RawWritesWithoutAudit(files, noAudit).Order(StringComparer.Ordinal));
     }
 
     [Fact]

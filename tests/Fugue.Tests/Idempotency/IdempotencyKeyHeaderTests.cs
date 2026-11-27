@@ -25,12 +25,12 @@ public sealed class IdempotencyKeyHeaderTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void A_blank_header_is_no_key(string header)
+    public void A_present_but_blank_header_is_invalid_not_absent(string header)
     {
         HeaderParse parsed = IdempotencyKeyHeader.Parse(header);
 
-        Assert.False(parsed.IsPresent);
-        Assert.True(parsed.IsValid);
+        Assert.True(parsed.IsPresent);
+        Assert.False(parsed.IsValid);
     }
 
     [Fact]

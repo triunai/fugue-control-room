@@ -8,7 +8,7 @@ namespace Fugue.Api.Idempotency;
 /// Parses the <c>Idempotency-Key</c> request header (ADR-013, draft-ietf-httpapi-idempotency-key-header-09 section 2.1): ONE Structured Field String
 /// (<c>"abc"</c>, with <c>\"</c> and <c>\\</c> escapes), decoded length 1 to 255, printable ASCII only. A bare token <c>[A-Za-z0-9._:-]{1,255}</c> is also
 /// accepted for curl convenience (a documented deviation). Two header lines, a comma list, parameters, bad quoting or anything else is invalid.
-/// A blank or missing header means "no key": the request runs exactly as it would without idempotency.
+/// A missing header means "no key"; a present but blank one is invalid: the request runs exactly as it would without idempotency.
 /// </summary>
 public static partial class IdempotencyKeyHeader
 {
@@ -35,7 +35,7 @@ public static partial class IdempotencyKeyHeader
         string raw = header[0]?.Trim() ?? string.Empty;
         if (raw.Length == 0)
         {
-            return HeaderParse.Absent;
+            return HeaderParse.Invalid; // present but blank: a supplied key must be valid, only an ABSENT header bypasses
         }
 
         if (raw[0] != '"')

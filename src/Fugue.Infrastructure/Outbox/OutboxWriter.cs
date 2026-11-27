@@ -7,7 +7,7 @@ namespace Fugue.Infrastructure.Outbox;
 
 /// <summary>
 /// The Dapper write path of <c>outbox_messages</c> (ADR-006 insert path, ADR-011): runs through <see cref="SqlExecutor"/>, so inside a unit of
-/// work (or the repository's short transaction) the row commits or rolls back with the change. Baselined in <c>raw-sql-writes</c>: outbox rows
+/// work (or the repository's short transaction) the row commits or rolls back with the change. Exempt from the <c>raw-sql-writes</c> rule: outbox rows
 /// are operational plumbing (<c>[NoAudit]</c>), not business data.
 /// </summary>
 internal sealed class OutboxWriter(SqlExecutor sql, OutboxRowFactory factory) : IOutbox

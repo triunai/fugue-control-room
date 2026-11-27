@@ -13,8 +13,8 @@ namespace Fugue.Infrastructure.Idempotency;
 /// <summary>
 /// The Dapper write path of <c>idempotency_keys</c> (ADR-013), through <see cref="SqlExecutor"/> and OUTSIDE any unit of work: every statement here is its
 /// own committed statement, so a claim is visible to a concurrent duplicate before the action runs. The claim replaces only an EXPIRED row, so a claimed key
-/// is never taken over; completion and deletion are fenced by the claim token. Baselined in <c>raw-sql-writes</c>: these rows are <c>[NoAudit]</c>
-/// operational plumbing and the stored body is ciphertext. Reads go through EF.
+/// is never taken over; completion and deletion are fenced by the claim token. The <c>raw-sql-writes</c> fitness rule exempts it because every table it writes maps to a
+/// <c>[NoAudit]</c> entity (operational plumbing; the stored body is ciphertext). Reads go through EF.
 /// </summary>
 internal sealed class IdempotencyStore(
     FugueDbContext db,

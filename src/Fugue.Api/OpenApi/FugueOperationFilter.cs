@@ -183,10 +183,10 @@ internal sealed class FugueOperationFilter : IOperationFilter
             Name = IdempotencyKeyHeader.Name,
             In = ParameterLocation.Header,
             Required = false,
-            Description = "Makes the request safe to retry. One quoted string (`\"order-7f3a\"`, with `\\\"` and `\\\\` escapes) or a plain token of letters, digits, `.`, `_`, `:` and `-`, 1 to 255 characters; "
+            Description = "Makes the request safe to retry. One quoted string (`\"order-7f3a\"`, with `\\\"` and `\\\\` escapes) or a plain token of letters, digits, `.`, `_`, `:` and `-`, 1 to 255 characters once decoded (the encoded header may be longer because of the quotes and escapes); "
                 + "anything else is 400 `idempotency.key_invalid`. The same key with the same body returns the first response (with `Idempotent-Replayed: true`) for 24 hours instead of creating again; "
                 + "the same key with a different body is 422. A request that failed with a 4xx frees the key; one whose outcome is unknown keeps it (409). Without the header the request is not idempotent.",
-            Schema = new OpenApiSchema { Type = "string", MaxLength = IdempotencyKeyHeader.MaxLength },
+            Schema = new OpenApiSchema { Type = "string" },
         });
 
         string[] codes = [.. context.MethodInfo.GetCustomAttributes(typeof(ProblemResponseAttribute), inherit: false).OfType<ProblemResponseAttribute>()

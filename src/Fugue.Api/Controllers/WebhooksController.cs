@@ -23,6 +23,7 @@ public sealed class WebhooksController : ApiControllerBase
     [HttpPost("subscriptions")]
     [HasPermission(Permissions.WebhooksManage)]
     [Idempotent]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)] // the response carries the one-time secret: never cached, keyed or not
     [ProducesResponseType(typeof(WebhookSubscriptionSecretDto), StatusCodes.Status201Created)]
     public Task<ActionResult<WebhookSubscriptionSecretDto>> Create(CreateWebhookSubscriptionRequest body, CancellationToken ct) =>
         SendCreated(new CreateWebhookSubscriptionCommand(body.Name, body.Url, body.EventTypes), nameof(Get), s => new { id = s.Id }, ct);
@@ -55,6 +56,7 @@ public sealed class WebhooksController : ApiControllerBase
     [HttpPost("subscriptions/{id}/rotate-secret")]
     [HasPermission(Permissions.WebhooksManage)]
     [IfMatch]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)] // carries the one-time secret
     [ProducesResponseType(typeof(WebhookSubscriptionSecretDto), StatusCodes.Status200OK)]
     [ProblemResponse(StatusCodes.Status404NotFound, "webhook.subscription_not_found")]
     public Task<ActionResult<WebhookSubscriptionSecretDto>> RotateSecret(WebhookSubscriptionId id, CancellationToken ct) =>

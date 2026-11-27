@@ -314,17 +314,32 @@ public sealed class IdempotencyTests(PostgresFixture db)
     }
 
     [Fact]
+    public async Task Secret_bearing_webhook_responses_are_never_cacheable_with_or_without_a_key()
+    {
+        HttpResponseMessage unkeyed = await SendAsync(Admin, Subscriptions, HookJson(), null);
+        HttpResponseMessage keyed = await SendAsync(Admin, Subscriptions, HookJson(), Quoted(NewKey()));
+        JsonElement created = JsonDocument.Parse(await unkeyed.Content.ReadAsStringAsync()).RootElement;
+        using var rotate = new HttpRequestMessage(HttpMethod.Post, $"{Subscriptions}/{created.GetProperty("id").GetString()}/rotate-secret");
+        rotate.Headers.TryAddWithoutValidation("If-Match", unkeyed.Headers.ETag!.Tag);
+        HttpResponseMessage rotated = await Admin.SendAsync(rotate);
+
+        Assert.Equal(HttpStatusCode.OK, rotated.StatusCode);
+        foreach (HttpResponseMessage response in new[] { unkeyed, keyed, rotated })
+        {
+            Assert.True(response.Headers.CacheControl?.NoStore ?? false, $"{response.RequestMessage!.RequestUri} lacks Cache-Control: no-store");
+        }
+    }
+
+    [Fact]
     public async Task Without_the_header_nothing_changes_and_no_key_row_is_written()
     {
         string email = UniqueEmail();
         long before = await ScalarAsync<long>("SELECT count(*) FROM idempotency_keys");
 
         HttpResponseMessage first = await SendAsync(Admin, Customers, CustomerJson(email), null);
-        HttpResponseMessage blank = await SendAsync(Admin, Customers, CustomerJson(UniqueEmail()), "   ");
         HttpResponseMessage dup = await SendAsync(Admin, Customers, CustomerJson(email), null);
 
         Assert.Equal(HttpStatusCode.Created, first.StatusCode);
-        Assert.Equal(HttpStatusCode.Created, blank.StatusCode); // blank is "absent"
         Assert.False(IsReplayed(first));
         Assert.False(first.Headers.CacheControl?.NoStore ?? false);
         await AssertProblemAsync(dup, HttpStatusCode.Conflict, "customer.email_taken");
@@ -336,7 +351,8 @@ public sealed class IdempotencyTests(PostgresFixture db)
     [InlineData("\"abc")]
     [InlineData("\"a\", \"b\"")]
     [InlineData("has space")]
-    public async Task A_malformed_key_is_400_key_invalid_and_nothing_runs(string header)
+    [InlineData("   ")]
+    public async Task A_malformed_or_blank_key_is_400_key_invalid_and_nothing_runs(string header)
     {
         string email = UniqueEmail();
 
