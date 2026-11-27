@@ -1,5 +1,6 @@
 using Fugue.Domain.Audit;
 using Fugue.Domain.Customers;
+using Fugue.Domain.Idempotency;
 using Fugue.Domain.Identity;
 using Fugue.Domain.Webhooks;
 using Fugue.Infrastructure.Persistence.Ids;
@@ -52,6 +53,8 @@ public sealed class FugueDbContext(DbContextOptions<FugueDbContext> options) : D
     public DbSet<WebhookDelivery> WebhookDeliveries => Set<WebhookDelivery>();
 
     public DbSet<DataProtectionKeyRecord> DataProtectionKeys => Set<DataProtectionKeyRecord>();
+
+    public DbSet<IdempotencyRecord> IdempotencyKeys => Set<IdempotencyRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

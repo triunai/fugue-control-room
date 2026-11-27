@@ -248,6 +248,95 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                     b.ToTable("customers", (string)null);
                 });
 
+            modelBuilder.Entity("Fugue.Domain.Idempotency.IdempotencyRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ActorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_id");
+
+                    b.Property<Guid>("ClaimToken")
+                        .HasColumnType("uuid")
+                        .HasColumnName("claim_token");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("endpoint");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("key");
+
+                    b.Property<byte[]>("RequestHash")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("request_hash");
+
+                    b.Property<byte[]>("ResponseBody")
+                        .HasColumnType("bytea")
+                        .HasColumnName("response_body");
+
+                    b.Property<string>("ResponseHeaders")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("response_headers");
+
+                    b.Property<int?>("ResponseStatus")
+                        .HasColumnType("integer")
+                        .HasColumnName("response_status");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_idempotency_keys");
+
+                    b.HasIndex("ExpiresAt")
+                        .HasDatabaseName("ix_idempotency_keys_expires_at");
+
+                    b.HasIndex("ActorId", "Endpoint", "Key")
+                        .IsUnique()
+                        .HasDatabaseName("ux_idempotency_keys_scope");
+
+                    b.ToTable("idempotency_keys", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_idempotency_keys_status", "status IN ('pending', 'completed')");
+                        });
+                });
+
             modelBuilder.Entity("Fugue.Domain.Identity.AccessAudit", b =>
                 {
                     b.Property<Guid>("Id")
