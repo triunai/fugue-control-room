@@ -2,8 +2,9 @@ using Fugue.Api.Auth;
 using Fugue.Api.Contracts;
 using Fugue.Api.Modules;
 using Fugue.Api.OpenApi;
-using Fugue.Application.Features.Audit;
+using Fugue.Application.Features.Audit.Models;
 using Fugue.Application.Features.Audit.Queries;
+using Fugue.Application.Features.Audit.Repos;
 using Fugue.Domain.Identity;
 using Microsoft.AspNetCore.Mvc;
 

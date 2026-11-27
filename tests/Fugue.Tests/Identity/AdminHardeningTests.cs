@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Fugue.Application.Abstractions;
 using Fugue.Application.Features.Auth.Models;
-using Fugue.Application.Features.Modules;
+using Fugue.Application.Features.Modules.Models;
 using Fugue.Domain.Identity;
 using Fugue.Domain.Ids;
 using Fugue.Infrastructure.Identity;

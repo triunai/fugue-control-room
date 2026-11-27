@@ -1,4 +1,4 @@
-using Fugue.Application.Features.Webhooks.Sink;
+using Fugue.Application.Features.Webhooks.Repos;
 
 namespace Fugue.Infrastructure.Webhooks;
 

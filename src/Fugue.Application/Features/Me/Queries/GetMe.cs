@@ -15,7 +15,7 @@ public sealed record GetMeQuery : IQuery<Result<MeDto>>;
 
 public sealed class GetMeValidator : AbstractValidator<GetMeQuery>;
 
-public sealed class GetMeHandler(ICurrentUser user, IUserAccessReader access, IMeReader profiles, Modules.IModuleRegistry modules)
+public sealed class GetMeHandler(ICurrentUser user, IUserAccessReader access, IMeReader profiles, Modules.Repos.IModuleRegistry modules)
     : IQueryHandler<GetMeQuery, Result<MeDto>>
 {
     public async ValueTask<Result<MeDto>> Handle(GetMeQuery query, CancellationToken cancellationToken)

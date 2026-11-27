@@ -1,4 +1,4 @@
-using Fugue.Application.Features.Audit;
+using Fugue.Application.Features.Audit.Repos;
 using Fugue.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;

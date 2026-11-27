@@ -2,7 +2,8 @@ using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Text;
 using FluentResults;
-using Fugue.Application.Features.Import.Parsing;
+using Fugue.Application.Features.Import.Helpers;
+using Fugue.Application.Features.Import.Models;
 using Fugue.Domain.Results;
 
 namespace Fugue.Tests.Import;

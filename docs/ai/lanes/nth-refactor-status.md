@@ -5,7 +5,8 @@ Uniform slice layout in `src/Fugue.Application/Features/<Feature>/`: `Commands/`
 
 ## Commits
 - `ce87b25` refactor(application): Claims slice into Models, Repos and Helpers folders
-- slice 2: Auth, Users, Roles, Groups, Overrides, Me (this commit)
+- `01cdd6b` refactor(application): identity slices into Models and Repos folders
+- slice 3: Audit, Modules, Webhooks, Customers, Import, Letters (this commit; Diagnostics has only Queries/)
 
 ## Gates (copied from output)
 - `dotnet build`: 0 Warning(s), 0 Error(s)
@@ -14,6 +15,8 @@ Uniform slice layout in `src/Fugue.Application/Features/<Feature>/`: `Commands/`
 - OpenApiContractTests: Passed 1/1 (snapshot unchanged; `git status docs` clean)
 - slice 1: Claims + Letters tests: Passed 192, Failed 0
 - slice 2: build 0/0, format exit 0, ArchTests 37/37, OpenApiContractTests 1/1; Identity + Audit + Api tests: Passed 302, Failed 0
+- slice 3: build 0/0, format exit 0, ArchTests 37/37, OpenApiContractTests 1/1; Audit + Webhooks + Import + Letters +
+  Application + Api tests: Passed 316, Failed 0
 
 ## Shared files changed (exactly)
 - `using` lines only in Api/Infrastructure/tests consumers of the Claims types; `src/Fugue.Infrastructure/DependencyInjection.cs`
@@ -22,9 +25,18 @@ Uniform slice layout in `src/Fugue.Application/Features/<Feature>/`: `Commands/`
 - slice 2: `src/Fugue.Infrastructure/DependencyInjection.cs` six fully qualified port names gain `.Repos`;
   `tests/Fugue.Tests/Audit/AuditBehaviorTests.cs` fully qualified `TokenDto`/`AuthErrors`/`GroupErrors` gain `.Models`.
 
+- slice 3: `src/Fugue.Infrastructure/DependencyInjection.cs` eleven fully qualified port names gain `.Repos`;
+  `src/Fugue.Infrastructure/Search/MeilisearchAuditSearch.cs` one `using` alias gains `.Repos`;
+  `src/Fugue.Application/Features/Me/Queries/GetMe.cs` `Modules.IModuleRegistry` -> `Modules.Repos.IModuleRegistry`;
+  `src/Fugue.Api/OpenApi/DescriptionText.cs` the example full name in its doc comment gains `.Models`.
+
 ## Deviations
 - Auth ports stay in `Application/Abstractions/IAuthPorts.cs`: `AuditPorts.cs` (ClientInfo), Me and Users use them;
   moving them into `Features/Auth/Repos` would make Abstractions depend on a feature slice.
 
 ## Next slice
-- 3: Audit, Modules, Webhooks, Customers, Diagnostics, Import, Letters.
+- 4: slice README text; full suite under the lock; report.
+- `Import/Parsing/` and `Webhooks/Sink/` were extra sub-folders: parsers to `Import/Helpers`, `ImportTypes.cs` to
+  `Import/Models`; the dev sink's requests (`DevWebhookSinkAdmin.cs`, `ReceiveDevWebhook.cs`) to `Webhooks/Commands`
+  (they are `IRequest`, never audited; the admin file also holds the sink list read, kept whole per D-055) and
+  `DevWebhookSinkTypes.cs` (declares the `IDevWebhookSink` port) to `Webhooks/Repos`.

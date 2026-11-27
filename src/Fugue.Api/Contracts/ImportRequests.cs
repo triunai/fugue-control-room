@@ -1,5 +1,4 @@
-using Fugue.Application.Features.Import;
-using Fugue.Application.Features.Import.Parsing;
+using Fugue.Application.Features.Import.Models;
 using Fugue.Domain.Claims;
 
 namespace Fugue.Api.Contracts;

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Fugue.Application.Common;
-using Fugue.Application.Features.Audit;
+using Fugue.Application.Features.Audit.Models;
+using Fugue.Application.Features.Audit.Repos;
 using Fugue.Domain.Audit;
 using Fugue.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;

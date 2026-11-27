@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Fugue.Application.Features.Me.Models;
-using Fugue.Application.Features.Modules;
+using Fugue.Application.Features.Modules.Models;
 using Fugue.Domain.Identity;
 using Fugue.Domain.Ids;
 using Fugue.Infrastructure.Persistence;

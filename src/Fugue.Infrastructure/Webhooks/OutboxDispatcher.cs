@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using Fugue.Application.Abstractions;
-using Fugue.Application.Features.Webhooks;
+using Fugue.Application.Features.Webhooks.Repos;
 using Fugue.Domain.Ids;
 using Fugue.Domain.Webhooks;
 using Fugue.Infrastructure.Persistence;

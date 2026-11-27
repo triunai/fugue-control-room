@@ -1,8 +1,8 @@
 using Fugue.Api.Auth;
 using Fugue.Api.Contracts;
 using Fugue.Api.OpenApi;
-using Fugue.Application.Features.Modules;
 using Fugue.Application.Features.Modules.Commands;
+using Fugue.Application.Features.Modules.Models;
 using Fugue.Application.Features.Modules.Queries;
 using Fugue.Domain.Identity;
 using Microsoft.AspNetCore.Mvc;

@@ -1,6 +1,7 @@
 using FluentResults;
 using Fugue.Application.Abstractions;
-using Fugue.Application.Features.Modules;
+using Fugue.Application.Features.Modules.Models;
+using Fugue.Application.Features.Modules.Repos;
 using Fugue.Domain.Identity;
 using Fugue.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;

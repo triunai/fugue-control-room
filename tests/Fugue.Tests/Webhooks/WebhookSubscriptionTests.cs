@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Fugue.Application.Features.Webhooks;
+using Fugue.Application.Features.Webhooks.Repos;
 using Fugue.Domain.Identity;
 using Fugue.Infrastructure.Persistence;
 using Fugue.Tests.Audit;

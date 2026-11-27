@@ -1,6 +1,6 @@
 using Fugue.Application.Abstractions;
 using Fugue.Application.Features.Claims.Repos;
-using Fugue.Application.Features.Customers;
+using Fugue.Application.Features.Customers.Repos;
 using Fugue.Domain.Abstractions;
 using Fugue.Infrastructure.Audit;
 using Fugue.Infrastructure.Idempotency;
@@ -41,8 +41,8 @@ public static class DependencyInjection
         services.AddScoped<AuditRowFactory>();
         services.AddScoped<AuditLogSaveChangesInterceptor>();
         services.AddScoped<IAuditTrail, AuditTrail>();
-        services.AddScoped<Fugue.Application.Features.Audit.IAuditLogReader, AuditLogReader>();
-        services.AddScoped<Fugue.Application.Features.Audit.IAuditTraceReader, AuditTraceReader>();
+        services.AddScoped<Fugue.Application.Features.Audit.Repos.IAuditLogReader, AuditLogReader>();
+        services.AddScoped<Fugue.Application.Features.Audit.Repos.IAuditTraceReader, AuditTraceReader>();
         services.AddScoped<IActorDirectory, ActorDirectory>();
         services.TryAddScoped<IAuditRequestInfo, NullAuditRequestInfo>();
 
@@ -51,7 +51,7 @@ public static class DependencyInjection
         if (configuration.GetSection(MeilisearchOptions.Section).Get<MeilisearchOptions>()?.Enabled == true)
         {
             services.AddSingleton<MeilisearchAuditSearch>();
-            services.AddSingleton<Fugue.Application.Features.Audit.IAuditSearch>(sp => sp.GetRequiredService<MeilisearchAuditSearch>());
+            services.AddSingleton<Fugue.Application.Features.Audit.Repos.IAuditSearch>(sp => sp.GetRequiredService<MeilisearchAuditSearch>());
             services.AddScoped<AuditIndexSource>();
             services.AddSingleton<AuditIndexer>();
             services.AddHostedService(sp => sp.GetRequiredService<AuditIndexer>());
@@ -65,7 +65,7 @@ public static class DependencyInjection
         }
         else
         {
-            services.AddSingleton<Fugue.Application.Features.Audit.IAuditSearch, DisabledAuditSearch>();
+            services.AddSingleton<Fugue.Application.Features.Audit.Repos.IAuditSearch, DisabledAuditSearch>();
             services.AddSingleton<Fugue.Application.Features.Claims.Repos.IClaimSearch, DisabledClaimSearch>();
         }
 
@@ -79,13 +79,13 @@ public static class DependencyInjection
         services.AddOptions<WebhookOptions>().Bind(configuration.GetSection(WebhookOptions.Section)).ValidateOnStart();
         services.AddSingleton<IValidateOptions<WebhookOptions>, WebhookOptionsValidator>();
         services.AddSingleton<IHostResolver, DnsHostResolver>();
-        services.AddSingleton<Fugue.Application.Features.Webhooks.IWebhookUrlGuard, WebhookUrlGuard>();
+        services.AddSingleton<Fugue.Application.Features.Webhooks.Repos.IWebhookUrlGuard, WebhookUrlGuard>();
         services.AddDataProtection().Services.Configure<Microsoft.AspNetCore.DataProtection.DataProtectionOptions>(o => o.ApplicationDiscriminator = "Fugue");
         services.AddOptions<KeyManagementOptions>().Configure<IServiceScopeFactory>((options, scopes) => options.XmlRepository = new DatabaseXmlRepository(scopes));
-        services.AddSingleton<Fugue.Application.Features.Webhooks.ISecretProtector, DataProtectionSecretProtector>();
-        services.AddScoped<Fugue.Application.Features.Webhooks.IWebhookSubscriptionStore, WebhookSubscriptionStore>();
-        services.AddScoped<Fugue.Application.Features.Webhooks.IWebhookDeliveryStore, WebhookDeliveryStore>();
-        services.AddSingleton<Fugue.Application.Features.Webhooks.Sink.IDevWebhookSink, DevWebhookSink>();
+        services.AddSingleton<Fugue.Application.Features.Webhooks.Repos.ISecretProtector, DataProtectionSecretProtector>();
+        services.AddScoped<Fugue.Application.Features.Webhooks.Repos.IWebhookSubscriptionStore, WebhookSubscriptionStore>();
+        services.AddScoped<Fugue.Application.Features.Webhooks.Repos.IWebhookDeliveryStore, WebhookDeliveryStore>();
+        services.AddSingleton<Fugue.Application.Features.Webhooks.Repos.IDevWebhookSink, DevWebhookSink>();
 
         // Idempotency keys (ADR-013): options, the store (Dapper claim, responses encrypted with the same Data Protection ring) and the expiry purge.
         services.AddOptions<IdempotencyOptions>().Bind(configuration.GetSection(IdempotencyOptions.Section)).ValidateOnStart();
@@ -161,10 +161,10 @@ public static class DependencyInjection
         services.AddScoped<IClaimRepository, ClaimRepository>();
         services.AddScoped<IClaimReports, ClaimReports>();
         services.AddScoped<IClaimSeeder, ClaimSeeder>();
-        services.AddScoped<Fugue.Application.Features.Import.IImportStore, Persistence.Import.ImportStore>(); // item 11a
+        services.AddScoped<Fugue.Application.Features.Import.Repos.IImportStore, Persistence.Import.ImportStore>(); // item 11a
         services.AddOptions<Import.ImportOptions>().Bind(configuration.GetSection(Import.ImportOptions.Section)).ValidateOnStart();
         services.AddSingleton<IValidateOptions<Import.ImportOptions>, Import.ImportOptionsValidator>();
-        services.AddSingleton<Fugue.Application.Features.Import.IImportSettings, Import.ConfigImportSettings>();
+        services.AddSingleton<Fugue.Application.Features.Import.Repos.IImportSettings, Import.ConfigImportSettings>();
         services.AddScoped<IDevSinkSeeder, DevSinkSeeder>();
 
         services.Configure<PasswordOptions>(o =>
@@ -183,7 +183,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthStore, AuthStore>();
         services.AddScoped<IRefreshTokenStore, RefreshTokenStore>();
         services.AddScoped<IAccessAuditWriter, AccessAuditWriter>();
-        services.AddScoped<Fugue.Application.Features.Modules.IModuleRegistry, ModuleRegistry>();
+        services.AddScoped<Fugue.Application.Features.Modules.Repos.IModuleRegistry, ModuleRegistry>();
         services.AddScoped<Fugue.Application.Features.Groups.Repos.IGroupAdmin, GroupAdmin>();
         services.AddScoped<Fugue.Application.Features.Overrides.Repos.IOverrideAdmin, OverrideAdmin>();
         services.AddScoped<Fugue.Application.Features.Users.Repos.IUserDirectory, UserDirectory>();

@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using Fugue.Application.Abstractions;
-using Fugue.Application.Features.Webhooks;
+using Fugue.Application.Features.Webhooks.Helpers;
 
 namespace Fugue.Infrastructure.Webhooks;
 

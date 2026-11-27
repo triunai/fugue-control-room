@@ -1,11 +1,11 @@
 using System.Globalization;
 using FluentResults;
-using Fugue.Application.Features.Audit;
+using Fugue.Application.Features.Audit.Repos;
 using Fugue.Domain.Results;
 using Meilisearch;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using AuditSearchOutcome = FluentResults.Result<Fugue.Application.Features.Audit.AuditSearchResultDto>;
+using AuditSearchOutcome = FluentResults.Result<Fugue.Application.Features.Audit.Repos.AuditSearchResultDto>;
 
 namespace Fugue.Infrastructure.Search;
 

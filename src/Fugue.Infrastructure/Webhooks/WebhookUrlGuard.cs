@@ -1,6 +1,7 @@
 using System.Net;
 using FluentResults;
-using Fugue.Application.Features.Webhooks;
+using Fugue.Application.Features.Webhooks.Models;
+using Fugue.Application.Features.Webhooks.Repos;
 using Microsoft.Extensions.Options;
 
 namespace Fugue.Infrastructure.Webhooks;

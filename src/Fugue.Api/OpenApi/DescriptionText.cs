@@ -5,7 +5,7 @@ namespace Fugue.Api.OpenApi;
 
 /// <summary>
 /// Tidies the text taken from XML doc comments so the document reads the same on every machine: line breaks (CRLF or LF, plus the indentation
-/// of a wrapped comment) become one space, and a <c>cref</c> that Swashbuckle printed as a full name (<c>Fugue.Application.Features.Customers.CustomerDto.Version</c>)
+/// of a wrapped comment) become one space, and a <c>cref</c> that Swashbuckle printed as a full name (<c>Fugue.Application.Features.Customers.Models.CustomerDto.Version</c>)
 /// becomes the member name in code style.
 /// </summary>
 internal static partial class DescriptionText
