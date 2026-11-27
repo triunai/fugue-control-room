@@ -1,6 +1,5 @@
 using Fugue.Api.Auth;
 using Fugue.Api.Contracts;
-using Fugue.Api.Idempotency;
 using Fugue.Api.Modules;
 using Fugue.Api.OpenApi;
 using Fugue.Application.Features.Claims;
@@ -51,10 +50,10 @@ public sealed class ImportController : ApiControllerBase
     /// <summary>
     /// Create the claim from one reviewed draft, owned by the claimant account named by `claimantEmail` and submitted the normal way (Submitted, timeline,
     /// audit, `claim.submitted` event), with an import note on its timeline. 409 `import.already_imported` when the item's key was imported before.
+    /// Not `[Idempotent]` on purpose: the item's key in the import ledger already makes a retry harmless (409 naming the claim it became).
     /// </summary>
     [HttpPost("claims")]
     [HasPermission(Permissions.ClaimsHandle)]
-    [Idempotent]
     [ProducesResponseType(typeof(ClaimDto), StatusCodes.Status201Created)]
     [ProblemResponse(StatusCodes.Status400BadRequest, "validation.failed", "import.claimant_unknown", "import.claimant_cannot_own_claims")]
     [ProblemResponse(StatusCodes.Status409Conflict, ImportErrors.AlreadyImportedCode)]

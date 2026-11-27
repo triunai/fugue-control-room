@@ -5569,16 +5569,6 @@
       },
       "post": {
         "operationId": "Import_Create",
-        "parameters": [
-          {
-            "description": "Makes the request safe to retry. One quoted string (`\"order-7f3a\"`, with `\\\"` and `\\\\` escapes) or a plain token of letters, digits, `.`, `_`, `:` and `-`, 1 to 255 characters once decoded (the encoded header may be longer because of the quotes and escapes); anything else is 400 `idempotency.key_invalid`. The same key with the same body returns the first response (with `Idempotent-Replayed: true`) for 24 hours instead of creating again; the same key with a different body is 422. A request that failed with a 4xx frees the key; one whose outcome is unknown keeps it (409). Without the header the request is not idempotent.",
-            "in": "header",
-            "name": "Idempotency-Key",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -5601,9 +5591,6 @@
             "headers": {
               "ETag": {
                 "$ref": "#/components/headers/ETag"
-              },
-              "Idempotent-Replayed": {
-                "$ref": "#/components/headers/Idempotent-Replayed"
               },
               "Location": {
                 "$ref": "#/components/headers/Location"
@@ -5645,21 +5632,12 @@
                 }
               }
             },
-            "description": "Conflict. Codes: `import.already_imported`, `idempotency.in_progress`, `idempotency.outcome_unknown`.",
+            "description": "Conflict. Codes: `import.already_imported`.",
             "headers": {
-              "Retry-After": {
-                "$ref": "#/components/headers/Retry-After"
-              },
               "X-Correlation-Id": {
                 "$ref": "#/components/headers/X-Correlation-Id"
               }
             }
-          },
-          "413": {
-            "$ref": "#/components/responses/PayloadTooLarge"
-          },
-          "422": {
-            "$ref": "#/components/responses/UnprocessableEntity"
           },
           "503": {
             "$ref": "#/components/responses/ServiceUnavailable"
@@ -5670,7 +5648,7 @@
             "Bearer": []
           }
         ],
-        "summary": "Create the claim from one reviewed draft, owned by the claimant account named by `claimantEmail` and submitted the normal way (Submitted, timeline, audit, `claim.submitted` event), with an import note on its timeline. 409 `import.already_imported` when the item's key was imported before.",
+        "summary": "Create the claim from one reviewed draft, owned by the claimant account named by `claimantEmail` and submitted the normal way (Submitted, timeline, audit, `claim.submitted` event), with an import note on its timeline. 409 `import.already_imported` when the item's key was imported before. Not `[Idempotent]` on purpose: the item's key in the import ledger already makes a retry harmless (409 naming the claim it became).",
         "tags": [
           "Import"
         ]

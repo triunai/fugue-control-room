@@ -11,7 +11,6 @@ import type {
   ImportSource,
 } from '../../api/generated/model';
 import { CONSOLE_CONFIG } from '../../core/config';
-import { idempotencyHeaders } from '../../core/http/idempotency';
 
 export const importKeys = {
   recent: ['import', 'recent'] as const,
@@ -33,11 +32,9 @@ export class ImportApi {
     return firstValueFrom(this.http.post<ImportCheckDto[]>(`${this.base}/check`, { drafts }));
   }
 
-  /** One key per draft: a retry of the same body replays the first answer (ADR-013); the ledger refuses a second import anyway. */
-  create(body: CreateImportedClaimRequest, idempotencyKey: string): Promise<ClaimDto> {
-    return firstValueFrom(
-      this.http.post<ClaimDto>(`${this.base}/claims`, body, { headers: idempotencyHeaders(idempotencyKey) }),
-    );
+  /** No Idempotency-Key: the server's import ledger refuses a second create of the same item (409 naming the claim). */
+  create(body: CreateImportedClaimRequest): Promise<ClaimDto> {
+    return firstValueFrom(this.http.post<ClaimDto>(`${this.base}/claims`, body));
   }
 
   recent(limit = 20): Promise<ImportedClaimDto[]> {

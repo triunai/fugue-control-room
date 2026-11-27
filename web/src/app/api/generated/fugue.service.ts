@@ -1608,7 +1608,7 @@ export class FugueAPIService {
   }
 
 /**
- * @summary Create the claim from one reviewed draft, owned by the claimant account named by `claimantEmail` and submitted the normal way (Submitted, timeline, audit, `claim.submitted` event), with an import note on its timeline. 409 `import.already_imported` when the item's key was imported before.
+ * @summary Create the claim from one reviewed draft, owned by the claimant account named by `claimantEmail` and submitted the normal way (Submitted, timeline, audit, `claim.submitted` event), with an import note on its timeline. 409 `import.already_imported` when the item's key was imported before. Not `[Idempotent]` on purpose: the item's key in the import ledger already makes a retry harmless (409 naming the claim it became).
  */
  importCreate<TData = ClaimDto>(createImportedClaimRequest?: CreateImportedClaimRequest, options?: HttpClientBodyOptions): Observable<TData>;
  importCreate<TData = ClaimDto>(createImportedClaimRequest?: CreateImportedClaimRequest, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;

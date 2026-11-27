@@ -3,7 +3,6 @@ import { RouterLink } from '@angular/router';
 import { injectQuery, QueryClient } from '@tanstack/angular-query';
 import { claimKeys } from '../../api/claims.api';
 import type { ImportFileDto, ImportSource } from '../../api/generated/model';
-import { SubmissionKey } from '../../core/http/idempotency';
 import { isApiProblem } from '../../core/http/problem';
 import { ToastStore } from '../../core/ui/toast.store';
 import { StampPipe } from '../../ui/format';
@@ -381,7 +380,6 @@ export class ImportPage {
   private readonly api = inject(ImportApi);
   private readonly queryClient = inject(QueryClient);
   private readonly toasts = inject(ToastStore);
-  private readonly keys = new Map<string, SubmissionKey>();
 
   protected readonly sources = SOURCES;
   protected readonly fields = FIELDS;
@@ -479,10 +477,8 @@ export class ImportPage {
         const row = rows[i];
         if (!row.include || stateOf(row) !== 'ready') continue;
         const body = createBody(file, row);
-        const key = this.keys.get(row.key) ?? new SubmissionKey();
-        this.keys.set(row.key, key);
         try {
-          const claim = await this.api.create(body, key.forBody(body));
+          const claim = await this.api.create(body);
           made++;
           this.patch(i, {
             claim: { id: claim.id, number: claim.number, now: true },
@@ -544,7 +540,6 @@ export class ImportPage {
     this.file.set(null);
     this.drafts.set([]);
     this.uploadError.set(null);
-    this.keys.clear();
   }
 }
 
