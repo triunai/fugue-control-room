@@ -216,9 +216,9 @@ public sealed class ClaimReportsTests(ClaimReportsFixture fx) : IClassFixture<Cl
         ClaimExposureDto exposure = (await manager.GetFromJsonAsync<ClaimExposureDto>("/api/v1/claims/exposure"))!;
 
         Assert.Equal(
-            [("SGD", Market.SG, LineOfBusiness.Motor, 1), ("SGD", Market.SG, LineOfBusiness.Property, 1), ("THB", Market.TH, LineOfBusiness.Motor, 0), ("THB", Market.TH, LineOfBusiness.Property, 1), ("HKD", Market.HK, LineOfBusiness.Motor, 1)],
+            [("SGD", Market.SG, LineOfBusiness.Motor, 1), ("SGD", Market.SG, LineOfBusiness.Property, 1), ("THB", Market.TH, LineOfBusiness.Motor, 0), ("THB", Market.TH, LineOfBusiness.Property, 1), ("HKD", Market.HK, LineOfBusiness.Motor, 1), ("IDR", Market.ID, LineOfBusiness.Property, 0)],
             exposure.Rows.OrderBy(r => r.Currency == "SGD" ? 0 : r.Currency == "THB" ? 1 : 2).ThenBy(r => r.Line).Select(r => (r.Currency, r.Market, r.Line, r.UnreservedOpenCount)));
-        Assert.Equal([("HKD", 1), ("SGD", 2), ("THB", 1)], exposure.Totals.Select(t => (t.Currency, t.UnreservedOpenCount)));
+        Assert.Equal([("HKD", 1), ("IDR", 0), ("SGD", 2), ("THB", 1)], exposure.Totals.Select(t => (t.Currency, t.UnreservedOpenCount)));
     }
 
     [Fact]
@@ -245,6 +245,7 @@ public sealed class ClaimReportsTests(ClaimReportsFixture fx) : IClassFixture<Cl
                 (Market.TH, LineOfBusiness.Motor, "THB", 1, 200_000L, 0, 0L), // 4
                 (Market.TH, LineOfBusiness.Property, "THB", 1, 0L, 0, 0L), // 11 has no reserve yet
                 (Market.HK, LineOfBusiness.Motor, "HKD", 1, 0L, 0, 0L), // 10
+                (Market.ID, LineOfBusiness.Property, "IDR", 0, 0L, 0, 0L), // 7 is settled: a row for its paid amount, no exposure
             ],
             exposure.Rows.OrderBy(r => r.Currency == "SGD" ? 0 : r.Currency == "THB" ? 1 : 2).ThenBy(r => r.Line)
                 .Select(r => (r.Market, r.Line, r.Currency, r.OpenCount, r.OutstandingReserveMinor, r.ApprovedNotSettledCount, r.ApprovedNotSettledMinor)));
@@ -257,13 +258,15 @@ public sealed class ClaimReportsTests(ClaimReportsFixture fx) : IClassFixture<Cl
 
         ClaimExposureDto exposure = (await manager.GetFromJsonAsync<ClaimExposureDto>("/api/v1/claims/exposure"))!;
 
-        Assert.Equal(["HKD", "SGD", "THB"], exposure.Totals.Select(t => t.Currency));
+        Assert.Equal(["HKD", "IDR", "SGD", "THB"], exposure.Totals.Select(t => t.Currency));
         ExposureTotalDto sgd = exposure.Totals.Single(t => t.Currency == "SGD");
         ExposureTotalDto thb = exposure.Totals.Single(t => t.Currency == "THB");
         Assert.Equal((4, 150_000L, 1, 60_000L), (sgd.OpenCount, sgd.OutstandingReserveMinor, sgd.ApprovedNotSettledCount, sgd.ApprovedNotSettledMinor));
         Assert.Equal((2, 200_000L, 0, 0L), (thb.OpenCount, thb.OutstandingReserveMinor, thb.ApprovedNotSettledCount, thb.ApprovedNotSettledMinor));
         Assert.DoesNotContain(exposure.Totals, t => t.OutstandingReserveMinor == 350_000); // 150000 SGD + 200000 THB must never be one number
-        Assert.DoesNotContain(exposure.Rows, r => r.Currency == "IDR"); // the only ID claim is settled: no exposure
+        ExposureTotalDto idr = exposure.Totals.Single(t => t.Currency == "IDR"); // the only ID claim is settled: paid, no exposure
+        Assert.Equal((0, 0L, 0, 0L, 0), (idr.OpenCount, idr.OutstandingReserveMinor, idr.ApprovedNotSettledCount, idr.ApprovedNotSettledMinor, idr.UnreservedOpenCount));
+        Assert.Equal((1, 7_000_000L), (idr.SettledCount, idr.SettledMinor));
     }
 
     [Fact]

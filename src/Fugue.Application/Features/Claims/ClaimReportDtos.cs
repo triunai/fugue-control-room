@@ -34,6 +34,9 @@ public sealed record OfficerWorkloadDto(
 /// <see cref="Totals"/> are per currency. <c>OutstandingReserveMinor</c> sums the reserves of open claims only; an approved claim leaves it and shows as
 /// <c>ApprovedNotSettled</c> until it is settled; rejected and settled claims are not exposure. <c>UnreservedOpenCount</c> is the open claims with no
 /// reserve yet: their exposure is unknown, so it must not be read as zero.
+/// <c>SettledCount</c> and <c>SettledMinor</c> are what has been paid out: the settled claims and the sum of their approved amounts (a claim is settled
+/// for exactly its approved amount), all time, in the same currency. Paid is not exposure, so a market and line with only settled claims is a row
+/// whose exposure fields are all zero.
 /// </summary>
 public sealed record ClaimExposureDto(DateTimeOffset AsOf, IReadOnlyList<ExposureRowDto> Rows, IReadOnlyList<ExposureTotalDto> Totals);
 
@@ -45,7 +48,16 @@ public sealed record ExposureRowDto(
     long OutstandingReserveMinor,
     int ApprovedNotSettledCount,
     long ApprovedNotSettledMinor,
-    int UnreservedOpenCount);
+    int UnreservedOpenCount,
+    int SettledCount,
+    long SettledMinor);
 
 public sealed record ExposureTotalDto(
-    string Currency, int OpenCount, long OutstandingReserveMinor, int ApprovedNotSettledCount, long ApprovedNotSettledMinor, int UnreservedOpenCount);
+    string Currency,
+    int OpenCount,
+    long OutstandingReserveMinor,
+    int ApprovedNotSettledCount,
+    long ApprovedNotSettledMinor,
+    int UnreservedOpenCount,
+    int SettledCount,
+    long SettledMinor);

@@ -1,0 +1,38 @@
+meta {
+  name: Exposure carries the paid (settled) count and sum on rows and totals
+  type: http
+  seq: 40
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/exposure
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{managerToken}}
+}
+
+tests {
+  test("200 and every row and total has a settled count and sum, zero together", function () {
+    expect(res.status).to.equal(200);
+    res.body.rows.concat(res.body.totals).forEach(function (x) {
+      expect(x.settledCount).to.be.a("number");
+      expect(x.settledMinor).to.be.a("number");
+      expect(x.settledCount === 0).to.equal(x.settledMinor === 0);
+    });
+  });
+  test("each currency's paid total is the sum of its rows, never mixed across currencies", function () {
+    res.body.totals.forEach(function (t) {
+      const rows = res.body.rows.filter(function (r) { return r.currency === t.currency; });
+      expect(t.settledCount).to.equal(rows.reduce(function (n, r) { return n + r.settledCount; }, 0));
+      expect(t.settledMinor).to.equal(rows.reduce(function (n, r) { return n + r.settledMinor; }, 0));
+    });
+  });
+  test("the seeded SG motor claim is settled, so SGD has paid money", function () {
+    const sgd = res.body.totals.find(function (t) { return t.currency === "SGD"; });
+    expect(sgd.settledCount).to.be.at.least(1);
+    expect(sgd.settledMinor).to.be.at.least(185000);
+  });
+}

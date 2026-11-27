@@ -78,6 +78,8 @@ describe('exposureMatrix', () => {
     approvedNotSettledMinor: app,
     approvedNotSettledCount: 0,
     unreservedOpenCount: unreserved ?? 0,
+    settledCount: 0,
+    settledMinor: 0,
   });
 
   it('keeps outstanding and approved apart per market and line, in the market currency', () => {
