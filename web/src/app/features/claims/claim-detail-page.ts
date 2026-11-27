@@ -3,17 +3,44 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { RouterLink } from '@angular/router';
 import { injectMutation, injectQuery, QueryClient } from '@tanstack/angular-query';
 import { ClaimsApi, claimKeys } from '../../api/claims.api';
-import { ClaimDto } from '../../api/models';
+import { ClaimDto, ClaimOutcome } from '../../api/models';
 import { AccessService } from '../../core/auth/access.service';
 import { controlError } from '../../core/forms/server-errors';
 import { CorrelationService } from '../../core/http/correlation.service';
 import { ApiProblem, isApiProblem } from '../../core/http/problem';
 import { ToastStore } from '../../core/ui/toast.store';
 import { RelativeTimePipe, StampPipe } from '../../ui/format';
+import { Overlays } from '../../ui/overlays';
 import { RefChip } from '../../ui/ref-chip';
 import { ErrorState } from '../../ui/states';
 import { ClaimStatusPill, MoneyPipe } from './claim-bits';
-import { WHAT_NEXT, marketName } from './claims-logic';
+import { ClaimActionDialog, ClaimDialogData, ClaimDialogMode, ClaimDialogResult } from './claim-action-dialog';
+import { ActionState, ClaimAction, WHAT_NEXT, availableActions, marketName } from './claims-logic';
+
+/** A command the page can run; Reload-and-retry is the user's choice after a 412, never an automatic replay. */
+type Command =
+  | { kind: 'pickup' }
+  | { kind: 'reserve'; amountMinor: number }
+  | { kind: 'requestInfo'; question: string }
+  | { kind: 'decide'; outcome: 'Approve' | 'Reject'; reason: string; amountMinor?: number }
+  | { kind: 'settle' };
+
+const DONE: Record<Command['kind'], string> = {
+  pickup: 'Claim picked up',
+  reserve: 'Reserve set',
+  requestInfo: 'Question sent to the claimant',
+  decide: 'Decision recorded',
+  settle: 'Claim settled',
+};
+
+const LABEL: Record<ClaimAction, string> = {
+  pickup: 'Pick up',
+  reserve: 'Set reserve',
+  requestInfo: 'Request info',
+  approve: 'Approve',
+  reject: 'Reject',
+  settle: 'Settle',
+};
 
 /** One claim, for both audiences: the claimant's view (status in plain words, timeline, answer box) and the staff view (actions, internal facts). */
 @Component({
@@ -32,7 +59,11 @@ import { WHAT_NEXT, marketName } from './claims-logic';
   styleUrl: './claims.css',
   template: `
     <div class="page">
-      <p class="m-0"><a routerLink="/claims/mine" class="text-muted">&larr; Claims</a></p>
+      <p class="m-0">
+        <a [routerLink]="isStaff() ? '/claims/queue' : '/claims/mine'" class="text-muted"
+          >&larr; {{ isStaff() ? 'Claims queue' : 'My claims' }}</a
+        >
+      </p>
 
       @if (claimQuery.isPending()) {
         <div class="panel panel-pad"><span class="skeleton" style="width: 40%; height: 2rem"></span></div>
@@ -49,6 +80,24 @@ import { WHAT_NEXT, marketName } from './claims-logic';
               <span class="text-muted" [title]="c.updatedAt | stamp">updated {{ c.updatedAt | relative }}</span>
             </div>
           </div>
+          @if (actions().length) {
+            <div class="actions" role="group" aria-label="Actions for this claim">
+              @for (a of actions(); track a.action) {
+                <button
+                  type="button"
+                  class="btn"
+                  [class.btn-primary]="a.action === 'pickup' || a.action === 'approve' || a.action === 'settle'"
+                  [class.btn-danger]="a.action === 'reject'"
+                  [disabled]="!a.enabled || command.isPending()"
+                  [title]="a.hint ?? ''"
+                  [attr.data-action]="a.action"
+                  (click)="run(a)"
+                >
+                  {{ label(a) }}
+                </button>
+              }
+            </div>
+          }
         </header>
 
         @if (conflict(); as k) {
@@ -68,8 +117,8 @@ import { WHAT_NEXT, marketName } from './claims-logic';
         <div class="detail">
           <div class="stack">
             <section class="panel panel-pad" aria-labelledby="next-h">
-              <h2 id="next-h" class="section-title">What happens next</h2>
-              <p class="next">{{ whatNext(c) }}</p>
+              <h2 id="next-h" class="section-title">{{ isStaff() ? 'Status' : 'What happens next' }}</h2>
+              <p class="next">{{ isStaff() ? staffLine(c) : whatNext(c) }}</p>
               @if (c.decisionReason) {
                 <p class="mt-3 mb-0"><span class="label">Decision reason</span><br />{{ c.decisionReason }}</p>
               }
@@ -80,6 +129,16 @@ import { WHAT_NEXT, marketName } from './claims-logic';
                 </p>
               }
             </section>
+
+            @if (c.openInfoRequest && isStaff()) {
+              <section class="panel panel-pad" aria-labelledby="oq-h">
+                <h2 id="oq-h" class="section-title">Waiting on the claimant</h2>
+                <p class="question">{{ c.openInfoRequest.question }}</p>
+                <span class="text-muted" [title]="c.openInfoRequest.requestedAt | stamp"
+                  >asked {{ c.openInfoRequest.requestedAt | relative }}</span
+                >
+              </section>
+            }
 
             @if (c.openInfoRequest && canRespond()) {
               <section class="panel panel-pad" aria-labelledby="q-h" data-testid="answer-panel">
@@ -158,6 +217,40 @@ import { WHAT_NEXT, marketName } from './claims-logic';
                 </div>
               </dl>
             </section>
+            @if (isStaff()) {
+              <section class="panel panel-pad" aria-labelledby="h-h">
+                <h2 id="h-h" class="section-title">Handling</h2>
+                <dl class="facts" data-testid="handling">
+                  <div>
+                    <dt>Claimant</dt>
+                    <dd>{{ c.claimantName || 'Unknown' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Officer</dt>
+                    <dd>{{ c.assignedOfficerName || 'Unassigned' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Reserve (internal)</dt>
+                    <dd class="mono">{{ c.reserveMinor | money: c.currency }}</dd>
+                  </div>
+                  @if (c.approvedAmountMinor !== null && c.approvedAmountMinor !== undefined) {
+                    <div>
+                      <dt>Approved</dt>
+                      <dd class="mono">{{ c.approvedAmountMinor | money: c.currency }}</dd>
+                    </div>
+                  }
+                  <div>
+                    <dt>Version</dt>
+                    <dd class="mono">{{ c.version }}</dd>
+                  </div>
+                </dl>
+                @if (access.has('AUDIT_READ')) {
+                  <p class="mt-3 mb-0">
+                    <a [routerLink]="['/audit']" [queryParams]="{ entityId: c.id }">Audit history of this claim</a>
+                  </p>
+                }
+              </section>
+            }
           </aside>
         </div>
       }
@@ -173,6 +266,7 @@ export class ClaimDetailPage {
   private readonly toasts = inject(ToastStore);
   private readonly correlation = inject(CorrelationService);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly overlays = inject(Overlays);
   protected readonly access = inject(AccessService);
 
   protected readonly conflict = signal<{ ref: string | null } | null>(null);
@@ -192,6 +286,13 @@ export class ClaimDetailPage {
     queryFn: () => this.api.timeline(this.id()),
   }));
 
+  /** Staff work claims; a claimant (no CLAIMS_ALL) sees their own. */
+  protected readonly isStaff = computed(() => this.access.has('CLAIMS_ALL'));
+  protected readonly actions = computed<ActionState[]>(() => {
+    const c = this.claim();
+    return c ? availableActions(c, { userId: this.access.me()?.userId, permissions: this.access.permissions() }) : [];
+  });
+
   protected readonly canRespond = computed(() => this.access.has('CLAIMS_RESPOND') && !this.access.has('CLAIMS_ALL'));
 
   protected readonly answerForm = this.fb.group({ answer: ['', [Validators.required, Validators.maxLength(4000)]] });
@@ -207,6 +308,28 @@ export class ClaimDetailPage {
     onError: (e) => this.onCommandError(e),
   }));
 
+  protected readonly command = injectMutation(() => ({
+    mutationFn: (op: Command) => {
+      const id = this.id();
+      switch (op.kind) {
+        case 'pickup':
+          return this.api.pickup(id);
+        case 'reserve':
+          return this.api.setReserve(id, op.amountMinor);
+        case 'requestInfo':
+          return this.api.requestInfo(id, op.question);
+        case 'decide':
+          return this.api.decide(id, { outcome: op.outcome, reason: op.reason, amountMinor: op.amountMinor });
+        case 'settle':
+          return this.api.settle(id);
+      }
+    },
+    // 409 (a guard: not your claim, invalid transition) shows the API's own message as a toast; 412 is the banner.
+    meta: { handles: [412] },
+    onSuccess: (c, op) => this.afterCommand(c, DONE[op.kind]),
+    onError: (e) => this.onCommandError(e),
+  }));
+
   constructor() {
     // A different claim (route param change) starts with no stale banner.
     effect(() => {
@@ -217,6 +340,70 @@ export class ClaimDetailPage {
 
   protected whatNext(c: ClaimDto): string {
     return WHAT_NEXT[c.status];
+  }
+
+  protected label(a: ActionState): string {
+    return LABEL[a.action];
+  }
+
+  protected staffLine(c: ClaimDto): string {
+    switch (c.status) {
+      case 'Submitted':
+        return 'Waiting to be picked up. Nobody is assigned yet.';
+      case 'UnderReview':
+        return `Under review by ${c.assignedOfficerName ?? 'an officer'}.`;
+      case 'InfoRequested':
+        return 'Paused: waiting for the claimant to answer the question below.';
+      case 'Approved':
+        return 'Approved and waiting for a manager to settle it.';
+      case 'Rejected':
+        return 'Rejected. This claim is closed.';
+      default:
+        return 'Settled. This claim is closed.';
+    }
+  }
+
+  /** Dialog-backed actions collect their input first; pickup runs at once; settle asks for a confirmation. */
+  protected async run(a: ActionState): Promise<void> {
+    const c = this.claim();
+    if (!c) return;
+    this.correlation.begin();
+    if (a.action === 'pickup') return this.command.mutate({ kind: 'pickup' });
+    if (a.action === 'settle') {
+      const ok = await this.overlays.confirm({
+        title: `Settle ${c.number}?`,
+        body: 'This records the payment as made and closes the claim. It cannot be undone.',
+        confirmLabel: 'Settle claim',
+        tone: 'primary',
+      });
+      if (ok) this.command.mutate({ kind: 'settle' });
+      return;
+    }
+    const result = await this.ask(a.action as ClaimDialogMode, c);
+    if (!result) return;
+    switch (a.action) {
+      case 'reserve':
+        return this.command.mutate({ kind: 'reserve', amountMinor: result.amountMinor! });
+      case 'requestInfo':
+        return this.command.mutate({ kind: 'requestInfo', question: result.text! });
+      case 'approve':
+        return this.command.mutate({
+          kind: 'decide',
+          outcome: ClaimOutcome.Approve,
+          reason: result.text!,
+          amountMinor: result.amountMinor,
+        });
+      default:
+        return this.command.mutate({ kind: 'decide', outcome: ClaimOutcome.Reject, reason: result.text! });
+    }
+  }
+
+  private ask(mode: ClaimDialogMode, claim: ClaimDto): Promise<ClaimDialogResult | undefined> {
+    const ref = this.overlays.modal<ClaimActionDialog, ClaimDialogData, ClaimDialogResult | undefined>(
+      ClaimActionDialog,
+      { mode, claim },
+    );
+    return new Promise((resolve) => ref.closed.subscribe((v) => resolve(v)));
   }
 
   protected answerErr(): string | null {

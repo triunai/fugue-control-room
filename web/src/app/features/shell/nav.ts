@@ -28,6 +28,12 @@ export const NAV: NavGroup[] = [
         permission: 'CLAIMS_SUBMIT',
         icon: 'M8 3v10M3 8h10',
       },
+      {
+        label: 'Claims queue',
+        path: '/claims/queue',
+        permission: 'CLAIMS_ALL',
+        icon: 'M2.5 3.5h11M2.5 8h11M2.5 12.5h7',
+      },
     ],
   },
   {
@@ -76,3 +82,10 @@ export const NAV: NavGroup[] = [
     ],
   },
 ];
+
+/** The items a user may see, per group, dropping empty groups: the one rule the shell and its tests share. */
+export function visibleGroups(has: (code: string | string[]) => boolean): NavGroup[] {
+  return NAV.map((g) => ({ ...g, items: g.items.filter((i) => !i.permission || has(i.permission)) })).filter(
+    (g) => g.items.length > 0,
+  );
+}
