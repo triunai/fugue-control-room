@@ -1,4 +1,4 @@
-import { DialogRef } from '@angular/cdk/dialog';
+import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TRACK_HELP, stepHelp } from './claims-logic';
 
@@ -54,6 +54,8 @@ interface TrackDoc {
 })
 export class ClaimTracksDialog {
   protected readonly ref = inject<DialogRef<void>>(DialogRef);
+  private readonly data = inject<{ staff: boolean }>(DIALOG_DATA, { optional: true });
+  /** Claimants never see a reserve, so their money track starts at Assessed (see moneyTrack). */
   protected readonly tracks: TrackDoc[] = [
     {
       name: 'Handling',
@@ -61,10 +63,12 @@ export class ClaimTracksDialog {
     },
     {
       name: 'Payout',
-      steps: ['Reserved', 'Approved', 'Paid'].map((label) => ({ label, text: stepHelp(label) })),
+      steps: [this.data?.staff === false ? 'Assessed' : 'Reserved', 'Approved', 'Paid'].map((label) => ({ label, text: stepHelp(label) })),
     },
   ];
   protected intro(name: 'Handling' | 'Payout'): string {
+    if (name === 'Payout' && this.data?.staff === false)
+      return 'The Payout track follows the money: our assessment, the approved amount, and the payment.';
     return TRACK_HELP[name];
   }
 }

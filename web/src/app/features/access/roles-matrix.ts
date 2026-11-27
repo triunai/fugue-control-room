@@ -1,14 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { injectQuery } from '@tanstack/angular-query';
 import { RolesApi } from '../../api/roles.api';
+import { Icon } from '../../ui/icon';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
 import { buildMatrix } from './roles-matrix.logic';
 
-/** Read-only role x permission grid: roles as columns, permissions grouped by module as rows, a dot where granted. */
+/** Read-only role x permission grid: roles as columns, permissions grouped by module as rows, a check where granted. */
 @Component({
   selector: 'fg-roles-matrix',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SkeletonRows, ErrorState, EmptyState],
+  imports: [SkeletonRows, ErrorState, EmptyState, Icon],
   template: `
     <section class="table-wrap" aria-labelledby="rm-title" data-testid="roles-matrix">
       <h2 id="rm-title" class="section-title px-4 pt-4 pb-1">Roles and permissions</h2>
@@ -47,10 +48,10 @@ import { buildMatrix } from './roles-matrix.logic';
                   @for (r of matrix().roles; track r.code) {
                     <td class="cell">
                       @if (row.granted.has(r.code)) {
-                        <span class="dot" aria-hidden="true"></span>
-                        <span class="sr-only">{{ r.code }} grants {{ row.code }}</span>
+                        <span class="granted" title="Granted"><fg-icon name="check" /></span>
+                        <span class="sr-only">Granted: {{ r.code }} grants {{ row.code }}</span>
                       } @else {
-                        <span class="sr-only">{{ r.code }} does not grant {{ row.code }}</span>
+                        <span class="sr-only">Not granted: {{ r.code }} does not grant {{ row.code }}</span>
                       }
                     </td>
                   }
@@ -108,12 +109,9 @@ import { buildMatrix } from './roles-matrix.logic';
       font-weight: 400;
       color: var(--muted);
     }
-    .dot {
-      display: inline-block;
-      width: 0.6rem;
-      height: 0.6rem;
-      border-radius: 50%;
-      background: var(--accent);
+    .granted {
+      display: inline-flex;
+      color: var(--accent);
     }
   `,
 })

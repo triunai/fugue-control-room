@@ -17,7 +17,7 @@ const when = new Intl.DateTimeFormat('en-GB', {
 @Component({
   selector: 'fg-last-changed',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<span class="text-sm">{{ text() }}</span>`,
+  template: `<span class="text-sm" [attr.title]="auditOn() ? null : 'audit is off'">{{ text() }}</span>`,
 })
 export class LastChanged {
   private readonly audit = inject(AuditApi);
@@ -25,10 +25,13 @@ export class LastChanged {
 
   readonly code = input.required<string>();
   readonly version = input.required<number>();
+  /** False while the AUDIT module is switched off: its endpoint answers 404, so nothing is requested. */
+  readonly auditOn = input(true);
 
   protected readonly latest = injectQuery(() => ({
-    queryKey: ['modules', this.code(), 'last-changed'],
-    enabled: this.access.has('AUDIT_READ') && !!MODULE_ENTITY_IDS[this.code()],
+    queryKey: ['modules', this.code(), 'last-changed', this.auditOn()],
+    enabled: this.auditOn() && this.access.has('AUDIT_READ') && !!MODULE_ENTITY_IDS[this.code()],
+    retry: false,
     queryFn: async () =>
       (
         await this.audit.list(
@@ -40,9 +43,12 @@ export class LastChanged {
   }));
 
   protected readonly text = computed(() => {
+    if (!this.auditOn()) return '—';
     const row = this.latest.data();
     if (row) return `${row.actorDisplay ?? row.actorType} · ${when.format(new Date(row.occurredAt))}`;
     if (!this.access.has('AUDIT_READ') || this.latest.isError()) return `version ${this.version()}`;
+    // A disabled query is "pending" forever: only spin while a request is really in flight.
+    if (!MODULE_ENTITY_IDS[this.code()]) return `version ${this.version()}`;
     return this.latest.isPending() ? '…' : 'default (on)';
   });
 }

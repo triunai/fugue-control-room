@@ -99,6 +99,11 @@
   height: 2px;
   background: var(--on-band-line);
 }
+.step:last-child::before {
+  /* the track ends at its last node, not at the card edge */
+  right: auto;
+  width: 1.15rem;
+}
 .step.done::before,
 .step.current::before {
   background: var(--on-band);

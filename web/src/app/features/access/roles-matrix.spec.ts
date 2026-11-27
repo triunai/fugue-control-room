@@ -45,11 +45,13 @@ describe('RolesMatrix', () => {
     const heads = [...root.querySelectorAll('thead th')].map((e) => e.textContent?.trim());
     expect(heads).toEqual(['Permission', 'STAFF', 'SELF']);
     const rows = [...root.querySelectorAll('tbody tr:not(.module-row)')];
-    const dots = rows.map((r) => [...r.querySelectorAll('td')].map((td) => td.querySelector('.dot') !== null));
+    const dots = rows.map((r) => [...r.querySelectorAll('td')].map((td) => td.querySelector('.granted') !== null));
     expect(dots).toEqual([
       [true, true], // CLAIMS_READ: both roles
       [true, false], // CUSTOMERS_VIEW: STAFF only
     ]);
-    expect(root.textContent).toContain('SELF does not grant CUSTOMERS_VIEW');
+    expect(root.textContent).toContain('Not granted: SELF does not grant CUSTOMERS_VIEW');
+    expect(root.querySelector('.granted')?.getAttribute('title')).toBe('Granted');
+    expect(root.querySelector('.granted fg-icon svg')).not.toBeNull();
   });
 });
