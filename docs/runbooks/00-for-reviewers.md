@@ -43,7 +43,7 @@ The console login page lists the seeded accounts. All share one development-only
 | `self@fugue.test` | SELF_SERVICE | view and edit only their own customer |
 | `self2@fugue.test` | SELF_SERVICE | owns a different customer (ownership 404s) |
 
-The claims personas, if present in your checkout, are listed in `docs/runbooks/11-claims.md`. Details of roles and ownership: [05-auth.md](05-auth.md).
+Claims personas: `self@fugue.test` is a claimant (owns three seeded claims, one waiting for an answer), `staff@fugue.test` a claims officer, `manager@fugue.test` a manager (settle, exposure). The claims walk-through is [11-claims.md](11-claims.md); the domain decisions are in [`docs/CLAIMS.md`](../CLAIMS.md). Details of roles and ownership: [05-auth.md](05-auth.md).
 
 ## 4. Run the tests
 

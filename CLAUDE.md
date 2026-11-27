@@ -76,7 +76,7 @@ That is all: EF value conversion and Dapper type handlers are registered by scan
 
 ### Conventions
 
-File-scoped namespaces · PascalCase types/members, `_camelCase` private fields · one type per file (a command, its validator and its handler share one file by the slice convention) · async methods take `CancellationToken` · Conventional Commits with scopes (see `commitlint.config.cjs`).
+File-scoped namespaces · PascalCase types/members, `_camelCase` private fields · one file per concept, not per type (D-055: typed ids in `Ids.cs`, an aggregate with its small enums and value types, ports grouped by concern; a command, its validator and its handler share one slice file) · async methods take `CancellationToken` · Conventional Commits with scopes (see `commitlint.config.cjs`).
 Domain code uses plain names. Theming is brand-only (the name Fugue appears in namespaces and docs, not in domain types).
 
 ### Don't
