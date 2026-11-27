@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 22 workstreams, 13 ADRs, 55 decisions, 112 commits (6 unlinked). Newest commit indexed: `7b9605b`.
+Counts: 24 workstreams, 13 ADRs, 57 decisions, 157 commits (6 unlinked). Newest commit indexed: `2b9758e`.
 
 ## Workstreams
 
@@ -80,10 +80,10 @@ Counts: 22 workstreams, 13 ADRs, 55 decisions, 112 commits (6 unlinked). Newest 
 
 ### W-007
 
-**S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry** — ACTIVE
-- Where: [board](workstreams.md)
-- Decisions and ADRs: [ADR-013](#adr-013), [D-049](#d-049), [D-050](#d-050), [D-051](#d-051)
-- Commits (23):
+**S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-27--closed-w-007-s5-rest-hardening-idempotency-versioning-rate-limits-cache-telemetry)
+- Decisions and ADRs: [ADR-013](#adr-013), [D-049](#d-049), [D-050](#d-050), [D-051](#d-051), [D-054](#d-054), [D-055](#d-055), [D-057](#d-057)
+- Commits (40):
   - `451022d` docs(plans): idempotency-key plan and ADR-013; keep the Angular console (D-049) (2026-11-27)
   - `bd5de50` build(docker): API image with an EF migrations bundle (2026-11-27)
   - `731751d` build(web): console image served by nginx with /api proxied (2026-11-27)
@@ -107,6 +107,23 @@ Counts: 22 workstreams, 13 ADRs, 55 decisions, 112 commits (6 unlinked). Newest 
   - `c0e19c4` chore(ci): allow the scopes this repo already uses in commitlint (2026-11-27)
   - `8c6d5eb` refactor(identity): name the JWT claim types once and rename the current-user adapter (2026-11-27)
   - `a277d4a` docs(spine): backlog the list-filter binding cleanup from the owner's review (2026-11-27)
+  - `5654760` docs(plans): briefs for the readability pass lanes (2026-11-27)
+  - `ce403cb` docs(spine): ledger rows for the readability lanes (2026-11-27)
+  - `ef4e2e4` docs(docs): one file per concept in CLAUDE.md; claims personas in runbook 00 (2026-11-27)
+  - `78f8fa9` refactor(api): list filters bind one query record (2026-11-27)
+  - `ac4d231` refactor(domain): typed ids and small aggregate types in one file per concept (2026-11-27)
+  - `f01fadd` refactor(application): ports grouped by concern (2026-11-27)
+  - `a9081c9` refactor(persistence): runtime SQL in embedded .sql files (2026-11-27)
+  - `2108c1d` docs(docs): readability-files lane status (2026-11-27)
+  - `07fd013` test(persistence): every SQL script referenced and present (2026-11-27)
+  - `60ea816` Merge branch 'rd-files': one file per concept and list filter records (2026-11-27)
+  - `a182737` docs(spine): typed-id recipe points at Ids.cs; close backlog #005 (2026-11-27)
+  - `f9deb05` build(infra): idempotent migration script and a read-only database role (2026-11-27)
+  - `2e73407` docs(docs): readability-sql lane status (2026-11-27)
+  - `89db40d` test(arch): fitness rules read the .sql files (2026-11-27)
+  - `1658a9f` Merge branch 'rd-sql': runtime SQL in embedded .sql files (2026-11-27)
+  - `e3cec29` docs(docs): journal the readability pass; SQL files in ARCHITECTURE.md (2026-11-27)
+  - `2b9758e` docs(spine): wrap the headless claims session (2026-11-27)
 
 ### W-008
 
@@ -252,10 +269,10 @@ Counts: 22 workstreams, 13 ADRs, 55 decisions, 112 commits (6 unlinked). Newest 
 
 ### W-020
 
-**Claims platform: the timed build window** — ACTIVE
-- Where: [board](workstreams.md)
-- Decisions and ADRs: [D-052](#d-052), [D-053](#d-053), [D-054](#d-054), [D-055](#d-055)
-- Commits (9):
+**Claims platform: the timed build window** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-27--closed-w-020-claims-platform-the-timed-build-window)
+- Decisions and ADRs: [ADR-013](#adr-013), [D-052](#d-052), [D-053](#d-053), [D-054](#d-054), [D-055](#d-055), [D-056](#d-056), [D-057](#d-057)
+- Commits (38):
   - `dd46eca` chore(spine): open the claims build window (plan, W-020, D-052, D-053) (2026-11-27)
   - `a4ac736` docs(spine): hot-state resume point during the claims window (2026-11-27)
   - `c054c63` docs(docs): architecture guide and how-we-work guide for the core doc pack (2026-11-27)
@@ -265,6 +282,35 @@ Counts: 22 workstreams, 13 ADRs, 55 decisions, 112 commits (6 unlinked). Newest 
   - `3b4dcc5` ci: GitHub Actions pipeline and a reviewer start-here runbook (2026-11-27)
   - `8d77574` fix(tests): Bruno compose environment so the webhook sink is reachable from the API container (2026-11-27)
   - `7b9605b` docs(spine): wrap mid-window; close W-018; seed the headless continuation (2026-11-27)
+  - `6754d1f` feat(domain): Claim aggregate with its state machine (2026-11-27)
+  - `641f0e8` docs(spine): hot-state: claims backend lane finished, rebase pending (2026-11-27)
+  - `9571880` feat(persistence): claims, timeline and info requests (2026-11-27)
+  - `4b7186c` feat(api): claims contract (2026-11-27)
+  - `a9d2d1c` fix(application): claim handling checks the ETag before the state machine (2026-11-27)
+  - `b851811` feat(application): claims workload and exposure (2026-11-27)
+  - `0d89790` feat(infra): seed claims demo data (2026-11-27)
+  - `3142577` test(api): Bruno claims collection (2026-11-27)
+  - `9c2a79a` feat(api): idempotent claim submit and a flat list filter (2026-11-27)
+  - `506fc47` docs(ai): claims-core lane status (2026-11-27)
+  - `4f33326` docs(spine): hot-state: claims backend rebased on main (506fc47) (2026-11-27)
+  - `8718e07` docs(docs): journal the headless continuation start (2026-11-27)
+  - `74522f0` docs(reviews): Codex claims seam review and its disposition (2026-11-27)
+  - `885f089` feat(web): claims client and claimant screens (2026-11-27)
+  - `6cf5e0f` docs(docs): CLAIMS.md and the ADR-013 required-key amendment (2026-11-27)
+  - `7fa63d7` fix(persistence): a claim command always runs the version-guarded update (2026-11-27)
+  - `e3d0cae` docs(docs): refresh how-we-use-ai against what this repo now evidences (2026-11-27)
+  - `6bcd7ab` feat(web): claims queue and staff claim detail (2026-11-27)
+  - `7bc4280` fix(api): claim submit requires an Idempotency-Key (2026-11-27)
+  - `fab8a1c` feat(web): workload and exposure (2026-11-27)
+  - `bbf9b90` test(api): Bruno and runbook send the submit key (2026-11-27)
+  - `a220919` docs(docs): claims-fix lane status (2026-11-27)
+  - `abf1558` test(web): claims smoke and screenshots (2026-11-27)
+  - `5de17a7` docs(ai): claims-web lane status (2026-11-27)
+  - `ce78360` docs(docs): README for the claims submission (2026-11-27)
+  - `15a4635` Merge branch 'claims-core': the claims platform (2026-11-27)
+  - `f26fd14` docs(docs): journal the claims merge; failure modes 30 and 31 (2026-11-27)
+  - `18c98d4` fix(api): claims list query parameters are camelCase like every other list (2026-11-27)
+  - `2b9758e` docs(spine): wrap the headless claims session (2026-11-27)
 
 ### W-021
 
@@ -278,9 +324,26 @@ Counts: 22 workstreams, 13 ADRs, 55 decisions, 112 commits (6 unlinked). Newest 
 
 **Post-core quality wave and nice-to-haves (lands together after the claims build)** — PARKED
 - Where: [board](workstreams.md)
-- Decisions and ADRs: none
-- Commits (1):
+- Decisions and ADRs: [D-057](#d-057)
+- Commits (2):
   - `7b9605b` docs(spine): wrap mid-window; close W-018; seed the headless continuation (2026-11-27)
+  - `2b9758e` docs(spine): wrap the headless claims session (2026-11-27)
+
+### W-023
+
+**API versioning with Sunset, HybridCache, OpenTelemetry** — PARKED
+- Where: [board](workstreams.md)
+- Decisions and ADRs: none
+- Commits (0):
+  - none yet
+
+### W-024
+
+**Claims follow-ups: counts endpoint, open-first queue, past questions** — PARKED
+- Where: [board](workstreams.md)
+- Decisions and ADRs: none
+- Commits (0):
+  - none yet
 
 ## ADRs
 
@@ -423,6 +486,7 @@ Counts: 22 workstreams, 13 ADRs, 55 decisions, 112 commits (6 unlinked). Newest 
 - Introduced by: `451022d` docs(plans): idempotency-key plan and ADR-013; keep the Angular console (D-049) (2026-11-27)
 - Amended by:
   - `a2a9746` docs(plans): idempotency plan revision 2 after the Codex review; D-051 audit import (2026-11-27)
+  - `6cf5e0f` docs(docs): CLAIMS.md and the ADR-013 required-key amendment (2026-11-27)
 - Cited in commit Refs:
   - `451022d` docs(plans): idempotency-key plan and ADR-013; keep the Angular console (D-049) (2026-11-27)
   - `a2a9746` docs(plans): idempotency plan revision 2 after the Codex review; D-051 audit import (2026-11-27)
@@ -433,7 +497,7 @@ Counts: 22 workstreams, 13 ADRs, 55 decisions, 112 commits (6 unlinked). Newest 
   - `dde6eb6` fix(api): idempotency review fixes (no-store, blank key, fitness rule, contract) (2026-11-27)
   - `d9b67fb` fix(web): fix the Idempotency-Key and body per create submission (2026-11-27)
   - `d0eee32` docs(reviews): file the Codex diff review of the idempotency store (2026-11-27)
-- Workstreams: [W-007](#w-007), [W-018](#w-018)
+- Workstreams: [W-007](#w-007), [W-018](#w-018), [W-020](#w-020)
 - Decisions: [D-050](#d-050)
 
 ## Decisions
@@ -852,29 +916,128 @@ Counts: 22 workstreams, 13 ADRs, 55 decisions, 112 commits (6 unlinked). Newest 
 - Workstreams: [W-020](#w-020)
 - Cited in commit Refs:
   - `dd46eca` chore(spine): open the claims build window (plan, W-020, D-052, D-053) (2026-11-27)
+  - `6754d1f` feat(domain): Claim aggregate with its state machine (2026-11-27)
+  - `9571880` feat(persistence): claims, timeline and info requests (2026-11-27)
+  - `4b7186c` feat(api): claims contract (2026-11-27)
+  - `a9d2d1c` fix(application): claim handling checks the ETag before the state machine (2026-11-27)
+  - `b851811` feat(application): claims workload and exposure (2026-11-27)
+  - `0d89790` feat(infra): seed claims demo data (2026-11-27)
+  - `3142577` test(api): Bruno claims collection (2026-11-27)
+  - `9c2a79a` feat(api): idempotent claim submit and a flat list filter (2026-11-27)
+  - `506fc47` docs(ai): claims-core lane status (2026-11-27)
+  - `885f089` feat(web): claims client and claimant screens (2026-11-27)
+  - `6cf5e0f` docs(docs): CLAIMS.md and the ADR-013 required-key amendment (2026-11-27)
+  - `6bcd7ab` feat(web): claims queue and staff claim detail (2026-11-27)
+  - `fab8a1c` feat(web): workload and exposure (2026-11-27)
+  - `abf1558` test(web): claims smoke and screenshots (2026-11-27)
+  - `5de17a7` docs(ai): claims-web lane status (2026-11-27)
+  - `15a4635` Merge branch 'claims-core': the claims platform (2026-11-27)
 
 ### D-054
 
 **Raw SQL lives in .sql files; a read-only Postgres MCP for agents** — accepted — [decisions.md](decisions.md#d-054--raw-sql-lives-in-sql-files-a-read-only-postgres-mcp-for-agents--2026-11-27)
 - ADR: none
-- Workstreams: [W-020](#w-020)
+- Workstreams: [W-007](#w-007), [W-020](#w-020)
 - Cited in commit Refs:
   - `40ee1a3` docs(spine): decisions on SQL files, a read-only DB MCP and file consolidation (2026-11-27)
   - `1fdc33b` docs(docs): point architecture guide at D-054 and D-055 for SQL and file layout (2026-11-27)
+  - `5654760` docs(plans): briefs for the readability pass lanes (2026-11-27)
+  - `ce403cb` docs(spine): ledger rows for the readability lanes (2026-11-27)
+  - `a9081c9` refactor(persistence): runtime SQL in embedded .sql files (2026-11-27)
+  - `07fd013` test(persistence): every SQL script referenced and present (2026-11-27)
+  - `f9deb05` build(infra): idempotent migration script and a read-only database role (2026-11-27)
+  - `2e73407` docs(docs): readability-sql lane status (2026-11-27)
+  - `89db40d` test(arch): fitness rules read the .sql files (2026-11-27)
+  - `1658a9f` Merge branch 'rd-sql': runtime SQL in embedded .sql files (2026-11-27)
+  - `e3cec29` docs(docs): journal the readability pass; SQL files in ARCHITECTURE.md (2026-11-27)
 
 ### D-055
 
 **One file per concept, not per type** — accepted — [decisions.md](decisions.md#d-055--one-file-per-concept-not-per-type--2026-11-27)
 - ADR: none
-- Workstreams: [W-020](#w-020)
+- Workstreams: [W-007](#w-007), [W-020](#w-020)
 - Cited in commit Refs:
   - `40ee1a3` docs(spine): decisions on SQL files, a read-only DB MCP and file consolidation (2026-11-27)
   - `1fdc33b` docs(docs): point architecture guide at D-054 and D-055 for SQL and file layout (2026-11-27)
+  - `5654760` docs(plans): briefs for the readability pass lanes (2026-11-27)
+  - `ce403cb` docs(spine): ledger rows for the readability lanes (2026-11-27)
+  - `ef4e2e4` docs(docs): one file per concept in CLAUDE.md; claims personas in runbook 00 (2026-11-27)
+  - `78f8fa9` refactor(api): list filters bind one query record (2026-11-27)
+  - `ac4d231` refactor(domain): typed ids and small aggregate types in one file per concept (2026-11-27)
+  - `f01fadd` refactor(application): ports grouped by concern (2026-11-27)
+  - `2108c1d` docs(docs): readability-files lane status (2026-11-27)
+  - `60ea816` Merge branch 'rd-files': one file per concept and list filter records (2026-11-27)
+  - `a182737` docs(spine): typed-id recipe points at Ids.cs; close backlog #005 (2026-11-27)
+  - `18c98d4` fix(api): claims list query parameters are camelCase like every other list (2026-11-27)
+  - `e3cec29` docs(docs): journal the readability pass; SQL files in ARCHITECTURE.md (2026-11-27)
+
+### D-056
+
+**Codex claims seam review: three accepted, two declined** — accepted — [decisions.md](decisions.md#d-056--codex-claims-seam-review-three-accepted-two-declined--2026-11-27)
+- ADR: none
+- Workstreams: [W-020](#w-020)
+- Cited in commit Refs:
+  - `74522f0` docs(reviews): Codex claims seam review and its disposition (2026-11-27)
+  - `6cf5e0f` docs(docs): CLAIMS.md and the ADR-013 required-key amendment (2026-11-27)
+  - `15a4635` Merge branch 'claims-core': the claims platform (2026-11-27)
+
+### D-057
+
+**Console money: ISO code plus two decimals for every market currency** — accepted — [decisions.md](decisions.md#d-057--console-money-iso-code-plus-two-decimals-for-every-market-currency--2026-11-27)
+- ADR: none
+- Workstreams: [W-007](#w-007), [W-020](#w-020), [W-022](#w-022)
+- Cited in commit Refs:
+  - `2b9758e` docs(spine): wrap the headless claims session (2026-11-27)
 
 ## Commit to ids
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `2b9758e` | docs(spine): wrap the headless claims session | 2026-11-27 | [W-020](#w-020), [W-007](#w-007), [W-022](#w-022), [D-057](#d-057) |
+| `e3cec29` | docs(docs): journal the readability pass; SQL files in ARCHITECTURE.md | 2026-11-27 | [W-007](#w-007), [D-054](#d-054), [D-055](#d-055) |
+| `1658a9f` | Merge branch 'rd-sql': runtime SQL in embedded .sql files | 2026-11-27 | [W-007](#w-007), [D-054](#d-054) |
+| `89db40d` | test(arch): fitness rules read the .sql files | 2026-11-27 | [W-007](#w-007), [D-054](#d-054) |
+| `2e73407` | docs(docs): readability-sql lane status | 2026-11-27 | [W-007](#w-007), [D-054](#d-054) |
+| `18c98d4` | fix(api): claims list query parameters are camelCase like every other list | 2026-11-27 | [W-020](#w-020), [D-055](#d-055) |
+| `f9deb05` | build(infra): idempotent migration script and a read-only database role | 2026-11-27 | [W-007](#w-007), [D-054](#d-054) |
+| `a182737` | docs(spine): typed-id recipe points at Ids.cs; close backlog #005 | 2026-11-27 | [W-007](#w-007), [D-055](#d-055) |
+| `60ea816` | Merge branch 'rd-files': one file per concept and list filter records | 2026-11-27 | [W-007](#w-007), [D-055](#d-055) |
+| `07fd013` | test(persistence): every SQL script referenced and present | 2026-11-27 | [W-007](#w-007), [D-054](#d-054) |
+| `2108c1d` | docs(docs): readability-files lane status | 2026-11-27 | [W-007](#w-007), [D-055](#d-055) |
+| `a9081c9` | refactor(persistence): runtime SQL in embedded .sql files | 2026-11-27 | [W-007](#w-007), [D-054](#d-054) |
+| `f01fadd` | refactor(application): ports grouped by concern | 2026-11-27 | [W-007](#w-007), [D-055](#d-055) |
+| `ac4d231` | refactor(domain): typed ids and small aggregate types in one file per concept | 2026-11-27 | [W-007](#w-007), [D-055](#d-055) |
+| `78f8fa9` | refactor(api): list filters bind one query record | 2026-11-27 | [W-007](#w-007), [D-055](#d-055) |
+| `ef4e2e4` | docs(docs): one file per concept in CLAUDE.md; claims personas in runbook 00 | 2026-11-27 | [W-007](#w-007), [D-055](#d-055) |
+| `ce403cb` | docs(spine): ledger rows for the readability lanes | 2026-11-27 | [W-007](#w-007), [D-054](#d-054), [D-055](#d-055) |
+| `f26fd14` | docs(docs): journal the claims merge; failure modes 30 and 31 | 2026-11-27 | [W-020](#w-020) |
+| `15a4635` | Merge branch 'claims-core': the claims platform | 2026-11-27 | [W-020](#w-020), [D-053](#d-053), [D-056](#d-056) |
+| `ce78360` | docs(docs): README for the claims submission | 2026-11-27 | [W-020](#w-020) |
+| `5de17a7` | docs(ai): claims-web lane status | 2026-11-27 | [W-020](#w-020), [D-053](#d-053) |
+| `abf1558` | test(web): claims smoke and screenshots | 2026-11-27 | [W-020](#w-020), [D-053](#d-053) |
+| `a220919` | docs(docs): claims-fix lane status | 2026-11-27 | [W-020](#w-020) |
+| `bbf9b90` | test(api): Bruno and runbook send the submit key | 2026-11-27 | [W-020](#w-020) |
+| `fab8a1c` | feat(web): workload and exposure | 2026-11-27 | [W-020](#w-020), [D-053](#d-053) |
+| `7bc4280` | fix(api): claim submit requires an Idempotency-Key | 2026-11-27 | [W-020](#w-020) |
+| `6bcd7ab` | feat(web): claims queue and staff claim detail | 2026-11-27 | [W-020](#w-020), [D-053](#d-053) |
+| `e3d0cae` | docs(docs): refresh how-we-use-ai against what this repo now evidences | 2026-11-27 | [W-020](#w-020) |
+| `7fa63d7` | fix(persistence): a claim command always runs the version-guarded update | 2026-11-27 | [W-020](#w-020) |
+| `6cf5e0f` | docs(docs): CLAIMS.md and the ADR-013 required-key amendment | 2026-11-27 | [W-020](#w-020), [D-053](#d-053), [D-056](#d-056) |
+| `885f089` | feat(web): claims client and claimant screens | 2026-11-27 | [W-020](#w-020), [D-053](#d-053) |
+| `74522f0` | docs(reviews): Codex claims seam review and its disposition | 2026-11-27 | [W-020](#w-020), [D-056](#d-056) |
+| `5654760` | docs(plans): briefs for the readability pass lanes | 2026-11-27 | [W-007](#w-007), [D-054](#d-054), [D-055](#d-055) |
+| `8718e07` | docs(docs): journal the headless continuation start | 2026-11-27 | [W-020](#w-020) |
+| `4f33326` | docs(spine): hot-state: claims backend rebased on main (506fc47) | 2026-11-27 | [W-020](#w-020) |
+| `506fc47` | docs(ai): claims-core lane status | 2026-11-27 | [W-020](#w-020), [D-053](#d-053) |
+| `9c2a79a` | feat(api): idempotent claim submit and a flat list filter | 2026-11-27 | [W-020](#w-020), [D-053](#d-053) |
+| `3142577` | test(api): Bruno claims collection | 2026-11-27 | [W-020](#w-020), [D-053](#d-053) |
+| `0d89790` | feat(infra): seed claims demo data | 2026-11-27 | [W-020](#w-020), [D-053](#d-053) |
+| `b851811` | feat(application): claims workload and exposure | 2026-11-27 | [W-020](#w-020), [D-053](#d-053) |
+| `a9d2d1c` | fix(application): claim handling checks the ETag before the state machine | 2026-11-27 | [W-020](#w-020), [D-053](#d-053) |
+| `4b7186c` | feat(api): claims contract | 2026-11-27 | [W-020](#w-020), [D-053](#d-053) |
+| `9571880` | feat(persistence): claims, timeline and info requests | 2026-11-27 | [W-020](#w-020), [D-053](#d-053) |
+| `641f0e8` | docs(spine): hot-state: claims backend lane finished, rebase pending | 2026-11-27 | [W-020](#w-020) |
+| `6754d1f` | feat(domain): Claim aggregate with its state machine | 2026-11-27 | [W-020](#w-020), [D-053](#d-053) |
 | `7b9605b` | docs(spine): wrap mid-window; close W-018; seed the headless continuation | 2026-11-27 | [W-020](#w-020), [W-018](#w-018), [W-021](#w-021), [W-022](#w-022) |
 | `8d77574` | fix(tests): Bruno compose environment so the webhook sink is reachable from the API container | 2026-11-27 | [W-020](#w-020) |
 | `3b4dcc5` | ci: GitHub Actions pipeline and a reviewer start-here runbook | 2026-11-27 | [W-020](#w-020) |
