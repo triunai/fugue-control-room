@@ -208,7 +208,8 @@ export function moneyTrack(
   const approved = claim.status === 'Approved' || claim.status === 'Settled';
   if (staff) {
     if (claim.status === 'Rejected') {
-      return buildTrack(['No reserve', 'Reserve set'], hasReserve ? 1 : 0);
+      // The money track ends where it stood: no "Next" step after a rejection.
+      return buildTrack(hasReserve ? ['No reserve', 'Reserve set'] : ['No reserve'], hasReserve ? 1 : 0);
     }
     const labels = ['No reserve', 'Reserve set', 'Approved amount', 'Settled'];
     return buildTrack(labels, claim.status === 'Settled' ? 3 : approved ? 2 : hasReserve ? 1 : 0);

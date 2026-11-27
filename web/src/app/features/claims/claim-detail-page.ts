@@ -99,6 +99,8 @@ const LABEL: Record<ClaimAction, string> = {
               (act)="onNextAction($event)"
             />
 
+            <!-- assessment worksheet slot -->
+
             @if (actions().length) {
               <div class="actions" role="group" aria-label="Actions for this claim">
                 @for (a of actions(); track a.action) {

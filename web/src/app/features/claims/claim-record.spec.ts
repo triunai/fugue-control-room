@@ -59,6 +59,10 @@ describe('moneyTrack', () => {
 
   it('a rejected claim ends the money track where it stood', () => {
     expect(labels(moneyTrack({ status: 'Rejected', reserveMinor: 5 }, true))).toEqual(['No reserve', 'Reserve set']);
+    expect(labels(moneyTrack({ status: 'Rejected', reserveMinor: null }, true))).toEqual(['No reserve']);
+    expect(moneyTrack({ status: 'Rejected', reserveMinor: null }, true).steps.some((s) => s.state === 'next')).toBe(
+      false,
+    );
     expect(labels(moneyTrack({ status: 'Rejected' }, false))).toEqual(['Assessing']);
   });
 });
