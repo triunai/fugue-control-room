@@ -127,7 +127,7 @@ export class ClaimRecordBanner {
   protected help = stepHelp;
 
   protected howItMoves(): void {
-    this.overlays.modal<ClaimTracksDialog, void, void>(ClaimTracksDialog, undefined, {
+    this.overlays.modal<ClaimTracksDialog, { staff: boolean }, void>(ClaimTracksDialog, { staff: this.staff() }, {
       ariaLabelledBy: 'tracks-title',
     });
   }
