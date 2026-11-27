@@ -14,12 +14,12 @@ Order inside P1: demo-visible first (5 to 9), then 11a and 11b, then 10, 11c. Fe
 - [ ] 2. Push main (keepalive; origin was fb10684 at 03:02).
 
 ## P1 — owner asks (D-064)
-- [x] 3. (e182dbb; on :8080 03:47 admin created a user with a role, the user signed in, 0 errors) nth-uam (admin adds users, USERS_MANAGE migration + catalog row): wait for its report, verify, merge.
+- [x] 3. (e182dbb; on :8080 03:24 admin created a user with a role, the user signed in, 0 errors) nth-uam (admin adds users, USERS_MANAGE migration + catalog row): wait for its report, verify, merge.
 - [x] 4. (dacfb06; on :8080 The Score of the users.create correlation: 4 steps, 0 errors) nth-score ("The Score" per-correlation inspector from real audit/outbox/delivery rows): wait, verify, merge.
 - [ ] 5. Forms: no native OS popups. Console-styled select (CDK overlay listbox, keyboard + a11y) and date picker for every
       form; "Fill with an example" on every form, like the sign-in demo accounts (Report an incident: 3-4 realistic templates per
       market/line; request info; set reserve; decide/reject reason; claimant answer; webhook subscription; customers; add user).
-- [x] 6. (0439df5, verified on :8080 03:35: workbook footer+tab, Export CSV, Save to Excel icons, 0 errors) Claim page assessment worksheet: full workbook feel (footer, sheet tab, spare columns), an Export button;
+- [x] 6. (0439df5, verified on :8080 03:21: workbook footer+tab, Export CSV, Save to Excel icons, 0 errors) Claim page assessment worksheet: full workbook feel (footer, sheet tab, spare columns), an Export button;
       rename "Open in Excel" to "Save to Excel" everywhere; icons on Save to Excel and Use as reserve (and Reserve sheet buttons).
 - [x] 7. (0439df5: next-step copy, step popovers on hover/focus, How a claim moves modal closes on Esc and outside click) Claim page copy: rewrite the "Next step" block (blocked state reads badly); explain the Handling and Payout tracks
       (hover popover per step and a "How a claim moves" modal).
