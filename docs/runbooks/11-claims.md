@@ -26,7 +26,7 @@ Rules worth knowing: approving needs a reserve and `0 < amount <= reserve`; only
 
 | Call | Permission | Notes |
 |---|---|---|
-| `POST /` | `CLAIMS_SUBMIT` | body `market, line, policyNumber, incidentDate, incidentDescription, incidentLocation?`; 201 + `Location` + `ETag`. Incident date: not in the future, not older than a year (market's calendar day) |
+| `POST /` | `CLAIMS_SUBMIT` | body `market, line, policyNumber, incidentDate, incidentDescription, incidentLocation?`; header `Idempotency-Key` required; 201 + `Location` + `ETag`. Incident date: not in the future, not older than a year (market's calendar day) |
 | `GET /` | `CLAIMS_READ` | keyset paged (`limit`, `cursor`; next page in `Link` and `X-Next-Cursor`). Claimant: own claims, newest first. Staff (`CLAIMS_ALL`): all claims, OLDEST first. Filters `status` (repeat or comma), `assigned=me\|none\|any`, `market`, `line`, `q` (claim or policy number) |
 | `GET /{id}`, `GET /{id}/timeline` | `CLAIMS_READ` | own claim or `CLAIMS_ALL`, else 404 |
 | `POST /{id}/pickup` | `CLAIMS_HANDLE` | `If-Match` required |
@@ -38,7 +38,7 @@ Rules worth knowing: approving needs a reserve and `0 < amount <= reserve`; only
 | `GET /workload` | `CLAIMS_WORKLOAD` | per officer: open by status, oldest open age, decided in 7 and 30 days, median days to decide; unassigned; ageing bands |
 | `GET /exposure` | `CLAIMS_EXPOSURE` | per market, line and currency: open count, outstanding reserve, approved-not-settled; totals per currency |
 
-Every mutation after submit answers 200 with the claim as it now stands and its new `ETag`. Errors are RFC 9457 problems; the `code` is stable: `claim.not_found` (404), `claim.version_mismatch` (412), `claim.if_match_required` (428), `claim.invalid_transition`, `claim.reserve_required`, `claim.not_assigned_to_you` (409), `claim.amount_invalid` (400), `claim.info_request_not_found` (404).
+Every mutation after submit answers 200 with the claim as it now stands and its new `ETag`. Errors are RFC 9457 problems; the `code` is stable: `claim.not_found` (404), `claim.version_mismatch` (412), `claim.if_match_required` (428), `claim.invalid_transition`, `claim.reserve_required`, `claim.not_assigned_to_you` (409), `claim.amount_invalid` (400), `claim.info_request_not_found` (404), `idempotency.key_required` (400, submit without an `Idempotency-Key`).
 
 ## 1. Set up (bash)
 
@@ -59,7 +59,7 @@ call() {
 
 ```bash
 YDAY=$(date -u -v-1d +%F 2>/dev/null || date -u -d yesterday +%F)
-R=$(curl -si -X POST $B -H "Authorization: Bearer $SELF" -H 'Content-Type: application/json' \
+R=$(curl -si -X POST $B -H "Authorization: Bearer $SELF" -H 'Content-Type: application/json' -H "Idempotency-Key: $(uuidgen)" \
   -d "{\"market\":\"SG\",\"line\":\"Motor\",\"policyNumber\":\"POL-SG-5001\",\"incidentDate\":\"$YDAY\",\"incidentDescription\":\"Rear-ended at the lights.\"}")
 echo "$R" | grep -iE '^HTTP|^location|^etag'
 ID=$(echo "$R" | grep -i '^location:' | sed 's#.*/##' | tr -d '\r'); ETAG=$(echo "$R" | grep -i '^etag:' | sed 's/^[^:]*: //' | tr -d '\r')

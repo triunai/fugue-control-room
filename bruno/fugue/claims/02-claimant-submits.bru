@@ -10,6 +10,10 @@ post {
   auth: bearer
 }
 
+headers {
+  Idempotency-Key: "{{claimKey}}"
+}
+
 auth:bearer {
   token: {{claimantToken}}
 }
@@ -23,6 +27,10 @@ body:json {
     "incidentDescription": "Rear-ended at the traffic lights.",
     "incidentLocation": "Orchard Road"
   }
+}
+
+script:pre-request {
+  bru.setVar("claimKey", "bruno-claim-" + Date.now());
 }
 
 script:post-response {
