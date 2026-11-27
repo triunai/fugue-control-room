@@ -52,6 +52,20 @@ export const routes: Routes = [
         loadComponent: () => import('./features/claims/claims-queue-page').then((m) => m.ClaimsQueuePage),
       },
       {
+        path: 'claims/workload',
+        canActivate: [permissionGuard],
+        data: { permission: 'CLAIMS_WORKLOAD', section: 'Claims', breadcrumb: 'Workload' },
+        title: 'Workload · Fugue Console',
+        loadComponent: () => import('./features/claims/workload-page').then((m) => m.WorkloadPage),
+      },
+      {
+        path: 'claims/exposure',
+        canActivate: [permissionGuard],
+        data: { permission: 'CLAIMS_EXPOSURE', section: 'Claims', breadcrumb: 'Exposure' },
+        title: 'Exposure · Fugue Console',
+        loadComponent: () => import('./features/claims/exposure-page').then((m) => m.ExposurePage),
+      },
+      {
         path: 'claims/:id',
         canActivate: [permissionGuard],
         data: { permission: 'CLAIMS_READ', section: 'Claims', breadcrumb: 'Claim' },
