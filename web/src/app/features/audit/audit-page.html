@@ -10,6 +10,17 @@
   </header>
 
   <form class="filters panel" [formGroup]="form" (ngSubmit)="apply()" role="search" aria-label="Filter the audit log">
+    <div class="field q-field">
+      <label class="label" for="f-q">Search</label>
+      <input
+        id="f-q"
+        type="search"
+        class="input"
+        formControlName="q"
+        autocomplete="off"
+        placeholder="Typo-tolerant: action, actor, error code or message, route"
+      />
+    </div>
     <div class="field">
       <label class="label" for="f-type">Entity type</label>
       <select id="f-type" class="select" formControlName="entityType">
@@ -36,6 +47,14 @@
       <input id="f-cid" class="input input-mono" formControlName="correlationId" placeholder="ref from a toast" />
     </div>
     <div class="field">
+      <label class="label" for="f-outcome">Outcome <span class="font-normal">(search)</span></label>
+      <select id="f-outcome" class="select" formControlName="outcome">
+        <option value="">Any</option>
+        <option value="success">success</option>
+        <option value="failure">failure</option>
+      </select>
+    </div>
+    <div class="field">
       <label class="label" for="f-from">From</label>
       <input id="f-from" class="input" type="datetime-local" formControlName="from" />
     </div>
@@ -51,9 +70,82 @@
     </div>
   </form>
 
+  @if (searchUnavailable()) {
+    <p class="note" role="status" data-testid="search-unavailable">
+      Search is not available on this server, so this is the filtered log without the query.
+    </p>
+  }
+
   <div class="split">
     <section class="timeline panel" aria-label="Entries">
-      @if (query.isPending()) {
+      @if (searchMode()) {
+        @if (searchQuery.isPending()) {
+          <fg-skeleton-rows [rows]="8" [widths]="['14%', '30%', '22%', '12%']" />
+        } @else if (searchQuery.isError() && !hits().length) {
+          <fg-error-state [error]="searchQuery.error()" (retry)="searchQuery.refetch()" />
+        } @else if (!hits().length) {
+          <fg-empty-state title="No match" body="Nothing in the index matches that query and those filters.">
+            <button type="button" class="btn" (click)="clear()">Clear filters</button>
+          </fg-empty-state>
+        } @else {
+          <ol class="entries" role="list" [class.dim]="searchQuery.isPlaceholderData()" data-testid="search-hits">
+            @for (hit of hits(); track hit.id) {
+              <li>
+                <button
+                  type="button"
+                  class="hit"
+                  [class.on]="selectedHit()?.id === hit.id"
+                  [attr.aria-current]="selectedHit()?.id === hit.id"
+                  (click)="store.select(hit.id)"
+                >
+                  <span class="hit-top">
+                    <span class="action mono">
+                      @for (s of segs(hit, 'action'); track $index) {
+                        @if (s.em) {
+                          <em>{{ s.text }}</em>
+                        } @else {
+                          {{ s.text }}
+                        }
+                      }
+                    </span>
+                    <span class="pill pill-plain" [class]="outcomeClass(hit)">{{ hit.outcome }}</span>
+                  </span>
+                  <span class="who text-sm text-muted">
+                    @for (s of segs(hit, 'actorDisplay'); track $index) {
+                      @if (s.em) {
+                        <em>{{ s.text }}</em>
+                      } @else {
+                        {{ s.text }}
+                      }
+                    }
+                    · {{ hit.occurredAt | relative }}
+                  </span>
+                  @for (f of snippetFields; track f) {
+                    @if (hit.highlights?.[f]) {
+                      <span class="snippet text-sm">
+                        <span class="snippet-k mono">{{ f }}</span>
+                        @for (s of segs(hit, f); track $index) {
+                          @if (s.em) {
+                            <em>{{ s.text }}</em>
+                          } @else {
+                            {{ s.text }}
+                          }
+                        }
+                      </span>
+                    }
+                  }
+                </button>
+              </li>
+            }
+          </ol>
+          <div class="table-foot">
+            <span class="text-muted" data-testid="search-total">
+              {{ hits().length }} shown of about {{ searchQuery.data()?.estimatedTotalHits }}
+            </span>
+            <span class="text-sm text-muted">Newest first</span>
+          </div>
+        }
+      } @else if (query.isPending()) {
         <fg-skeleton-rows [rows]="10" [widths]="['14%', '30%', '22%', '12%']" />
       } @else if (query.isError() && !entries().length) {
         <fg-error-state [error]="query.error()" (retry)="query.refetch()" />
@@ -113,7 +205,53 @@
     </section>
 
     <aside class="detail panel" aria-label="Entry detail" aria-live="polite">
-      @if (selected(); as e) {
+      @if (searchMode()) {
+        @if (selectedHit(); as hit) {
+          <header class="d-head">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="pill" [class]="outcomeClass(hit)">{{ hit.outcome }}</span>
+              @if (hit.errorCode) {
+                <span class="mono text-err-ink">{{ hit.errorCode }}</span>
+              }
+            </div>
+            <h2 class="d-title">{{ hit.action }}</h2>
+            <p class="m-0 text-muted">{{ hit.actorDisplay ?? 'system' }} · {{ hit.occurredAt | stamp }}</p>
+          </header>
+          <section class="d-section">
+            <dl class="facts">
+              @if (hit.errorMessage) {
+                <div>
+                  <dt>Message</dt>
+                  <dd>{{ hit.errorMessage }}</dd>
+                </div>
+              }
+              @if (hit.routeTemplate) {
+                <div>
+                  <dt>Route</dt>
+                  <dd class="mono">{{ hit.routeTemplate }}</dd>
+                </div>
+              }
+              @if (hit.entityId) {
+                <div>
+                  <dt>{{ hit.entityType ?? 'Entity' }}</dt>
+                  <dd><fg-ref-chip [value]="hit.entityId" maxWidth="38ch" /></dd>
+                </div>
+              }
+            </dl>
+            @if (hit.entityId) {
+              <button
+                type="button"
+                class="btn btn-sm mt-3"
+                (click)="store.byEntity(hit.entityType ?? '', hit.entityId)"
+              >
+                History of this {{ (hit.entityType ?? 'entity').toLowerCase() }}
+              </button>
+            }
+          </section>
+        } @else if (!searchQuery.isPending()) {
+          <p class="p-6 text-muted">Choose a result to see it.</p>
+        }
+      } @else if (selected(); as e) {
         <header class="d-head">
           <div class="flex flex-wrap items-center gap-2">
             <span class="pill" [class]="outcomeClass(e)">{{ e.outcome }}</span>

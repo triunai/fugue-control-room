@@ -1,7 +1,9 @@
 import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { Injectable, inject } from '@angular/core';
 import { CONSOLE_CONFIG } from '../core/config';
 import { getPage, params } from './http-page';
+import type { AuditSearchResultDto } from './generated/model';
 import { AuditLogDto, Page } from './models';
 
 /** Every filter is an exact match; `from` is inclusive and `to` exclusive (ISO instants). */
@@ -11,6 +13,9 @@ export interface AuditFilter {
   actorUserId: string;
   action: string;
   correlationId: string;
+  /** Full-text query (Meilisearch); search mode when set. The exact-match filters above still apply. */
+  q: string;
+  outcome: string;
   from: string;
   to: string;
 }
@@ -21,12 +26,15 @@ export const EMPTY_AUDIT_FILTER: AuditFilter = {
   actorUserId: '',
   action: '',
   correlationId: '',
+  q: '',
+  outcome: '',
   from: '',
   to: '',
 };
 
 export const auditKeys = {
   list: (f: AuditFilter) => ['audit', 'list', f] as const,
+  search: (f: AuditFilter) => ['audit', 'search', f] as const,
 };
 
 @Injectable({ providedIn: 'root' })
@@ -49,6 +57,24 @@ export class AuditApi {
         correlationId: f.correlationId.trim(),
         from: iso(f.from),
         to: iso(f.to),
+      }),
+    );
+  }
+
+  /** Typo-tolerant search (AUDIT_READ). 503 `search.unavailable` when the engine is off or unreachable. */
+  search(f: AuditFilter, limit = 50): Promise<AuditSearchResultDto> {
+    const iso = (local: string) => (local ? new Date(local).toISOString() : '');
+    return firstValueFrom(
+      this.http.get<AuditSearchResultDto>(`${this.base}/search`, {
+        params: params({
+          q: f.q.trim(),
+          entityType: f.entityType.trim(),
+          action: f.action.trim(),
+          outcome: f.outcome,
+          from: iso(f.from),
+          to: iso(f.to),
+          limit,
+        }),
       }),
     );
   }

@@ -1,13 +1,16 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, untracked } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { injectInfiniteQuery, keepPreviousData } from '@tanstack/angular-query';
+import { injectInfiniteQuery, injectQuery, keepPreviousData } from '@tanstack/angular-query';
 import { AuditApi, auditKeys, AuditFilter } from '../../api/audit.api';
+import type { AuditSearchHitDto } from '../../api/generated/model';
 import { AuditLogDto } from '../../api/models';
+import { isApiProblem } from '../../core/http/problem';
 import { displayMasked, RelativeTimePipe, StampPipe } from '../../ui/format';
 import { RefChip } from '../../ui/ref-chip';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
 import { AuditFilterStore } from './audit-filter.store';
+import { highlightSegments, HighlightSegment } from './highlight';
 
 interface DiffRow {
   field: string;
@@ -50,9 +53,31 @@ export class AuditPage {
   readonly entityId = input<string>();
 
   protected readonly entityTypes = ENTITY_TYPES;
+  protected readonly snippetFields = ['errorCode', 'errorMessage', 'routeTemplate', 'entityId'] as const;
   protected readonly form = this.fb.group({ ...this.store.filter() });
 
+  /** Full-text search runs when a query is typed; no retries so a 503 (engine off) falls back at once. */
+  protected readonly searchQuery = injectQuery(() => ({
+    queryKey: auditKeys.search(this.store.filter()),
+    queryFn: () => this.api.search(this.store.filter()),
+    enabled: this.store.filter().q.trim() !== '',
+    retry: false,
+    placeholderData: keepPreviousData,
+  }));
+  protected readonly searchUnavailable = computed(() => {
+    const e = this.searchQuery.error();
+    return isApiProblem(e) && e.status === 503;
+  });
+  /** Search mode: a query is set and the engine did not answer 503. The plain log is the fallback. */
+  protected readonly searchMode = computed(() => this.store.filter().q.trim() !== '' && !this.searchUnavailable());
+  protected readonly hits = computed(() => this.searchQuery.data()?.hits ?? []);
+  protected readonly selectedHit = computed(() => {
+    const list = this.hits();
+    return list.find((h) => h.id === this.store.selectedId()) ?? list[0] ?? null;
+  });
+
   protected readonly query = injectInfiniteQuery(() => ({
+    enabled: !this.searchMode(),
     queryKey: auditKeys.list(this.store.filter()),
     queryFn: ({ pageParam }) => this.api.list(this.store.filter(), pageParam),
     initialPageParam: null as string | null,
@@ -104,7 +129,15 @@ export class AuditPage {
     this.store.select(null);
   }
 
-  protected outcomeClass(e: AuditLogDto): string {
+  /** A hit field as highlight segments: the engine's snippet when it matched there, else the plain value. */
+  protected segs(h: AuditSearchHitDto, field: keyof AuditSearchHitDto & string): HighlightSegment[] {
+    const snippet = h.highlights?.[field];
+    if (snippet) return highlightSegments(snippet);
+    const plain = h[field];
+    return typeof plain === 'string' && plain ? [{ text: plain, em: false }] : [];
+  }
+
+  protected outcomeClass(e: { outcome: string }): string {
     return e.outcome === 'success' ? 'pill-ok' : 'pill-err';
   }
 
