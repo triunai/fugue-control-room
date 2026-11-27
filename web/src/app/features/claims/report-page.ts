@@ -10,6 +10,10 @@ import { CorrelationService } from '../../core/http/correlation.service';
 import { SubmissionKey } from '../../core/http/idempotency';
 import { isApiProblem } from '../../core/http/problem';
 import { ToastStore } from '../../core/ui/toast.store';
+import { DatePicker } from '../../ui/date-picker';
+import { daysAgo, INCIDENT_EXAMPLES, incidentExamplesFor, samplePolicy } from '../../ui/examples';
+import { ExamplesPanel } from '../../ui/examples-panel';
+import { Select, SelectOption } from '../../ui/select';
 import { MARKETS, currencyOf, localToday } from './claims-logic';
 
 type Field = 'market' | 'line' | 'policyNumber' | 'incidentDate' | 'incidentDescription' | 'incidentLocation';
@@ -18,7 +22,7 @@ type Field = 'market' | 'line' | 'policyNumber' | 'incidentDate' | 'incidentDesc
 @Component({
   selector: 'fg-report-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, Select, DatePicker, ExamplesPanel],
   styleUrl: './claims.css',
   template: `
     <div class="page">
@@ -33,14 +37,22 @@ type Field = 'market' | 'line' | 'policyNumber' | 'incidentDate' | 'incidentDesc
       </header>
 
       <form class="report-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <fg-examples
+          class="wide"
+          [rows]="exampleRows()"
+          [disabled]="submitMutation.isPending()"
+          note="Made-up incidents for each market and line. Pick a market or line first to narrow the list."
+          (picked)="fillExample($event)"
+        />
         <div class="field">
           <label class="label" for="r-market">Market</label>
-          <select id="r-market" class="select" formControlName="market" [attr.aria-invalid]="!!err('market')">
-            <option value="" disabled>Choose a market</option>
-            @for (m of markets; track m.code) {
-              <option [value]="m.code">{{ m.name }}</option>
-            }
-          </select>
+          <fg-select
+            inputId="r-market"
+            formControlName="market"
+            placeholder="Choose a market"
+            [options]="marketOptions"
+            [invalid]="!!err('market')"
+          />
           @if (err('market'); as m) {
             <span class="field-error">{{ m }}</span>
           }
@@ -52,11 +64,13 @@ type Field = 'market' | 'line' | 'policyNumber' | 'incidentDate' | 'incidentDesc
         </div>
         <div class="field">
           <label class="label" for="r-line">Line of cover</label>
-          <select id="r-line" class="select" formControlName="line" [attr.aria-invalid]="!!err('line')">
-            <option value="" disabled>Choose a line</option>
-            <option value="Motor">Motor</option>
-            <option value="Property">Property</option>
-          </select>
+          <fg-select
+            inputId="r-line"
+            formControlName="line"
+            placeholder="Choose a line"
+            [options]="lineOptions"
+            [invalid]="!!err('line')"
+          />
           @if (err('line'); as m) {
             <span class="field-error">{{ m }}</span>
           }
@@ -76,14 +90,7 @@ type Field = 'market' | 'line' | 'policyNumber' | 'incidentDate' | 'incidentDesc
         </div>
         <div class="field">
           <label class="label" for="r-date">Incident date</label>
-          <input
-            id="r-date"
-            class="input"
-            type="date"
-            formControlName="incidentDate"
-            [max]="today"
-            [attr.aria-invalid]="!!err('incidentDate')"
-          />
+          <fg-date inputId="r-date" formControlName="incidentDate" [max]="today" [invalid]="!!err('incidentDate')" />
           @if (err('incidentDate'); as m) {
             <span class="field-error">{{ m }}</span>
           } @else {
@@ -143,7 +150,15 @@ export class ReportPage {
   /** One Idempotency-Key per submission: a retry of the same form reuses it, an edited form gets a new one. */
   private readonly submission = new SubmissionKey();
 
-  protected readonly markets = MARKETS;
+  protected readonly marketOptions: SelectOption[] = MARKETS.map((m) => ({
+    value: m.code,
+    label: m.name,
+    hint: m.currency,
+  }));
+  protected readonly lineOptions: SelectOption[] = [
+    { value: 'Motor', label: 'Motor' },
+    { value: 'Property', label: 'Property' },
+  ];
   protected readonly today = localToday();
   protected readonly formErrors = signal<string[]>([]);
 
@@ -158,6 +173,15 @@ export class ReportPage {
 
   private readonly marketValue = toSignal(this.form.controls.market.valueChanges, { initialValue: '' });
   protected readonly currency = computed(() => currencyOf(this.marketValue()));
+  private readonly lineValue = toSignal(this.form.controls.line.valueChanges, { initialValue: '' });
+  protected readonly exampleRows = computed(() =>
+    incidentExamplesFor(this.marketValue(), this.lineValue()).map((e) => ({
+      id: e.id,
+      title: e.title,
+      tag: `${e.market} · ${e.line}`,
+      detail: `${e.daysAgo === 1 ? '1 day' : `${e.daysAgo} days`} ago · ${e.location}`,
+    })),
+  );
 
   protected readonly submitMutation = injectMutation(() => ({
     mutationFn: async (body: SubmitClaimRequest) => {
@@ -181,6 +205,22 @@ export class ReportPage {
       required: name === 'incidentDescription' ? 'Tell us what happened.' : 'This is required.',
       maxlength: 'That is longer than we can accept.',
     });
+  }
+
+  /** Fills every field from one made-up incident; validation and submit are unchanged. */
+  protected fillExample(id: string): void {
+    const e = INCIDENT_EXAMPLES.find((x) => x.id === id);
+    if (!e) return;
+    this.formErrors.set([]);
+    this.form.setValue({
+      market: e.market,
+      line: e.line,
+      policyNumber: samplePolicy(e),
+      incidentDate: daysAgo(e.daysAgo),
+      incidentDescription: e.description,
+      incidentLocation: e.location,
+    });
+    this.form.markAsDirty();
   }
 
   protected submit(): void {

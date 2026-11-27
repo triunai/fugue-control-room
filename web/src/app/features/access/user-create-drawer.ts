@@ -9,6 +9,8 @@ import { applyServerErrors, controlError } from '../../core/forms/server-errors'
 import { CorrelationService } from '../../core/http/correlation.service';
 import { isApiProblem } from '../../core/http/problem';
 import { ToastStore } from '../../core/ui/toast.store';
+import { samplePassword, userExamples } from '../../ui/examples';
+import { ExamplesPanel } from '../../ui/examples-panel';
 import { ErrorState } from '../../ui/states';
 import {
   atLeastOneRole,
@@ -23,7 +25,7 @@ import {
 @Component({
   selector: 'fg-user-create-drawer',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, ErrorState],
+  imports: [ReactiveFormsModule, ErrorState, ExamplesPanel],
   templateUrl: './user-create-drawer.html',
   styleUrl: '../customers/customer-drawer.css',
 })
@@ -65,6 +67,38 @@ export class UserCreateDrawer {
     },
     onError: (e: unknown) => this.handleError(e),
   }));
+
+  private readonly examples = userExamples();
+  protected readonly exampleRows = this.examples.map((u) => ({
+    id: u.id,
+    title: u.displayName,
+    tag: u.title,
+    detail: `${u.email} · ${u.roles.join(', ')}`,
+  }));
+  /** The sample password the last example filled; its hint shows it while the field still holds it. */
+  private readonly samplePw = signal<string | null>(null);
+
+  protected sampleShown(): boolean {
+    const pw = this.samplePw();
+    return !!pw && this.form.controls.password.value === pw;
+  }
+
+  /** A made-up person with a random sample password and the example's roles (only those the API lists). */
+  protected fillExample(id: string): void {
+    const u = this.examples.find((x) => x.id === id);
+    if (!u) return;
+    const known = new Set((this.roles.data() ?? []).map((r) => r.code));
+    const pw = samplePassword();
+    this.formErrors.set([]);
+    this.samplePw.set(pw);
+    this.form.setValue({
+      email: u.email,
+      displayName: u.displayName,
+      password: pw, // secrets-scan:ignore (random sample password generated in the browser)
+      roles: u.roles.filter((r) => known.has(r)),
+    });
+    this.form.markAsDirty();
+  }
 
   protected hasRole(code: string): boolean {
     return this.form.controls.roles.value.includes(code);

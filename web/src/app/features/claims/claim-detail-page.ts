@@ -13,6 +13,8 @@ import { RelativeTimePipe, StampPipe } from '../../ui/format';
 import { Overlays } from '../../ui/overlays';
 import { RefChip } from '../../ui/ref-chip';
 import { ErrorState } from '../../ui/states';
+import { ANSWER_EXAMPLES } from '../../ui/examples';
+import { ExamplesPanel } from '../../ui/examples-panel';
 import { ClaimStatusPill, MoneyPipe } from './claim-bits';
 import { livePoll } from './live-poll';
 import { ClaimNextStep } from './claim-next-step';
@@ -62,6 +64,7 @@ function readActivityOpen(): boolean {
     StampPipe,
     RefChip,
     ErrorState,
+    ExamplesPanel,
   ],
   styleUrl: './claims.css',
   template: `
@@ -146,6 +149,7 @@ function readActivityOpen(): boolean {
                 <h2 id="q-h" class="section-title">A question for you</h2>
                 <p class="question">{{ c.openInfoRequest.question }}</p>
                 <form [formGroup]="answerForm" (ngSubmit)="answer()" novalidate class="flex flex-col gap-3">
+                  <fg-examples [rows]="answerExamples" [disabled]="respond.isPending()" (picked)="fillAnswer($event)" />
                   <div class="field">
                     <label class="label" for="a-text">Your answer</label>
                     <textarea
@@ -361,6 +365,15 @@ export class ClaimDetailPage {
   protected readonly canRespond = computed(() => this.access.has('CLAIMS_RESPOND') && !this.access.has('CLAIMS_ALL'));
 
   protected readonly answerForm = this.fb.group({ answer: ['', [Validators.required, Validators.maxLength(4000)]] });
+  protected readonly answerExamples = ANSWER_EXAMPLES.map((t) => ({ id: t.id, title: t.title, detail: t.text }));
+
+  /** A made-up answer; the claimant still sends it with the button. */
+  protected fillAnswer(id: string): void {
+    const t = ANSWER_EXAMPLES.find((x) => x.id === id);
+    if (!t) return;
+    this.answerForm.controls.answer.setValue(t.text);
+    this.answerForm.markAsDirty();
+  }
 
   protected readonly respond = injectMutation(() => ({
     mutationFn: (v: { claim: ClaimDto; answer: string }) =>

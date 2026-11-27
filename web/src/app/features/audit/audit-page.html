@@ -23,12 +23,7 @@
     </div>
     <div class="field">
       <label class="label" for="f-type">Entity type</label>
-      <select id="f-type" class="select" formControlName="entityType">
-        <option value="">Any</option>
-        @for (t of entityTypes; track t) {
-          <option [value]="t">{{ t }}</option>
-        }
-      </select>
+      <fg-select inputId="f-type" formControlName="entityType" [options]="entityTypeOptions" />
     </div>
     <div class="field">
       <label class="label" for="f-id">Entity id</label>
@@ -48,11 +43,7 @@
     </div>
     <div class="field">
       <label class="label" for="f-outcome">Outcome <span class="font-normal">(search)</span></label>
-      <select id="f-outcome" class="select" formControlName="outcome">
-        <option value="">Any</option>
-        <option value="success">success</option>
-        <option value="failure">failure</option>
-      </select>
+      <fg-select inputId="f-outcome" formControlName="outcome" [options]="outcomeOptions" />
     </div>
     <div class="field">
       <label class="label" for="f-from">From</label>

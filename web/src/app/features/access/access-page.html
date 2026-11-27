@@ -177,18 +177,11 @@
             <form *hasPermission="'OVERRIDES_MANAGE'" class="ov-form" [formGroup]="form" (ngSubmit)="submit()">
               <div class="field">
                 <label class="label" for="ov-perm">Permission</label>
-                <select id="ov-perm" class="select mono" formControlName="permission">
-                  @for (c of codes; track c) {
-                    <option [value]="c">{{ c }}</option>
-                  }
-                </select>
+                <fg-select inputId="ov-perm" formControlName="permission" [options]="codeOptions" [mono]="true" />
               </div>
               <div class="field">
                 <label class="label" for="ov-eff">Effect</label>
-                <select id="ov-eff" class="select" formControlName="effect">
-                  <option value="deny">Deny</option>
-                  <option value="allow">Allow</option>
-                </select>
+                <fg-select inputId="ov-eff" formControlName="effect" [options]="effectOptions" />
               </div>
               <div class="field">
                 <label class="label" for="ov-until">Until <span class="font-normal">(optional)</span></label>
