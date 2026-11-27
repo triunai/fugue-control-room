@@ -15,3 +15,7 @@ export const ASSESSMENT_COLUMN_WIDTHS: readonly number[] = [300, 170];
 export function sheetHostHeight(rowCount: number): number {
   return 124 + rowCount * 24 + 20;
 }
+
+/** Reserve workbook sheet ids: the claims sheet is the only one read back and saved; the summary is formulas over it. */
+export const RESERVES_SHEET = 's1';
+export const SUMMARY_SHEET = 's2';

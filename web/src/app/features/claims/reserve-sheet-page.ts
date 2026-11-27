@@ -13,7 +13,7 @@ import { AccessService } from '../../core/auth/access.service';
 import type { UniverHandle } from './univer-loader';
 import { XlsxCell, downloadXlsx } from './xlsx-export';
 import { loadStylesheet } from './lazy-css';
-import { sheetHostHeight, sheetRowCount } from './sheet-layout';
+import { RESERVES_SHEET, sheetHostHeight, sheetRowCount } from './sheet-layout';
 import { fetchOpenClaims } from './open-claims';
 import { Actor, STATUS_LABEL, ageDays, currencyOf } from './claims-logic';
 import {
@@ -72,7 +72,10 @@ import {
         <div class="sheet-host" [style.height.px]="hostHeight()" aria-label="Reserve spreadsheet"></div>
       </div>
       <footer class="sheet-foot">
-        <p class="text-muted text-sm sheet-caption">Tinted cells are editable inputs; everything else is read-only.</p>
+        <p class="text-muted text-sm sheet-caption">
+          Tinted cells are editable inputs; everything else is read-only. "By currency" totals each currency live as you
+          type; a sheet you add with + is scratch space and is not saved.
+        </p>
         <div class="sheet-actions">
           <span class="text-muted text-sm" data-testid="sheet-pending"
             >{{ pending() }} unsaved change{{ pending() === 1 ? '' : 's' }}</span
@@ -174,7 +177,7 @@ export class ReserveSheetPage implements AfterViewInit, OnDestroy {
 
   private currentCells(): unknown[] {
     if (!this.univer) return [];
-    const ws = this.univer.univerAPI.getActiveWorkbook()?.getActiveSheet();
+    const ws = this.univer.univerAPI.getActiveWorkbook()?.getSheetBySheetId(RESERVES_SHEET);
     if (!ws || !this.rows.length) return [];
     return ws
       .getRange(1, RESERVE_COL, this.rows.length, 1)
@@ -189,7 +192,7 @@ export class ReserveSheetPage implements AfterViewInit, OnDestroy {
 
   /** Downloads the sheet as it is now (including unsaved reserve edits) as a real .xlsx. */
   async openInExcel(): Promise<void> {
-    const ws = this.univer?.univerAPI.getActiveWorkbook()?.getActiveSheet();
+    const ws = this.univer?.univerAPI.getActiveWorkbook()?.getSheetBySheetId(RESERVES_SHEET);
     if (!ws || !this.rows.length) return;
     const values: unknown[][] = ws.getRange(1, 0, this.rows.length, SHEET_COLUMNS.length).getValues();
     const grid = [
@@ -243,7 +246,7 @@ export class ReserveSheetPage implements AfterViewInit, OnDestroy {
   private applyRow(index: number, claim: ClaimDto): void {
     if (index < 0) return;
     this.rows[index] = toSheetRow(claim, this.actor());
-    const ws = this.univer?.univerAPI.getActiveWorkbook()?.getActiveSheet();
+    const ws = this.univer?.univerAPI.getActiveWorkbook()?.getSheetBySheetId(RESERVES_SHEET);
     ws?.getRange(index + 1, RESERVE_COL).setValue(minorToCell(claim.reserveMinor) ?? '');
     ws?.getRange(index + 1, 4).setValue(STATUS_LABEL[claim.status]);
   }
