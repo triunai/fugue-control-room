@@ -1,6 +1,6 @@
 # Claims platform: what was built in the window, and why
 
-The take-home brief: motor and property claims across six APAC markets, three audiences (claimants, claims staff, managers), one Angular app, and a defended choice between REST and Kafka. Everything below was built inside the timed window that starts at git tag `claims-window-start`; `git diff claims-window-start..HEAD` is the whole window. The scaffold under it (auth, audit, outbox, idempotency, the console shell) was built before the window and is disclosed as a starter (see the README).
+The take-home brief: motor and property claims across six APAC markets, three audiences (claimants, claims staff, managers), one Angular app, and a defended choice between REST and Kafka. Everything below was built inside the timed window that starts at git tag `claims-window-start`; `git diff claims-window-start..claims-window-end` is the whole window; work after the second tag is listed in the README under "Beyond the brief". The scaffold under it (auth, audit, outbox, idempotency, the console shell) was built before the window and is disclosed as a starter (see the README).
 
 Try it: `docs/runbooks/11-claims.md` (curl walk-through, every guard), `bruno/fugue/claims/`, the console (`docs/runbooks/09-console.md`). Plan and decisions: `docs/plans/claims-window.md` (decisions A to L), D-052, D-053, D-056.
 
@@ -158,6 +158,6 @@ Minor units in a `bigint`, the currency fixed by the market, never a float, neve
 
 ## 8. Cut, and what comes with more time
 
-Cut inside the window, in the plan's cut order: a settlement saga with payment failure and retry (Settle is a single move today); property-specific fields (sum insured, peril); attachments (photos, police report); manager drill-down from exposure to claims; market-scoped module toggles.
+Cut inside the window, in the plan's cut order: a settlement saga with payment failure and retry (Settle is a single move today); property-specific fields (sum insured, peril); attachments (photos, police report); market-scoped module toggles. (Manager drill-down from exposure to claims was cut in the window and added after it: each exposure cell opens the matching claims.)
 
-With more time: the event-fed exposure projection; a Kafka `IEventPublisher` adapter and a consumer-side authorizer; a payments service consuming `claim.settled.v1` with its own outbox; fraud and SLA rules as event consumers; property fields and attachments (object storage, virus scan); per-market business calendars for ageing; splitting claims into its own deployable along the module line.
+With more time: the event-fed exposure projection; a Kafka consumer with its own authorizer (the Kafka `IEventPublisher` adapter itself was added after the window, off by default, runbook 12); a payments service consuming `claim.settled.v1` with its own outbox; fraud and SLA rules as event consumers; property fields and attachments (object storage, virus scan); per-market business calendars for ageing; splitting claims into its own deployable along the module line.
