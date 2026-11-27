@@ -2,13 +2,14 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { ClaimDto } from '../../api/models';
 import { ClaimStatusPill } from './claim-bits';
 import { Actor, Track, claimTrack, marketName, moneyChip, moneyTrack } from './claims-logic';
+import { HelpButton } from '../shell/help-button';
 import { startTour } from './tour-hook';
 
-/** The record banner: number and title line, status chips, meta line, Help, and the Claim and Money tracks of milestones reached. */
+/** The record banner: number and title line, status chips, meta line, Help, and the Handling and Payout tracks of milestones reached. */
 @Component({
   selector: 'fg-claim-record-banner',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ClaimStatusPill],
+  imports: [ClaimStatusPill, HelpButton],
   styleUrl: './claim-record.css',
   template: `
     <header class="record-banner" data-testid="record-banner" data-tour="record-banner">
@@ -22,7 +23,7 @@ import { startTour } from './tour-hook';
           @if (staff()) {
             <span class="pill pill-muted" data-testid="money-chip">{{ chip() }}</span>
           }
-          <button type="button" class="btn btn-sm" (click)="help()" data-testid="help-btn">Help</button>
+          <fg-help-button (pressed)="help()" />
         </div>
       </div>
       <p class="rb-meta">
@@ -40,7 +41,7 @@ import { startTour } from './tour-hook';
       </p>
       <div class="rb-tracks">
         @for (t of tracks(); track t.name) {
-          <div class="track" [attr.data-testid]="'track-' + t.name.toLowerCase()">
+          <div class="track" [attr.data-testid]="'track-' + t.name.toLowerCase()" [attr.title]="t.hint">
             <div class="track-head">
               <span class="track-name">{{ t.name }}</span>
               <span class="track-pos">{{ t.track.position }}</span>
@@ -88,9 +89,9 @@ export class ClaimRecordBanner {
   protected readonly staff = computed(() => this.actor().permissions.has('CLAIMS_ALL'));
   protected readonly market = computed(() => marketName(this.claim().market));
   protected readonly chip = computed(() => moneyChip(this.claim()));
-  protected readonly tracks = computed<{ name: string; track: Track }[]>(() => [
-    { name: 'Claim', track: claimTrack(this.claim(), this.actor()) },
-    { name: 'Money', track: moneyTrack(this.claim(), this.actor()) },
+  protected readonly tracks = computed<{ name: string; hint: string; track: Track }[]>(() => [
+    { name: 'Handling', hint: 'Where the claim is in handling', track: claimTrack(this.claim(), this.actor()) },
+    { name: 'Payout', hint: 'Where the payout is: reserve, approved amount, paid', track: moneyTrack(this.claim(), this.actor()) },
   ]);
 
   protected help(): void {

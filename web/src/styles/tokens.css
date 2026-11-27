@@ -22,6 +22,14 @@
   --focus: #3a63a0;
   /* editable input cells in the Univer sheets: a solid light blue (the canvas cannot blend an alpha tint) */
   --sheet-input: #e3ecf8;
+  /* the record banner band: a confident accent gradient with light text (the page around it stays light) */
+  --band-start: #1b3358;
+  --band-end: #34569a;
+  --on-band: #ffffff;
+  --on-band-muted: rgba(255, 255, 255, 0.74);
+  --on-band-line: rgba(255, 255, 255, 0.3);
+  --band-warn: #ffd98a;
+  --band-err: #ffb9b0;
 
   --ok: #3f7a4e;
   --warn: #9a6b12;
