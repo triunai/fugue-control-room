@@ -3,7 +3,8 @@
 ## Commits
 - `174c311` feat(api): paid (settled) count and sum on the exposure rows and totals (slice 1, with this status file)
 - `a23a31d` feat(api): OpenAPI snapshot, generated client and a Bruno request for paid exposure (slice 2)
-- slice 3: feat(web): team page shows paid (settled) per market and line next to the exposure
+- `4ee1d1e` feat(web): team page shows paid (settled) per market and line next to the exposure (slice 3)
+- docs: full suite result recorded here
 
 ## Gates (copied from output)
 - `dotnet build`: 0 Warning(s), 0 Error(s)
@@ -24,6 +25,8 @@
   PHP 54,000.00 (1), HKD 9,500.00 (1), IDR/MYR/THB 0.00 (0)), three paid cell links; the HK one opens
   `/claims/queue?market=HK&line=Motor&status=Settled`; console errors 0. Screenshots:
   `.worktrees/_briefs/reports/nth-paid-exposure-table.png`, `nth-paid-team-page.png`
+
+- Full .NET suite under the lock on `4ee1d1e`: ArchTests Passed 37 / Failed 0; Fugue.Tests Passed 763 / Failed 0 (10 m 36 s)
 
 ## What changed in shared files (exactly)
 - `web/src/app/features/claims/team-logic.spec.ts` (outside the list, forced): the `exposureMatrix` row factory gains
@@ -54,4 +57,4 @@
   paid has no clean slot in it, and both files are outside the lane's list.
 
 ## Next slice
-- none: lane complete after slice 3; full suite once under the lock, then the report.
+- none: lane complete. Report: `.worktrees/_briefs/reports/nth-paid.md`.
