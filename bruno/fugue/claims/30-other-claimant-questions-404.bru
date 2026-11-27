@@ -1,0 +1,22 @@
+meta {
+  name: Another claimant gets 404 on the past questions
+  type: http
+  seq: 30
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/info-requests
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{otherClaimantToken}}
+}
+
+tests {
+  test("404 claim.not_found", function () {
+    expect(res.status).to.equal(404);
+    expect(res.body.code).to.equal("claim.not_found");
+  });
+}
