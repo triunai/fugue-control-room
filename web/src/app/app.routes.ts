@@ -2,6 +2,14 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router, Routes } from '@angular/router';
 import { AccessService } from './core/auth/access.service';
 import { authGuard, guestGuard, permissionGuard } from './core/auth/guards';
+import { ACCESS_HOOD } from './features/access/access-page.hood';
+import { AUDIT_HOOD } from './features/audit/audit-page.hood';
+import { CLAIM_DETAIL_HOOD } from './features/claims/claim-detail-page.hood';
+import { CLAIMS_QUEUE_HOOD } from './features/claims/claims-queue-page.hood';
+import { MY_CLAIMS_HOOD } from './features/claims/my-claims-page.hood';
+import { REPORT_HOOD } from './features/claims/report-page.hood';
+import { TEAM_HOOD } from './features/claims/team-page.hood';
+import { HOME_HOOD } from './features/home/home-page.hood';
 import { landingKind } from './features/home/home-logic';
 import { NAV } from './features/shell/nav';
 
@@ -35,27 +43,28 @@ export const routes: Routes = [
         path: '',
         pathMatch: 'full',
         canActivate: [landing],
+        data: { hood: HOME_HOOD },
         title: 'Home · Fugue Console',
         loadComponent: () => import('./features/home/home-page').then((m) => m.HomePage),
       },
       {
         path: 'claims/mine',
         canActivate: [permissionGuard],
-        data: { permission: 'CLAIMS_SUBMIT', section: 'Claims', breadcrumb: 'My claims' },
+        data: { hood: MY_CLAIMS_HOOD, permission: 'CLAIMS_SUBMIT', section: 'Claims', breadcrumb: 'My claims' },
         title: 'My claims · Fugue Console',
         loadComponent: () => import('./features/claims/my-claims-page').then((m) => m.MyClaimsPage),
       },
       {
         path: 'claims/new',
         canActivate: [permissionGuard],
-        data: { permission: 'CLAIMS_SUBMIT', section: 'Claims', breadcrumb: 'Report an incident' },
+        data: { hood: REPORT_HOOD, permission: 'CLAIMS_SUBMIT', section: 'Claims', breadcrumb: 'Report an incident' },
         title: 'Report an incident · Fugue Console',
         loadComponent: () => import('./features/claims/report-page').then((m) => m.ReportPage),
       },
       {
         path: 'claims/queue',
         canActivate: [permissionGuard],
-        data: { permission: 'CLAIMS_ALL', section: 'Claims', breadcrumb: 'Claims queue' },
+        data: { hood: CLAIMS_QUEUE_HOOD, permission: 'CLAIMS_ALL', section: 'Claims', breadcrumb: 'Claims queue' },
         title: 'Claims queue · Fugue Console',
         loadComponent: () => import('./features/claims/claims-queue-page').then((m) => m.ClaimsQueuePage),
       },
@@ -63,6 +72,7 @@ export const routes: Routes = [
         path: 'claims/team',
         canActivate: [permissionGuard],
         data: {
+          hood: TEAM_HOOD,
           permission: ['CLAIMS_WORKLOAD', 'CLAIMS_EXPOSURE'],
           section: 'Claims',
           breadcrumb: 'Team and exposure',
@@ -96,7 +106,7 @@ export const routes: Routes = [
       {
         path: 'claims/:id',
         canActivate: [permissionGuard],
-        data: { permission: 'CLAIMS_READ', section: 'Claims', breadcrumb: 'Claim' },
+        data: { hood: CLAIM_DETAIL_HOOD, permission: 'CLAIMS_READ', section: 'Claims', breadcrumb: 'Claim' },
         title: 'Claim · Fugue Console',
         loadComponent: () => import('./features/claims/claim-detail-page').then((m) => m.ClaimDetailPage),
       },
@@ -110,14 +120,19 @@ export const routes: Routes = [
       {
         path: 'audit',
         canActivate: [permissionGuard],
-        data: { permission: 'AUDIT_READ', section: 'Data', breadcrumb: 'Audit log' },
+        data: { hood: AUDIT_HOOD, permission: 'AUDIT_READ', section: 'Data', breadcrumb: 'Audit log' },
         title: 'Audit log · Fugue Console',
         loadComponent: () => import('./features/audit/audit-page').then((m) => m.AuditPage),
       },
       {
         path: 'access',
         canActivate: [permissionGuard],
-        data: { permission: ['GROUPS_VIEW', 'OVERRIDES_VIEW'], section: 'Access', breadcrumb: 'Users & access' },
+        data: {
+          hood: ACCESS_HOOD,
+          permission: ['GROUPS_VIEW', 'OVERRIDES_VIEW'],
+          section: 'Access',
+          breadcrumb: 'Users & access',
+        },
         title: 'Access · Fugue Console',
         loadComponent: () => import('./features/access/access-page').then((m) => m.AccessPage),
       },
