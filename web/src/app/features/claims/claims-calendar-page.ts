@@ -19,10 +19,11 @@ import { injectQuery } from '@tanstack/angular-query';
 import { ClaimsApi, claimKeys } from '../../api/claims.api';
 import { AccessService } from '../../core/auth/access.service';
 import { ErrorState } from '../../ui/states';
-import { STATUS_LABEL, STATUS_TONE } from './claims-logic';
+import { STATUS_TONE } from './claims-logic';
 import { loadStylesheet } from './lazy-css';
 import { fetchOpenClaims } from './open-claims';
-import { DueItem, calendarEvents, claimsDueOn, dayKey } from './sla-events';
+import { DueItem, calendarEvents, claimsDueOn, dayKey, shiftDay, weekOf } from './sla-events';
+import { ClaimStatusPill } from './claim-bits';
 
 const CALENDAR_CSS = [
   'vendor/fullcalendar/skeleton.css',
@@ -39,7 +40,8 @@ const CALENDAR_CSS = [
 @Component({
   selector: 'fg-claims-calendar-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ErrorState, RouterLink],
+  imports: [ErrorState, RouterLink, ClaimStatusPill],
+  host: { '(document:keydown.escape)': 'closeDay()' },
   styleUrl: './claims-calendar.css',
   template: `
     <div class="page">
@@ -49,7 +51,7 @@ const CALENDAR_CSS = [
           <p class="page-lede">
             Each open claim on the day its next step is due: pickup 2 days after it is submitted, a decision 14 days
             after, an answer 7 days after the question, settlement 7 days after approval. Click a day to see what is due
-            then, or an event to open the claim.
+            then (a drawer opens on the right; step through the week from there), or an event to open the claim.
           </p>
         </div>
         @if (isStaff()) {
@@ -75,31 +77,79 @@ const CALENDAR_CSS = [
         <input id="cal-day" type="date" class="input" [value]="day()" (change)="pickDay($any($event.target).value)" />
       </div>
       @if (day(); as d) {
-        <section
-          class="panel panel-pad day-panel"
-          role="region"
-          aria-label="Due on {{ d }}"
+        <div class="dd-scrim" (click)="closeDay()" aria-hidden="true"></div>
+        <aside
+          class="dd"
+          role="dialog"
+          aria-modal="false"
+          [attr.aria-label]="'Due on ' + dayLabel()"
           data-testid="day-panel"
           tabindex="-1"
         >
-          <header class="day-head">
-            <h2 class="section-title m-0">Due on {{ dayLabel() }}</h2>
-            <button type="button" class="btn btn-sm" (click)="day.set('')">Close</button>
+          <header class="dd-head">
+            <div>
+              <p class="dd-eyebrow">Due on</p>
+              <h2 class="dd-title">{{ dayLabel() }}</h2>
+            </div>
+            <button type="button" class="btn btn-sm" (click)="closeDay()">Close</button>
           </header>
-          @if (dayItems().length === 0) {
-            <p class="text-muted" data-testid="day-empty">Nothing due</p>
+          <nav class="dd-week" aria-label="Days of this week">
+            <button type="button" class="dd-step" aria-label="Previous week" (click)="pickDay(shift(d, -7))">
+              &lsaquo;
+            </button>
+            @for (w of week(); track w.key) {
+              <button
+                type="button"
+                class="dd-day"
+                [class.on]="w.key === d"
+                [attr.aria-pressed]="w.key === d"
+                [attr.aria-label]="w.label"
+                [attr.data-testid]="'dd-day-' + w.key"
+                (click)="pickDay(w.key)"
+              >
+                <span class="dd-dow">{{ w.dow }}</span>
+                <span class="dd-num">{{ w.num }}</span>
+                <span class="dd-count" [class.zero]="w.count === 0">{{ w.count }}</span>
+              </button>
+            }
+            <button type="button" class="dd-step" aria-label="Next week" (click)="pickDay(shift(d, 7))">
+              &rsaquo;
+            </button>
+          </nav>
+          @if (dayCards().length === 0) {
+            <p class="text-muted dd-empty" data-testid="day-empty">Nothing due</p>
           } @else {
-            <ul class="day-list" data-testid="day-list">
-              @for (i of dayItems(); track i.id) {
-                <li [class.day-overdue]="i.overdue">
-                  <a [routerLink]="['/claims', i.id]" class="mono">{{ i.number }}</a>
-                  <span>{{ statusLabel(i) }}</span>
-                  <span>{{ i.what }}{{ i.overdue ? ' (overdue)' : '' }}</span>
+            <p class="text-muted text-sm dd-sum">
+              {{ dayCards().length }} claim{{ dayCards().length === 1 ? '' : 's' }} due{{
+                overdueCount() ? ', ' + overdueCount() + ' overdue' : ''
+              }}
+            </p>
+            <ul class="dd-list" data-testid="day-list">
+              @for (i of dayCards(); track i.id) {
+                <li>
+                  <a class="dd-card" [class.late]="i.overdue" [routerLink]="['/claims', i.id]">
+                    <span class="dd-row">
+                      <span class="mono dd-no">{{ i.number }}</span>
+                      <fg-claim-status [status]="i.status" />
+                    </span>
+                    <span class="dd-what">
+                      {{ i.what }}
+                      @if (i.overdue) {
+                        <span class="dd-late">overdue</span>
+                      }
+                    </span>
+                    <span class="dd-meta">{{ i.market }} &middot; {{ i.line }} &middot; {{ i.claimant }}</span>
+                    @if (i.description) {
+                      <span class="dd-desc">{{ i.description }}</span>
+                    }
+                    <span class="dd-meta">Officer: {{ i.officer }}</span>
+                    <span class="dd-open">Open claim &rarr;</span>
+                  </a>
                 </li>
               }
             </ul>
           }
-        </section>
+        </aside>
       }
       @if (query.isSuccess()) {
         <p class="text-muted text-sm" data-testid="sla-count">
@@ -131,8 +181,44 @@ export class ClaimsCalendarPage implements AfterViewInit, OnDestroy {
       month: 'long',
     }),
   );
-  protected statusLabel(i: DueItem): string {
-    return STATUS_LABEL[i.status];
+  /** Each due item joined to its claim, so the drawer shows the work: who, where, what happened, who has it. */
+  protected readonly dayCards = computed(() => {
+    const byId = new Map((this.query.data() ?? []).map((c) => [c.id, c]));
+    return this.dayItems().map((i: DueItem) => {
+      const c = byId.get(i.id);
+      return {
+        ...i,
+        market: c?.market ?? '',
+        line: c?.line ?? '',
+        claimant: c?.claimantName ?? 'Claimant',
+        description: c?.incidentDescription ?? '',
+        officer: c?.assignedOfficerName ?? 'Unassigned',
+      };
+    });
+  });
+  protected readonly overdueCount = computed(() => this.dayCards().filter((i) => i.overdue).length);
+  /** The week strip in the drawer: each day with how many claims fall due on it. */
+  protected readonly week = computed(() => {
+    const d = this.day();
+    if (!d) return [];
+    const claims = this.query.data() ?? [];
+    return weekOf(d).map((key) => {
+      const date = new Date(`${key}T00:00:00`);
+      const count = claimsDueOn(claims, key).length;
+      return {
+        key,
+        count,
+        dow: date.toLocaleDateString(undefined, { weekday: 'short' }),
+        num: date.getDate(),
+        label: `${date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}, ${count} due`,
+      };
+    });
+  });
+  protected shift(day: string, days: number): string {
+    return shiftDay(day, days);
+  }
+  protected closeDay(): void {
+    this.day.set('');
   }
 
   protected pickDay(value: string): void {

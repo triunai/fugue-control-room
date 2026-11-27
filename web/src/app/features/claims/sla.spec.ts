@@ -1,6 +1,6 @@
 import { ClaimDto } from '../../api/models';
 import { SLA_DAYS, isOverdue, slaDue } from './sla';
-import { calendarEvents, claimsDueOn, dayKey } from './sla-events';
+import { calendarEvents, claimsDueOn, dayKey, shiftDay, weekOf } from './sla-events';
 import { STATUS_TONE } from './claims-logic';
 
 const base = { submittedAt: '2026-11-01T08:00:00.000Z', updatedAt: '2026-11-05T08:00:00.000Z' };
@@ -86,5 +86,37 @@ describe('claimsDueOn', () => {
 
   it('formats the local day as YYYY-MM-DD', () => {
     expect(dayKey(new Date(2026, 0, 5, 23, 30))).toBe('2026-01-05');
+  });
+});
+
+describe('day drawer dates', () => {
+  it('weekOf: the Sunday-first week containing the day', () => {
+    expect(weekOf('2026-11-13')).toEqual([
+      '2026-11-08',
+      '2026-11-09',
+      '2026-11-10',
+      '2026-11-11',
+      '2026-11-12',
+      '2026-11-13',
+      '2026-11-14',
+    ]);
+  });
+
+  it('weekOf: a week that crosses a month end', () => {
+    expect(weekOf('2026-12-01')).toEqual([
+      '2026-11-29',
+      '2026-11-30',
+      '2026-12-01',
+      '2026-12-02',
+      '2026-12-03',
+      '2026-12-04',
+      '2026-12-05',
+    ]);
+  });
+
+  it('shiftDay: steps by local calendar days across month and year ends', () => {
+    expect(shiftDay('2026-11-30', 1)).toBe('2026-12-01');
+    expect(shiftDay('2027-01-01', -1)).toBe('2026-12-31');
+    expect(shiftDay('2026-11-13', 7)).toBe('2026-11-20');
   });
 });

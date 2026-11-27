@@ -77,3 +77,21 @@ export function claimsDueOn(claims: readonly ClaimDto[], day: string, now = Date
   }
   return items;
 }
+
+/** The seven local days (Sunday first, as the calendar grid) of the week that contains `day` (`YYYY-MM-DD`). */
+export function weekOf(day: string): string[] {
+  const start = new Date(`${day}T00:00:00`);
+  start.setDate(start.getDate() - start.getDay());
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    return dayKey(d);
+  });
+}
+
+/** `day` moved by `days` local calendar days (safe across month ends and DST changes). */
+export function shiftDay(day: string, days: number): string {
+  const d = new Date(`${day}T00:00:00`);
+  d.setDate(d.getDate() + days);
+  return dayKey(d);
+}
