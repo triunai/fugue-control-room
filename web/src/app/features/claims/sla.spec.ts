@@ -1,6 +1,6 @@
 import { ClaimDto } from '../../api/models';
 import { SLA_DAYS, isOverdue, slaDue } from './sla';
-import { calendarEvents } from './sla-events';
+import { calendarEvents, claimsDueOn, dayKey } from './sla-events';
 import { STATUS_TONE } from './claims-logic';
 
 const base = { submittedAt: '2026-11-01T08:00:00.000Z', updatedAt: '2026-11-05T08:00:00.000Z' };
@@ -62,5 +62,29 @@ describe('calendarEvents', () => {
     expect(events[1].className).toBe('sla-ev sla-acc sla-kind-decision');
     expect(events.map((e) => e.color)).toEqual(['var(--muted)', 'var(--accent)']);
     expect(events[0].title).toBe('CLM-1 · Pickup due');
+  });
+});
+
+describe('claimsDueOn', () => {
+  const claims = [
+    claim({ id: 'a', number: 'CLM-A' }), // pickup due 2026-11-03T08:00Z
+    claim({ id: 'b', number: 'CLM-B', status: 'UnderReview' }), // decision due 2026-11-15
+    claim({ id: 'c', number: 'CLM-C', status: 'Rejected' }), // nothing due
+  ];
+  const now = Date.parse('2026-11-10T00:00:00Z');
+
+  it('lists the claims due on that local day with what is due', () => {
+    const day = dayKey(new Date('2026-11-03T08:00:00.000Z'));
+    expect(claimsDueOn(claims, day, now)).toEqual([
+      { id: 'a', number: 'CLM-A', status: 'Submitted', what: 'Pickup due', overdue: true },
+    ]);
+  });
+
+  it('is empty for a day with nothing due ("Nothing due")', () => {
+    expect(claimsDueOn(claims, '2026-12-25', now)).toEqual([]);
+  });
+
+  it('formats the local day as YYYY-MM-DD', () => {
+    expect(dayKey(new Date(2026, 0, 5, 23, 30))).toBe('2026-01-05');
   });
 });

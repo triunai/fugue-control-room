@@ -45,3 +45,35 @@ export function calendarEvents(
   }
   return events;
 }
+
+/** A local calendar day as `YYYY-MM-DD` (the day a person sees in the grid, not the UTC day). */
+export function dayKey(d: Date): string {
+  const two = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`;
+}
+
+export interface DueItem {
+  id: string;
+  number: string;
+  status: ClaimDto['status'];
+  /** What is due: "Pickup due", "Decision due"... */
+  what: string;
+  overdue: boolean;
+}
+
+/** The open claims whose next SLA falls on the given local day (`YYYY-MM-DD`), for the day popover. Empty means "Nothing due". */
+export function claimsDueOn(claims: readonly ClaimDto[], day: string, now = Date.now()): DueItem[] {
+  const items: DueItem[] = [];
+  for (const claim of claims) {
+    const due = slaDue(claim);
+    if (!due || dayKey(new Date(due.due)) !== day) continue;
+    items.push({
+      id: claim.id,
+      number: claim.number,
+      status: claim.status,
+      what: due.label,
+      overdue: isOverdue(due.due, now),
+    });
+  }
+  return items;
+}
