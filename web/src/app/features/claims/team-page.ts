@@ -15,7 +15,7 @@ import { exposureMatrix, oldestPerOfficer, summariseOpen } from './team-logic';
   selector: 'fg-team-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, MoneyPipe, RelativeTimePipe, StampPipe, SkeletonRows, EmptyState, ErrorState],
-  styleUrl: './claims.css',
+  styleUrls: ['./claims.css', './team.css'],
   template: `
     <div class="page">
       <header class="page-head">

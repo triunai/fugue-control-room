@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { ClaimDto } from '../../api/models';
-import { ClaimStatusPill, MoneyPipe } from './claim-bits';
+import { ClaimStatusPill } from './claim-bits';
 import { Track, claimTrack, marketName, moneyTrack } from './claims-logic';
 import { startTour } from './tour-hook';
 
@@ -8,8 +8,8 @@ import { startTour } from './tour-hook';
 @Component({
   selector: 'fg-claim-record-banner',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ClaimStatusPill, MoneyPipe],
-  styleUrl: './claims.css',
+  imports: [ClaimStatusPill],
+  styleUrl: './claim-record.css',
   template: `
     <header class="record-banner" data-testid="record-banner">
       <div class="rb-top">

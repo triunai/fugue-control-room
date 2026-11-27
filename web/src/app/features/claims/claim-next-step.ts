@@ -6,7 +6,7 @@ import { Actor, NextStep, nextStep } from './claims-logic';
 @Component({
   selector: 'fg-claim-next-step',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  styleUrl: './claims.css',
+  styleUrl: './claim-record.css',
   template: `
     @if (step(); as s) {
       <section
