@@ -7,7 +7,7 @@
  */
 
 /**
- * One audit row as the read API returns it. Values were masked when the row was written (ADR-010), so nothing here can be un-masked. ErrorType, ErrorMessage and DurationMs are set on failure rows only (the message is the handler's own, never an exception's). Changes is `{ "field": { "old": ..., "new": ... } }`; Metadata holds extras such as the command name.
+ * One audit row as the read API returns it. Values were masked when the row was written (ADR-010), so nothing here can be un-masked. ErrorType, ErrorMessage and DurationMs are set on failure rows only (the message is an audit-safe summary: validation field names only, or the exception type name; never handler or exception text). Changes is `{ "field": { "old": ..., "new": ... } }`; Metadata holds extras such as the command name.
  */
 export interface AuditLogDto {
   action: string;

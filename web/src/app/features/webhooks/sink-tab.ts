@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { injectInfiniteQuery, injectMutation, injectQuery, QueryClient } from '@tanstack/angular-query';
 import { CustomersApi, customerKeys } from '../../api/customers.api';
-import { ReceivedWebhookDto } from '../../api/models';
+import { CreateCustomerRequest, ReceivedWebhookDto } from '../../api/models';
 import { webhookKeys, WebhooksApi } from '../../api/webhooks.api';
 import { CorrelationService } from '../../core/http/correlation.service';
-import { newIdempotencyKey } from '../../core/http/idempotency';
+import { SubmissionKey } from '../../core/http/idempotency';
 import { ToastStore } from '../../core/ui/toast.store';
 import { RelativeTimePipe, StampPipe } from '../../ui/format';
 import { RefChip } from '../../ui/ref-chip';
@@ -40,6 +40,10 @@ export class SinkTab {
   /** Event ids that arrived since the previous poll: highlighted for a moment, the tab's one motion. */
   private readonly freshIds = signal<ReadonlySet<string>>(new Set());
   protected readonly lastTestRef = signal<string | null>(null);
+  /** The sink subscription create and the test customer are submissions: the body and the Idempotency-Key are fixed until one succeeds, so a retry after a lost response replays the first result. */
+  private readonly connectKey = new SubmissionKey();
+  private readonly testKey = new SubmissionKey();
+  private pendingTest: CreateCustomerRequest | null = null;
 
   protected readonly feed = injectQuery(() => ({
     queryKey: webhookKeys.sink,
@@ -87,12 +91,14 @@ export class SinkTab {
   protected readonly connect = injectMutation(() => ({
     mutationFn: async () => {
       const existing = this.sinkSub();
-      const result = existing
-        ? await this.api.rotate(existing.id)
-        : await this.api.create(
-            { name: 'Development sink', url: this.target, eventTypes: ['customer.*'] },
-            newIdempotencyKey(),
-          );
+      let result;
+      if (existing) {
+        result = await this.api.rotate(existing.id);
+      } else {
+        const body = { name: 'Development sink', url: this.target, eventTypes: ['customer.*'] };
+        result = await this.api.create(body, this.connectKey.forBody(body));
+        this.connectKey.reset();
+      }
       await this.api.setSinkSecret(result.secret);
       return existing ? 'reconnected' : 'connected';
     },
@@ -106,14 +112,18 @@ export class SinkTab {
   }));
 
   protected readonly sendTest = injectMutation(() => ({
-    mutationFn: () => {
-      const stamp = new Date().toLocaleTimeString('en-GB');
+    mutationFn: async () => {
       const ref = this.correlation.id();
       this.lastTestRef.set(ref);
-      return this.customers.create(
-        { name: `Sink check ${stamp}`, email: `sink.${Date.now()}@example.test`, phone: null },
-        newIdempotencyKey(),
-      );
+      this.pendingTest ??= {
+        name: `Sink check ${new Date().toLocaleTimeString('en-GB')}`,
+        email: `sink.${Date.now()}@example.test`,
+        phone: null,
+      };
+      const created = await this.customers.create(this.pendingTest, this.testKey.forBody(this.pendingTest));
+      this.pendingTest = null;
+      this.testKey.reset();
+      return created;
     },
     onSuccess: (c) =>
       this.toasts.ok(
