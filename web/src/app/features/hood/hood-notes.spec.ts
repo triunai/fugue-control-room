@@ -19,9 +19,13 @@ describe('hood notes registered by route data', () => {
     'audit',
     'audit/trace/:correlationId',
     'access',
+    'customers',
+    'modules',
+    'webhooks',
+    'me',
   ];
   // The platform and access pages (part A of item 11e) set the standard: each also walks its main action as a flow.
-  const withFlow = ['audit', 'audit/trace/:correlationId'];
+  const withFlow = ['audit', 'audit/trace/:correlationId', 'access', 'customers', 'modules', 'webhooks', 'me'];
 
   it.each(pages)('route "%s" carries a well-formed note', (path) => {
     const note = find(path)?.data?.['hood'] as HoodNote | undefined;
