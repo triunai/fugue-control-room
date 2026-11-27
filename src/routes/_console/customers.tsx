@@ -154,7 +154,7 @@ function Customers() {
 function EditDrawer({ customer, onClose, db, setDb }: { customer: Customer | null; onClose: () => void; db: Customer[]; setDb: (f: (d: Customer[]) => Customer[]) => void }) {
   const [form, setForm] = useState({ name: "", email: "", plan: "free" as Customer["plan"] });
   const [version, setVersion] = useState(0);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
   const [conflict, setConflict] = useState(false);
   const [saving, setSaving] = useState(false);
   const [simulate, setSimulate] = useState(true);
@@ -165,7 +165,7 @@ function EditDrawer({ customer, onClose, db, setDb }: { customer: Customer | nul
 
   async function save(force = false) {
     if (!customer) return;
-    const fe: Record<string, string> = {};
+    const fe: { name?: string; email?: string } = {};
     if (!form.name.trim()) fe.name = "Name is required.";
     if (!/^\S+@\S+\.\S+$/.test(form.email)) fe.email = "Enter a valid email address.";
     setErrors(fe); if (Object.keys(fe).length) return;
@@ -226,7 +226,7 @@ function EditDrawer({ customer, onClose, db, setDb }: { customer: Customer | nul
   );
 }
 
-function Field({ label, id, error, hint, children }: { label: string; id: string; error?: string; hint?: string; children: React.ReactNode }) {
+function Field({ label, id, error, hint, children }: { label: string; id: string; error?: string | undefined; hint?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
       <Label htmlFor={id}>{label}</Label>{children}

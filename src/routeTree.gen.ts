@@ -11,8 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ConsoleRouteImport } from './routes/_console'
+import { Route as ConsoleAuditRouteImport } from './routes/_console/audit'
 import { Route as ConsoleCustomersRouteImport } from './routes/_console/customers'
 import { Route as ConsoleModulesRouteImport } from './routes/_console/modules'
+import { Route as ConsoleProfileRouteImport } from './routes/_console/profile'
+import { Route as ConsoleWebhooksRouteImport } from './routes/_console/webhooks'
 import { Route as ConsoleUsersIndexRouteImport } from './routes/_console/users.index'
 import { Route as ConsoleUsersUserIdRouteImport } from './routes/_console/users.$userId'
 
@@ -25,6 +28,11 @@ const ConsoleRoute = ConsoleRouteImport.update({
   id: '/_console',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConsoleAuditRoute = ConsoleAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => ConsoleRoute,
+} as any)
 const ConsoleCustomersRoute = ConsoleCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
@@ -33,6 +41,16 @@ const ConsoleCustomersRoute = ConsoleCustomersRouteImport.update({
 const ConsoleModulesRoute = ConsoleModulesRouteImport.update({
   id: '/modules',
   path: '/modules',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleProfileRoute = ConsoleProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => ConsoleRoute,
+} as any)
+const ConsoleWebhooksRoute = ConsoleWebhooksRouteImport.update({
+  id: '/webhooks',
+  path: '/webhooks',
   getParentRoute: () => ConsoleRoute,
 } as any)
 const ConsoleUsersIndexRoute = ConsoleUsersIndexRouteImport.update({
@@ -48,15 +66,21 @@ const ConsoleUsersUserIdRoute = ConsoleUsersUserIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/audit': typeof ConsoleAuditRoute
   '/customers': typeof ConsoleCustomersRoute
   '/modules': typeof ConsoleModulesRoute
+  '/profile': typeof ConsoleProfileRoute
+  '/webhooks': typeof ConsoleWebhooksRoute
   '/users/$userId': typeof ConsoleUsersUserIdRoute
   '/users/': typeof ConsoleUsersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/audit': typeof ConsoleAuditRoute
   '/customers': typeof ConsoleCustomersRoute
   '/modules': typeof ConsoleModulesRoute
+  '/profile': typeof ConsoleProfileRoute
+  '/webhooks': typeof ConsoleWebhooksRoute
   '/users/$userId': typeof ConsoleUsersUserIdRoute
   '/users': typeof ConsoleUsersIndexRoute
 }
@@ -64,22 +88,44 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_console': typeof ConsoleRouteWithChildren
+  '/_console/audit': typeof ConsoleAuditRoute
   '/_console/customers': typeof ConsoleCustomersRoute
   '/_console/modules': typeof ConsoleModulesRoute
+  '/_console/profile': typeof ConsoleProfileRoute
+  '/_console/webhooks': typeof ConsoleWebhooksRoute
   '/_console/users/$userId': typeof ConsoleUsersUserIdRoute
   '/_console/users/': typeof ConsoleUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/customers' | '/modules' | '/users/$userId' | '/users/'
+  fullPaths:
+    | '/'
+    | '/audit'
+    | '/customers'
+    | '/modules'
+    | '/profile'
+    | '/webhooks'
+    | '/users/$userId'
+    | '/users/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/customers' | '/modules' | '/users/$userId' | '/users'
+  to:
+    | '/'
+    | '/audit'
+    | '/customers'
+    | '/modules'
+    | '/profile'
+    | '/webhooks'
+    | '/users/$userId'
+    | '/users'
   id:
     | '__root__'
     | '/'
     | '/_console'
+    | '/_console/audit'
     | '/_console/customers'
     | '/_console/modules'
+    | '/_console/profile'
+    | '/_console/webhooks'
     | '/_console/users/$userId'
     | '/_console/users/'
   fileRoutesById: FileRoutesById
@@ -105,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConsoleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_console/audit': {
+      id: '/_console/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof ConsoleAuditRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
     '/_console/customers': {
       id: '/_console/customers'
       path: '/customers'
@@ -117,6 +170,20 @@ declare module '@tanstack/react-router' {
       path: '/modules'
       fullPath: '/modules'
       preLoaderRoute: typeof ConsoleModulesRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/_console/profile': {
+      id: '/_console/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ConsoleProfileRouteImport
+      parentRoute: typeof ConsoleRoute
+    }
+    '/_console/webhooks': {
+      id: '/_console/webhooks'
+      path: '/webhooks'
+      fullPath: '/webhooks'
+      preLoaderRoute: typeof ConsoleWebhooksRouteImport
       parentRoute: typeof ConsoleRoute
     }
     '/_console/users/': {
@@ -137,15 +204,21 @@ declare module '@tanstack/react-router' {
 }
 
 interface ConsoleRouteChildren {
+  ConsoleAuditRoute: typeof ConsoleAuditRoute
   ConsoleCustomersRoute: typeof ConsoleCustomersRoute
   ConsoleModulesRoute: typeof ConsoleModulesRoute
+  ConsoleProfileRoute: typeof ConsoleProfileRoute
+  ConsoleWebhooksRoute: typeof ConsoleWebhooksRoute
   ConsoleUsersUserIdRoute: typeof ConsoleUsersUserIdRoute
   ConsoleUsersIndexRoute: typeof ConsoleUsersIndexRoute
 }
 
 const ConsoleRouteChildren: ConsoleRouteChildren = {
+  ConsoleAuditRoute: ConsoleAuditRoute,
   ConsoleCustomersRoute: ConsoleCustomersRoute,
   ConsoleModulesRoute: ConsoleModulesRoute,
+  ConsoleProfileRoute: ConsoleProfileRoute,
+  ConsoleWebhooksRoute: ConsoleWebhooksRoute,
   ConsoleUsersUserIdRoute: ConsoleUsersUserIdRoute,
   ConsoleUsersIndexRoute: ConsoleUsersIndexRoute,
 }
