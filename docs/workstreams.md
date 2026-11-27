@@ -59,7 +59,7 @@ Refs: D-064, D-066; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/
 
 ### WS-32 — Search hardening on Meilisearch (item 10) — 🟢 ACTIVE (2026-11-28)
 ID: W-032
-Status: lane nth-searchx live.
+Status: merged aa401bc (nth-searchx), D-072, D-073; closes at the wrap.
 Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
 Refs: D-063, D-064, D-066; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
 

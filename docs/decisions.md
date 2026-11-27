@@ -77,6 +77,26 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-073 — Header search stays claims and audit; users and customers are not indexed — 2026-11-28
+WS: WS-32
+Context: item 10 asked whether admins should find users and whether customers belong in the header search.
+Decision: neither goes into Meilisearch now. Users are a few dozen accounts, already searchable by `GET /api/v1/users?q=` (email or display name, USERS_VIEW); indexing them would copy emails into a second store with its own scope rules for no gain at this size. If wanted later: a "People" group in the header shown only with USERS_VIEW, calling the existing endpoint (no new index). Customers are the starter example the brief never asks for (D-063 already chose claims over customers), and the customers list already filters with `search`.
+Why: no new store of personal data without a need.
+Consequences: revisit when users number in the thousands or customers join the claims domain.
+Who: AI (lane nth-searchx), integrator (recorded)
+Status: accepted
+Promote: no
+
+## D-072 — Claims search answers like an officer expects — 2026-11-28
+WS: WS-32
+Context: "SG", "Singapore" and "motor" found nothing on market or line; a mistyped claim number returned its neighbours; index settings were re-sent (re-indexing) on every start.
+Decision: market code, market name and line are searchable with two-way synonyms (six market codes and names, car/motor, home/property); every word must match (`matchingStrategy: all`); identifier tokens (a digit and 5+ characters) are sent as phrases so claim and policy numbers match exactly; hits carry highlights (why they matched) and facet counts; settings are compared at startup and sent only when they differ; a document shape version re-indexes once when the shape changes. `typoTolerance.disableOnAttributes` is NOT used: on the pinned Meilisearch v1.12.8 it hides words of documents added after the setting (reproduced; fixed in v1.13.3). Claimant scope (D-063) unchanged, with a new negative test. Merged in aa401bc (W-032, lane nth-searchx).
+Why: lookups by number must be exact, and a restart must not re-index.
+Consequences: a query with a word no claim carries returns nothing; a policy number matches only once complete. Follow-up candidate: Meilisearch v1.13.3+ in compose and tests, then `disableOnAttributes` as a second guard.
+Who: owner (asked, item 10), AI (lane nth-searchx)
+Status: accepted
+Promote: no
+
 ## D-071 — The global ErrorHandler drops exactly one benign browser notice, ResizeObserver loop — 2026-11-28
 WS: WS-30
 Context: /claims/calendar logged "ResizeObserver loop completed with undelivered notifications." as a console error with the hood sidebar open (the default), which fails the zero-console-errors gate (17b). The load case was fixed at the source (the calendar is built once its CSS has loaded and the claims query has settled); the window-resize case comes from FullCalendar 7.1.5's internal global ResizeObserver on window resize, and no option exists to defer its updateSize.

@@ -6,13 +6,33 @@
   ],
   "counts": {
     "adrs": 14,
-    "decisions": 71
+    "decisions": 73
   },
   "groups": [
     {
       "version": "Unreleased",
       "date": null,
       "entries": [
+        {
+          "kind": "D",
+          "id": "D-073",
+          "title": "Header search stays claims and audit; users and customers are not indexed",
+          "date": "2026-11-28",
+          "summary": "Neither goes into Meilisearch now. Users are a few dozen accounts, already searchable by GET /api/v1/users?q= (email or display name, USERS_VIEW); indexing them would copy emails into a second store with its own scope…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-073--header-search-stays-claims-and-audit-users-and-customers-are-not-indexed--2026-11-28"
+        },
+        {
+          "kind": "D",
+          "id": "D-072",
+          "title": "Claims search answers like an officer expects",
+          "date": "2026-11-28",
+          "summary": "Market code, market name and line are searchable with two-way synonyms (six market codes and names, car/motor, home/property); every word must match (matchingStrategy: all); identifier tokens (a digit and 5+ characters)…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-072--claims-search-answers-like-an-officer-expects--2026-11-28"
+        },
         {
           "kind": "D",
           "id": "D-071",
