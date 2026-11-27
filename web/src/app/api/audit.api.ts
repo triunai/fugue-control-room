@@ -3,7 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { Injectable, inject } from '@angular/core';
 import { CONSOLE_CONFIG } from '../core/config';
 import { getPage, params } from './http-page';
-import type { AuditSearchResultDto } from './generated/model';
+import type { AuditSearchResultDto, AuditTraceDto } from './generated/model';
 import { AuditLogDto, Page } from './models';
 
 /** Every filter is an exact match; `from` is inclusive and `to` exclusive (ISO instants). */
@@ -35,6 +35,7 @@ export const EMPTY_AUDIT_FILTER: AuditFilter = {
 export const auditKeys = {
   list: (f: AuditFilter) => ['audit', 'list', f] as const,
   search: (f: AuditFilter) => ['audit', 'search', f] as const,
+  trace: (correlationId: string) => ['audit', 'trace', correlationId] as const,
 };
 
 @Injectable({ providedIn: 'root' })
@@ -77,5 +78,10 @@ export class AuditApi {
         }),
       }),
     );
+  }
+
+  /** "The Score" (D-064, AUDIT_READ): the command, events and webhook deliveries of one correlation id. 404 `audit.trace_not_found`. */
+  trace(correlationId: string): Promise<AuditTraceDto> {
+    return firstValueFrom(this.http.get<AuditTraceDto>(`${this.base}/trace/${encodeURIComponent(correlationId)}`));
   }
 }

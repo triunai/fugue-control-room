@@ -1,0 +1,139 @@
+/* The Score (D-064). Colours come only from tokens.css; flat inside the page card (no box around the figure). */
+.score-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.score-figure {
+  margin: 0;
+  min-width: 0;
+}
+
+.score-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: var(--font-ui);
+}
+
+.lane-band {
+  fill: var(--surface2);
+}
+
+.lane-label {
+  fill: var(--muted);
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.tick-line {
+  stroke: var(--line-soft);
+  stroke-width: 1;
+}
+
+.tick-label {
+  fill: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.axis {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.connector {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.25;
+  stroke-dasharray: 4 3;
+}
+
+.bar-ok {
+  fill: var(--ok);
+}
+
+.bar-warn {
+  fill: var(--warn);
+}
+
+.bar-err {
+  fill: var(--err);
+}
+
+.score-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 1.25rem 8.5rem minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.65rem 0.25rem;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.step-mark {
+  align-self: center;
+  display: inline-flex;
+}
+
+.step-ok .step-mark {
+  color: var(--ok-ink);
+}
+
+.step-warn .step-mark {
+  color: var(--warn-ink);
+}
+
+.step-err .step-mark {
+  color: var(--err-ink);
+}
+
+.step-lane {
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 550;
+}
+
+.step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.step-status {
+  color: var(--muted);
+}
+
+.step-ms {
+  white-space: nowrap;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .step {
+    grid-template-columns: 1.25rem minmax(0, 1fr) auto;
+  }
+
+  .step-lane {
+    grid-column: 2 / -1;
+  }
+
+  .step-body,
+  .step-status {
+    grid-column: 2;
+  }
+
+  .step-ms {
+    grid-column: 3;
+  }
+}
