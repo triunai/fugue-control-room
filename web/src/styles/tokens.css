@@ -21,6 +21,9 @@
   --accent-text: #22406b;
   --accent-soft: rgba(34, 64, 107, 0.1);
   --on-accent: #f7f3ea;
+  /* antique gold: --gold for strokes on the accent; --gold-text is the lighter step for small text (6.0:1 on --accent) */
+  --gold: #b69a65;
+  --gold-text: #d9c392;
   --focus: #3a63a0;
   /* editable input cells in the Univer sheets: a solid light blue (the canvas cannot blend an alpha tint) */
   --sheet-input: #e3ecf8;

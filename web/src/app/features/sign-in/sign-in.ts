@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiProblem, isApiProblem } from '../../core/http/problem';
 import { RefChip } from '../../ui/ref-chip';
+import { preludeConnectors, preludeNotes, STAFF_TOP } from './prelude-score';
 import { BrandMark } from '../shell/brand-mark';
 
 @Component({
@@ -22,6 +23,14 @@ export class SignIn {
   readonly reason = input<string>();
   readonly returnUrl = input<string>();
 
+  protected readonly notes = preludeNotes();
+  protected readonly connectors = preludeConnectors(this.notes);
+  protected readonly staffTop = STAFF_TOP;
+  protected readonly voiceLabels = [
+    'I. Subject \u2014 Request',
+    'II. Answer \u2014 Audit',
+    'III. Counterpoint \u2014 Event',
+  ];
   protected readonly demoAccounts = environment.demoAccounts;
   protected readonly busy = signal(false);
   protected readonly failure = signal<ApiProblem | null>(null);
