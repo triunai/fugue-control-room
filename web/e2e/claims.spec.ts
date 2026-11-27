@@ -14,9 +14,11 @@ test('claimant reports, staff picks up, claimant sees it move', async ({ browser
   // Claimant: report an incident.
   await signIn(claimant, 'self@fugue.test');
   await claimant.goto('/claims/new');
-  await claimant.getByLabel('Market').selectOption('SG');
+  await claimant.getByRole('combobox', { name: 'Market' }).click();
+  await claimant.getByRole('option', { name: /^Singapore/ }).click();
   await expect(claimant.getByLabel('Currency')).toHaveValue('SGD');
-  await claimant.getByLabel('Line of cover').selectOption('Motor');
+  await claimant.getByRole('combobox', { name: 'Line of cover' }).click();
+  await claimant.getByRole('option', { name: /^Motor/ }).click();
   await claimant.getByLabel('Policy number').fill(policy);
   const yesterday = new Date(Date.now() - 86_400_000);
   await claimant.getByLabel('Incident date').fill(yesterday.toISOString().slice(0, 10));

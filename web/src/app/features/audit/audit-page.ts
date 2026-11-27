@@ -9,6 +9,7 @@ import { AuditLogDto } from '../../api/models';
 import { isApiProblem } from '../../core/http/problem';
 import { displayMasked, RelativeTimePipe, StampPipe } from '../../ui/format';
 import { RefChip } from '../../ui/ref-chip';
+import { Select, SelectOption } from '../../ui/select';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
 import { AuditFilterStore } from './audit-filter.store';
 import { highlightSegments, HighlightSegment } from './highlight';
@@ -50,6 +51,7 @@ const ENTITY_TYPES = [
     SkeletonRows,
     EmptyState,
     ErrorState,
+    Select,
   ],
   templateUrl: './audit-page.html',
   styleUrl: './audit-page.css',
@@ -63,7 +65,15 @@ export class AuditPage {
   readonly correlationId = input<string>();
   readonly entityId = input<string>();
 
-  protected readonly entityTypes = ENTITY_TYPES;
+  protected readonly entityTypeOptions: SelectOption[] = [
+    { value: '', label: 'Any' },
+    ...ENTITY_TYPES.map((t) => ({ value: t, label: t })),
+  ];
+  protected readonly outcomeOptions: SelectOption[] = [
+    { value: '', label: 'Any' },
+    { value: 'success', label: 'success' },
+    { value: 'failure', label: 'failure' },
+  ];
   protected readonly snippetFields = ['errorCode', 'errorMessage', 'routeTemplate', 'entityId'] as const;
   protected readonly form = this.fb.group({ ...this.store.filter() });
 

@@ -142,7 +142,7 @@ let nextId = 0;
         [attr.aria-invalid]="invalid() || null"
         [attr.aria-describedby]="describedBy()"
         (input)="onInput($any($event.target).value)"
-        (blur)="onBlur()"
+        (blur)="onBlur($event)"
         (keydown)="onFieldKeydown($event)"
       />
       <button
@@ -241,7 +241,7 @@ let nextId = 0;
           </tbody>
         </table>
         <div class="fg-cal-foot">
-          <span class="fg-cal-keys">Arrows move · Enter picks · Esc closes</span>
+          <span class="fg-cal-keys">Arrows move, Enter picks</span>
           @if (!isOut(today)) {
             <button type="button" class="fg-cal-today" (click)="pickIso(today)">Today</button>
           }
@@ -476,10 +476,13 @@ export class DatePicker implements ControlValueAccessor {
     this.commit(raw.trim() ? (parseDate(raw) ?? '') : '');
   }
 
-  protected onBlur(): void {
+  protected onBlur(e: FocusEvent): void {
     // A typed day-first date is shown back in the one format the form stores.
     const parsed = parseDate(this.text());
     if (parsed) this.text.set(parsed);
+    // Moving into the calendar (or onto its toggle) is not leaving the field: the native picker does not blur either.
+    const to = e.relatedTarget as Node | null;
+    if (to && (this.host.nativeElement.contains(to) || this.calendar()?.nativeElement.contains(to))) return;
     this.onTouched();
   }
 
@@ -498,6 +501,7 @@ export class DatePicker implements ControlValueAccessor {
   protected onOutsideClick(event: MouseEvent): void {
     if (this.host.nativeElement.contains(event.target as Node)) return;
     this.close(false);
+    this.onTouched();
   }
 
   protected onCalendarFocusOut(e: FocusEvent): void {

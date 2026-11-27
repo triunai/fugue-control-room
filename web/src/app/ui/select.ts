@@ -9,6 +9,7 @@ import {
   inject,
   input,
   signal,
+  viewChild,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -71,7 +72,7 @@ const TYPEAHEAD_MS = 600;
       [cdkConnectedOverlayOrigin]="origin"
       [cdkConnectedOverlayOpen]="open()"
       [cdkConnectedOverlayPositions]="positions"
-      [cdkConnectedOverlayMatchWidth]="true"
+      [cdkConnectedOverlayMinWidth]="triggerWidth()"
       (overlayOutsideClick)="onOutsideClick($event)"
       (detach)="close()"
     >
@@ -143,6 +144,8 @@ const TYPEAHEAD_MS = 600;
       color: var(--muted);
     }
     .fg-listbox {
+      flex: 1;
+      min-width: 0;
       list-style: none;
       margin: 0;
       padding: 0.3rem;
@@ -204,6 +207,7 @@ export class Select implements ControlValueAccessor {
   readonly describedBy = input<string | null>(null);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly trigger = viewChild.required<ElementRef<HTMLButtonElement>>('trigger');
   protected readonly listId = `fg-listbox-${nextId++}`;
   protected readonly positions = POSITIONS;
 
@@ -212,6 +216,8 @@ export class Select implements ControlValueAccessor {
   /** The highlighted option while open (visual focus); -1 when none. */
   readonly active = signal(-1);
   protected readonly disabled = signal(false);
+  /** The list is at least as wide as the trigger (measured when it opens). */
+  protected readonly triggerWidth = signal(0);
   protected readonly selected = computed(() => this.options().find((o) => o.value === this.value()) ?? null);
 
   private typed = '';
@@ -360,6 +366,7 @@ export class Select implements ControlValueAccessor {
 
   private openAt(i: number): void {
     if (this.disabled()) return;
+    this.triggerWidth.set(this.trigger().nativeElement.getBoundingClientRect().width);
     this.active.set(i >= 0 ? i : this.firstEnabled(0, 1));
     this.open.set(true);
   }

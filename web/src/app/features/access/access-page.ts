@@ -18,6 +18,7 @@ import { StampPipe } from '../../ui/format';
 import { Overlays } from '../../ui/overlays';
 import { RefChip } from '../../ui/ref-chip';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
+import { Select, SelectOption } from '../../ui/select';
 import { RolesMatrix } from './roles-matrix';
 import { UserCreateDrawer } from './user-create-drawer';
 
@@ -35,6 +36,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     EmptyState,
     ErrorState,
     RolesMatrix,
+    Select,
   ],
   templateUrl: './access-page.html',
   styleUrl: './access-page.css',
@@ -48,7 +50,11 @@ export class AccessPage {
   private readonly overlays = inject(Overlays);
   protected readonly access = inject(AccessService);
 
-  protected readonly codes = PERMISSION_CODES;
+  protected readonly codeOptions: SelectOption[] = PERMISSION_CODES.map((c) => ({ value: c, label: c }));
+  protected readonly effectOptions: SelectOption[] = [
+    { value: 'deny', label: 'Deny' },
+    { value: 'allow', label: 'Allow' },
+  ];
   protected readonly userIdText = signal('');
   protected readonly userId = signal<string | null>(null);
   protected readonly userLabel = signal<string | null>(null);

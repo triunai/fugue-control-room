@@ -9,8 +9,10 @@ test('a claim from report to settlement, and the changed-since-you-opened-it ban
 
   await signIn(claimant, 'self@fugue.test');
   await claimant.goto('/claims/new');
-  await claimant.getByLabel('Market').selectOption('ID');
-  await claimant.getByLabel('Line of cover').selectOption('Property');
+  await claimant.getByRole('combobox', { name: 'Market' }).click();
+  await claimant.getByRole('option', { name: /^Indonesia/ }).click();
+  await claimant.getByRole('combobox', { name: 'Line of cover' }).click();
+  await claimant.getByRole('option', { name: /^Property/ }).click();
   await claimant.getByLabel('Policy number').fill(`POL-FLOW-${Date.now()}`);
   await claimant.getByLabel('Incident date').fill(new Date(Date.now() - 86_400_000).toISOString().slice(0, 10));
   await claimant.getByLabel('What happened').fill('A pipe burst and flooded the ground floor.');

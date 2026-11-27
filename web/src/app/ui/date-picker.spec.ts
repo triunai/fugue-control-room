@@ -92,6 +92,7 @@ describe('DatePicker (fg-date)', () => {
     host.control.setValue('2026-02-14');
     fixture.detectChanges();
 
+    field.focus();
     await keyOn(field, 'ArrowDown');
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(dialog()).not.toBeNull();
@@ -100,6 +101,8 @@ describe('DatePicker (fg-date)', () => {
     expect(focusedDay().dataset['iso']).toBe('2026-02-14');
     expect(document.activeElement).toBe(focusedDay());
     expect(focusedDay().closest('td')!.getAttribute('aria-selected')).toBe('true');
+    // Moving focus into the calendar is not leaving the field: no "required" error flashes behind the popover.
+    expect(host.control.touched).toBe(false);
 
     await keyOn(focusedDay(), 'ArrowRight');
     expect(focusedDay().dataset['iso']).toBe('2026-02-15');
