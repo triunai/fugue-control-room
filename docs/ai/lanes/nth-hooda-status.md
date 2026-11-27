@@ -3,7 +3,8 @@
 ## Commits
 - `7b6b3ca` feat(web): hood flow steps and a call-path tip attached to its row
 - `1df1cb0` feat(web): audit log hood note to the flow standard, and The Score's note
-- slice 3: feat(web): hood notes for modules, webhooks, customers and my profile; access gains a flow
+- `8398c82` feat(web): hood notes for modules, webhooks, customers and my profile
+- this status update (headless proof)
 
 ## Gates (copied from output)
 - slice 1: `ng test --include='src/app/features/hood/*.spec.ts'`: Test Files 2 passed (2), Tests 35 passed (35); `eslint src/app/features/hood/`: clean
@@ -11,6 +12,12 @@
   Score note made 2 tests fail (excerpt + flow file), then restored; eslint hood/audit/app.routes.ts clean
 - slice 3: hood include: Tests 56 passed (56); `npm run lint`: All files pass linting.; `npm test`: Test Files 44 passed (44),
   Tests 290 passed (290); `npm run build`: complete, no warnings, Initial total 487.21 kB / 127.47 kB
+
+- headless (Playwright, admin, dev server :4407 proxied to the demo API :8080): audit 9 steps, score 6, access 6,
+  customers 7, modules 7, webhooks 7, me 6, each "What happens" directly before "How the API does it"; no `[title]` on any
+  call row; tip "/audit?limit" under its row (row bottom 117, tip top 120) inside the sidebar; hidden after leave; no
+  /audit tip after navigating away while hovering; console errors: 0. Screenshots:
+  `.worktrees/_briefs/reports/nth-hooda-{audit,score,access,customers,modules,webhooks,me,tip-hover,tip-leave}.png`
 
 ## What changed in shared files (exactly)
 - slice 1: none (only `web/src/app/features/hood/**`).
@@ -39,4 +46,4 @@ export interface HoodStep { readonly layer: HoodLayer; readonly text: string; re
   labelled "the trace endpoint cites it"; a proposed D-row is in the report.
 
 ## Next slice
-- headless proof (each page as admin, sidebar open, flow renders, tip attached and gone on leave), report.
+- none: READY for the integrator.
