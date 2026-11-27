@@ -18,6 +18,9 @@
         </ol>
       </nav>
       <div class="flex-1"></div>
+      @if (canSearch()) {
+        <fg-global-search />
+      }
       <fg-help-button (pressed)="help()" />
       <span class="env" title="Environment, API runtime and version">dev &middot; net8 &middot; v1</span>
     </header>

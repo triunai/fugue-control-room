@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRouteSnapshot, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
@@ -7,6 +7,8 @@ import { CorrelationService } from '../../core/http/correlation.service';
 import { PrefsStore } from '../../core/ui/prefs.store';
 import { ToastStore } from '../../core/ui/toast.store';
 import { deriveCrumbs } from './breadcrumbs';
+import { GlobalSearch } from './global-search';
+import { searchVisible } from './global-search-logic';
 import { HelpButton } from './help-button';
 import { tourKeyFor } from './tour-steps';
 import { NavProgress } from './nav-progress';
@@ -16,7 +18,7 @@ import { TourService } from './tour.service';
 @Component({
   selector: 'fg-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, Sidebar, NavProgress, HelpButton],
+  imports: [RouterOutlet, RouterLink, Sidebar, NavProgress, HelpButton, GlobalSearch],
   templateUrl: './shell.html',
   styleUrl: './shell.css',
 })
@@ -28,6 +30,7 @@ export class Shell {
   private readonly correlation = inject(CorrelationService);
   private readonly tour = inject(TourService);
 
+  protected readonly canSearch = computed(() => searchVisible((c) => this.access.has(c)));
   protected readonly me = this.access.me;
   protected readonly collapsed = this.prefs.sidebarCollapsed;
   protected readonly crumbs = toSignal(
