@@ -2,7 +2,14 @@
   "mcpServers": {
     "postgres-readonly": {
       "command": "uvx",
-      "args": ["postgres-mcp", "--access-mode=restricted"],
+      "args": [
+        "--overrides",
+        "scripts/db/postgres-mcp-overrides.txt",
+        "--from",
+        "postgres-mcp==0.3.0",
+        "postgres-mcp",
+        "--access-mode=restricted"
+      ],
       "env": {
         "DATABASE_URI": "${FUGUE_READONLY_DATABASE_URI}"
       }

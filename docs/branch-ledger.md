@@ -7,7 +7,6 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | Branch | Worktree path | Base sha | Owner (lane) | W id | Status |
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
-| `nth-tooling` | `.worktrees/nth-tooling` | dacfb06 | nth-tooling (Sonnet), relay-dispatched | D-064 | 17a: read-only role in the stack, MCP proven, agent-tooling runbook |
 | `nth-forms` | `.worktrees/nth-forms` | dacfb06 | nth-forms (Opus), relay-dispatched | D-064 | 5: console select + date picker, Fill with an example |
 | `nth-import` | `.worktrees/nth-import` | dacfb06 | nth-import (Opus), relay-dispatched | D-064 | 11a: intake import module (spreadsheet, inbox, WhatsApp file imports) |
 | `nth-searchx` | `.worktrees/nth-searchx` | dacfb06 | nth-searchx (Opus), relay-dispatched | D-064 | 10: Meilisearch hardening |

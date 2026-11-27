@@ -62,7 +62,11 @@ cd bruno/fugue && npx bru run --env compose
 ```
 Expect every request to pass. `npm run api:test` runs the same suite but against `localhost:5080`; use it only when you run the API on the host (runbook 05).
 
-## 6. Where to read next
+## 6. Agent tooling (optional)
+
+How an engineer lets an agent explore the data through a read-only Postgres MCP server, and which CLI tools (psql, Bruno, headless Playwright) do the fast loop: [agent-tooling.md](agent-tooling.md). The stack creates the read-only role itself.
+
+## 7. Where to read next
 
 - [README.md](../../README.md): what this is and the patterns it demonstrates.
 - [docs/ARCHITECTURE.md](../ARCHITECTURE.md): how the pieces fit.
@@ -72,7 +76,7 @@ Expect every request to pass. `npm run api:test` runs the same suite but against
 - The timed claims build window: `git log --oneline claims-window-start..HEAD`.
 - Other runbooks: [README.md](README.md).
 
-## 7. Troubleshooting
+## 8. Troubleshooting
 
 | Symptom | Fix |
 |---|---|
@@ -84,7 +88,7 @@ Expect every request to pass. `npm run api:test` runs the same suite but against
 
 More: [10-docker-compose.md](10-docker-compose.md).
 
-## 8. Stop
+## 9. Stop
 
 ```bash
 docker compose down

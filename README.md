@@ -52,6 +52,8 @@ Open **http://localhost:8080** (console). The API is on **:5081**, Swagger at `/
 
 Where things live: the migration catalog is [`docs/migrations/migration-catalog.md`](docs/migrations/migration-catalog.md), the release history is [`CHANGELOG.md`](CHANGELOG.md), and the step-by-step guide for a clean clone is [`docs/runbooks/00-for-reviewers.md`](docs/runbooks/00-for-reviewers.md). A curl walk-through of every guard (404, 409, 412, 428, the required Idempotency-Key) is [`docs/runbooks/11-claims.md`](docs/runbooks/11-claims.md).
 
+**Agent tooling.** The stack creates a SELECT-only Postgres role so an AI agent can explore the data through a read-only MCP server (two layers of defence: the role refuses writes, the server runs in restricted mode), and the day-to-day loop is plain CLI (psql, Bruno, headless Playwright). A ten-minute demo script with the commands: [`docs/runbooks/agent-tooling.md`](docs/runbooks/agent-tooling.md).
+
 The timed claims build is the git range `claims-window-start..claims-window-end`. The starter under it (auth, audit, outbox, idempotency, console shell, Docker stack) was built first and is disclosed in [Beyond the brief](#beyond-the-brief-and-the-starter).
 
 ---
