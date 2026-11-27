@@ -1,5 +1,6 @@
 using Fugue.Api.Auth;
 using Fugue.Api.Contracts;
+using Fugue.Api.Idempotency;
 using Fugue.Api.Modules;
 using Fugue.Api.OpenApi;
 using Fugue.Application.Features.Webhooks;
@@ -21,6 +22,7 @@ public sealed class WebhooksController : ApiControllerBase
     /// <summary>Create a subscription. The signing secret is in this response and never shown again. The URL must be https and public (400 `webhook.url_rejected`).</summary>
     [HttpPost("subscriptions")]
     [HasPermission(Permissions.WebhooksManage)]
+    [Idempotent]
     [ProducesResponseType(typeof(WebhookSubscriptionSecretDto), StatusCodes.Status201Created)]
     public Task<ActionResult<WebhookSubscriptionSecretDto>> Create(CreateWebhookSubscriptionRequest body, CancellationToken ct) =>
         SendCreated(new CreateWebhookSubscriptionCommand(body.Name, body.Url, body.EventTypes), nameof(Get), s => new { id = s.Id }, ct);

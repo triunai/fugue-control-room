@@ -2,6 +2,7 @@ using Fugue.Application.Abstractions;
 using Fugue.Application.Features.Customers;
 using Fugue.Domain.Abstractions;
 using Fugue.Infrastructure.Audit;
+using Fugue.Infrastructure.Idempotency;
 using Fugue.Infrastructure.Identity;
 using Fugue.Infrastructure.Outbox;
 using Fugue.Infrastructure.Persistence;
@@ -57,6 +58,12 @@ public static class DependencyInjection
         services.AddScoped<Fugue.Application.Features.Webhooks.IWebhookSubscriptionStore, WebhookSubscriptionStore>();
         services.AddScoped<Fugue.Application.Features.Webhooks.IWebhookDeliveryStore, WebhookDeliveryStore>();
         services.AddSingleton<Fugue.Application.Features.Webhooks.Sink.IDevWebhookSink, DevWebhookSink>();
+
+        // Idempotency keys (ADR-013): options, the store (Dapper claim, responses encrypted with the same Data Protection ring) and the expiry purge.
+        services.AddOptions<IdempotencyOptions>().Bind(configuration.GetSection(IdempotencyOptions.Section)).ValidateOnStart();
+        services.AddSingleton<IValidateOptions<IdempotencyOptions>, IdempotencyOptionsValidator>();
+        services.AddScoped<IIdempotencyStore, IdempotencyStore>();
+        services.AddHostedService<IdempotencyPurgeService>();
 
         // Dispatcher (ADR-011): the relay hands outbox messages to IEventPublisher adapters (webhook fan-out first); deliveries go out through a typed client
         // whose primary handler dials only verified addresses (SSRF, DNS rebinding) and never follows redirects. The standard resilience handler adds an

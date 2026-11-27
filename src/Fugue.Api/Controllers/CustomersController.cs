@@ -1,5 +1,6 @@
 using Fugue.Api.Auth;
 using Fugue.Api.Contracts;
+using Fugue.Api.Idempotency;
 using Fugue.Api.Modules;
 using Fugue.Api.OpenApi;
 using Fugue.Application.Features.Customers;
@@ -19,6 +20,7 @@ public sealed class CustomersController : ApiControllerBase
     /// <summary>Create a customer. A `userId` in the body (the owner) is honoured only for callers with CUSTOMERS_ALL; otherwise the caller owns it.</summary>
     [HttpPost]
     [HasPermission(Permissions.CustomersInsert)]
+    [Idempotent]
     [ProducesResponseType(typeof(CustomerDto), StatusCodes.Status201Created)]
     [ProblemResponse(StatusCodes.Status409Conflict, "customer.email_taken")]
     public Task<ActionResult<CustomerDto>> Create(CreateCustomerRequest body, CancellationToken ct) =>
