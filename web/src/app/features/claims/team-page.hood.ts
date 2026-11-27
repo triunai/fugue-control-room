@@ -5,6 +5,44 @@ export const TEAM_HOOD: HoodNote = {
     'Workload and exposure on one page: the team part needs CLAIMS_WORKLOAD, the money part CLAIMS_EXPOSURE (permission codes from /me).',
     'Money is per currency: each market settles in its own, so there is no grand total, and bars are scaled within one currency.',
   ],
+  flow: [
+    {
+      layer: 'web',
+      text:
+        'The page reads permission codes from /me and shows the team part and the money part separately.',
+      path: 'web/src/app/features/claims/team-page.ts',
+    },
+    {
+      layer: 'api',
+      text:
+        'GET /claims/workload needs CLAIMS_WORKLOAD and GET /claims/exposure needs CLAIMS_EXPOSURE; both only read.',
+      path: 'src/Fugue.Api/Controllers/ClaimsController.cs',
+    },
+    {
+      layer: 'handler',
+      text:
+        'Each query handler asks the report port for its figures as of now.',
+      path: 'src/Fugue.Application/Features/Claims/Queries/GetClaimExposure.cs',
+    },
+    {
+      layer: 'db',
+      text:
+        'Workload is one SQL statement per officer: open claims, the oldest, decisions in 7 and 30 days, and the median days to decide.',
+      path: 'src/Fugue.Infrastructure/Persistence/Sql/claims/workload-by-officer.sql',
+    },
+    {
+      layer: 'db',
+      text:
+        'Exposure is grouped in the database by market, line and currency; the totals add rows of the same currency only.',
+      path: 'src/Fugue.Infrastructure/Persistence/Claims/ClaimReports.cs',
+    },
+    {
+      layer: 'web',
+      text:
+        'Bars and totals are scaled within one currency; nothing is converted or added across currencies.',
+      path: 'web/src/app/features/claims/team-logic.ts',
+    },
+  ],
   how: [
     'Calls GET /claims/workload (CLAIMS_WORKLOAD) and GET /claims/exposure (CLAIMS_EXPOSURE), both read-only.',
     'Exposure groups by market, line and currency; totals add rows of the same currency only.',

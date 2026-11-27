@@ -27,7 +27,8 @@ describe('hood notes registered by route data', () => {
   // Every page of the console also walks its main action as a flow of real files (item 11e).
   const withFlow = [
     ...['audit', 'audit/trace/:correlationId', 'access', 'customers', 'modules', 'webhooks', 'me'],
-    ...['claims/new', 'claims/:id', 'claims/:id/assessment'],
+    ...['', 'claims/mine', 'claims/new', 'claims/queue', 'claims/team', 'claims/:id'],
+    ...['claims/sheet', 'claims/calendar', 'claims/:id/assessment'],
   ];
 
   it.each(pages)('route "%s" carries a well-formed note', (path) => {

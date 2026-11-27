@@ -5,6 +5,38 @@ export const MY_CLAIMS_HOOD: HoodNote = {
     'The server scopes the list to your own claims; the page sends no owner filter, so there is nothing to tamper with.',
     'A claim that is not yours is a 404, the same answer as one that does not exist.',
   ],
+  flow: [
+    {
+      layer: 'web',
+      text:
+        'The page sends no owner filter: it only asks for the list.',
+      path: 'web/src/app/features/claims/my-claims-page.ts',
+    },
+    {
+      layer: 'api',
+      text:
+        'GET /claims needs CLAIMS_READ and sends a ListClaimsQuery.',
+      path: 'src/Fugue.Api/Controllers/ClaimsController.cs',
+    },
+    {
+      layer: 'handler',
+      text:
+        'ClaimScope.From reads your id and CLAIMS_ALL from the token; without CLAIMS_ALL the scope is your own claims.',
+      path: 'src/Fugue.Application/Features/Claims/ClaimScope.cs',
+    },
+    {
+      layer: 'db',
+      text:
+        'An EF keyset read, newest first for a claimant, with the scope in the WHERE; the internal reserve is not in what a claimant receives.',
+      path: 'src/Fugue.Infrastructure/Persistence/Claims/ClaimRepository.cs',
+    },
+    {
+      layer: 'web',
+      text:
+        'Opening a claim that is not yours is 404, the same answer as one that does not exist.',
+      path: 'src/Fugue.Application/Features/Claims/Queries/GetClaimById.cs',
+    },
+  ],
   how: [
     'Calls GET /claims, keyset paged, newest first for a claimant; it needs CLAIMS_READ.',
     'Scope comes from the token: your id, unless you hold CLAIMS_ALL. A claim outside it is 404, never 403.',

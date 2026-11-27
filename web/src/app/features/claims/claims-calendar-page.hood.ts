@@ -5,6 +5,38 @@ export const CLAIMS_CALENDAR_HOOD: HoodNote = {
     'The API has no SLA field: due dates are a console rule (SLA_DAYS in sla.ts: pickup 2, decision 14, answer 7, settle 7 days), computed in the browser from each claim’s own dates.',
     'Closed claims have nothing due and are skipped; an open claim past its due instant is drawn outlined as overdue.',
   ],
+  flow: [
+    {
+      layer: 'web',
+      text:
+        'The page asks for open claims one status at a time, oldest first; "Assigned to me" adds assigned=me.',
+      path: 'web/src/app/features/claims/claims-calendar-page.ts',
+    },
+    {
+      layer: 'api',
+      text:
+        'GET /claims needs CLAIMS_READ and is scoped like the queue: CLAIMS_ALL sees every open claim, anyone else only their own.',
+      path: 'src/Fugue.Api/Controllers/ClaimsController.cs',
+    },
+    {
+      layer: 'db',
+      text:
+        'An EF keyset read; no field in the response says when a claim is due.',
+      path: 'src/Fugue.Infrastructure/Persistence/Claims/ClaimRepository.cs',
+    },
+    {
+      layer: 'web',
+      text:
+        "Due dates are a console rule (SLA_DAYS) applied in the browser to each claim's own dates; closed claims are skipped.",
+      path: 'web/src/app/features/claims/sla.ts',
+    },
+    {
+      layer: 'web',
+      text:
+        'The browser turns claims into calendar events; an open claim past its due instant is drawn as overdue. Nothing is written back.',
+      path: 'web/src/app/features/claims/sla-events.ts',
+    },
+  ],
   how: [
     'Reads only: GET /claims, one open status at a time, paged, oldest first; "Assigned to me" (staff) adds the assigned=me filter. No command is sent from this page.',
     'The list needs CLAIMS_READ and is scoped by the same query as the queue: staff with CLAIMS_ALL see every open claim, anyone else only their own.',
