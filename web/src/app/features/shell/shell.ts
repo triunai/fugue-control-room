@@ -6,6 +6,7 @@ import { AccessService } from '../../core/auth/access.service';
 import { CorrelationService } from '../../core/http/correlation.service';
 import { PrefsStore } from '../../core/ui/prefs.store';
 import { ToastStore } from '../../core/ui/toast.store';
+import { HoodSidebar } from '../hood/hood-sidebar';
 import { deriveCrumbs } from './breadcrumbs';
 import { tourKeyFor } from './tour-steps';
 import { NavProgress } from './nav-progress';
@@ -15,7 +16,7 @@ import { TourService } from './tour.service';
 @Component({
   selector: 'fg-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, Sidebar, NavProgress],
+  imports: [RouterOutlet, RouterLink, Sidebar, NavProgress, HoodSidebar],
   templateUrl: './shell.html',
   styleUrl: './shell.css',
 })

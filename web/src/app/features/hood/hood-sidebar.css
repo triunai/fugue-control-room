@@ -1,0 +1,217 @@
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 25;
+  width: 21rem;
+  transition: width 0.2s ease-out;
+}
+:host(.min) {
+  width: 14px;
+}
+.hood {
+  position: relative;
+  height: 100%;
+}
+.bg {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  transition: opacity 0.2s;
+}
+:host(.min) .bg {
+  opacity: 0.25;
+}
+:host(.min):hover .bg {
+  opacity: 0.6;
+}
+.panel {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 1rem 1.5rem;
+  font-size: 0.85rem;
+}
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 3.6rem;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 0.4rem;
+}
+.title {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.glyph {
+  font-family: var(--font-mono);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.min-btn,
+.tab {
+  font: inherit;
+  cursor: pointer;
+  color: var(--accent-text);
+  background: var(--surface2);
+  border: 1.5px solid var(--line);
+}
+.min-btn {
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: var(--radius-control);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.min-btn:hover,
+.tab:hover {
+  border-color: var(--control);
+  background: var(--accent-soft);
+}
+/* The one fully opaque thing in the minimised state; it sticks out to the left of the faint strip. */
+.tab {
+  position: absolute;
+  top: 40%;
+  right: 0;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-control) 0 0 var(--radius-control);
+  border-right: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.sec {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.1rem 0 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.live {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--ok-ink);
+  border: 1px solid var(--ok);
+  border-radius: 999px;
+  padding: 0 0.4rem;
+}
+.muted,
+.why {
+  margin: 0 0 0.4rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.why {
+  color: var(--text);
+}
+.calls,
+.links,
+.chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.call {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.meta {
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.15rem;
+}
+.method,
+.path,
+.status,
+.ms,
+.mark,
+.code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+.method {
+  font-weight: 600;
+  color: var(--accent-text);
+}
+.path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.status {
+  font-weight: 600;
+}
+.s2 {
+  color: var(--ok-ink);
+}
+.s3 {
+  color: var(--muted);
+}
+.s4 {
+  color: var(--warn-ink);
+}
+.s5 {
+  color: var(--err-ink);
+}
+.ms {
+  color: var(--muted);
+}
+.mark {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0 0.4rem;
+  color: var(--muted);
+}
+.code {
+  margin-top: 0.15rem;
+  color: var(--warn-ink);
+}
+.links li {
+  margin: 0.25rem 0;
+}
+.links a {
+  color: var(--accent-text);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.chip {
+  font-size: 0.75rem;
+  border: 1px solid var(--line);
+  background: var(--surface2);
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+}
+@media (max-width: 860px) {
+  :host {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :host,
+  .bg {
+    transition: none;
+  }
+}

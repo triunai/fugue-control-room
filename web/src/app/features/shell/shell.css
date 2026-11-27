@@ -1,11 +1,11 @@
 .shell {
   display: grid;
-  grid-template-columns: 248px minmax(0, 1fr);
+  grid-template-columns: 248px minmax(0, 1fr) auto;
   min-height: 100vh;
   transition: grid-template-columns 0.2s ease-out;
 }
 .shell.rail {
-  grid-template-columns: 68px minmax(0, 1fr);
+  grid-template-columns: 68px minmax(0, 1fr) auto;
 }
 .skip {
   position: absolute;
