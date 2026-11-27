@@ -6,13 +6,23 @@
   ],
   "counts": {
     "adrs": 14,
-    "decisions": 70
+    "decisions": 71
   },
   "groups": [
     {
       "version": "Unreleased",
       "date": null,
       "entries": [
+        {
+          "kind": "D",
+          "id": "D-071",
+          "title": "The global ErrorHandler drops exactly one benign browser notice, ResizeObserver loop",
+          "date": "2026-11-28",
+          "summary": "FugueErrorHandler (web/src/app/core/error-handler.ts, provided in app.config.ts) drops that one message by exact match (or the same text on cause in dev builds) and passes every other error, including other…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-071--the-global-errorhandler-drops-exactly-one-benign-browser-notice-resizeobserver-loop--2026-11-28"
+        },
         {
           "kind": "D",
           "id": "D-070",

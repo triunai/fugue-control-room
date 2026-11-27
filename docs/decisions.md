@@ -77,6 +77,16 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-071 — The global ErrorHandler drops exactly one benign browser notice, ResizeObserver loop — 2026-11-28
+WS: WS-30
+Context: /claims/calendar logged "ResizeObserver loop completed with undelivered notifications." as a console error with the hood sidebar open (the default), which fails the zero-console-errors gate (17b). The load case was fixed at the source (the calendar is built once its CSS has loaded and the claims query has settled); the window-resize case comes from FullCalendar 7's internal global ResizeObserver, which has no option to control it.
+Decision: `FugueErrorHandler` (`web/src/app/core/error-handler.ts`, provided in `app.config.ts`) drops that one message by exact match (or the same text on `cause` in dev builds) and passes every other error, including other ResizeObserver texts, to Angular's default handler. A spec proves both sides; a mutation check turned it red. Merged in 3de8f49 (W-030, lane nth-calfix).
+Why: the notice is the browser reporting a deferred layout, not a failure; a broad filter would hide real errors.
+Consequences: revisit if FullCalendar exposes its resize observer.
+Who: AI (lane nth-calfix), integrator (recorded)
+Status: accepted
+Promote: no
+
 ## D-070 — Sample claim letters come from a hand-written PDF writer, no PDF dependency — 2026-11-28
 WS: WS-34
 Context: overnight item 11b asks for a fixed, branded settlement letter (approved or settled claims) and a decision letter (rejections), downloadable by staff and by the claimant on their own claim, with the library choice recorded.
