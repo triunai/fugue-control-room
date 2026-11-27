@@ -9,6 +9,14 @@ import {
 } from '@angular/forms';
 import { ClaimDto } from '../../api/models';
 import { controlError } from '../../core/forms/server-errors';
+import {
+  APPROVE_EXAMPLES,
+  REJECT_EXAMPLES,
+  REQUEST_INFO_EXAMPLES,
+  reserveExamples,
+  TextExample,
+} from '../../ui/examples';
+import { ExampleRow, ExamplesPanel } from '../../ui/examples-panel';
 import { formatMoney, parseMoney } from './claims-logic';
 
 export type ClaimDialogMode = 'reserve' | 'requestInfo' | 'approve' | 'reject';
@@ -56,13 +64,14 @@ function amount(control: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'fg-claim-action-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ExamplesPanel],
   template: `
     <form class="p-6" [formGroup]="form" (ngSubmit)="submit()" novalidate>
       <h2 class="section-title">{{ copy.title }}</h2>
       <p class="mt-1 mb-4 text-muted">
         <span class="mono">{{ data.claim.number }}</span> · {{ data.claim.currency }}
       </p>
+      <fg-examples class="mb-4 block" [rows]="exampleRows" (picked)="fillExample($event)" />
 
       <div class="flex flex-col gap-4">
         @if (hasAmount) {
@@ -131,6 +140,36 @@ export class ClaimActionDialog {
     amount: [this.initialAmount(), this.hasAmount ? [amount] : []],
     text: ['', this.copy.textLabel ? [Validators.required, Validators.maxLength(2000)] : []],
   });
+
+  private readonly texts: Record<Exclude<ClaimDialogMode, 'reserve'>, TextExample[]> = {
+    requestInfo: REQUEST_INFO_EXAMPLES,
+    approve: APPROVE_EXAMPLES,
+    reject: REJECT_EXAMPLES,
+  };
+  private readonly reserves = reserveExamples(this.data.claim.currency);
+  protected readonly exampleRows: ExampleRow[] =
+    this.data.mode === 'reserve'
+      ? this.reserves.map((r) => ({
+          id: r.id,
+          title: r.title,
+          tag: formatMoney(parseMoney(r.amount), this.data.claim.currency),
+        }))
+      : this.texts[this.data.mode].map((t) => ({ id: t.id, title: t.title, detail: t.text }));
+
+  /** Reserve: a made-up amount in the claim's currency. Text modes: a made-up message; approve keeps the reserve. */
+  protected fillExample(id: string): void {
+    if (this.data.mode === 'reserve') {
+      const r = this.reserves.find((x) => x.id === id);
+      if (r) this.form.controls.amount.setValue(r.amount);
+    } else {
+      const t = this.texts[this.data.mode].find((x) => x.id === id);
+      if (t) this.form.controls.text.setValue(t.text);
+      if (this.data.mode === 'approve' && !this.form.controls.amount.value) {
+        this.form.controls.amount.setValue(this.initialAmount());
+      }
+    }
+    this.form.markAsDirty();
+  }
 
   private initialAmount(): string {
     const minor = this.data.claim.reserveMinor;

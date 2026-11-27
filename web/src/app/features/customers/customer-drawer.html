@@ -71,6 +71,9 @@
       <fg-error-state [error]="customer.error()" (retry)="customer.refetch()" />
     } @else {
       <form id="customer-form" [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-5" novalidate>
+        @if (isNew && canEdit()) {
+          <fg-examples [rows]="exampleRows" [disabled]="save.isPending()" (picked)="fillExample($event)" />
+        }
         <div class="field">
           <label class="label" for="c-name">Name</label>
           <input

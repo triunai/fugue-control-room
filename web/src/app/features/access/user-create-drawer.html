@@ -13,6 +13,12 @@
 
   <div class="body">
     <form id="user-form" [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-5" novalidate>
+      <fg-examples
+        [rows]="exampleRows"
+        [disabled]="save.isPending()"
+        note="Made-up people on example.com with a random sample password, shown once under its field."
+        (picked)="fillExample($event)"
+      />
       <div class="field">
         <label class="label" for="nu-email">Email</label>
         <input
@@ -57,6 +63,11 @@
         />
         @if (err('password'); as m) {
           <span id="nu-password-msg" class="field-error">{{ m }}</span>
+        } @else if (sampleShown()) {
+          <span id="nu-password-msg" class="field-hint" data-testid="sample-password"
+            >Sample password <span class="mono">{{ form.controls.password.value }}</span>. Hand it over directly; it is
+            never shown again.</span
+          >
         } @else {
           <span id="nu-password-msg" class="field-hint"
             >At least {{ passwordMin }} characters. Hand it over directly; it is never shown again.</span

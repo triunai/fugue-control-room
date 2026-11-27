@@ -11,6 +11,8 @@ import { SubmissionKey } from '../../core/http/idempotency';
 import { isApiProblem } from '../../core/http/problem';
 import { ToastStore } from '../../core/ui/toast.store';
 import { DatePicker } from '../../ui/date-picker';
+import { daysAgo, INCIDENT_EXAMPLES, incidentExamplesFor, samplePolicy } from '../../ui/examples';
+import { ExamplesPanel } from '../../ui/examples-panel';
 import { Select, SelectOption } from '../../ui/select';
 import { MARKETS, currencyOf, localToday } from './claims-logic';
 
@@ -20,7 +22,7 @@ type Field = 'market' | 'line' | 'policyNumber' | 'incidentDate' | 'incidentDesc
 @Component({
   selector: 'fg-report-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, Select, DatePicker],
+  imports: [ReactiveFormsModule, RouterLink, Select, DatePicker, ExamplesPanel],
   styleUrl: './claims.css',
   template: `
     <div class="page">
@@ -35,6 +37,13 @@ type Field = 'market' | 'line' | 'policyNumber' | 'incidentDate' | 'incidentDesc
       </header>
 
       <form class="report-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <fg-examples
+          class="wide"
+          [rows]="exampleRows()"
+          [disabled]="submitMutation.isPending()"
+          note="Made-up incidents for each market and line. Pick a market or line first to narrow the list."
+          (picked)="fillExample($event)"
+        />
         <div class="field">
           <label class="label" for="r-market">Market</label>
           <fg-select
@@ -164,6 +173,15 @@ export class ReportPage {
 
   private readonly marketValue = toSignal(this.form.controls.market.valueChanges, { initialValue: '' });
   protected readonly currency = computed(() => currencyOf(this.marketValue()));
+  private readonly lineValue = toSignal(this.form.controls.line.valueChanges, { initialValue: '' });
+  protected readonly exampleRows = computed(() =>
+    incidentExamplesFor(this.marketValue(), this.lineValue()).map((e) => ({
+      id: e.id,
+      title: e.title,
+      tag: `${e.market} · ${e.line}`,
+      detail: `${e.daysAgo === 1 ? '1 day' : `${e.daysAgo} days`} ago · ${e.location}`,
+    })),
+  );
 
   protected readonly submitMutation = injectMutation(() => ({
     mutationFn: async (body: SubmitClaimRequest) => {
@@ -187,6 +205,22 @@ export class ReportPage {
       required: name === 'incidentDescription' ? 'Tell us what happened.' : 'This is required.',
       maxlength: 'That is longer than we can accept.',
     });
+  }
+
+  /** Fills every field from one made-up incident; validation and submit are unchanged. */
+  protected fillExample(id: string): void {
+    const e = INCIDENT_EXAMPLES.find((x) => x.id === id);
+    if (!e) return;
+    this.formErrors.set([]);
+    this.form.setValue({
+      market: e.market,
+      line: e.line,
+      policyNumber: samplePolicy(e),
+      incidentDate: daysAgo(e.daysAgo),
+      incidentDescription: e.description,
+      incidentLocation: e.location,
+    });
+    this.form.markAsDirty();
   }
 
   protected submit(): void {

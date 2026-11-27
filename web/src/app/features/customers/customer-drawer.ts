@@ -15,6 +15,8 @@ import { ToastStore } from '../../core/ui/toast.store';
 import { RelativeTimePipe } from '../../ui/format';
 import { Overlays } from '../../ui/overlays';
 import { RefChip } from '../../ui/ref-chip';
+import { customerExamples } from '../../ui/examples';
+import { ExamplesPanel } from '../../ui/examples-panel';
 import { ErrorState } from '../../ui/states';
 
 export interface CustomerDrawerData {
@@ -42,7 +44,7 @@ const FIELD_LABELS: Record<string, string> = { name: 'Name', email: 'Email', pho
 @Component({
   selector: 'fg-customer-drawer',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RefChip, RelativeTimePipe, ErrorState, HasPermissionDirective],
+  imports: [ReactiveFormsModule, RefChip, RelativeTimePipe, ErrorState, HasPermissionDirective, ExamplesPanel],
   templateUrl: './customer-drawer.html',
   styleUrl: './customer-drawer.css',
 })
@@ -73,6 +75,22 @@ export class CustomerDrawer {
     email: ['', [Validators.required, Validators.email, Validators.maxLength(320)]],
     phone: [''],
   });
+
+  private readonly examples = customerExamples();
+  protected readonly exampleRows = this.examples.map((c) => ({
+    id: c.id,
+    title: c.name,
+    detail: c.phone ? `${c.email} · ${c.phone}` : c.email,
+  }));
+
+  /** New customers only: a made-up person (the email carries a random tag, so it can be created more than once). */
+  protected fillExample(id: string): void {
+    const c = this.examples.find((x) => x.id === id);
+    if (!c) return;
+    this.formErrors.set([]);
+    this.form.setValue({ name: c.name, email: c.email, phone: c.phone });
+    this.form.markAsDirty();
+  }
 
   /** Opening the drawer GETs the customer, which records its ETag: the version every save is checked against. */
   protected readonly customer = injectQuery(() => ({

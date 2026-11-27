@@ -11,6 +11,8 @@ import { EVENT_TYPES } from '../../api/webhooks.api';
 import { CreateWebhookSubscriptionRequest } from '../../api/models';
 import { applyServerErrors, controlError } from '../../core/forms/server-errors';
 import { ApiProblem } from '../../core/http/problem';
+import { WEBHOOK_EXAMPLES } from '../../ui/examples';
+import { ExamplesPanel } from '../../ui/examples-panel';
 
 export interface SubscriptionDialogData {
   development: boolean;
@@ -49,7 +51,7 @@ function webhookUrl(development: boolean) {
 @Component({
   selector: 'fg-subscription-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ExamplesPanel],
   template: `
     <form class="p-6" [formGroup]="form" (ngSubmit)="save()" novalidate>
       <h2 class="section-title">New webhook subscription</h2>
@@ -58,6 +60,12 @@ function webhookUrl(development: boolean) {
       </p>
 
       <div class="mt-5 flex flex-col gap-4">
+        <fg-examples
+          [rows]="exampleRows"
+          [disabled]="busy()"
+          note="Made-up receivers on example.com, .org and .net (reserved for documentation): deliveries to them fail."
+          (picked)="fillExample($event)"
+        />
         <div class="field">
           <label class="label" for="w-name">Name</label>
           <input
@@ -165,6 +173,24 @@ export class SubscriptionDialog {
     name: ['', [Validators.required, Validators.maxLength(200)]],
     url: ['', [Validators.required, webhookUrl(this.data.development)]],
   });
+
+  protected readonly exampleRows = WEBHOOK_EXAMPLES.map((w) => ({
+    id: w.id,
+    title: w.name,
+    tag: w.events.length === 1 ? w.events[0] : `${w.events.length} events`,
+    detail: w.url,
+  }));
+
+  /** Name, a documentation-only receiver address and its events; the dialog still validates and saves as usual. */
+  protected fillExample(id: string): void {
+    const w = WEBHOOK_EXAMPLES.find((x) => x.id === id);
+    if (!w) return;
+    this.formErrors.set([]);
+    this.form.setValue({ name: w.name, url: w.url });
+    this.form.markAsDirty();
+    this.selected.set([...w.events]);
+    this.eventsError.set(null);
+  }
 
   protected err(name: 'name' | 'url'): string | null {
     const c = this.form.controls[name];
