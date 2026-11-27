@@ -5,6 +5,9 @@ services:
   postgres:
     image: postgres:17-alpine
     container_name: fugue-postgres
+    # File logging so pgAdmin's Logs tab works (stderr + csvlog under $PGDATA/log); slow statements over 200 ms are logged.
+    # Watch every statement while demoing: ALTER SYSTEM SET log_statement = 'all'; SELECT pg_reload_conf();
+    command: ["postgres", "-c", "logging_collector=on", "-c", "log_destination=stderr,csvlog", "-c", "log_min_duration_statement=200"]
     restart: unless-stopped
     environment:
       POSTGRES_DB: fugue

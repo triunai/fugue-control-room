@@ -97,3 +97,7 @@ Expect: three rows; `xmin` is the number that appears as the `ETag`.
 dotnet test
 ```
 The integration tests start their own `postgres:17-alpine` through Testcontainers, apply the migrations once, and remove the container afterwards. They never touch the compose database.
+
+## Server logs and a GUI
+
+The compose Postgres writes its log to files (`logging_collector=on`, `stderr` + `csvlog`, statements slower than 200 ms), so `docker logs fugue-postgres` shows little and pgAdmin's **Dashboard → Logs** tab shows the server log. Any GUI connects to `localhost:${POSTGRES_PORT}` (5433 here), database `fugue`, user `fugue`, password `POSTGRES_PASSWORD` from `.env`; pgAdmin 4 (`brew install --cask pgadmin4`) and Beekeeper Studio are both fine. To see every SQL statement EF Core and Dapper send while demoing: `ALTER SYSTEM SET log_statement = 'all'; SELECT pg_reload_conf();` and `ALTER SYSTEM RESET log_statement; SELECT pg_reload_conf();` to stop.
