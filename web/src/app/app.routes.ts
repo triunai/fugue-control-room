@@ -73,6 +73,27 @@ export const routes: Routes = [
       { path: 'claims/workload', redirectTo: 'claims/team', pathMatch: 'full' },
       { path: 'claims/exposure', redirectTo: 'claims/team', pathMatch: 'full' },
       {
+        path: 'claims/sheet',
+        canActivate: [permissionGuard],
+        data: { permission: 'CLAIMS_HANDLE', section: 'Claims', breadcrumb: 'Reserve sheet' },
+        title: 'Reserve sheet · Fugue Console',
+        loadComponent: () => import('./features/claims/reserve-sheet-page').then((m) => m.ReserveSheetPage),
+      },
+      {
+        path: 'claims/calendar',
+        canActivate: [permissionGuard],
+        data: { permission: 'CLAIMS_READ', section: 'Claims', breadcrumb: 'SLA calendar' },
+        title: 'SLA calendar · Fugue Console',
+        loadComponent: () => import('./features/claims/claims-calendar-page').then((m) => m.ClaimsCalendarPage),
+      },
+      {
+        path: 'claims/:id/assessment',
+        canActivate: [permissionGuard],
+        data: { permission: 'CLAIMS_HANDLE', section: 'Claims', breadcrumb: 'Assessment' },
+        title: 'Assessment · Fugue Console',
+        loadComponent: () => import('./features/claims/claim-assessment-page').then((m) => m.ClaimAssessmentPage),
+      },
+      {
         path: 'claims/:id',
         canActivate: [permissionGuard],
         data: { permission: 'CLAIMS_READ', section: 'Claims', breadcrumb: 'Claim' },

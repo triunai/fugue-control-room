@@ -1,4 +1,5 @@
 import { ClaimDto, ClaimStatus, Market } from '../../api/models';
+import { SLA_DAYS } from './sla';
 
 /** Fixed per market by the API (plan decision B). The report form shows it read-only. */
 export const MARKETS: readonly { code: Market; name: string; currency: string }[] = [
@@ -145,10 +146,10 @@ export function localToday(now = new Date()): string {
   return `${now.getFullYear()}-${m}-${d}`;
 }
 
-/** SLA constants, in days. One place: the calendar and the team page read the same numbers. */
-export const SLA_PICKUP_DAYS = 2;
-export const SLA_DECISION_DAYS = 14;
-export const SLA_ANSWER_DAYS = 7;
+/** SLA constants, in days, read from the one source (`sla.ts`, `SLA_DAYS`) that the calendar also uses. */
+export const SLA_PICKUP_DAYS = SLA_DAYS.pickup;
+export const SLA_DECISION_DAYS = SLA_DAYS.decision;
+export const SLA_ANSWER_DAYS = SLA_DAYS.answer;
 const DAY = 86_400_000;
 
 export type SlaKind = 'pickup' | 'decision' | 'answer';

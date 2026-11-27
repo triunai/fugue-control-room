@@ -25,10 +25,29 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "index.css",
+                "input": "node_modules/@univerjs/preset-sheets-core/lib",
+                "output": "vendor/univer"
+              },
+              {
+                "glob": "{skeleton.css,themes/classic/theme.css,themes/classic/palette.css}",
+                "input": "node_modules/fullcalendar",
+                "output": "vendor/fullcalendar"
               }
             ],
             "styles": [
               "src/styles.css"
+            ],
+            "allowedCommonJsDependencies": [
+              "@univerjs/icons-svg",
+              "exceljs",
+              "ot-json1",
+              "react",
+              "react-dom",
+              "react-dom/client",
+              "react/jsx-runtime"
             ]
           },
           "configurations": {
