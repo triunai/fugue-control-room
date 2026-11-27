@@ -1,0 +1,22 @@
+meta {
+  name: Admin lists users: no credential, roles and groups present
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/users?limit=100
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("200, every row has the listed fields and no password", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.length).to.be.at.least(1);
+    expect(JSON.stringify(res.body).toLowerCase()).to.not.include("password");
+    const support = res.body.find(function (u) { return u.email === "support@fugue.test"; });
+    expect(support.groups).to.eql(["SUPPORT"]);
+    expect(support.isActive).to.equal(true);
+  });
+}

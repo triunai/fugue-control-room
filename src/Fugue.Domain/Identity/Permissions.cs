@@ -37,6 +37,9 @@ public static class Permissions
     public const string ClaimsWorkload = "CLAIMS_WORKLOAD";
     public const string ClaimsExposure = "CLAIMS_EXPOSURE";
 
+    /// <summary>List users and roles in the admin console (read only).</summary>
+    public const string UsersView = "USERS_VIEW";
+
     // New permissions are appended: a permission's seeded id is its position in this list, so inserting earlier would renumber existing rows.
     public static readonly IReadOnlyList<string> All =
     [
@@ -44,6 +47,7 @@ public static class Permissions
         GroupsView, GroupsManage, OverridesView, OverridesManage, ModulesView, ModulesManage,
         AuditRead, WebhooksManage,
         ClaimsSubmit, ClaimsRead, ClaimsRespond, ClaimsAll, ClaimsHandle, ClaimsSettle, ClaimsWorkload, ClaimsExposure,
+        UsersView,
     ];
 }
 

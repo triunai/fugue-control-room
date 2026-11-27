@@ -1,0 +1,24 @@
+meta {
+  name: The claimant counts their own claims per status
+  type: http
+  seq: 27
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/counts
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{claimantToken}}
+}
+
+tests {
+  test("200 with every status present and a matching total", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.byStatus.map(function (c) { return c.status; })).to.eql(["Submitted", "UnderReview", "InfoRequested", "Approved", "Rejected", "Settled"]);
+    expect(res.body.total).to.equal(res.body.byStatus.reduce(function (n, c) { return n + c.count; }, 0));
+    expect(res.body.byStatus.find(function (c) { return c.status === "Settled"; }).count).to.be.at.least(1);
+  });
+}

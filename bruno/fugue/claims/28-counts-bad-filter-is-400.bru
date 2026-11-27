@@ -1,0 +1,21 @@
+meta {
+  name: Counts with an unknown market is 400
+  type: http
+  seq: 28
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/counts?market=XX
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{claimantToken}}
+}
+
+tests {
+  test("400", function () {
+    expect(res.status).to.equal(400);
+  });
+}

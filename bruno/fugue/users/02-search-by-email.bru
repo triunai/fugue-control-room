@@ -1,0 +1,18 @@
+meta {
+  name: Search users by email
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/v1/users?q=SELF2@FUGUE
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("200 and only the matching user", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.map(function (u) { return u.email; })).to.eql(["self2@fugue.test"]);
+  });
+}

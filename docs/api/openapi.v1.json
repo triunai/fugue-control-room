@@ -428,6 +428,27 @@
         ],
         "type": "object"
       },
+      "ClaimCountsDto": {
+        "additionalProperties": false,
+        "description": "Claims per status under the caller's scope and the list's filters (status excluded). Every status is present, zero included.",
+        "properties": {
+          "byStatus": {
+            "items": {
+              "$ref": "#/components/schemas/ClaimStatusCountDto"
+            },
+            "type": "array"
+          },
+          "total": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "byStatus",
+          "total"
+        ],
+        "type": "object"
+      },
       "ClaimDto": {
         "additionalProperties": false,
         "description": "The claim as returned to clients; `Version` is also sent as the `ETag`. Money is bigint minor units in `Currency`. The last group is staff-only (a caller without `CLAIMS_ALL` gets nulls): the internal reserve in particular is never shown to a claimant. `OpenInfoRequest` is filled when one claim is read, not in list rows.",
@@ -595,6 +616,42 @@
         ],
         "type": "object"
       },
+      "ClaimInfoRequestEntryDto": {
+        "additionalProperties": false,
+        "description": "One question put to the claimant and its answer, as listed by `GET /claims/{id}/info-requests`. `AskedBy` reads as \"Claims team\" to a claimant (no officer names leave the building), like the timeline. `Answer` and `AnsweredAt` are null while open.",
+        "properties": {
+          "answer": {
+            "nullable": true,
+            "type": "string"
+          },
+          "answeredAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "askedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "askedBy": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "askedAt",
+          "askedBy",
+          "id",
+          "question"
+        ],
+        "type": "object"
+      },
       "ClaimOutcome": {
         "description": "The two ways a claim under review can be decided. Read case-insensitively, so `approve` and `reject` are accepted.",
         "enum": [
@@ -613,6 +670,24 @@
           "Settled"
         ],
         "type": "string"
+      },
+      "ClaimStatusCountDto": {
+        "additionalProperties": false,
+        "description": "The number of claims in one status.",
+        "properties": {
+          "count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ClaimStatus"
+          }
+        },
+        "required": [
+          "count",
+          "status"
+        ],
+        "type": "object"
       },
       "ClaimTimelineEntryDto": {
         "additionalProperties": false,
@@ -1320,6 +1395,51 @@
         ],
         "type": "object"
       },
+      "RoleDto": {
+        "additionalProperties": false,
+        "description": "A role with every permission it grants, for a role by permission matrix. Permissions are ordered by module, then code.",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/RolePermissionDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "code",
+          "isActive",
+          "name",
+          "permissions"
+        ],
+        "type": "object"
+      },
+      "RolePermissionDto": {
+        "additionalProperties": false,
+        "description": "A granted permission code and the module that owns its resource.",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "module": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "module"
+        ],
+        "type": "object"
+      },
       "SetClaimReserveRequest": {
         "additionalProperties": false,
         "description": "Body of a reserve update: bigint minor units in the claim's currency (for example 125000 is 1,250.00 in a two-decimal currency).",
@@ -1486,6 +1606,51 @@
           "isActive",
           "name",
           "url"
+        ],
+        "type": "object"
+      },
+      "UserDto": {
+        "additionalProperties": false,
+        "description": "A user as the admin console lists them: who, whether they can sign in, the roles assigned directly and the groups they belong to (by code). The password hash and every other credential field stay out of this type on purpose.",
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "groups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "createdAt",
+          "displayName",
+          "email",
+          "groups",
+          "id",
+          "isActive",
+          "roles"
         ],
         "type": "object"
       },
@@ -2337,6 +2502,82 @@
         ]
       }
     },
+    "/api/v1/claims/counts": {
+      "get": {
+        "operationId": "Claims_Counts",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "assigned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "market",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "line",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimCountsDto"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Claim counts per status for the tabs: every status is present (zero included) plus a total. Same scope as the list (a claimant counts their own, staff all) and the same `assigned`, `market`, `line` and `q` filters; `status` is not a filter here.",
+        "tags": [
+          "Claims"
+        ]
+      }
+    },
     "/api/v1/claims/exposure": {
       "get": {
         "operationId": "Claims_Exposure",
@@ -2607,6 +2848,76 @@
       }
     },
     "/api/v1/claims/{id}/info-requests": {
+      "get": {
+        "operationId": "Claims_InfoRequests",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ClaimInfoRequestEntryDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found. Codes: `claim.not_found`, `module.disabled`.",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Every question asked on the claim, newest first, with who asked, when, the answer and when it was answered. A claimant sees staff as \"Claims team\". Same visibility as the claim.",
+        "tags": [
+          "Claims"
+        ]
+      },
       "post": {
         "operationId": "Claims_RequestInfo",
         "parameters": [
@@ -4781,6 +5092,131 @@
         ]
       }
     },
+    "/api/v1/roles": {
+      "get": {
+        "operationId": "Roles_List",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RoleDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "List every role with the permission codes it grants and the module that owns each, ordered by role code.",
+        "tags": [
+          "Roles"
+        ]
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "operationId": "Users_List",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Link": {
+                "$ref": "#/components/headers/Link"
+              },
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              },
+              "X-Next-Cursor": {
+                "$ref": "#/components/headers/X-Next-Cursor"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "List users, keyset paged (oldest account first). Each row: id, email, display name, active, the roles assigned directly, the group codes and when the account was created. `q` matches the email or the display name.",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
     "/api/v1/webhooks/deliveries": {
       "get": {
         "operationId": "Webhooks_ListDeliveries",
@@ -5485,6 +5921,14 @@
     {
       "description": "Per-user permission overrides: an explicit allow or deny, optionally expiring. Deny wins over allow wins over role.",
       "name": "Overrides"
+    },
+    {
+      "description": "Roles: what each role grants, for a role by permission matrix. Read only.",
+      "name": "Roles"
+    },
+    {
+      "description": "Users: a read-only directory for the admin console. Never returns a password hash or any credential field.",
+      "name": "Users"
     },
     {
       "description": "Outbound webhook subscriptions (ADR-011): CRUD plus secret rotation. The secret appears only in the create and rotate responses, never again. One-liners only; every action needs `WEBHOOKS_MANAGE` (admin by default).",

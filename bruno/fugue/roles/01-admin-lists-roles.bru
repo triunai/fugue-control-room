@@ -1,0 +1,21 @@
+meta {
+  name: Admin lists roles with permissions and modules
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/roles
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("200 and ADMIN holds USERS_VIEW in IDENTITY", function () {
+    expect(res.status).to.equal(200);
+    const admin = res.body.find(function (r) { return r.code === "ADMIN"; });
+    expect(admin.permissions).to.deep.include({ code: "USERS_VIEW", module: "IDENTITY" });
+    const staff = res.body.find(function (r) { return r.code === "STAFF"; });
+    expect(staff.permissions.map(function (p) { return p.code; })).to.not.include("USERS_VIEW");
+  });
+}

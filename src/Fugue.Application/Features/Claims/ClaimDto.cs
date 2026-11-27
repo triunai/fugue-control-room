@@ -49,3 +49,16 @@ public sealed record ClaimTimelineEntryDto(
     ClaimStatus ToStatus,
     string ActorDisplay,
     string Note);
+
+/// <summary>
+/// One question put to the claimant and its answer, as listed by <c>GET /claims/{id}/info-requests</c>. <see cref="AskedBy"/> reads as "Claims team"
+/// to a claimant (no officer names leave the building), like the timeline. <see cref="Answer"/> and <see cref="AnsweredAt"/> are null while open.
+/// </summary>
+public sealed record ClaimInfoRequestEntryDto(
+    ClaimInfoRequestId Id, string Question, string AskedBy, DateTimeOffset AskedAt, string? Answer, DateTimeOffset? AnsweredAt);
+
+/// <summary>Claims per status under the caller's scope and the list's filters (status excluded). Every status is present, zero included.</summary>
+public sealed record ClaimCountsDto(int Total, IReadOnlyList<ClaimStatusCountDto> ByStatus);
+
+/// <summary>The number of claims in one status.</summary>
+public sealed record ClaimStatusCountDto(ClaimStatus Status, int Count);

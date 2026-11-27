@@ -124,35 +124,11 @@ internal sealed class ClaimRepository(FugueDbContext db, SqlExecutor sql, IAudit
                 : db.Claims.FromSqlRaw(SqlScripts.Get("claims/list-after-desc"), new NpgsqlParameter("createdAt", cursor.CreatedAt), new NpgsqlParameter("id", cursor.Id))
             : db.Claims;
 
-        query = Scoped(query.AsNoTracking(), scope);
+        query = Filtered(query.AsNoTracking(), filter, scope);
         if (filter.Statuses.Count > 0)
         {
             ClaimStatus[] statuses = [.. filter.Statuses];
             query = query.Where(c => statuses.Contains(c.Status));
-        }
-
-        query = filter.Assigned switch
-        {
-            ClaimAssignment.None => query.Where(c => c.AssignedOfficerId == null),
-            ClaimAssignment.Me when scope.ClaimantId is { } me => query.Where(c => c.AssignedOfficerId == me),
-            ClaimAssignment.Me => query.Where(_ => false),
-            _ => query,
-        };
-
-        if (filter.Market is { } market)
-        {
-            query = query.Where(c => c.Market == market);
-        }
-
-        if (filter.Line is { } line)
-        {
-            query = query.Where(c => c.Line == line);
-        }
-
-        if (!string.IsNullOrEmpty(filter.Search))
-        {
-            string pattern = $"%{EscapeLike(filter.Search)}%";
-            query = query.Where(c => EF.Functions.ILike(c.Number, pattern, "\\") || EF.Functions.ILike(c.PolicyNumber, pattern, "\\"));
         }
 
         query = ascending
@@ -182,6 +158,32 @@ internal sealed class ClaimRepository(FugueDbContext db, SqlExecutor sql, IAudit
             scope.All || e.ActorUserId == scope.ClaimantId ? e.ActorDisplay : "Claims team",
             e.Note)).ToList();
     }
+
+    public async Task<IReadOnlyList<ClaimInfoRequestEntryDto>?> GetInfoRequestsAsync(ClaimId id, ClaimScope scope, CancellationToken ct)
+    {
+        if (!await Scoped(db.Claims.AsNoTracking(), scope).AnyAsync(c => c.Id == id, ct))
+        {
+            return null;
+        }
+
+        var rows = await (
+                from r in db.ClaimInfoRequests.AsNoTracking()
+                where r.ClaimId == id
+                join asker in db.Users on r.RequestedByUserId equals asker.Id
+                orderby r.RequestedAt descending, r.Id descending
+                select new { r.Id, r.Question, r.RequestedByUserId, asker.DisplayName, r.RequestedAt, r.Response, r.RespondedAt })
+            .ToListAsync(ct);
+
+        // Same rule as the timeline: staff names reach staff and the asker, never another claimant.
+        return rows.Select(r => new ClaimInfoRequestEntryDto(
+            r.Id, r.Question, scope.All || r.RequestedByUserId == scope.ClaimantId ? r.DisplayName : "Claims team", r.RequestedAt, r.Response, r.RespondedAt)).ToList();
+    }
+
+    public async Task<IReadOnlyDictionary<ClaimStatus, int>> CountByStatusAsync(ClaimFilter filter, ClaimScope scope, CancellationToken ct) =>
+        (await Filtered(db.Claims.AsNoTracking(), filter, scope)
+            .GroupBy(c => c.Status)
+            .Select(g => new { Status = g.Key, Count = g.Count() })
+            .ToListAsync(ct)).ToDictionary(x => x.Status, x => x.Count);
 
     public Task<Claim?> FindForUpdateAsync(ClaimId id, ClaimScope scope, CancellationToken ct) =>
         Scoped(db.Claims.Include(c => c.InfoRequests.Where(r => r.RespondedAt == null)), scope).FirstOrDefaultAsync(c => c.Id == id, ct);
@@ -219,6 +221,37 @@ internal sealed class ClaimRepository(FugueDbContext db, SqlExecutor sql, IAudit
         }
 
         return Result.Ok();
+    }
+
+    /// <summary>Scope plus the list's non-status filters (assigned, market, line, search), shared by the list and the counts so they can never disagree.</summary>
+    private static IQueryable<Claim> Filtered(IQueryable<Claim> query, ClaimFilter filter, ClaimScope scope)
+    {
+        query = Scoped(query, scope);
+        query = filter.Assigned switch
+        {
+            ClaimAssignment.None => query.Where(c => c.AssignedOfficerId == null),
+            ClaimAssignment.Me when scope.ClaimantId is { } me => query.Where(c => c.AssignedOfficerId == me),
+            ClaimAssignment.Me => query.Where(_ => false),
+            _ => query,
+        };
+
+        if (filter.Market is { } market)
+        {
+            query = query.Where(c => c.Market == market);
+        }
+
+        if (filter.Line is { } line)
+        {
+            query = query.Where(c => c.Line == line);
+        }
+
+        if (!string.IsNullOrEmpty(filter.Search))
+        {
+            string pattern = $"%{EscapeLike(filter.Search)}%";
+            query = query.Where(c => EF.Functions.ILike(c.Number, pattern, "\\") || EF.Functions.ILike(c.PolicyNumber, pattern, "\\"));
+        }
+
+        return query;
     }
 
     /// <summary>The visibility filter, applied to every read and find-for-update (so keyset pages are filtered too). A caller with neither <c>CLAIMS_ALL</c> nor an id matches nothing.</summary>

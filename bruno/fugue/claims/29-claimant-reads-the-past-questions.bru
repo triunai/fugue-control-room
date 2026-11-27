@@ -1,0 +1,25 @@
+meta {
+  name: The claimant reads the past questions, asked by the Claims team
+  type: http
+  seq: 29
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/info-requests
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{claimantToken}}
+}
+
+tests {
+  test("200 with the answered question, staff shown as the Claims team", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.length).to.be.at.least(1);
+    expect(res.body[0].askedBy).to.equal("Claims team");
+    expect(res.body[0].answer).to.be.a("string");
+    expect(res.body[0].answeredAt).to.be.a("string");
+  });
+}
