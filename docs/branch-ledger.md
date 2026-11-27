@@ -5,3 +5,6 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | Branch | Worktree path | Base sha | Owner (lane) | W id | Status |
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
+| `nth-money` | `.worktrees/nth-money` | dd2a8d9 | nth-money (Sonnet) | D-064 | indicative USD view, bar and pie charts on exposure |
+| `nth-uam` | `.worktrees/nth-uam` | dd2a8d9 | nth-uam (Opus) | D-064 | admin creates users with roles, USERS_MANAGE |
+| `nth-onboard` | `.worktrees/nth-onboard` | dd2a8d9 | nth-onboard (Sonnet) | D-064 | first-visit welcome, tour autoplay, My profile |

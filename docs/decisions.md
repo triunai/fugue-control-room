@@ -77,6 +77,15 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-064 — Submission-morning asks past the freeze: shell polish, USD view, add users, onboarding — 2026-11-28
+WS: WS-22
+Context: at 02:41 on submission day (15:00) the owner asked, with screenshots: no box inside the page card; the SLA calendar day as a side drawer; the reserve workbook with sheet tabs like the Wishes2Vows one; "where the money is" with USD amounts, bar and pie charts; a first-visit welcome that points at the README and autoplays the tour; adding users from the console ("UAM is incomplete"); a better My profile.
+Decision: lift the freeze for exactly these. The lead does the shell polish, calendar drawer and workbook on main. Three lanes in separate worktrees: nth-money (an INDICATIVE USD view at fixed, dated, labelled rates, shown beside the per-currency truth, never replacing it: the per-currency figures stay the only exact numbers, and the USD total is marked indicative), nth-uam (admin creates a user with roles: new permission `USERS_MANAGE` granted to ADMIN by migration with a catalog row, validation, audit, tests), nth-onboard (first-visit welcome with the README steps and Help, autoplay the driver.js tour once per user, My profile redesign). Each lane merges only on green gates and a headless browser check.
+Why: the asks are visible on the first screens of the walkthrough; the USD view answers "how big is this in one number" without breaking the never-add-across-currencies rule, because it is labelled as a conversion at stated rates.
+Who: owner (asked, lifted the freeze), AI lead (indicative-rate rule, lane split, merge gate)
+Status: accepted
+Promote: no
+
 ## D-063 — Claims search on Meilisearch (one feature past the freeze) — 2026-11-27
 WS: WS-22
 Context: at 20:53, with v0.0.2 tagged, the owner asked what Meilisearch should index next ("claims? customers?") and to add it. Customers are the starter example the brief never asks for; claims are what officers look up by number, policy, claimant or place.
