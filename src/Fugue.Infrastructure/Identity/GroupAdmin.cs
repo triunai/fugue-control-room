@@ -1,6 +1,7 @@
 using FluentResults;
 using Fugue.Application.Abstractions;
-using Fugue.Application.Features.Groups;
+using Fugue.Application.Features.Groups.Models;
+using Fugue.Application.Features.Groups.Repos;
 using Fugue.Domain.Identity;
 using Fugue.Domain.Ids;
 using Fugue.Infrastructure.Persistence;

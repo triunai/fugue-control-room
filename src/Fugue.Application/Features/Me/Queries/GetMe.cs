@@ -1,6 +1,8 @@
 using FluentResults;
 using FluentValidation;
 using Fugue.Application.Abstractions;
+using Fugue.Application.Features.Me.Models;
+using Fugue.Application.Features.Me.Repos;
 using Fugue.Domain.Abstractions;
 using Fugue.Domain.Ids;
 using Fugue.Domain.Results;

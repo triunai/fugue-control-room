@@ -1,6 +1,6 @@
 using Fugue.Domain.Results;
 
-namespace Fugue.Application.Features.Groups;
+namespace Fugue.Application.Features.Groups.Models;
 
 public static class GroupErrors
 {

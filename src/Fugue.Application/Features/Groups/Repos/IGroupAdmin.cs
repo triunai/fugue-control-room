@@ -1,7 +1,8 @@
 using FluentResults;
+using Fugue.Application.Features.Groups.Models;
 using Fugue.Domain.Ids;
 
-namespace Fugue.Application.Features.Groups;
+namespace Fugue.Application.Features.Groups.Repos;
 
 /// <summary>
 /// Group administration. Membership changes write their <c>grant_audit</c> row in the SAME transaction as the change

@@ -1,6 +1,6 @@
 using Fugue.Domain.Ids;
 
-namespace Fugue.Application.Features.Me;
+namespace Fugue.Application.Features.Me.Models;
 
 /// <summary>
 /// The caller's own identity and what they may do, for the console's navigation and permission checks. Everything here is about the

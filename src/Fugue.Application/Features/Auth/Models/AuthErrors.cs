@@ -1,6 +1,6 @@
 using Fugue.Domain.Results;
 
-namespace Fugue.Application.Features.Auth;
+namespace Fugue.Application.Features.Auth.Models;
 
 /// <summary>Stable error codes of the Auth slice.</summary>
 public static class AuthErrors

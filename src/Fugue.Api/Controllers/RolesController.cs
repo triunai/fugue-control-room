@@ -1,6 +1,6 @@
 using Fugue.Api.Auth;
 using Fugue.Api.Modules;
-using Fugue.Application.Features.Roles;
+using Fugue.Application.Features.Roles.Models;
 using Fugue.Application.Features.Roles.Queries;
 using Fugue.Domain.Identity;
 using Microsoft.AspNetCore.Mvc;

@@ -1,6 +1,6 @@
 using Fugue.Domain.Results;
 
-namespace Fugue.Application.Features.Overrides;
+namespace Fugue.Application.Features.Overrides.Models;
 
 public static class OverrideErrors
 {

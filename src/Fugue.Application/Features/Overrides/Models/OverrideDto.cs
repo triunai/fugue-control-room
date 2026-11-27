@@ -1,7 +1,7 @@
 using Fugue.Domain.Ids;
 using Fugue.Domain.Results;
 
-namespace Fugue.Application.Features.Overrides;
+namespace Fugue.Application.Features.Overrides.Models;
 
 /// <summary>
 /// A per-user allow or deny of one permission. <see cref="Expired"/> is evaluated against the clock at read time.

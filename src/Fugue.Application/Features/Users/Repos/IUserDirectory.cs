@@ -1,7 +1,8 @@
 using Fugue.Application.Common;
+using Fugue.Application.Features.Users.Models;
 using Fugue.Domain.Ids;
 
-namespace Fugue.Application.Features.Users;
+namespace Fugue.Application.Features.Users.Repos;
 
 /// <summary>Read-only user directory for the admin console (EF, never Dapper): live users only, soft-deleted ones never appear.</summary>
 public interface IUserDirectory

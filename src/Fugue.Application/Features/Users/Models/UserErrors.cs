@@ -1,7 +1,7 @@
 using Fugue.Domain.Ids;
 using Fugue.Domain.Results;
 
-namespace Fugue.Application.Features.Users;
+namespace Fugue.Application.Features.Users.Models;
 
 /// <summary>The stable error codes of the Users slice.</summary>
 public static class UserErrors

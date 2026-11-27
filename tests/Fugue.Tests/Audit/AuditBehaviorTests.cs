@@ -142,7 +142,7 @@ public sealed class AuditBehaviorTests
         const string Sentinel = "ali.sentinel@example.com";
 
         await behavior.Handle(
-            Update, Returns<UpdateCustomerCommand, Result<CustomerDto>>(Result.Fail<CustomerDto>(Fugue.Application.Features.Groups.GroupErrors.NotFound(Sentinel))), default);
+            Update, Returns<UpdateCustomerCommand, Result<CustomerDto>>(Result.Fail<CustomerDto>(Fugue.Application.Features.Groups.Models.GroupErrors.NotFound(Sentinel))), default);
         await behavior.Handle(Update, Returns<UpdateCustomerCommand, Result<CustomerDto>>(Result.Fail<CustomerDto>("plain failure")), default);
 
         Assert.All(trail.Failures, f => Assert.Null(f.ErrorMessage));
@@ -198,8 +198,8 @@ public sealed class AuditBehaviorTests
 
         Result<CustomerDto> fromQuery = await new AuditBehavior<GetCustomerByIdQuery, Result<CustomerDto>>(untouchable).Handle(
             query, Returns<GetCustomerByIdQuery, Result<CustomerDto>>(Result.Fail<CustomerDto>(CustomerErrors.NotFound(query.Id))), default);
-        Result<Fugue.Application.Features.Auth.TokenDto> fromLogin = await new AuditBehavior<LoginCommand, Result<Fugue.Application.Features.Auth.TokenDto>>(untouchable).Handle(
-            login, Returns<LoginCommand, Result<Fugue.Application.Features.Auth.TokenDto>>(Result.Fail<Fugue.Application.Features.Auth.TokenDto>(Fugue.Application.Features.Auth.AuthErrors.InvalidCredentials())), default);
+        Result<Fugue.Application.Features.Auth.Models.TokenDto> fromLogin = await new AuditBehavior<LoginCommand, Result<Fugue.Application.Features.Auth.Models.TokenDto>>(untouchable).Handle(
+            login, Returns<LoginCommand, Result<Fugue.Application.Features.Auth.Models.TokenDto>>(Result.Fail<Fugue.Application.Features.Auth.Models.TokenDto>(Fugue.Application.Features.Auth.Models.AuthErrors.InvalidCredentials())), default);
 
         Assert.True(fromQuery.IsFailed);
         Assert.True(fromLogin.IsFailed);

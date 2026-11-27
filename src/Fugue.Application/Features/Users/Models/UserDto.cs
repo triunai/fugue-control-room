@@ -1,6 +1,6 @@
 using Fugue.Domain.Ids;
 
-namespace Fugue.Application.Features.Users;
+namespace Fugue.Application.Features.Users.Models;
 
 /// <summary>
 /// A user as the admin console lists them: who, whether they can sign in, the roles assigned directly and the groups they belong to (by code).

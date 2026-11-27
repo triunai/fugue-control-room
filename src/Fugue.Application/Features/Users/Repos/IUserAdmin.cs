@@ -1,6 +1,7 @@
 using FluentResults;
+using Fugue.Application.Features.Users.Models;
 
-namespace Fugue.Application.Features.Users;
+namespace Fugue.Application.Features.Users.Repos;
 
 /// <summary>A user about to be created: the email is already canonical (<c>EmailKey</c>), the password already hashed, the role codes known and active.</summary>
 public sealed record NewUser(string Email, string DisplayName, string PasswordHash, IReadOnlyList<string> RoleCodes);

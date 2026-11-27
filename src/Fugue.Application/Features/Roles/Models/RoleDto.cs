@@ -1,4 +1,4 @@
-namespace Fugue.Application.Features.Roles;
+namespace Fugue.Application.Features.Roles.Models;
 
 /// <summary>A role with every permission it grants, for a role by permission matrix. Permissions are ordered by module, then code.</summary>
 public sealed record RoleDto(string Code, string Name, bool IsActive, IReadOnlyList<RolePermissionDto> Permissions);

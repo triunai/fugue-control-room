@@ -1,6 +1,8 @@
 using FluentResults;
 using FluentValidation;
 using Fugue.Application.Abstractions;
+using Fugue.Application.Features.Auth.Helpers;
+using Fugue.Application.Features.Auth.Models;
 using Fugue.Domain.Audit;
 using Fugue.Domain.Identity;
 using Mediator;

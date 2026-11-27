@@ -1,4 +1,6 @@
-namespace Fugue.Application.Features.Roles;
+using Fugue.Application.Features.Roles.Models;
+
+namespace Fugue.Application.Features.Roles.Repos;
 
 /// <summary>Read-only view of the roles and what they grant (EF, never Dapper).</summary>
 public interface IRoleCatalog

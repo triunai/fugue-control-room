@@ -1,7 +1,8 @@
 using FluentResults;
+using Fugue.Application.Features.Overrides.Models;
 using Fugue.Domain.Ids;
 
-namespace Fugue.Application.Features.Overrides;
+namespace Fugue.Application.Features.Overrides.Repos;
 
 /// <summary>
 /// Permission overrides (deny > allow > role). One row per (user, permission): setting again replaces it. Every change stages its

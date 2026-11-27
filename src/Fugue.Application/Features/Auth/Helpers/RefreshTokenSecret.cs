@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Fugue.Application.Features.Auth;
+namespace Fugue.Application.Features.Auth.Helpers;
 
 /// <summary>An opaque 256-bit refresh token and the SHA-256 hex digest that is the only thing stored.</summary>
 public static class RefreshTokenSecret

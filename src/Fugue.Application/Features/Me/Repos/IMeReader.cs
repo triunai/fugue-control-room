@@ -1,6 +1,6 @@
 using Fugue.Domain.Ids;
 
-namespace Fugue.Application.Features.Me;
+namespace Fugue.Application.Features.Me.Repos;
 
 /// <summary>The profile part of <c>/me</c> that is not a permission: who the user is and which roles and groups they hold.</summary>
 public sealed record MeProfile(string Email, string DisplayName, IReadOnlyList<string> Roles, IReadOnlyList<string> Groups);

@@ -1,7 +1,10 @@
 using FluentResults;
 using FluentValidation;
 using Fugue.Application.Abstractions;
-using Fugue.Application.Features.Roles;
+using Fugue.Application.Features.Roles.Models;
+using Fugue.Application.Features.Roles.Repos;
+using Fugue.Application.Features.Users.Models;
+using Fugue.Application.Features.Users.Repos;
 using Fugue.Domain.Abstractions;
 using Fugue.Domain.Identity;
 using Mediator;

@@ -1,4 +1,5 @@
-using Fugue.Application.Features.Roles;
+using Fugue.Application.Features.Roles.Models;
+using Fugue.Application.Features.Roles.Repos;
 using Fugue.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 

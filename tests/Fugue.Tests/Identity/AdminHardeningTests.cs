@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
 using Fugue.Application.Abstractions;
-using Fugue.Application.Features.Auth;
+using Fugue.Application.Features.Auth.Models;
 using Fugue.Application.Features.Modules;
 using Fugue.Domain.Identity;
 using Fugue.Domain.Ids;
