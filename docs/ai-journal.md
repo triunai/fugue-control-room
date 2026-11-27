@@ -306,3 +306,9 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
 - **Decision:** merge search (D-063) after the fixed test, a headless check on the demo (claimant finds own claims by number, policy and place, never another claimant's; staff find any; zero console errors) and the pre-push full suite; frame fix under the freeze as polish (4254133). Failure mode 35.
 - **Why:** a filter that passes proves nothing when test order is not fixed; the frame was a repeated ask visible on every screen of the demo.
 
+## 2026-11-28 03:27 - One overnight lead becomes a dispatcher, an integrator and nine contract-bound lanes
+- **Asked:** with the owner's asks piling up past 03:12 and the list at about 15 items, the owner said "split the overnight list if it's a lot, we have tokens, run multiple teams."
+- **AI proposed:** at 03:09 one Opus lead ran a `/loop` over the list, building and merging serially with two to four lanes (D-065). Asked to split it at 03:22, the AI told that same lead to go wider: more lanes, still spawned, merged and verified by one agent.
+- **Owner overrode (03:23):** "this is dumb and waiting to fail." One agent that builds, merges and verifies is a single point of failure and a throughput bottleneck, and its long context is expensive. The owner's model: the session with the smallest context becomes the dispatcher and writes ten-part task contracts with hard file boundaries; one integrator owns `main`; nine builder lanes run in parallel worktrees, verify the premises they are handed, report to the integrator, and never touch the spine. A file lock serializes the 10-minute .NET suite and each lane gets its own ports.
+- **Decision:** D-066. Fleet dispatched at 03:27 from dacfb06 (nth-tooling, nth-forms, nth-import, nth-searchx, nth-fixes, nth-pdf, nth-hooda, nth-hoodb, nth-decisions).
+- **Outcome:** recorded at the wrap with the real merge count and times.

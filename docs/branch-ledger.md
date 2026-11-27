@@ -7,3 +7,12 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | Branch | Worktree path | Base sha | Owner (lane) | W id | Status |
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
+| `nth-tooling` | `.worktrees/nth-tooling` | dacfb06 | nth-tooling (Sonnet), relay-dispatched | D-064 | 17a: read-only role in the stack, MCP proven, agent-tooling runbook |
+| `nth-forms` | `.worktrees/nth-forms` | dacfb06 | nth-forms (Opus), relay-dispatched | D-064 | 5: console select + date picker, Fill with an example |
+| `nth-import` | `.worktrees/nth-import` | dacfb06 | nth-import (Opus), relay-dispatched | D-064 | 11a: intake import module (spreadsheet, inbox, WhatsApp file imports) |
+| `nth-searchx` | `.worktrees/nth-searchx` | dacfb06 | nth-searchx (Opus), relay-dispatched | D-064 | 10: Meilisearch hardening |
+| `nth-fixes` | `.worktrees/nth-fixes` | dacfb06 | nth-fixes (Sonnet), relay-dispatched | D-064 | 3a, 7a, 11f, claimant wording (1b already ticked as a stale tab) |
+| `nth-pdf` | `.worktrees/nth-pdf` | dacfb06 | nth-pdf (Opus), relay-dispatched | D-064 | 11b: settlement and decision letters as PDF |
+| `nth-hooda` | `.worktrees/nth-hooda` | dacfb06 | nth-hooda (Opus), relay-dispatched | D-064 | 11e part A: hood model, tooltip bug, audit log standard, platform pages |
+| `nth-hoodb` | `.worktrees/nth-hoodb` | dacfb06 | nth-hoodb (Sonnet), relay-dispatched | D-064 | 11e part B: claims-area hood notes |
+| `nth-decisions` | `.worktrees/nth-decisions` | dacfb06 | nth-decisions (Sonnet), relay-dispatched | D-064 | 11d: Decisions timeline generated from the repo docs |

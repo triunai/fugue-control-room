@@ -77,6 +77,16 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-066 — Dispatcher, integrator and contract-bound builder lanes replace the single overnight lead — 2026-11-28
+WS: WS-22
+Context: at 03:09 one Opus lead ran a `/loop` over about 15 items, building and merging serially with two to four lanes (D-065). Asked to "split it" at 03:22, the AI's answer was to tell that same lead to go wider. The owner rejected that at 03:23 ("this is dumb and waiting to fail"): one agent that builds, merges and verifies is a single point of failure and a throughput bottleneck, and its long context is expensive.
+Decision: the session with the smallest context becomes the DISPATCHER and writes agent task contracts with hard file boundaries (`.worktrees/_briefs/OWNERS.md`); one INTEGRATOR owns `main` (serial `--no-ff` merges, gates re-run on the merged tree, headless check on the rebuilt stack, push, ticks, spine); nine builder lanes work in parallel worktrees. Each contract has ten parts: objective, current state, desired state, allowed files, architecture rules, binary acceptance, literal validation commands, non-goals, stop conditions, commit slices; lanes verify the premises they are handed and report what they could not verify; a file lock serializes the 10-minute .NET suite; ports are assigned per lane; lanes never touch the spine (proposed D-rows and doc text go in their reports).
+Why: parallelism without merge chaos; machine gates, not an agent's say-so, decide a merge; one integration point; the human sets the topology.
+Consequences: refines ADR-014 / D-065 (roles split three ways). The outcome (merge count, times, reds caught at integration) is recorded at the wrap.
+Who: owner (overrode the AI's "go wider" proposal; set the topology), AI (contracts, gates)
+Status: accepted
+Promote: no (refines ADR-014)
+
 ## D-065 — Owner-steered parallel lanes, verified before merge, run overnight under a loop — 2026-11-28
 WS: WS-22
 Context: from 02:41 the owner sent screen-by-screen asks faster than one agent can build them, then went to sleep with the submission at 15:00.

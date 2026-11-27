@@ -7,6 +7,12 @@ Tick `[x]` with the merge sha. Never: force push, `--no-verify`, drop a non-thro
 
 Order inside P1: demo-visible first (5 to 9), then 11a and 11b, then 10, 11c. Feature cut-off 13:00. 13:00-14:00 only fixes. 14:00: recreate the clean demo stack, final push, hot-state.
 
+## Fleet (03:27, relay-dispatched, base dacfb06; contracts in `.worktrees/_briefs/`)
+Item -> lane: 17a nth-tooling · 5 nth-forms · 11a nth-import · 10 nth-searchx · 3a/7a/7b/11f nth-fixes · 11b nth-pdf ·
+11e nth-hooda (part A: hood model, tooltip, audit log, platform pages) then nth-hoodb (part B: claims area) · 11d nth-decisions.
+Integrator (overnight lead) per READY: head sha from git, diff inside OWNERS.md, gates on the merged tree, headless on rebuilt
+:8080, merge --no-ff, tick, retire. Merge nth-hooda before nth-hoodb. Not assigned yet: 3b, 4a (integrator), 11, 11c, 11g, 12-17.
+
 ## P0 — demo breakers
 - [x] 1. (03:08, on rebuilt :8080: welcome centred 465,251 510x397; outside click closed it; nav spam then /audit navigated; 0 errors) Browser re-check of 2ba4e19 (welcome can never freeze the page): fresh context, sign in WITHOUT `?tour=off`, welcome
       centred; click outside closes it; then spam the nav (scratch `check/spam2.mjs` pattern) and every link navigates. Note:
