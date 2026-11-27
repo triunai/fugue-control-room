@@ -380,6 +380,28 @@ public sealed class FitnessTests
     }
 
     [Fact]
+    public void Fitness_audit_command_actions_are_named()
+    {
+        // AuditNaming derives "<feature>.<verb>" from the command's namespace (Features.<Feature>). A command outside Features.* silently becomes
+        // "app.<verb>" with no entity type, which makes its audit rows unfilterable. Exempt ([NoAudit]) commands write no audit_log row.
+        Type naming = Application.GetType("Fugue.Application.Common.Behaviors.AuditNaming`1", throwOnError: true)!;
+        Type[] audited = Application.GetTypes()
+            .Where(t => t is { IsAbstract: false, IsInterface: false } && typeof(IBaseCommand).IsAssignableFrom(t) && !t.IsDefined(typeof(Fugue.Domain.Audit.NoAuditAttribute), inherit: false))
+            .ToArray();
+        Assert.NotEmpty(audited);
+
+        IEnumerable<string> bad = audited.Where(c =>
+        {
+            Type closed = naming.MakeGenericType(c);
+            string action = (string)closed.GetField("Action", BindingFlags.Public | BindingFlags.Static)!.GetValue(null)!;
+            string? entityType = (string?)closed.GetField("EntityType", BindingFlags.Public | BindingFlags.Static)!.GetValue(null);
+            return action.StartsWith("app.", StringComparison.Ordinal) || string.IsNullOrWhiteSpace(entityType);
+        }).Select(c => c.Name);
+
+        AssertRatchet("audit-command-naming", bad);
+    }
+
+    [Fact]
     public void Fitness_Audit_Application_and_Api_never_reference_the_audit_entity()
     {
         // The audit_log entity and its DbSet belong to Infrastructure; the rest of the code sees DTOs and ports (IAuditTrail, IAuditLogReader).
