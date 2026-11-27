@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 17 workstreams, 12 ADRs, 44 decisions, 70 commits (6 unlinked). Newest commit indexed: `5358c8e`.
+Counts: 19 workstreams, 12 ADRs, 48 decisions, 71 commits (6 unlinked). Newest commit indexed: `3a559aa`.
 
 ## Workstreams
 
@@ -117,8 +117,8 @@ Counts: 17 workstreams, 12 ADRs, 44 decisions, 70 commits (6 unlinked). Newest c
 
 ### W-011
 
-**Project README** — ACTIVE
-- Where: [board](workstreams.md)
+**Project README** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-27--closed-w-011-project-readme)
 - Decisions and ADRs: none
 - Commits (1):
   - `ee7f62e` docs(readme): project README (2026-11-25)
@@ -200,6 +200,22 @@ Counts: 17 workstreams, 12 ADRs, 44 decisions, 70 commits (6 unlinked). Newest c
   - `e938e2e` docs(web): refresh the console screenshots after the review fixes (2026-11-26)
   - `357c527` docs(spine): close W-017 (Fugue Console) into the project log (2026-11-26)
   - `5358c8e` docs(runbooks): index the console runbook (2026-11-26)
+
+### W-018
+
+**Import the owner's earlier audit-logging design and harden audit** — PARKED
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-045](#d-045), [D-046](#d-046), [D-047](#d-047), [D-048](#d-048)
+- Commits (1):
+  - `3a559aa` docs(spine): wrap 2026-11-27, decisions D-045..D-048, handoff and seed prompt (2026-11-27)
+
+### W-019
+
+**Users list endpoint for the Access screen** — PARKED
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-045](#d-045), [D-046](#d-046), [D-047](#d-047), [D-048](#d-048)
+- Commits (1):
+  - `3a559aa` docs(spine): wrap 2026-11-27, decisions D-045..D-048, handoff and seed prompt (2026-11-27)
 
 ## ADRs
 
@@ -676,10 +692,43 @@ Counts: 17 workstreams, 12 ADRs, 44 decisions, 70 commits (6 unlinked). Newest c
   - `bc1783c` feat(api): openapi contract snapshot, cors for the console, /me (2026-11-26)
   - `b3d6c65` docs(spine): close W-016 and overwrite hot-state (2026-11-26)
 
+### D-045
+
+**Console palette: Vellum light** — accepted — [decisions.md](decisions.md#d-045--console-palette-vellum-light--2026-11-26)
+- ADR: none
+- Workstreams: [W-017](#w-017), [W-018](#w-018), [W-019](#w-019)
+- Cited in commit Refs:
+  - `3a559aa` docs(spine): wrap 2026-11-27, decisions D-045..D-048, handoff and seed prompt (2026-11-27)
+
+### D-046
+
+**Console stack: NgRx SignalStore for client state, TanStack Query for server state** — accepted — [decisions.md](decisions.md#d-046--console-stack-ngrx-signalstore-for-client-state-tanstack-query-for-server-state--2026-11-26)
+- ADR: none
+- Workstreams: [W-017](#w-017), [W-018](#w-018), [W-019](#w-019)
+- Cited in commit Refs:
+  - `3a559aa` docs(spine): wrap 2026-11-27, decisions D-045..D-048, handoff and seed prompt (2026-11-27)
+
+### D-047
+
+**Live permissions stream (SSE) cancelled** — accepted — [decisions.md](decisions.md#d-047--live-permissions-stream-sse-cancelled--2026-11-27)
+- ADR: none
+- Workstreams: [W-017](#w-017), [W-018](#w-018), [W-019](#w-019)
+- Cited in commit Refs:
+  - `3a559aa` docs(spine): wrap 2026-11-27, decisions D-045..D-048, handoff and seed prompt (2026-11-27)
+
+### D-048
+
+**The owner's earlier design repo may be copied directly; names are scrubbed on import** — accepted — [decisions.md](decisions.md#d-048--the-owners-earlier-design-repo-may-be-copied-directly-names-are-scrubbed-on-import--2026-11-27)
+- ADR: none
+- Workstreams: [W-018](#w-018), [W-019](#w-019)
+- Cited in commit Refs:
+  - `3a559aa` docs(spine): wrap 2026-11-27, decisions D-045..D-048, handoff and seed prompt (2026-11-27)
+
 ## Commit to ids
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `3a559aa` | docs(spine): wrap 2026-11-27, decisions D-045..D-048, handoff and seed prompt | 2026-11-27 | [W-018](#w-018), [W-019](#w-019), [D-045](#d-045), [D-046](#d-046), [D-047](#d-047), [D-048](#d-048) |
 | `5358c8e` | docs(runbooks): index the console runbook | 2026-11-26 | [W-017](#w-017) |
 | `357c527` | docs(spine): close W-017 (Fugue Console) into the project log | 2026-11-26 | [W-017](#w-017) |
 | `e938e2e` | docs(web): refresh the console screenshots after the review fixes | 2026-11-26 | [W-017](#w-017) |
