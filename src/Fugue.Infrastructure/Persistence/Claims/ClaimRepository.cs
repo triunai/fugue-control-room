@@ -208,6 +208,14 @@ internal sealed class ClaimRepository(FugueDbContext db, SqlExecutor sql, IAudit
         }
 
         db.Entry(claim).Property(c => c.RowVersion).OriginalValue = (uint)expectedVersion;
+        db.ChangeTracker.DetectChanges();
+        if (db.Entry(claim).State == EntityState.Unchanged)
+        {
+            // A command that leaves every column as loaded (a reserve set to its current value) would issue no UPDATE, so the xmin check would never
+            // run and a racing write would be answered with a stale success. Forcing the write keeps the precondition honest and bumps the version.
+            db.Entry(claim).Property(c => c.UpdatedAt).IsModified = true;
+        }
+
         try
         {
             await db.SaveChangesAsync(ct);
