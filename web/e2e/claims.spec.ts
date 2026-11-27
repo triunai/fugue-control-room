@@ -27,7 +27,7 @@ test('claimant reports, staff picks up, claimant sees it move', async ({ browser
   const heading = claimant.getByRole('heading', { level: 1 });
   await expect(heading).toHaveText(/^CLM-SG-\d{4}-\d+$/);
   const number = (await heading.textContent())!.trim();
-  await expect(claimant.getByText('We have your claim')).toBeVisible();
+  await expect(claimant.getByText('We have your claim.', { exact: true })).toBeVisible();
 
   // It is in My claims.
   await claimant.getByRole('link', { name: 'My claims' }).first().click();
