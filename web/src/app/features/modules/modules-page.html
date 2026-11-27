@@ -63,7 +63,7 @@
                   }}</span>
                 }
               </td>
-              <td><fg-last-changed [code]="m.code" [version]="m.version" /></td>
+              <td><fg-last-changed [code]="m.code" [version]="m.version" [auditOn]="auditOn()" /></td>
               <td class="num">
                 <fg-switch
                   [checked]="m.dbActive && m.configEnabled"

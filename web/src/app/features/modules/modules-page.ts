@@ -66,6 +66,9 @@ export class ModulesPage {
     return m.code === PROTECTED;
   }
 
+  /** The AUDIT module's effective state; while it is off the Last changed column must not ask the audit endpoint. */
+  protected readonly auditOn = computed(() => (this.modules.data() ?? []).find((m) => m.code === 'AUDIT')?.effective ?? true);
+
   protected readonly onCount = computed(() => (this.modules.data() ?? []).filter((m) => m.effective).length);
 
   protected whenOff = whenOff;

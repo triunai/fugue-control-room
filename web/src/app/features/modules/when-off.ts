@@ -5,6 +5,7 @@ export const MODULE_ENTITY_IDS: Readonly<Record<string, string>> = {
   IDENTITY: '01900000-0000-7000-8001-000000000003',
   AUDIT: '01900000-0000-7000-8001-000000000004',
   WEBHOOKS: '01900000-0000-7000-8001-000000000005',
+  CLAIMS: '01900000-0000-7000-8001-000000000006',
 };
 
 /**
@@ -22,6 +23,8 @@ export const WHEN_OFF: Readonly<Record<string, string>> = {
     'The audit log page and endpoint answer 404. Other modules keep writing audit rows, so nothing is lost while it is off.',
   WEBHOOKS:
     'The webhook pages, subscriptions API and dev sink answer 404. The dispatcher is not gated, so deliveries already queued keep going out.',
+  CLAIMS:
+    'The claims pages disappear and every claims endpoint answers 404 for everyone. Claims, reserves and their history stay stored.',
 };
 
 export const WHEN_OFF_FALLBACK = 'Its pages disappear and its endpoints answer 404 for everyone. Its data stays.';
