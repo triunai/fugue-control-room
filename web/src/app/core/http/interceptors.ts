@@ -11,6 +11,7 @@ import { Observable, catchError, from, switchMap, tap, throwError } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { SessionStore } from '../auth/session.store';
 import { CONSOLE_CONFIG } from '../config';
+import { callLogInterceptor } from './api-call-log';
 import { AUTH_RETRIED, CORRELATION_ID, SEND_IF_MATCH, TRACK_ETAG } from './context';
 import { CorrelationService } from './correlation.service';
 import { EtagStore, resourceKey } from './etag.store';
@@ -111,5 +112,11 @@ export const problemInterceptor: HttpInterceptorFn = (
     ),
   );
 
-/** Request order: correlation -> auth -> etag -> problem -> backend (responses unwind in reverse). */
-export const consoleInterceptors = [correlationInterceptor, authInterceptor, etagInterceptor, problemInterceptor];
+/** Request order: correlation -> auth -> etag -> problem -> call log -> backend (responses unwind in reverse). */
+export const consoleInterceptors = [
+  correlationInterceptor,
+  authInterceptor,
+  etagInterceptor,
+  problemInterceptor,
+  callLogInterceptor,
+];
