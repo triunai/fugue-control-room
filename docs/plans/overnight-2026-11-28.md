@@ -29,7 +29,7 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
 (serial merges, gates re-run, rebuild :8080, headless check, push, tick). At most 2 lanes run the full .NET suite at once.
 - [x] 3. (e182dbb; on :8080 03:24 admin created a user with a role, the user signed in, 0 errors) nth-uam (admin adds users, USERS_MANAGE migration + catalog row): wait for its report, verify, merge.
 - [x] 4. (dacfb06; on :8080 The Score of the users.create correlation: 4 steps, 0 errors) nth-score ("The Score" per-correlation inspector from real audit/outbox/delivery rows): wait, verify, merge.
-- [ ] 3a. Users & access roles matrix: granted cells become the console check icon (navy, aria-label/title "Granted"); empty cells
+- [x] 3a. (merge 3149854, nth-fixes, W-033; on :8080 the matrix shows 51 Granted check icons, 45 sr-only Not granted) Users & access roles matrix: granted cells become the console check icon (navy, aria-label/title "Granted"); empty cells
       get an sr-only "Not granted". Follow-up commit on main (nth-uam merged); icon source is `ui/icon.ts` from nth-claimpage.
 - [x] 3b. (03:29 `npx bru run users --env compose` on :8080: 6/6 requests, 6/6 tests; 04 -> 201, 05 -> 409, 06 -> 403; role escalation 403 is covered by UserCreationTests, no Bruno request) Item 3 caveats: run the three new Bruno requests (04 admin creates user, 05 duplicate email 409, 06 staff 403) on :8080.
 - [ ] 4a. Item 4 caveats: prove 4a95058's loosened AuditSearchTests assertion still fails when the indexer misses the rows (inject
@@ -41,6 +41,10 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
       rename "Open in Excel" to "Save to Excel" everywhere; icons on Save to Excel and Use as reserve (and Reserve sheet buttons).
 - [x] 7. (0439df5: next-step copy, step popovers on hover/focus, How a claim moves modal closes on Esc and outside click) Claim page copy: rewrite the "Next step" block (blocked state reads badly); explain the Handling and Payout tracks
       (hover popover per step and a "How a claim moves" modal).
+- [x] 7a. (merge 3149854, nth-fixes; CSS fix + step-track-css.spec; lane headless: the line ends at the last node at 1280 and 390 px, both tracks) Claim
+      banner tracks: the connector line overshot the last node (Closed, Paid); counters must not collide; partly complete and phone width.
+- [x] 7b. (merge 3149854; claim-tracks-dialog.spec pins the claimant wording) Item 6/7 caveats: the "How a claim moves" modal said
+      "Reserved" to claimants; "Open in Excel" outside `web/` is history (journal, reviews, traceability) and stays; README done in 30e4ac1.
 - [x] 8. (00e5c76: rounded, token cells, today and events in palette) SLA calendar: rounded corners, warmer cells (tokens, not white), events and today styled in the console palette.
 - [x] 9. (00e5c76: Stack dialog; FOUND PostgreSQL 17 (postgres:17-alpine in docker-compose.yml), ids UUID v7 from the API (Uuid7.NewGuid): owner's 'Postgres 18' is wrong, 'timestamped GUIDs' is right) Env pill `dev · net8 · v1` opens a "Stack" modal: Angular + key libraries, .NET 8 + key packages, PostgreSQL version and
       ID scheme. VERIFY first (compose image tag; owner believes Postgres 18 and timestamped GUIDs; state what the code really
@@ -57,7 +61,7 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
       Users & access / groups / overrides, Customers, Claims queue, claim page, Team and exposure, Reserve sheet, SLA calendar,
       My profile, Home, search. Each: the flow end to end (request -> handler -> DB/outbox/audit -> events), ADR/D links, live
       calls. Real code and decisions only. Two lanes by page group if it does not fit one before 13:00 (record the split here).
-- [ ] 11f. /modules glitches (owner 03:19, admin, AUDIT off then on): "Last changed" for Claims stuck on "…"; a stray dark tooltip
+- [ ] 11f. (merged 3149854: Claims cell no longer stuck ("default (on)"), 0 audit calls while off, refetch on; STILL RED 03:47: confirming AUDIT off fires 6 audit 404s before auditOn flips (prefix invalidation in modules-page.ts:60); sent back to nth-fixes) /modules glitches (owner 03:19, admin, AUDIT off then on): "Last changed" for Claims stuck on "…"; a stray dark tooltip
       "/audit?limit&entityType&entityId" over the page header; the hood panel polls GET /audit while AUDIT is off (404 run): stop
       polling when the module is off. Headless: toggle AUDIT off and on, 0 console errors.
 - [ ] 11g. Optional, slack only: one-line description tooltip per permission chip on My profile, from the permission catalog if it
