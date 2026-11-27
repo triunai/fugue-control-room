@@ -1,0 +1,109 @@
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding: 1.4rem 1.6rem;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);
+  border-radius: var(--radius-panel);
+  background: linear-gradient(180deg, var(--accent-soft), var(--surface2) 160%);
+}
+.hero-urgent {
+  border-left-color: var(--warn);
+}
+.hero-kicker {
+  margin: 0;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.hero-title {
+  margin: 0.2rem 0 0.35rem;
+  font: 600 1.7rem/1.15 var(--font-display);
+}
+.hero-sub {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--muted);
+}
+.hero-q {
+  margin: 0.7rem 0 0;
+  max-width: 60ch;
+  padding-left: 0.8rem;
+  border-left: 3px solid var(--line);
+}
+.two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+@media (max-width: 900px) {
+  .two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.rows li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.9rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.rows li:last-child {
+  border-bottom: 0;
+}
+.rows li > :last-child {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.late {
+  color: var(--err-ink);
+  font-weight: 600;
+}
+.num {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+.chips,
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.9rem;
+}
+.total-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  background: var(--surface2);
+}
+.card-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  text-decoration: none;
+  color: inherit;
+}
+.card-link:hover {
+  border-color: var(--accent);
+}
+.sub {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
