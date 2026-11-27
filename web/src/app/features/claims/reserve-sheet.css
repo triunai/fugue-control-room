@@ -1,0 +1,33 @@
+.sheet-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.sheet-host {
+  height: 62vh;
+  min-height: 24rem;
+  overflow: hidden;
+  padding: 0;
+}
+.results ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+.res {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+.res-saved {
+  color: var(--ok-ink);
+}
+.res-guard,
+.res-stale {
+  color: var(--warn-ink);
+}
+.res-failed {
+  color: var(--err-ink);
+}
