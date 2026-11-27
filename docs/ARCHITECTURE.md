@@ -178,7 +178,7 @@ public Task<IActionResult> Update(CustomerId id, UpdateCustomerRequest body, Can
     SendNoContent(new UpdateCustomerCommand(id, body.Name, body.Email, body.Phone, IfMatchVersion), ct);
 ```
 
-**Command, validator and handler** (`src/Fugue.Application/Features/Customers/Commands/UpdateCustomer.cs`), one file by convention:
+**Command, validator and handler** (`src/Fugue.Application/Features/Customers/Commands/UpdateCustomer.cs`), one file for the whole concept (file layout: see D-055 in [`decisions.md`](decisions.md)):
 
 ```csharp
 public sealed record UpdateCustomerCommand(CustomerId Id, string Name, string Email, string? Phone, long? ExpectedVersion)
@@ -283,7 +283,7 @@ Rules from [ADR-006](adr/ADR-006-ef-core-reads-dapper-writes.md):
 
 `SqlExecutor` runs Dapper on EF's own connection and current transaction. `IUnitOfWork` (`BeginAsync`, `CommitAsync`; disposing without committing rolls back) starts that transaction. So an EF `SaveChanges` and a Dapper statement inside one unit of work commit or roll back together. The audit row and the outbox row ride on this seam.
 
-`CustomerRepository.AddAsync` shows it: a Dapper insert returning `xmin`, then `audit.RecordAsync(...)` and `outbox.EnqueueAsync(...)` on the same transaction, then one commit. Dapper does not read domain aggregates, and it does not run outside `SqlExecutor`. EF writes are stamped by `AuditableSaveChangesInterceptor`; Dapper SQL binds `IAuditStamp.Capture()` explicitly.
+`CustomerRepository.AddAsync` shows it: a Dapper insert returning `xmin`, then `audit.RecordAsync(...)` and `outbox.EnqueueAsync(...)` on the same transaction, then one commit. SQL statements: see D-054 in [`decisions.md`](decisions.md). Dapper does not read domain aggregates, and it does not run outside `SqlExecutor`. EF writes are stamped by `AuditableSaveChangesInterceptor`; Dapper SQL binds `IAuditStamp.Capture()` explicitly.
 
 ## 9. Identity and authorization
 
