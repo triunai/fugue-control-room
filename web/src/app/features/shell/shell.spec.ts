@@ -73,8 +73,10 @@ describe('Shell sidebar', () => {
   });
 
   it('opens the group that holds the open route even if the user had folded it', () => {
-    localStorage.setItem('fugue.console.prefs', JSON.stringify({ collapsedGroups: ['Claims'] }));
-    TestBed.inject(PrefsStore).openGroup('Claims');
-    expect(TestBed.inject(PrefsStore).collapsedGroups()).toEqual([]);
+    const prefs = TestBed.inject(PrefsStore);
+    prefs.toggleGroup('Claims');
+    expect(prefs.collapsedGroups()).toContain('Claims');
+    prefs.openGroup('Claims');
+    expect(prefs.collapsedGroups()).not.toContain('Claims');
   });
 });

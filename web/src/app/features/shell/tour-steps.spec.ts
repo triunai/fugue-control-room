@@ -1,4 +1,4 @@
-import { personaOf, stepsFor } from './tour-steps';
+import { PAGE_TOURS, personaOf, stepsFor, suppressTourFromUrl, tourKeyFor, tourSuppressed } from './tour-steps';
 
 const grant =
   (...codes: string[]) =>
@@ -41,5 +41,31 @@ describe('stepsFor', () => {
         expect(s.description.split(/(?<=[.!?])\s/).length).toBeLessThanOrEqual(2);
       }
     }
+  });
+});
+
+describe('page tours', () => {
+  it('maps URLs to page keys', () => {
+    expect(tourKeyFor('/claims/queue?status=submitted')).toBe('queue');
+    expect(tourKeyFor('/claims/01a21c89-9940-73b6-91f0-3d61c3ecddd4')).toBe('claim-detail');
+    expect(tourKeyFor('/claims/team')).toBe('team-exposure');
+    expect(tourKeyFor('/claims/exposure')).toBe('team-exposure');
+    expect(tourKeyFor('/audit')).toBe('landing');
+  });
+
+  it('registers the keys the claim UI calls', () => {
+    expect(Object.keys(PAGE_TOURS)).toEqual(
+      expect.arrayContaining(['claim-detail', 'queue', 'team-exposure', 'landing']),
+    );
+  });
+
+  it('?tour=off silences auto-start for the session', () => {
+    sessionStorage.clear();
+    expect(tourSuppressed()).toBe(false);
+    history.replaceState(null, '', '/?tour=off');
+    suppressTourFromUrl();
+    history.replaceState(null, '', '/');
+    expect(tourSuppressed()).toBe(true);
+    sessionStorage.clear();
   });
 });

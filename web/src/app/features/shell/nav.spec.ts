@@ -35,3 +35,14 @@ describe('permission-driven navigation: Claims', () => {
     expect(navFor(['CUSTOMERS_VIEW'])).toEqual([]);
   });
 });
+
+describe('nav groups', () => {
+  it('keeps the starter example (Customers) in its own last group, out of the claim groups', () => {
+    const all = () => true;
+    const groups = visibleGroups(all);
+    expect(groups.at(-1)?.label).toBe('Starter example');
+    expect(groups.at(-1)?.items.map((i) => i.label)).toEqual(['Customers']);
+    expect(groups.find((g) => g.label === 'Data')?.items.map((i) => i.label)).toEqual(['Audit log']);
+    expect(groups[0].label).toBe('Claims');
+  });
+});

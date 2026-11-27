@@ -7,6 +7,7 @@ import { CorrelationService } from '../../core/http/correlation.service';
 import { PrefsStore } from '../../core/ui/prefs.store';
 import { ToastStore } from '../../core/ui/toast.store';
 import { deriveCrumbs } from './breadcrumbs';
+import { tourKeyFor } from './tour-steps';
 import { NavProgress } from './nav-progress';
 import { Sidebar } from './sidebar';
 import { TourService } from './tour.service';
@@ -59,6 +60,11 @@ export class Shell {
         void this.router.navigate(['/unavailable'], { queryParams: { reason: 'changed' } });
       }
     });
+  }
+
+  /** Help: the tour of the page on screen. */
+  protected help(): void {
+    void this.tour.start(tourKeyFor(this.router.url));
   }
 
   /** The route-change entrance: the page content fades in and rises a few pixels. The first page does not animate. */

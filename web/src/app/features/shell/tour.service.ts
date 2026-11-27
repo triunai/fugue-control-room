@@ -1,7 +1,19 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AccessService } from '../../core/auth/access.service';
-import { Persona, TourPage, TourStep, personaOf, stepsFor, tourSeenKey } from './tour-steps';
+import {
+  PAGE_TOURS,
+  Persona,
+  TourPage,
+  TourStep,
+  personaOf,
+  stepsFor,
+  tourSeenKey,
+  tourSuppressed,
+} from './tour-steps';
+
+/** The key of the persona tour (the default of `start`). */
+export const PERSONA_TOUR = 'persona';
 
 const CLAIM_URL = /^\/claims\/[0-9a-f]{8}-[0-9a-f-]{27}$/i;
 
@@ -42,6 +54,11 @@ export class TourService {
   private readonly router = inject(Router);
   private running = false;
 
+  constructor() {
+    // Hook for pages that cannot import this service (lane nth-claimui looks it up dynamically): window.startTour(key).
+    (window as unknown as { startTour?: (key: string) => Promise<void> }).startTour = (key) => this.start(key);
+  }
+
   persona(): Persona {
     return personaOf((code) => this.access.has(code));
   }
@@ -49,20 +66,39 @@ export class TourService {
   /** First sign-in: start the persona's tour once. Personas without a tour of their own (member) are not nagged. */
   maybeAutoStart(): void {
     const persona = this.persona();
-    if (persona === 'member' || seen(persona) || this.running) return;
+    if (persona === 'member' || seen(persona) || this.running || tourSuppressed()) return;
     markSeen(persona);
-    setTimeout(() => void this.start(), 800);
+    setTimeout(() => void this.start(PERSONA_TOUR), 800);
   }
 
-  async start(): Promise<void> {
+  /**
+   * Start a tour: `PERSONA_TOUR` (the default) walks the signed-in persona's pages; any key of `PAGE_TOURS`
+   * ('landing', 'queue', 'claim-detail', 'team-exposure') explains the page on screen. Steps whose target is not on
+   * the page are skipped; an unknown key or a tour with nothing to show does nothing.
+   */
+  async start(key: string = PERSONA_TOUR): Promise<void> {
     if (this.running) return;
-    this.running = true;
     const persona = this.persona();
-    const steps = stepsFor(persona);
-    markSeen(persona);
+    const all = key === PERSONA_TOUR ? stepsFor(persona) : (PAGE_TOURS[key] ?? []);
+    if (all.length === 0) return;
+    this.running = true;
+    if (key === PERSONA_TOUR) markSeen(persona);
     try {
       const { driver } = await import('driver.js');
-      await this.goTo(steps[0]);
+      // A page tour keeps only the steps whose target is on screen now; the persona tour checks as it goes.
+      const steps = key === PERSONA_TOUR ? all : all.filter((s) => document.querySelector(s.selector));
+      if (steps.length === 0) {
+        this.running = false;
+        return;
+      }
+      const reach = async (from: number, dir: 1 | -1): Promise<number> => {
+        for (let i = from + dir; i >= 0 && i < steps.length; i += dir) {
+          await this.goTo(steps[i]);
+          if (document.querySelector(steps[i].selector)) return i;
+        }
+        return -1;
+      };
+      if (key === PERSONA_TOUR) await this.goTo(steps[0]);
       const d = driver({
         showProgress: true,
         allowClose: true,
@@ -78,13 +114,13 @@ export class TourService {
             title: s.title,
             description: s.description,
             onNextClick: async () => {
-              if (i + 1 >= steps.length) return d.destroy();
-              await this.goTo(steps[i + 1]);
-              d.moveNext();
+              const n = await reach(i, 1);
+              if (n < 0) return d.destroy();
+              d.moveTo(n);
             },
             onPrevClick: async () => {
-              await this.goTo(steps[i - 1]);
-              d.movePrevious();
+              const n = await reach(i, -1);
+              if (n >= 0) d.moveTo(n);
             },
           },
         })),

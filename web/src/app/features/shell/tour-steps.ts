@@ -141,3 +141,89 @@ export function stepsFor(persona: Persona): TourStep[] {
 
 /** localStorage key remembering that a persona's tour was shown (finished or dismissed). */
 export const tourSeenKey = (persona: Persona): string => `fugue.tour.seen.${persona}`;
+
+/** Selector helper: a `data-tour` hook (preferred, added by the page) or the existing test id as a fallback. */
+const hook = (name: string, testId?: string): string =>
+  testId ? `[data-tour="${name}"], [data-testid="${testId}"]` : `[data-tour="${name}"]`;
+
+/**
+ * Tours per page key, started by `TourService.start(key)` or the header Help button. They only talk about the page
+ * on screen (no navigation). A step whose target is not on the page is skipped, never an error.
+ */
+export const PAGE_TOURS: Record<string, TourStep[]> = {
+  landing: [NAV_STEP],
+  queue: [
+    {
+      selector: hook('queue-kpis', 'kpis'),
+      title: 'The queue at a glance',
+      description: 'Counts per status, longest-waiting first. Reserves stay in each claim currency.',
+    },
+    {
+      selector: '[data-tour="queue-tabs"], .tabs',
+      title: 'Tabs and filters',
+      description: 'A tab per status with live counts, plus assignee, market and line filters.',
+    },
+  ],
+  'claim-detail': [
+    {
+      selector: '[data-tour="claim-actions"], .actions',
+      title: 'Only the actions valid for the status',
+      description: 'A stale tab gets a 412 and the banner "Changed since you opened it" instead of an overwrite.',
+    },
+    {
+      selector: hook('claim-timeline', 'timeline'),
+      title: 'The timeline',
+      description: 'Every status change in plain words, from submitted to settled.',
+    },
+    {
+      selector: hook('claim-answer', 'answer-panel'),
+      title: 'Answer the question',
+      description: 'When an officer needs more, the claim waits for the claimant here.',
+    },
+  ],
+  'team-exposure': [
+    {
+      selector: hook('exposure-totals', 'exposure-totals'),
+      title: 'Exposure per currency',
+      description: 'One total for each currency, taken from the claims as they stand now.',
+    },
+    {
+      selector: hook('exposure-note', 'exposure-summary'),
+      title: 'Why there is no grand total',
+      description: 'Adding currencies needs an exchange rate and a date; without them the sum would be made up.',
+    },
+    {
+      selector: hook('team-workload', 'workload-kpis'),
+      title: 'Workload',
+      description: 'Unassigned claims and what each officer carries.',
+    },
+  ],
+};
+
+/** The tour key for a URL, used by the header Help button; pages without their own tour get the landing one. */
+export function tourKeyFor(url: string): string {
+  const path = url.split(/[?#]/)[0];
+  if (path === '/claims/queue') return 'queue';
+  if (/^\/claims\/[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(path)) return 'claim-detail';
+  if (['/claims/team', '/claims/exposure', '/claims/workload'].includes(path)) return 'team-exposure';
+  return 'landing';
+}
+
+const OFF_KEY = 'fugue.tour.off';
+
+/** `?tour=off` on any entry URL silences the auto-start for this browser session (explicit starts still work). */
+export function suppressTourFromUrl(): void {
+  try {
+    if (new URLSearchParams(location.search).get('tour') === 'off') sessionStorage.setItem(OFF_KEY, '1');
+  } catch {
+    /* best effort */
+  }
+}
+
+export function tourSuppressed(): boolean {
+  try {
+    return sessionStorage.getItem(OFF_KEY) === '1';
+  } catch {
+    return false;
+  }
+}

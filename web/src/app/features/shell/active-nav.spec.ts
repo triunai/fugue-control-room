@@ -9,7 +9,7 @@ describe('activeItem', () => {
 
   it('ignores query string and hash, and finds the group of a detail page', () => {
     expect(activeItem(NAV, '/audit?entityId=1#top')).toEqual({ group: 'Data', path: '/audit' });
-    expect(activeItem(NAV, '/customers/abc-123')).toEqual({ group: 'Data', path: '/customers' });
+    expect(activeItem(NAV, '/customers/abc-123')).toEqual({ group: 'Starter example', path: '/customers' });
   });
 
   it('is null where no nav item owns the URL', () => {

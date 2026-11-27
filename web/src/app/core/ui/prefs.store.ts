@@ -12,7 +12,7 @@ interface Prefs {
 }
 
 function load(): Prefs {
-  const defaults: Prefs = { sidebarCollapsed: false, collapsedGroups: [], maskEmails: true };
+  const defaults: Prefs = { sidebarCollapsed: false, collapsedGroups: ['Starter example'], maskEmails: true };
   try {
     return { ...defaults, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') };
   } catch {
