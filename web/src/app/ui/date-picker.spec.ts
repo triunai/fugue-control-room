@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { addDays, addMonths, DatePicker, parseDate } from './date-picker';
+import { addDays, addMonths, DatePicker, parseDate, parseTime } from './date-picker';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -165,5 +165,92 @@ describe('DatePicker (fg-date)', () => {
     fixture.detectChanges();
     expect(field.disabled).toBe(true);
     expect(toggle.disabled).toBe(true);
+  });
+});
+
+@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [ReactiveFormsModule, DatePicker],
+  template: `<fg-date inputId="t-at" [formControl]="control" [withTime]="true" />`,
+})
+class TimeHost {
+  readonly control = new FormControl('', { nonNullable: true });
+}
+
+describe('DatePicker withTime', () => {
+  async function renderTime() {
+    const fixture = TestBed.createComponent(TimeHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const el: HTMLElement = fixture.nativeElement;
+    const date = el.querySelector<HTMLInputElement>('input#t-at')!;
+    const time = el.querySelector<HTMLInputElement>('input#t-at-time')!;
+    const settle = async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+    };
+    const typeIn = async (input: HTMLInputElement, text: string) => {
+      input.value = text;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      await settle();
+    };
+    return { fixture, host: fixture.componentInstance, date, time, settle, typeIn };
+  }
+
+  it('parses times and refuses out-of-range ones', () => {
+    expect(parseTime('09:05')).toBe('09:05');
+    expect(parseTime('9:05')).toBe('09:05');
+    expect(parseTime('23:59')).toBe('23:59');
+    expect(parseTime('24:00')).toBeNull();
+    expect(parseTime('12:60')).toBeNull();
+    expect(parseTime('1230')).toBeNull();
+  });
+
+  it('value is YYYY-MM-DDTHH:mm, the datetime-local format, and empty until both parts are valid', async () => {
+    const { host, date, time, typeIn } = await renderTime();
+    await typeIn(date, '2026-02-14');
+    expect(host.control.value).toBe('');
+    await typeIn(time, '9:30');
+    expect(host.control.value).toBe('2026-02-14T09:30');
+    // Same instant the native input's value produced when sent to the API.
+    expect(new Date(host.control.value).toISOString()).toBe(new Date(2026, 1, 14, 9, 30).toISOString());
+    await typeIn(time, '24:00');
+    expect(host.control.value).toBe('');
+    expect(time.getAttribute('aria-invalid')).toBe('true');
+    await typeIn(time, '23:59');
+    expect(host.control.value).toBe('2026-02-14T23:59');
+    expect(time.getAttribute('aria-invalid')).toBeNull();
+  });
+
+  it('CVA in: a datetime-local value fills both fields; null clears them', async () => {
+    const { fixture, host, date, time } = await renderTime();
+    host.control.setValue('2026-03-01T07:05');
+    fixture.detectChanges();
+    expect(date.value).toBe('2026-03-01');
+    expect(time.value).toBe('07:05');
+    host.control.setValue('');
+    fixture.detectChanges();
+    expect(date.value).toBe('');
+    expect(time.value).toBe('');
+  });
+
+  it('keyboard: ArrowUp/Down step the time by a minute, Shift by an hour, wrapping the day', async () => {
+    const { host, date, time, typeIn, settle } = await renderTime();
+    await typeIn(date, '2026-02-14');
+    await typeIn(time, '23:59');
+    time.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, cancelable: true }));
+    await settle();
+    expect(time.value).toBe('00:00');
+    expect(host.control.value).toBe('2026-02-14T00:00');
+    time.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', shiftKey: true, bubbles: true, cancelable: true }),
+    );
+    await settle();
+    expect(time.value).toBe('23:00');
+  });
+
+  it('default mode has no time field', async () => {
+    const { el } = { el: (await render()).fixture.nativeElement as HTMLElement };
+    expect(el.querySelector('input[id$="-time"]')).toBeNull();
   });
 });

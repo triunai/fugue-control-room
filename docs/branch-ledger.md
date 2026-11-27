@@ -11,3 +11,4 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | `nth-searchx` | `.worktrees/nth-searchx` | dacfb06 | nth-searchx (Opus), relay-dispatched | D-064 | 10: Meilisearch hardening |
 | `nth-pdf` | `.worktrees/nth-pdf` | dacfb06 | nth-pdf (Opus), relay-dispatched | D-064 | 11b: settlement and decision letters as PDF |
 | `nth-paid` | `.worktrees/nth-paid` | f3d7637 | nth-paid (Opus), relay-dispatched | W-037 | 11c: paid/settled figure on Team and exposure |
+| `nth-datetime` | `.worktrees/nth-datetime` | 8ed5cce | nth-datetime (Sonnet), relay-dispatched | D-064 | 5 follow-up: slice 1/2 committed; next: swap three inputs |
