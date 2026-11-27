@@ -11,16 +11,16 @@ Refs: W-022, D-059. Branch `nth-grid`, base b875f49.
 - (this file) docs(docs): nth-grid lane status
 
 ## Gates (copied from output)
-- `cd web && npm test`: 13 files, 80 tests passed (base: 62).
+- `cd web && npm test`: 14 files, 85 tests passed (base: 62).
 - `npm run lint`: All files pass linting.
-- `npm run build`: complete. main 371.58 kB raw / 100.52 kB est. transfer; initial total 406.00 kB / 107.03 kB.
+- `npm run build`: complete. main 372.58 kB raw / 100.92 kB est. transfer; initial total 406.99 kB / 107.43 kB.
   Base: main 363.02 / 97.94, initial total 397.43 / 104.46.
-- e2e (`web/e2e/07-grid.spec.ts`, live API :5101, dev server :4201): 2 passed (sheet: invalid and stale-row results,
+- e2e (`web/e2e/07-grid.spec.ts` 3 passed and `08-assessment.spec.ts` 1 passed, live API :5101, dev server :4201) (sheet: invalid and stale-row results,
   then a saved row; calendar: events render, click opens the claim). Screenshots `web/docs/screenshots/claims-sheet.png`,
   `claims-calendar.png`.
 
 ## Deviations
-1. The initial bundle DID grow: +8.56 kB raw (+2.58 kB est. transfer). Neither library's code is in it; shared rxjs
+1. The initial bundle DID grow: +9.56 kB raw (+2.98 kB est. transfer). Neither library's code is in it; shared rxjs
    modules and tslib helpers Univer imports are hoisted into `main` by the bundler. Not avoidable without serving Univer
    outside the Angular build (UMD from assets). Documented with the numbers in the web README, "Nice to haves".
 2. FullCalendar is used through its framework-free `Calendar` class (`fullcalendar` 7.1.5), not `@fullcalendar/angular`:
@@ -37,6 +37,15 @@ Refs: W-022, D-059. Branch `nth-grid`, base b875f49.
 6. The sheet shows Submitted, UnderReview, InfoRequested and Approved claims (open = not Rejected or Settled); the list takes
    one status at a time, so it reads each status up to 5 pages of 100 (500 per status).
 7. Settlement (Approved) has an SLA of 7 days after `decidedAt` in addition to the three the brief named; one constant, one line.
+
+## Addendum (owner, via lead)
+- 3e35ef1 feat(web): open the reserve sheet in Excel (ExcelJS 4.4.0, lazy chunk `exceljs-min` 944.59 kB / 218.34 kB; downloaded
+  file unzipped and checked: a 16x8 worksheet). data-tour attributes on sheet and calendar controls.
+- 71dbac4 feat(web): claim assessment worksheet: `features/claims/claim-assessment-sheet.ts` (standalone, input = claim, output
+  `reserved`), formulas for Gross and Net, Use as reserve (If-Match, only when allowed and net > 0), Open in Excel, ephemeral
+  caption, data-tour hooks. Host route `claims/:id/assessment` added to `app.routes.ts` (a second touch of that file beyond the
+  nav commit; the lead can drop it when nth-claimui embeds the component). Screenshot `claim-assessment.png`.
+- Not done: the calendar month-only cut was not needed (month and week both ship).
 
 ## Contract gaps
 - No count or "SLA" field on the API, and the list takes a single `status`: the sheet and calendar make four list calls per load.
