@@ -2,7 +2,8 @@
 
 ## Commits
 - `174c311` feat(api): paid (settled) count and sum on the exposure rows and totals (slice 1, with this status file)
-- slice 2: feat(api): OpenAPI snapshot, generated client and a Bruno request for the paid exposure fields
+- `a23a31d` feat(api): OpenAPI snapshot, generated client and a Bruno request for paid exposure (slice 2)
+- slice 3: feat(web): team page shows paid (settled) per market and line next to the exposure
 
 ## Gates (copied from output)
 - `dotnet build`: 0 Warning(s), 0 Error(s)
@@ -10,7 +11,6 @@
 - Targeted `dotnet test --filter ClaimReportsTests|ClaimPaidExposureTests|ClaimSeederTests`: Passed 29, Failed 0
 - Rule 6 proof: with `OpenCount` counting settled claims again, `ClaimPaidExposureTests.Exposure_shows_the_paid_sum...` and the
   rewritten `ClaimReportsTests.Exposure_totals_are_per_currency_never_across_currencies` both fail (2 failed / 4); restored, they pass.
-
 - `npm run api:openapi`: Passed 1 (snapshot rewritten); `cd web && npm run api:gen`: orval v8.49.0 regenerated, 3 model files
   changed (`exposureRowDto.ts`, `exposureTotalDto.ts`, `claimExposureDto.ts` doc comment)
 - Bruno `npx bru run claims --env local --env-var baseUrl=http://localhost:5210` (throwaway pg :55510, `--seed`):
@@ -18,8 +18,18 @@
 - Live as manager@fugue.test on :5210 after the Bruno run: SGD settled 2 / 265000 (seeded 185000 + the 80000 claim the Bruno
   claims folder settles), PHP 1 / 5400000, HKD 1 / 950000, IDR, MYR, THB 0 / 0
 
+- Web: `npm run lint` All files pass linting; `npm test` Test Files 46 passed (46), Tests 272 passed (272);
+  `npm run build` Initial total 459.26 kB / 120.80 kB gzip, no errors or warnings
+- Headless (Playwright, manager@fugue.test, :4410 proxied to :5210): six paid totals render (SGD 2,650.00 paid (2 settled),
+  PHP 54,000.00 (1), HKD 9,500.00 (1), IDR/MYR/THB 0.00 (0)), three paid cell links; the HK one opens
+  `/claims/queue?market=HK&line=Motor&status=Settled`; console errors 0. Screenshots:
+  `.worktrees/_briefs/reports/nth-paid-exposure-table.png`, `nth-paid-team-page.png`
+
 ## What changed in shared files (exactly)
-- None outside the lane's list. `ClaimsController.cs` (endpoint summary) is NOT changed: proposed text is in the lane report.
+- `web/src/app/features/claims/team-logic.spec.ts` (outside the list, forced): the `exposureMatrix` row factory gains
+  `settledCount: 0, settledMinor: 0`, because the regenerated `ExposureRowDto` makes them required and the spec no longer compiled.
+  No assertion changed.
+- `ClaimsController.cs` (endpoint summary) and `team-page.hood.ts` are NOT changed: proposed text is in the lane report.
 
 ## Design choices
 - Where the money is stored: `claims.approved_amount_minor` with `status = 'Settled'` (`Claim.Settle` takes no amount and never
@@ -36,5 +46,12 @@
   row and total lists gain it, and "no IDR row" became "IDR row has zero exposure and paid 1 / 7,000,000" (stronger).
 - No ledger row for nth-paid exists in `docs/branch-ledger.md` (only rows for the dacfb06 lanes), so it was not touched.
 
+- Team page: each cell gains "<amount> paid" (a link to the settled claims of that market and line) when anything was
+  settled there; the total column gains "<amount> paid (<n> settled)". The intro names it "Paid (settled)". Bars stay
+  outstanding + approved (paid is not exposure). `paidByMarket` lives in `team-page.ts` (team-logic.ts is not in the lane's
+  list) with its spec in `team-page.spec.ts`.
+- USD view left alone: it converts the outstanding reserve only (`fx-indicative.ts`, `usd-view.ts`), not approved either, so
+  paid has no clean slot in it, and both files are outside the lane's list.
+
 ## Next slice
-- 3: team page "Paid (settled)" figure.
+- none: lane complete after slice 3; full suite once under the lock, then the report.

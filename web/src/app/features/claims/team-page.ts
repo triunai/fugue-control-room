@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { RouterLink } from '@angular/router';
 import { injectQuery } from '@tanstack/angular-query';
 import { ClaimsApi, EMPTY_CLAIM_FILTER, claimKeys } from '../../api/claims.api';
-import { OfficerWorkloadDto } from '../../api/models';
+import { ExposureRowDto, OfficerWorkloadDto } from '../../api/models';
 import { AccessService } from '../../core/auth/access.service';
 import { RelativeTimePipe, StampPipe } from '../../ui/format';
 import { UsdView } from './usd-view';
@@ -19,6 +19,31 @@ import {
   oldestPerOfficer,
   summariseOpen,
 } from './team-logic';
+
+/** Paid (settled) money of one market: per line and for the market, in the market's currency. */
+export interface MarketPaid {
+  Motor: { count: number; minor: number };
+  Property: { count: number; minor: number };
+  total: { count: number; minor: number };
+}
+
+/** Sums the settled count and amount per market and line. A market has one currency, so its total never mixes currencies. */
+export function paidByMarket(rows: readonly ExposureRowDto[]): Map<string, MarketPaid> {
+  const out = new Map<string, MarketPaid>();
+  for (const r of rows) {
+    const m = out.get(r.market) ?? {
+      Motor: { count: 0, minor: 0 },
+      Property: { count: 0, minor: 0 },
+      total: { count: 0, minor: 0 },
+    };
+    for (const acc of [m[r.line], m.total]) {
+      acc.count += r.settledCount;
+      acc.minor += r.settledMinor;
+    }
+    out.set(r.market, m);
+  }
+  return out;
+}
 
 /** Fields the backend is adding to the workload officers; absent until it lands. */
 type OfficerX = OfficerWorkloadDto & { oldestOpenClaimId?: string | null };
@@ -208,8 +233,10 @@ type OfficerX = OfficerWorkloadDto & { oldestOpenClaimId?: string | null };
         <section class="panel panel-pad" aria-labelledby="exp-h">
           <h2 id="exp-h" class="section-title">Where the money is</h2>
           <p class="mt-1 mb-3 text-muted" data-testid="exposure-summary" data-tour="exposure-note">
-            Per cell: outstanding reserve, with approved-not-settled under it. Each market settles in its own currency,
-            so bars are scaled within a currency and nothing is ever added across currencies: there is no grand total.
+            Per cell: outstanding reserve, with approved-not-settled under it, then Paid (settled): what settled claims
+            have paid out, all time. Paid money is no longer exposure, so the bars leave it out. Each market settles in
+            its own currency, so bars are scaled within a currency and nothing is ever added across currencies: there is
+            no grand total.
           </p>
           @if (exposure.isPending()) {
             <fg-skeleton-rows [rows]="4" />
@@ -235,7 +262,8 @@ type OfficerX = OfficerWorkloadDto & { oldestOpenClaimId?: string | null };
                   @for (r of matrix(); track r.market) {
                     <tr>
                       <th scope="row">
-                        <span aria-hidden="true">{{ flag(r.market) }}</span> {{ r.marketName }} <span class="sub mono">{{ r.currency }}</span>
+                        <span aria-hidden="true">{{ flag(r.market) }}</span> {{ r.marketName }}
+                        <span class="sub mono">{{ r.currency }}</span>
                       </th>
                       @for (c of [r.motor, r.property]; track $index) {
                         <td>
@@ -254,6 +282,16 @@ type OfficerX = OfficerWorkloadDto & { oldestOpenClaimId?: string | null };
                                 >{{ c.approvedMinor | money: r.currency }} approved</a
                               >
                             }
+                            @if (paidCell(r.market, $index); as p) {
+                              <a
+                                class="sub mono"
+                                routerLink="/claims/queue"
+                                [queryParams]="paidParams(r.market, $index)"
+                                [attr.aria-label]="'Paid (settled): ' + p.count + ' claims, open them'"
+                                data-testid="paid-cell"
+                                >{{ p.minor | money: r.currency }} paid</a
+                              >
+                            }
                             <span class="cell-bar" aria-hidden="true"><span [style.width.%]="c.pct"></span></span>
                             @if (c.unreserved) {
                               <span class="unreserved">{{ c.unreserved }} unreserved</span>
@@ -265,6 +303,11 @@ type OfficerX = OfficerWorkloadDto & { oldestOpenClaimId?: string | null };
                         <div class="cell cell-right">
                           <strong class="mono">{{ r.outstandingMinor | money: r.currency }}</strong>
                           <span class="sub mono">{{ r.approvedMinor | money: r.currency }} approved</span>
+                          @if (paidTotal(r.market); as p) {
+                            <span class="sub mono" data-testid="paid-total"
+                              >{{ p.minor | money: r.currency }} paid ({{ p.count }}&nbsp;settled)</span
+                            >
+                          }
                           @if (r.unreserved) {
                             <span class="unreserved">{{ r.unreserved }} unreserved</span>
                           }
@@ -342,6 +385,7 @@ export class TeamPage {
   /** The backend sends oldestOpenClaimId (and filters the list by officerId) together; until then the officer name is plain text. */
   protected readonly hasOfficerFilter = computed(() => this.officers().some((o) => o.oldestOpenClaimId !== undefined));
   protected readonly matrix = computed(() => exposureMatrix((this.exposure.data()?.rows ?? []) as ExposureRowX[]));
+  private readonly paid = computed(() => paidByMarket(this.exposure.data()?.rows ?? []));
   protected readonly waitingOnClaimant = computed(
     () => this.workload.data()?.officers.reduce((n, o) => n + o.infoRequested, 0) ?? 0,
   );
@@ -357,6 +401,21 @@ export class TeamPage {
 
   protected cellParams(market: string, lineIndex: number, approved: boolean) {
     return exposureQueueParams(market, lineIndex === 0 ? 'Motor' : 'Property', approved);
+  }
+
+  /** A line's paid money, or null when nothing was settled there (the cell then shows no paid line). */
+  protected paidCell(market: string, lineIndex: number): { count: number; minor: number } | null {
+    const p = this.paid().get(market)?.[lineIndex === 0 ? 'Motor' : 'Property'];
+    return p && p.count > 0 ? p : null;
+  }
+
+  protected paidTotal(market: string): { count: number; minor: number } {
+    return this.paid().get(market)?.total ?? { count: 0, minor: 0 };
+  }
+
+  /** The settled claims behind a paid figure. */
+  protected paidParams(market: string, lineIndex: number) {
+    return { market, line: lineIndex === 0 ? 'Motor' : 'Property', status: 'Settled' };
   }
 
   protected band(label: string) {
