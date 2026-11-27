@@ -34,11 +34,16 @@ import { buildMatrix } from './roles-matrix.logic';
           @for (g of matrix().groups; track g.module) {
             <tbody>
               <tr class="module-row">
-                <th scope="colgroup" [attr.colspan]="matrix().roles.length + 1">{{ g.module }}</th>
+                <th scope="colgroup" [attr.colspan]="matrix().roles.length + 1">
+                  {{ moduleLabel(g.module) }} <span class="count">· {{ g.rows.length }}</span>
+                </th>
               </tr>
               @for (row of g.rows; track row.code) {
                 <tr>
-                  <th scope="row" class="mono perm">{{ row.code }}</th>
+                  <th scope="row" class="perm">
+                    <span class="perm-name">{{ permLabel(row.code, g.module) }}</span>
+                    <span class="perm-code">{{ row.code }}</span>
+                  </th>
                   @for (r of matrix().roles; track r.code) {
                     <td class="cell">
                       @if (row.granted.has(r.code)) {
@@ -64,16 +69,44 @@ import { buildMatrix } from './roles-matrix.logic';
     .cell {
       text-align: center;
     }
-    .perm {
-      font-weight: 500;
-      font-size: 0.8rem;
+    /* Row headers sit inside the row: same surface and the same 1px line as the cells beside them, so every row reads as one line. */
+    tbody th[scope='row'] {
+      background: transparent;
+      border-bottom: 1px solid var(--line-soft);
+      font-weight: 400;
+      color: var(--text);
+      white-space: normal;
     }
+    tbody tr:last-child th[scope='row'] {
+      border-bottom: 0;
+    }
+    .perm-name {
+      display: block;
+      font-family: var(--font-ui);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    .perm-code {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    /* Module rows: a quiet band in the same family as everything else, not shouting caps. */
     .module-row th {
-      background: var(--surface);
-      font-size: 0.7rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--accent-text);
+      font-family: var(--font-ui);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text);
+      background: color-mix(in oklab, var(--bg) 60%, var(--surface));
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding-top: 0.55rem;
+      padding-bottom: 0.55rem;
+    }
+    .module-row .count {
+      font-weight: 400;
+      color: var(--muted);
     }
     .dot {
       display: inline-block;
@@ -91,4 +124,20 @@ export class RolesMatrix {
     queryFn: () => this.api.list(),
   }));
   protected readonly matrix = computed(() => buildMatrix(this.roles.data() ?? []));
+
+  /** `CLAIMS` -> `Claims`. */
+  protected moduleLabel(module: string): string {
+    return titleCase(module.replace(/_/g, ' '));
+  }
+
+  /** `CLAIMS_EXPOSURE` under module `CLAIMS` -> `Exposure`; the code itself stays visible underneath. */
+  protected permLabel(code: string, module: string): string {
+    const rest = code.startsWith(module + '_') ? code.slice(module.length + 1) : code;
+    return titleCase(rest.replace(/_/g, ' '));
+  }
+}
+
+function titleCase(words: string): string {
+  const lower = words.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
