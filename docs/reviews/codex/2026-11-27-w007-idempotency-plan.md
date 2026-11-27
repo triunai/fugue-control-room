@@ -1,0 +1,34 @@
+# Codex plan review: W-007 idempotency (revision 1), 2026-11-27
+
+`codex exec -s read-only` (gpt family) on `docs/plans/w007-idempotency.md` rev 1 + ADR-013. Disposition: plan revision 2 (decisions A-K). #4 judged LOW and accepted (decision J). All others folded in.
+
+
+1. **HIGH — D/H: Reclaim has no ownership fence.** Two contenders can reclaim the same stale row; the original worker can later complete or delete its successor’s claim. A request exceeding 30 seconds can also execute alongside its replacement. **Fix:** atomic conditional reclaim, a fresh claim token, token-guarded completion/deletion, and transaction locking or fencing that prevents overlapping business commits. The existing webhook dispatcher already uses claim tokens.
+
+2. **HIGH — E/J: The accepted crash gap defeats the feature’s goal.** A committed create followed by encryption, persistence, cancellation, or serialization failure can lose its replay record; deleting the claim makes immediate duplicate execution possible. **Fix:** commit the business mutation, audit/outbox, and completed replay record atomically, before sending the response. Both create paths can enlist in an outer transaction; API orchestration through `IUnitOfWork` does **not** require ASP.NET Core references in Application.
+
+3. **HIGH — A/C/E: An action filter cannot capture the proposed lifecycle.** Model binding has already consumed the body when it runs. After `await next()`, MVC has not executed the result: `CreatedAtAction` has not generated `Location`, and final serialization/content type are unavailable. **Fix:** buffer and rewind before model binding, then capture actual result execution before completing the record. A resource filter or coordinated resource/result filters can provide those boundaries. [Microsoft filter lifecycle](https://learn.microsoft.com/en-us/aspnet/core/mvc/controllers/filters?view=aspnetcore-8.0).
+
+4. **HIGH — B/F: Endpoint authorization does not cover authorization-dependent replay.** A caller can retain `CUSTOMERS_INSERT` while losing `CUSTOMERS_ALL`; replay then bypasses the owner-scope logic that originally allowed creating for another user. **Fix:** reject replay when the relevant authorization context changes, or reauthorize the stored resource through a transport-neutral port. Preserve actor isolation; changing permissions must never silently create a new executable key scope.
+
+5. **HIGH — D/I: Expired-row replacement and purge are underspecified and inconsistent.** `INSERT … ON CONFLICT DO NOTHING` cannot replace the expired row that I treats as absent. Separate lookup/update/delete operations can race with replacement or completion. **Fix:** specify conditional atomic replacement, reset all generation/response/expiry fields, and make purge recheck expiry and ownership under locking. Never purge a live execution merely because retention elapsed.
+
+6. **MEDIUM — H: “Add to whichever fitness allowlist” violates the stated ratchet.** `FitnessTests.cs:294` requires every non-`IAuditable` entity to have `OccurredAt`; H supplies only `created_at`. Raw SQL writers also trigger the rule at line 406. **Fix:** prefer `IAuditable` plus `[NoAudit]`, as the Data Protection entity does, and explicitly design any narrowly permitted operational-write exception. Do not widen shrink-only baselines to pass.
+
+7. **MEDIUM — H: Omitting `IAuditable` does not exclude audit capture.** The interceptor examines all changed entities and excludes by CLR type name or `[NoAudit]`, independently of `IAuditable`. **Fix:** specify `[NoAudit]` or a built-in CLR-type exclusion, and test that claim, completion, reclaim, and purge produce no operational audit rows.
+
+8. **MEDIUM — A/K: Header syntax does not match the draft.** Printable ASCII accepts unquoted tokens, malformed quoting, and comma lists. The existing `ApiControllerBase.IdempotencyKey` accessor silently selects the first header value. **Fix:** parse one Structured Field String, handle escaping, reject duplicate/list values, and document the decoded-length limit. Generate quoted values in the console and pin the draft version. [Draft-09 §2.1](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-idempotency-key-header-09#section-2.1).
+
+9. **MEDIUM — G: Database persistence is not key protection.** `DatabaseXmlRepository.cs:14` explicitly says the key ring is unencrypted. A database dump therefore contains both ciphertext and the keys needed to recover webhook secrets; grepping ciphertext proves little. **Fix:** state this threat boundary and configure external key wrapping where database-compromise protection is required. Test cross-instance decryption and fail closed on corrupt/unreadable ciphertext without freeing the key for execution.
+
+10. **MEDIUM — E/F: Replay header and downstream-cache safety need explicit rules.** Stored headers are plaintext; `Location` is request-host-derived, and current `AllowedHosts` is `*`. No replay validation or `no-store` policy is specified for secret-bearing responses. **Fix:** allowlist and validate replay headers, use a canonical/relative location, reject control characters, and send `Cache-Control: no-store` on original and replayed secret responses. Generate correlation/saga and CORS headers per request; preserve the original resource ETag.
+
+11. **MEDIUM — C/I: Resource bounds are missing.** “Small JSON” is an assumption, and `UseRateLimiter` currently limits auth endpoints only. These creates have no applicable policy; buffering and retained responses add memory/storage pressure. **Fix:** define request/response limits, bounded buffering and purge batches, and an applicable per-actor limit. Specify safe handling when a successful response cannot be retained.
+
+12. **MEDIUM — K: Updating only `FugueOperationFilter` is insufficient.** `FugueDocumentFilter` lacks 422 components and a shared 409 response; `Share()` cannot add either as written. Customer create already has a domain-specific 409 that must survive. **Fix:** define/merge both conflict codes, document `Retry-After` on idempotency 409s and `Idempotent-Replayed` on replays, and update shared components, CORS, snapshot, and client together.
+
+13. **MEDIUM — Slices/tests: Failure-boundary coverage is missing.** Add deterministic tests for simultaneous reclaimers, slow/stale workers, purge/replacement races, post-commit failure and client disconnect, exact body/ETag/content-type replay, revoked permissions, malformed/repeated headers, unsafe stored headers, fresh correlation/CORS, and replay after key-ring reload. Explicitly assert **one outbox event**, as well as one business/audit row.
+
+14. **LOW — ADR-013:8,14: Two premises are false.** Webhook redelivery is a state-transition POST without `If-Match`; middleware can run after routing and authorization. **Fix:** narrow the out-of-scope justification and compare middleware at the correct pipeline position.
+
+VERDICT: REVISE

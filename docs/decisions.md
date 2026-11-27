@@ -61,15 +61,26 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-048 | Owner's earlier design repo may be copied directly, names scrubbed on import | - |
 | D-049 | Keep the W-017 Angular console; no template import | - |
 | D-050 | Idempotency keys with stored-response replay on the two create POSTs | [ADR-013](adr/ADR-013-idempotency-keys.md) |
+| D-051 | W-018 audit import: four ideas ported, nine rejected | [ADR-010](adr/ADR-010-audit-log.md) (amended) |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-051 — W-018 audit import: four ideas ported, nine rejected — 2026-11-27
+WS: WS-18
+Context: a read-only sweep compared the owner's earlier audit package with W-012's `audit_log` (findings kept outside the repo; the source is not named here, D-048).
+Decision: port (1) 401 challenges recorded in `access_audit` (`unauthenticated`, reason `missing_token`/`expired`/`invalid_token`) with a per-IP rows-per-minute cap; (2) failure rows gain `error_type`, `error_message` (the authored `FugueError` message only, capped; an unhandled exception stores its type name, never its message) and `duration_ms`; (3) a `Fugue.Audit` meter counting lost audit writes plus a structured fallback log carrying the lost row's identifying fields; (4) a fitness test that no audited command falls back to an `app.*` action. Rejected: async buffered writer, sampling, request/response body capture, regex PII masking over JSON, first-hop X-Forwarded-For trust, header-based caller attribution, DELETE-based purge, dual master/tenant writes, an external search index.
+Why: each rejected item breaks a W-012 guarantee (same transaction, append-only, never sampled, write-time structural masking, identity from the verified token) or needs infrastructure Fugue does not run. The ported items close real gaps: a bad token left no trace, a failure row said only its code, and a lost failure row was invisible.
+Consequences: one additive migration on `audit_log`; the audit API and the OpenAPI snapshot gain three nullable fields; anonymous 401 floods are bounded by the cap and counted.
+Who: AI (headless lead), from the sweep
+Status: accepted
+Promote: no (amends ADR-010 in place: consequences section)
 
 ## D-050 — Idempotency keys with stored-response replay on the two create POSTs — 2026-11-27
 WS: WS-07
 Context: creates are the only writes that are unsafe to repeat; PUT/DELETE/transitions already carry If-Match.
-Decision: opt-in `[Idempotent]` filter on `POST /customers` and `POST /webhooks/subscriptions`; key scoped to (user, endpoint, key), body fingerprint, claim-before-execute, 2xx responses stored encrypted (Data Protection) and replayed for 24 h; 422 on reuse with a different body, 409 while in progress, non-2xx frees the key. Plan: `docs/plans/w007-idempotency.md`.
+Decision: opt-in `[Idempotent]` resource filter on `POST /customers` and `POST /webhooks/subscriptions`; Structured Field String key scoped to (user, endpoint, key), body fingerprint, atomic claim with a claim token before execute, 2xx responses stored encrypted (Data Protection) and replayed for 24 h; 422 on reuse with a different body, 409 while in progress, a business 4xx frees the key, anything ambiguous stays pending and answers `outcome_unknown`; a claimed key is never reclaimed. Plan: `docs/plans/w007-idempotency.md` (revision 2 after the Codex plan review, REVISE: 5 HIGH / 8 MEDIUM / 1 LOW, all addressed or accepted with reasons in decision J).
 Why: the IETF draft shape, minimal surface, keeps HTTP out of Application; encryption because the webhook create response carries a one-time secret.
-Consequences: one documented crash window (commit then die before completion); snapshot + console client change.
+Consequences: a crash between commit and completion leaves a stuck key (never a duplicate); the key ring is in the same database, so encryption protects against table leaks only; snapshot + console client change.
 Who: AI (headless lead)
 Status: accepted
 Promote: yes (ADR-013)
