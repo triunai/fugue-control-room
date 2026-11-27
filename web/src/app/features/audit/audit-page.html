@@ -47,11 +47,11 @@
     </div>
     <div class="field">
       <label class="label" for="f-from">From</label>
-      <input id="f-from" class="input" type="datetime-local" formControlName="from" />
+      <fg-date inputId="f-from" formControlName="from" [withTime]="true" />
     </div>
     <div class="field">
       <label class="label" for="f-to">Until</label>
-      <input id="f-to" class="input" type="datetime-local" formControlName="to" />
+      <fg-date inputId="f-to" formControlName="to" [withTime]="true" />
     </div>
     <div class="filter-actions">
       <button type="submit" class="btn btn-primary">Apply filters</button>
