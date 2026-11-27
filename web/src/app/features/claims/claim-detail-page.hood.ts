@@ -5,6 +5,62 @@ export const CLAIM_DETAIL_HOOD: HoodNote = {
     'Opening the claim reads it and keeps its ETag; every action is sent with that ETag as If-Match, and the reply is the claim as it now stands.',
     'It refreshes on focus and every 15 s (paused mid-form). A stale action shows a Reload banner, never a silent overwrite; a claimant never sees the reserve.',
   ],
+  flow: [
+    {
+      layer: 'web',
+      text:
+        "An action (say Set reserve) sends the claim's stored ETag as If-Match; the interceptor adds it from the last GET.",
+      path: 'web/src/app/core/http/etag.store.ts',
+    },
+    {
+      layer: 'api',
+      text:
+        'PUT /claims/{id}/reserve needs CLAIMS_HANDLE and [IfMatch], then sends ReserveClaimCommand with the version from the header.',
+      path: 'src/Fugue.Api/Controllers/ClaimsController.cs',
+    },
+    {
+      layer: 'handler',
+      text:
+        'The handler runs the shared claim flow: If-Match missing is 428, a claim outside your scope is 404.',
+      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+    },
+    {
+      layer: 'handler',
+      text:
+        "The ETag is compared before the state machine: a stale tag is 412 whatever the claim's status now is (D-056).",
+      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+    },
+    {
+      layer: 'handler',
+      text:
+        'Only the assigned officer or a manager may reserve; the aggregate then guards the move (409) and records its event.',
+      path: 'src/Fugue.Application/Features/Claims/Commands/ReserveClaim.cs',
+    },
+    {
+      layer: 'db',
+      text:
+        'SaveAsync UPDATEs with WHERE xmin = the expected tag, so a write that raced in after the load is still 412 (ADR-006).',
+      path: 'src/Fugue.Infrastructure/Persistence/Claims/ClaimRepository.cs',
+    },
+    {
+      layer: 'audit',
+      text:
+        'The audit rows ride in the same SaveChanges as the change.',
+      path: 'src/Fugue.Infrastructure/Audit/AuditLogSaveChangesInterceptor.cs',
+    },
+    {
+      layer: 'outbox',
+      text:
+        'The outbox interceptor adds the ClaimReserveSet event to that same SaveChanges (ADR-011).',
+      path: 'src/Fugue.Infrastructure/Outbox/OutboxSaveChangesInterceptor.cs',
+    },
+    {
+      layer: 'web',
+      text:
+        'The reply is the claim as it now stands with its new ETag; the page replaces what it shows and stores the tag.',
+      path: 'web/src/app/features/claims/claim-detail-page.ts',
+    },
+  ],
   how: [
     'Reads GET /claims/{id}; actions POST pickup, PUT reserve, POST info-requests, decision and settle, each answering with the claim and its new ETag.',
     'The ETag is the row version (Postgres xmin). If-Match is required (428), checked before the state machine (412), and again by the UPDATE.',

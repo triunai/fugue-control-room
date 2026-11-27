@@ -5,6 +5,68 @@ export const REPORT_HOOD: HoodNote = {
     'One form, one submit: the server validates and answers field errors (400) that land on the fields.',
     'Submit needs an Idempotency-Key. A retry of the same form reuses its key and replays the first reply; an edited form gets a new key.',
   ],
+  flow: [
+    {
+      layer: 'web',
+      text:
+        'Submit sends the form with an Idempotency-Key: one key per form, kept on a retry of the same body, fresh when the body changes.',
+      path: 'web/src/app/core/http/idempotency.ts',
+    },
+    {
+      layer: 'api',
+      text:
+        'The [Idempotent(Required = true)] filter claims the key before the action runs; the same key with another body is 422, a repeat replays the first reply.',
+      path: 'src/Fugue.Api/Idempotency/IdempotencyFilter.cs',
+    },
+    {
+      layer: 'api',
+      text:
+        'POST /claims needs CLAIMS_SUBMIT and hands the body to the mediator as SubmitClaimCommand.',
+      path: 'src/Fugue.Api/Controllers/ClaimsController.cs',
+    },
+    {
+      layer: 'handler',
+      text:
+        'The validator checks the fields and the incident window (not future, not over a year back) before the handler runs: 400 validation.failed on a miss.',
+      path: 'src/Fugue.Application/Features/Claims/Commands/SubmitClaim.cs',
+    },
+    {
+      layer: 'handler',
+      text:
+        'The handler takes the caller as claimant, numbers the claim and builds it in status Submitted, then asks the repository to add it.',
+      path: 'src/Fugue.Application/Features/Claims/Commands/SubmitClaim.cs',
+    },
+    {
+      layer: 'db',
+      text:
+        'One transaction inserts the claim and its first timeline row with SQL (Dapper writes, ADR-006).',
+      path: 'src/Fugue.Infrastructure/Persistence/Claims/ClaimRepository.cs',
+    },
+    {
+      layer: 'audit',
+      text:
+        'The same transaction records the audit row (claims.submit), and the 201 reply is stored against the key.',
+      path: 'src/Fugue.Infrastructure/Persistence/Claims/ClaimRepository.cs',
+    },
+    {
+      layer: 'outbox',
+      text:
+        'The same transaction queues the claim event in the outbox, so the event exists if and only if the claim committed (ADR-011).',
+      path: 'src/Fugue.Infrastructure/Outbox/OutboxWriter.cs',
+    },
+    {
+      layer: 'webhook',
+      text:
+        'Later the outbox dispatcher relays the event: one pending delivery per matching active subscription, then a signed POST.',
+      path: 'src/Fugue.Infrastructure/Webhooks/WebhookFanOutPublisher.cs',
+    },
+    {
+      layer: 'search',
+      text:
+        'The claim indexer copies changed claims into Meilisearch, so the new claim becomes searchable after one interval.',
+      path: 'src/Fugue.Infrastructure/Search/ClaimIndexer.cs',
+    },
+  ],
   how: [
     'Calls POST /claims with an Idempotency-Key header; it needs CLAIMS_SUBMIT and answers 201 with the claim and its ETag.',
     'Same key and same body replays the stored reply; same key with a different body is 422.',
