@@ -17,4 +17,4 @@
 - The ledger had no `nth-datetime` row; added one.
 
 ## Next
-- Headless proof against :8080, report.
+- Done. Headless proof: access override PUT body expiresAt 2030-01-15T05:45:00.000Z for 13:45 local (+08), identical to native path; audit From/To 2099 range -> 0 rows; 0 console errors; screenshots in .worktrees/_briefs/reports/nth-datetime-*.png.
