@@ -55,8 +55,52 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-042 | W-016: the backend owns the API contract; the OpenAPI snapshot is a test-gated file | [ADR-012](adr/ADR-012-openapi-contract-and-console-boundary.md) |
 | D-043 | W-016: console CORS policy (exact origins, no credentials, named headers) | [ADR-012](adr/ADR-012-openapi-contract-and-console-boundary.md) |
 | D-044 | W-016: `GET /api/v1/me` is the console's source for navigation and permission checks | [ADR-012](adr/ADR-012-openapi-contract-and-console-boundary.md) |
+| D-045 | Console palette: Vellum light | - |
+| D-046 | Console stack: NgRx SignalStore + TanStack Query, in `web/`, domain-neutral screens | - |
+| D-047 | Live permissions SSE stream cancelled | - |
+| D-048 | Owner's earlier design repo may be copied directly, names scrubbed on import | - |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-048 — The owner's earlier design repo may be copied directly; names are scrubbed on import — 2026-11-27
+WS: WS-18
+Context: the owner's earlier work (audit logging and related patterns) now sits in a repo the owner controls, cloned read-only at `~/Repos/career-work/` (outside this repo).
+Decision: agents may copy code from it directly instead of re-deriving the pattern, because the owner states full authority over it. Every import is renamed to Fugue conventions and must pass the scrub gate (no employer, client or product names) and the existing fitness rules.
+Why: one day to submission; re-deriving proven code costs time the owner does not have.
+Consequences: imported code gets the same tests, review and gates as new code; the source repo is never referenced by name in Fugue.
+Who: owner
+Status: accepted
+Promote: no
+
+## D-047 — Live permissions stream (SSE) cancelled — 2026-11-27
+WS: WS-17
+Context: a server-sent events stream at `/api/v1/me/events` was designed so the nav updates the moment a module is toggled or grants change.
+Decision: not built. The console refetches `GET /api/v1/me` after login, on token refresh and on window focus.
+Why: owner call to protect the submission timeline; the refetch covers the demo.
+Consequences: a toggle shows up on the next focus or navigation, not instantly. Revive trigger recorded in `docs/archive/deferred.md` terms: when a second instance or a live-ops screen needs push.
+Who: owner
+Status: accepted
+Promote: no
+
+## D-046 — Console stack: NgRx SignalStore for client state, TanStack Query for server state — 2026-11-26
+WS: WS-17
+Context: the brief requires Angular; the owner first proposed Zustand.
+Decision: Angular (latest stable) in `web/`; NgRx SignalStore for session and UI state, TanStack Query for Angular for server state (fetched data never lives in the store); Tailwind + Angular CDK; TypeScript client generated from `docs/api/openapi.v1.json`; screens stay domain-neutral.
+Why: SignalStore keeps the Zustand feel without a React library in an Angular codebase; splitting client and server state avoids a hand-rolled cache.
+Consequences: contract drift breaks the console build instead of the demo.
+Who: owner (AI proposed Zustand + TanStack first; owner overrode to SignalStore)
+Status: accepted
+Promote: no
+
+## D-045 — Console palette: Vellum light — 2026-11-26
+WS: WS-17
+Context: five palettes were compared on one rendered screen; a crimson brand accent was rejected because red must mean error.
+Decision: Vellum (aged paper, Prussian-blue accent), light mode only; red, amber and green are status colours only; tints derived with `color-mix()` from one token file.
+Why: projector and screen-share legibility for the demo; status colours never collide with the brand.
+Consequences: a dark theme is a token swap later.
+Who: owner
+Status: accepted
+Promote: no
 
 ## D-044 — W-016 GET /api/v1/me is the console's source for navigation and permission checks — 2026-11-26
 WS: WS-16

@@ -4,6 +4,15 @@ Tracks notable changes across migrations, API contracts, and project documentati
 
 > **ADR links.** An entry that reflects a real architectural decision cites it as `(ADR-NNN)`; the ADR lives in `docs/adr/`.
 
+## 2026-11-27 — Closed W-011: Project README
+WS: WS-11
+Closed: W-011 (WS-11) Project README
+Outcome: README written by a research agent (Google README guide applied; other sources unreachable), stale status lines corrected by the lead before commit. Status and highlights need a refresh whenever a batch lands.
+Commits:
+- ee7f62e docs(readme): project README
+Decisions: none
+Follow-ups: none
+
 ## 2026-11-26 — Closed W-017: Fugue Console: Angular admin console for the API (web/)
 WS: WS-17
 Closed: W-017 (WS-17) Fugue Console: Angular admin console for the API (web/)

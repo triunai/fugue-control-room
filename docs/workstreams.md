@@ -27,8 +27,14 @@ Status: `scripts/codex-gate.mjs` invocation (`codex exec review --base <sha> ...
 Resume: make a throwaway seam change on a branch, run `node scripts/codex-gate.mjs --dry-run --base=<ref>`, then once for real; confirm `docs/reviews/codex/` receives text and the failure path records "failed". Also confirm lefthook gives git's stdin to both `spine-nudge` and `codex-gate` on a real push.
 Refs: D-014, ADR-007
 
-### WS-11 — Project README — ▶ ACTIVE (2026-11-25)
-ID: W-011
-Status: written by a research agent, stale status lines corrected by the lead; committing now.
-Resume: refresh Status/Highlights whenever a batch lands.
-Refs: `README.md`
+### WS-18 — Import the owner's earlier audit-logging design and harden audit — ⏸ PARKED (2026-11-27)
+ID: W-018
+Status: source cloned read-only at `~/Repos/career-work/<source-repo>/ (exact path: in the owner's seed prompt)` (outside this repo; never name it in Fugue). Copying allowed (D-048), names scrubbed on import. Compare its audit implementation with W-012's `audit_log` and take what is stronger (knobs, PII config, payload processing, retention, query shapes); keep same-transaction, append-only and never-sampled guarantees.
+Resume: Haiku sweep of the source's audit code first (paths + what it does), then a Sonnet port with tests, Codex review on the diff.
+Refs: D-048, ADR-010
+
+### WS-19 — Users list endpoint for the Access screen — ⏸ PARKED (2026-11-27)
+ID: W-019
+Status: the console's Users & access screen has no list; the operator pastes a user id or picks from audit actors.
+Resume: `GET /api/v1/users` (keyset, search, `USERS_READ`), refresh the OpenAPI snapshot, regenerate the console client, add the list to the Access screen.
+Refs: ADR-008, ADR-012

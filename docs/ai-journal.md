@@ -182,3 +182,11 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
   - Traps hit: Bruno's module check still expected four modules after S4 added WEBHOOKS; XML doc generation turned two doc-comment slips into build errors; the empty `security: []` of an anonymous operation is dropped by the serializer, so the bearer requirement is added per operation instead of globally.
 - **Decision:** accepted as D-042 to D-044 (ADR-012).
 - **Why:** a contract that the build checks cannot drift silently, and one server-side definition of "effective permission" keeps the UI honest.
+
+## 2026-11-26/27 - Console and wrap decisions (lead)
+- **Asked:** a frontend with Zustand. **AI proposed:** Zustand (vanilla) + TanStack Query, with NgRx SignalStore as the Angular-native alternative. **Decision: overrode** - owner chose SignalStore + TanStack Query (D-046). **Why:** avoids "why a React library in Angular?" with an Angular shop.
+- **Asked:** design via Lovable. Lovable ran out of credits mid-way. **AI proposed:** a five-palette study on one rendered screen, crimson rejected because red must mean error. **Decision: accepted** - Vellum light (D-045). **Why:** projector legibility; status colours never collide with the brand.
+- **AI proposed:** a live permissions SSE stream with Postgres LISTEN/NOTIFY. **Decision: overrode** - owner cancelled it before any code (D-047). **Why:** protect the submission timeline.
+- **AI proposed:** patterns-only import from the owner's earlier work repo. **Decision: overrode** - owner has authority; direct copy allowed, names scrubbed (D-048).
+- **AI caught:** a secrets-scan false positive on `web/package-lock.json`; fixed narrowly (package-name lines only) instead of a blanket file exemption, and tested that a token in a lockfile is still rejected.
+- **AI caught at wrap:** 232 red tests in 6 s were an OrbStack outage, not code - confirmed from the exception, re-ran green (406/406) after starting the runtime; recorded as failure mode 26.
