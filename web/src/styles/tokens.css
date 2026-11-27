@@ -40,6 +40,10 @@
   --warn-ink: #7a540c;
   --err-ink: #97302a;
 
+  /* chart series */
+  --chart-1: var(--accent);
+  --chart-2: var(--warn);
+
   /* derived */
   --accent-hover: color-mix(in oklab, var(--accent) 86%, black);
   --row-hover: color-mix(in oklab, var(--accent) 4%, var(--surface));

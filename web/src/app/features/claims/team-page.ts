@@ -5,6 +5,7 @@ import { ClaimsApi, EMPTY_CLAIM_FILTER, claimKeys } from '../../api/claims.api';
 import { OfficerWorkloadDto } from '../../api/models';
 import { AccessService } from '../../core/auth/access.service';
 import { RelativeTimePipe, StampPipe } from '../../ui/format';
+import { UsdView } from './usd-view';
 import { livePoll } from './live-poll';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
 import { MoneyPipe } from './claim-bits';
@@ -26,7 +27,7 @@ type OfficerX = OfficerWorkloadDto & { oldestOpenClaimId?: string | null };
 @Component({
   selector: 'fg-team-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, MoneyPipe, RelativeTimePipe, StampPipe, SkeletonRows, EmptyState, ErrorState],
+  imports: [RouterLink, MoneyPipe, RelativeTimePipe, StampPipe, SkeletonRows, EmptyState, ErrorState, UsdView],
   styleUrls: ['./claims.css', './team.css'],
   template: `
     <div class="page">
@@ -276,6 +277,11 @@ type OfficerX = OfficerWorkloadDto & { oldestOpenClaimId?: string | null };
             </div>
           }
         </section>
+        @if (matrix().length) {
+          <section class="usd-section" aria-labelledby="usd-h" data-testid="usd-section">
+            <fg-usd-view [rows]="matrix()" />
+          </section>
+        }
       }
     </div>
   `,
