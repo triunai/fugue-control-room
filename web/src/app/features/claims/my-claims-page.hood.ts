@@ -10,6 +10,9 @@ export const MY_CLAIMS_HOOD: HoodNote = {
     'Scope comes from the token: your id, unless you hold CLAIMS_ALL. A claim outside it is 404, never 403.',
     'The internal reserve is never part of what a claimant receives.',
   ],
+  adrs: [
+    { label: 'ADR-008 Ownership by scoping', path: 'docs/adr/ADR-008-auth-and-identity-model.md' },
+  ],
   decisions: [
     { label: 'Who sees what', path: 'docs/CLAIMS.md#3-who-sees-what' },
     { label: 'D-019 Ownership by scoping, 404 across owners', path: 'docs/decisions.md' },

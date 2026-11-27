@@ -208,6 +208,12 @@
 .links li {
   margin: 0.25rem 0;
 }
+/* ADR links are the stronger evidence: a left rule sets them apart from the D-entries below. */
+.links .adr {
+  border-left: 2px solid var(--accent-text);
+  padding-left: 0.5rem;
+  font-weight: 600;
+}
 .links a {
   color: var(--accent-text);
 }

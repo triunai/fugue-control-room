@@ -28,6 +28,8 @@ export interface HoodNote {
   readonly why: readonly string[];
   /** Two to four short lines on how the API does it: endpoints, concurrency, idempotency, scope. Only what is true of the page. */
   readonly how: readonly string[];
+  /** ADRs that really govern the page, linked as `docs/adr/ADR-NNN-slug.md`; shown first. */
+  readonly adrs: readonly HoodLink[];
   /** Two to four links to decisions or sections of the claims write-up. */
   readonly decisions: readonly HoodLink[];
   /** Guards that apply on this screen: a chip ("409 invalid transition") that opens onto the backend code enforcing it. */

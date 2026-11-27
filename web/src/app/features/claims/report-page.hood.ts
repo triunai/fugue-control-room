@@ -10,9 +10,12 @@ export const REPORT_HOOD: HoodNote = {
     'Same key and same body replays the stored reply; same key with a different body is 422.',
     'The caller becomes the claimant and the claim starts Submitted; the incident date must be within the last year, not in the future.',
   ],
+  adrs: [
+    { label: 'ADR-013 Idempotency keys', path: 'docs/adr/ADR-013-idempotency-keys.md' },
+    { label: 'ADR-004 Errors: FluentResults with ErrorType', path: 'docs/adr/ADR-004-fluentresults-with-errortype.md' },
+  ],
   decisions: [
     { label: 'D-050 Idempotency keys with stored replay', path: 'docs/decisions.md' },
-    { label: 'ADR-013 Idempotency keys', path: 'docs/adr/ADR-013-idempotency-keys.md' },
     { label: 'D-056 Submit key is required', path: 'docs/decisions.md' },
     { label: 'Duplicates and atomicity', path: 'docs/CLAIMS.md#4-concurrency-duplicates-and-atomicity' },
   ],

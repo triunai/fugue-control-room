@@ -11,11 +11,13 @@ export const AUDIT_HOOD: HoodNote = {
     'Search is eventually consistent: an indexer copies audit rows into Meilisearch.',
     'If Meilisearch is unconfigured or unreachable the search answers 503 search.unavailable; the filters still work from Postgres.',
   ],
+  adrs: [
+    { label: 'ADR-010 Rich append-only audit log', path: 'docs/adr/ADR-010-audit-log.md' },
+  ],
   decisions: [
     { label: 'D-031 Read API behind AUDIT_READ', path: 'docs/decisions.md' },
     { label: 'D-058 Audit search on Meilisearch', path: 'docs/decisions.md' },
     { label: 'D-030 Masking at write time', path: 'docs/decisions.md' },
-    { label: 'ADR-010 Audit log', path: 'docs/adr/ADR-010-audit-log.md' },
   ],
   guards: [
     {

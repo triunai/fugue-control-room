@@ -10,6 +10,10 @@ export const HOME_HOOD: HoodNote = {
     'The page never checks a role name; the API reads the same permission codes from the token on every call (D-044).',
     'A claimant’s list is scoped server-side to their own claims; staff with CLAIMS_ALL see the queue.',
   ],
+  adrs: [
+    { label: 'ADR-012 OpenAPI contract and GET /me', path: 'docs/adr/ADR-012-openapi-contract-and-console-boundary.md' },
+    { label: 'ADR-008 Auth and identity model', path: 'docs/adr/ADR-008-auth-and-identity-model.md' },
+  ],
   decisions: [
     { label: 'D-044 /me drives navigation and checks', path: 'docs/decisions.md' },
     { label: 'Who sees what', path: 'docs/CLAIMS.md#3-who-sees-what' },

@@ -8,6 +8,7 @@ import { HoodState, hoodOffFromUrl, isTypingTarget } from './hood-state';
 
 const NOTE: HoodNote = {
   why: ['First line.', 'Second line.'],
+  adrs: [{ label: 'ADR-006 Data access', path: 'docs/adr/ADR-006-ef-core-reads-dapper-writes.md' }],
   decisions: [{ label: 'D-056 Review', path: 'docs/decisions.md' }],
   how: ['Calls GET /claims/{id}.', 'If-Match is checked first.'],
   guards: [
@@ -125,7 +126,11 @@ describe('Under the hood sidebar', () => {
     expect(guard.querySelector('a.gpath')?.getAttribute('href')).toBe(
       'https://github.com/triunai/fugue-control-room/blob/main/src/Fugue.Application/Features/Claims/ClaimFlow.cs',
     );
-    expect(q(f, '.links a')?.getAttribute('href')).toBe(
+    const links = [...f.nativeElement.querySelectorAll('.links li')] as HTMLElement[];
+    expect(links[0].classList.contains('adr')).toBe(true);
+    expect(links[1].classList.contains('adr')).toBe(false);
+    expect(links[0].querySelector('a')?.getAttribute('href')).toContain('docs/adr/ADR-006');
+    expect(links[1].querySelector('a')?.getAttribute('href')).toBe(
       'https://github.com/triunai/fugue-control-room/blob/main/docs/decisions.md',
     );
     await router.navigateByUrl('/b');

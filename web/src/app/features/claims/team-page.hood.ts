@@ -11,6 +11,9 @@ export const TEAM_HOOD: HoodNote = {
     'Amounts are bigint minor units plus an ISO currency code; the page formats them, the server never converts.',
     'The page shows or hides each part from the permission codes in /me (D-044); the API checks every call again.',
   ],
+  adrs: [
+    { label: 'ADR-012 OpenAPI contract and GET /me', path: 'docs/adr/ADR-012-openapi-contract-and-console-boundary.md' },
+  ],
   decisions: [
     { label: 'Workload and exposure', path: 'docs/CLAIMS.md#6-workload-and-exposure' },
     { label: 'Money in minor units', path: 'docs/CLAIMS.md#7-money' },

@@ -11,6 +11,11 @@ export const CLAIM_DETAIL_HOOD: HoodNote = {
     'The aggregate guards each move (409); the new status, timeline row and outbox event commit in one SaveChanges.',
     'Outside your scope a claim is 404, never 403; permission codes from /me decide which buttons show, the API checks again.',
   ],
+  adrs: [
+    { label: 'ADR-006 Data access: xmin is the ETag', path: 'docs/adr/ADR-006-ef-core-reads-dapper-writes.md' },
+    { label: 'ADR-004 Errors: FluentResults with ErrorType', path: 'docs/adr/ADR-004-fluentresults-with-errortype.md' },
+    { label: 'ADR-011 Outbox in the same transaction', path: 'docs/adr/ADR-011-outbox-and-signed-webhooks.md' },
+  ],
   decisions: [
     { label: 'D-056 ETag checked before the state machine', path: 'docs/decisions.md' },
     { label: 'Concurrency and atomicity', path: 'docs/CLAIMS.md#4-concurrency-duplicates-and-atomicity' },

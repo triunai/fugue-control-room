@@ -10,6 +10,9 @@ export const CLAIMS_QUEUE_HOOD: HoodNote = {
     'Staff with CLAIMS_ALL see every claim, oldest first; everyone else is scoped to their own claims by the same query.',
     'Money is a bigint in minor units plus a currency code, shown as the claim’s own currency.',
   ],
+  adrs: [
+    { label: 'ADR-008 Auth and identity model', path: 'docs/adr/ADR-008-auth-and-identity-model.md' },
+  ],
   decisions: [
     { label: 'Who sees what', path: 'docs/CLAIMS.md#3-who-sees-what' },
     { label: 'D-053 Claims platform shape', path: 'docs/decisions.md' },

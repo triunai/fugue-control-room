@@ -111,6 +111,11 @@ const statusClass = (s: number) => (s >= 500 || s === 0 ? 's5' : s >= 400 ? 's4'
             <section aria-labelledby="hood-dec">
               <h3 id="hood-dec" class="sec">Decisions</h3>
               <ul class="links">
+                @for (a of n.adrs; track a.path) {
+                  <li class="adr">
+                    <a [href]="url(a.path)" target="_blank" rel="noopener noreferrer">{{ a.label }}</a>
+                  </li>
+                }
                 @for (d of n.decisions; track d.path + d.label) {
                   <li>
                     <a [href]="url(d.path)" target="_blank" rel="noopener noreferrer">{{ d.label }}</a>

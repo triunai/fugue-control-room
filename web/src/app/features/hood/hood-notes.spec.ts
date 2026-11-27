@@ -22,6 +22,11 @@ describe('hood notes registered by route data', () => {
     expect(note!.decisions.length).toBeLessThanOrEqual(4);
     expect(note!.guards.length).toBeGreaterThan(0);
     for (const d of note!.decisions) expect(d.path).toMatch(/^docs\/[\w./-]+(#[\w-]+)?$/);
+    expect(note!.adrs.length).toBeGreaterThan(0);
+    for (const a of note!.adrs) {
+      expect(a.path).toMatch(/^docs\/adr\/ADR-\d{3}-[\w-]+\.md$/);
+      expect(existsSync(resolve(process.cwd(), '..', a.path))).toBe(true);
+    }
   });
 
   // The guard excerpts must be real: the file exists in the repository and every excerpt line is a line of it (indentation trimmed).

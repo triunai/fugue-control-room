@@ -11,11 +11,14 @@ export const ACCESS_HOOD: HoodNote = {
     'Effective permissions are one SQL statement: role grants plus allow overrides, minus unexpired deny overrides.',
     'You cannot change your own overrides (409); the override and its grant-audit row commit together.',
   ],
+  adrs: [
+    { label: 'ADR-008 Auth and identity model', path: 'docs/adr/ADR-008-auth-and-identity-model.md' },
+    { label: 'ADR-006 Data access: xmin is the ETag', path: 'docs/adr/ADR-006-ef-core-reads-dapper-writes.md' },
+  ],
   decisions: [
     { label: 'D-017 Precedence deny > allow > role', path: 'docs/decisions.md' },
     { label: 'D-036 Override If-Match', path: 'docs/decisions.md' },
     { label: 'D-044 /me drives permission checks', path: 'docs/decisions.md' },
-    { label: 'ADR-008 Auth and identity model', path: 'docs/adr/ADR-008-auth-and-identity-model.md' },
   ],
   guards: [
     {
