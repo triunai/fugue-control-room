@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { injectInfiniteQuery, injectQuery, keepPreviousData } from '@tanstack/angular-query';
 import { ClaimsApi, ClaimFilter, claimKeys } from '../../api/claims.api';
 import { ClaimDto, ClaimStatus } from '../../api/models';
@@ -7,9 +7,11 @@ import { StampPipe } from '../../ui/format';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
 import { ClaimStatusPill, MoneyPipe } from './claim-bits';
 import { ClaimsFilterStore } from './claims-filter.store';
+import { filterToParams, hasFilterParams, paramsToFilter } from './claims-query-params';
 import { MARKETS, ageDays } from './claims-logic';
 
-const TABS: { v: '' | ClaimStatus; l: string }[] = [
+const TABS: { v: ClaimFilter['status']; l: string }[] = [
+  { v: 'open', l: 'Open' },
   { v: '', l: 'All' },
   { v: 'Submitted', l: 'Submitted' },
   { v: 'UnderReview', l: 'Under review' },
@@ -31,8 +33,8 @@ const TABS: { v: '' | ClaimStatus; l: string }[] = [
         <div>
           <h1 class="page-title">Claims queue</h1>
           <p class="page-lede">
-            Every claim, the longest-waiting first. Pick up a submitted claim to work it; reserves are shown in each
-            claim's own currency and are never added across currencies.
+            Open claims by default, the longest-waiting first. Pick up a submitted claim to work it; reserves are shown
+            in each claim's own currency and are never added across currencies.
           </p>
         </div>
       </header>
@@ -178,6 +180,7 @@ const TABS: { v: '' | ClaimStatus; l: string }[] = [
 export class ClaimsQueuePage {
   private readonly api = inject(ClaimsApi);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   protected readonly filters = inject(ClaimsFilterStore);
 
   protected readonly tabs = TABS;
@@ -203,6 +206,9 @@ export class ClaimsQueuePage {
     market: this.filters.market(),
     line: this.filters.line(),
     q: this.filters.q(),
+    officerId: this.filters.officerId(),
+    minAgeDays: this.filters.minAgeDays(),
+    maxAgeDays: this.filters.maxAgeDays(),
   }));
 
   protected readonly query = injectInfiniteQuery(() => ({
@@ -216,8 +222,8 @@ export class ClaimsQueuePage {
 
   /** Counts follow the assigned / market / line / search filters but not the tab, so every tab shows what it would hold. */
   private readonly counts = injectQuery(() => {
-    const { assigned, market, line, q } = this.filter();
-    const rest = { assigned, market, line, q };
+    const { assigned, market, line, q, officerId, minAgeDays, maxAgeDays } = this.filter();
+    const rest = { assigned, market, line, q, officerId, minAgeDays, maxAgeDays };
     return {
       queryKey: claimKeys.counts(rest),
       queryFn: () => this.api.counts(rest),
@@ -226,6 +232,16 @@ export class ClaimsQueuePage {
   });
 
   constructor() {
+    // The URL is the source when it carries filters (a link from the team page); the filters then write themselves back.
+    const params = this.route.snapshot.queryParams;
+    if (hasFilterParams(params)) {
+      this.filters.setAll(paramsToFilter(params));
+      this.searchText.set(this.filters.q());
+    }
+    effect(() => {
+      const target = filterToParams(this.filter());
+      untracked(() => this.router.navigate([], { relativeTo: this.route, queryParams: target, replaceUrl: true }));
+    });
     effect((onCleanup) => {
       const text = this.searchText();
       const t = setTimeout(() => untracked(() => this.filters.setSearch(text)), 280);
@@ -238,9 +254,13 @@ export class ClaimsQueuePage {
     return c ? `${c.n}${c.more ? '+' : ''}` : '…';
   }
 
-  protected tabCount(status: '' | ClaimStatus): string {
+  protected tabCount(status: ClaimFilter['status']): string {
     const data = this.counts.data();
     if (!data) return '';
+    if (status === 'open') {
+      const open = [data.Submitted, data.UnderReview, data.InfoRequested];
+      return `${open.reduce((sum, c) => sum + c.n, 0)}${open.some((c) => c.more) ? '+' : ''}`;
+    }
     if (status) return this.countLabel(status);
     const all = Object.values(data);
     return `${all.reduce((sum, c) => sum + c.n, 0)}${all.some((c) => c.more) ? '+' : ''}`;
