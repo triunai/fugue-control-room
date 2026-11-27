@@ -18,6 +18,7 @@ import { StampPipe } from '../../ui/format';
 import { Overlays } from '../../ui/overlays';
 import { RefChip } from '../../ui/ref-chip';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
+import { DatePicker } from '../../ui/date-picker';
 import { Select, SelectOption } from '../../ui/select';
 import { RolesMatrix } from './roles-matrix';
 import { UserCreateDrawer } from './user-create-drawer';
@@ -28,6 +29,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   selector: 'fg-access-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    DatePicker,
     ReactiveFormsModule,
     HasPermissionDirective,
     RefChip,

@@ -56,6 +56,15 @@ export function addDays(iso: string, n: number): string {
   return toIso(d);
 }
 
+const TIME = /^(\d{1,2}):(\d{2})$/;
+
+/** A typed 24-hour time as `HH:mm` (00:00-23:59), or null. Accepts a one-digit hour (`9:05`). */
+export function parseTime(text: string): string | null {
+  const m = TIME.exec(text.trim());
+  if (!m || +m[1] > 23 || +m[2] > 59) return null;
+  return `${m[1].padStart(2, '0')}:${m[2]}`;
+}
+
 /** Same day n months on, clamped to the month's last day (31 Jan + 1 month = 28/29 Feb). */
 export function addMonths(iso: string, n: number): string {
   const d = fromIso(iso);
@@ -121,6 +130,9 @@ let nextId = 0;
  * (Shift: a year), Enter/Space choose, Escape closes. `min`/`max` (ISO) grey out days, like the native attributes.
  * A reactive-forms control: the value is ISO `YYYY-MM-DD`, or `''` while the text is empty or not a real date
  * (the native date input reports `''` for an incomplete date too).
+ * `withTime` adds a typed 24-hour `HH:mm` field beside the date (no popup) and makes the value
+ * `YYYY-MM-DDTHH:mm`, the string `<input type="datetime-local">` produced (local time, no offset); `''` until both
+ * parts are valid.
  */
 @Component({
   selector: 'fg-date',
@@ -128,43 +140,62 @@ let nextId = 0;
   imports: [CdkConnectedOverlay, CdkOverlayOrigin],
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => DatePicker), multi: true }],
   template: `
-    <div class="fg-date" cdkOverlayOrigin #origin="cdkOverlayOrigin">
-      <input
-        #field
-        class="input fg-date-input"
-        [id]="inputId()"
-        [value]="text()"
-        [disabled]="disabled()"
-        placeholder="YYYY-MM-DD"
-        inputmode="numeric"
-        autocomplete="off"
-        maxlength="10"
-        [attr.aria-invalid]="invalid() || null"
-        [attr.aria-describedby]="describedBy()"
-        (input)="onInput($any($event.target).value)"
-        (blur)="onBlur($event)"
-        (keydown)="onFieldKeydown($event)"
-      />
-      <button
-        #toggleBtn
-        type="button"
-        class="fg-date-toggle"
-        aria-haspopup="dialog"
-        [attr.aria-label]="toggleLabel()"
-        [attr.aria-expanded]="open()"
-        [disabled]="disabled()"
-        (click)="toggle()"
-      >
-        <svg viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true" focusable="false">
-          <path
-            d="M3 4h10v9H3zM3 7h10M5.5 2.5v3M10.5 2.5v3"
-            stroke="currentColor"
-            stroke-width="1.4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
+    <div class="fg-date-row">
+      <div class="fg-date" cdkOverlayOrigin #origin="cdkOverlayOrigin">
+        <input
+          #field
+          class="input fg-date-input"
+          [id]="inputId()"
+          [value]="text()"
+          [disabled]="disabled()"
+          placeholder="YYYY-MM-DD"
+          inputmode="numeric"
+          autocomplete="off"
+          maxlength="10"
+          [attr.aria-invalid]="invalid() || null"
+          [attr.aria-describedby]="describedBy()"
+          (input)="onInput($any($event.target).value)"
+          (blur)="onBlur($event)"
+          (keydown)="onFieldKeydown($event)"
+        />
+        <button
+          #toggleBtn
+          type="button"
+          class="fg-date-toggle"
+          aria-haspopup="dialog"
+          [attr.aria-label]="toggleLabel()"
+          [attr.aria-expanded]="open()"
+          [disabled]="disabled()"
+          (click)="toggle()"
+        >
+          <svg viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true" focusable="false">
+            <path
+              d="M3 4h10v9H3zM3 7h10M5.5 2.5v3M10.5 2.5v3"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+      </div>
+      @if (withTime()) {
+        <input
+          class="input fg-time-input"
+          [id]="inputId() + '-time'"
+          [value]="timeText()"
+          [disabled]="disabled()"
+          placeholder="HH:mm"
+          inputmode="numeric"
+          autocomplete="off"
+          maxlength="5"
+          aria-label="Time, 24-hour HH:mm"
+          [attr.aria-invalid]="invalid() || timeBad() || null"
+          (input)="onTimeInput($any($event.target).value)"
+          (blur)="onTimeBlur()"
+          (keydown)="onTimeKeydown($event)"
+        />
+      }
     </div>
     <ng-template
       cdkConnectedOverlay
@@ -254,8 +285,19 @@ let nextId = 0;
       display: block;
       min-width: 0;
     }
+    .fg-date-row {
+      display: flex;
+      gap: 0.5rem;
+    }
     .fg-date {
       position: relative;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .fg-time-input {
+      flex: 0 0 5.5rem;
+      width: 5.5rem;
+      font-variant-numeric: tabular-nums;
     }
     .fg-date-input {
       padding-right: 2.6rem;
@@ -395,6 +437,8 @@ export class DatePicker implements ControlValueAccessor {
   readonly max = input<string | null>(null);
   readonly invalid = input(false);
   readonly describedBy = input<string | null>(null);
+  /** Adds a typed `HH:mm` field; the value becomes `YYYY-MM-DDTHH:mm`. */
+  readonly withTime = input(false);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly field = viewChild.required<ElementRef<HTMLInputElement>>('field');
@@ -405,8 +449,13 @@ export class DatePicker implements ControlValueAccessor {
   protected readonly weekdays = WEEKDAYS;
   protected readonly today = todayIso();
 
-  /** The control value: ISO or ''. */
+  /** The date part of the control value: ISO or ''. */
   readonly value = signal('');
+  /** The valid time part (`HH:mm`) or ''. */
+  private readonly time = signal('');
+  protected readonly timeText = signal('');
+  protected readonly timeBad = computed(() => !!this.timeText().trim() && !parseTime(this.timeText()));
+  private emitted = '';
   /** What the field shows (may be half-typed). */
   protected readonly text = signal('');
   readonly open = signal(false);
@@ -444,8 +493,12 @@ export class DatePicker implements ControlValueAccessor {
   }
 
   writeValue(v: string | null): void {
-    this.value.set(v ?? '');
-    this.text.set(v ?? '');
+    const [date, time = ''] = (v ?? '').split('T');
+    this.value.set(date);
+    this.text.set(date);
+    this.time.set(parseTime(time) ?? '');
+    this.timeText.set(this.time());
+    this.emitted = this.compose();
   }
   registerOnChange(fn: (v: string) => void): void {
     this.onChange = fn;
@@ -590,9 +643,42 @@ export class DatePicker implements ControlValueAccessor {
     if (returnFocus) this.field().nativeElement.focus();
   }
 
+  protected onTimeInput(raw: string): void {
+    this.timeText.set(raw);
+    this.time.set(parseTime(raw) ?? '');
+    this.emit();
+  }
+
+  protected onTimeBlur(): void {
+    const parsed = parseTime(this.timeText());
+    if (parsed) this.timeText.set(parsed);
+    this.onTouched();
+  }
+
+  /** ArrowUp/ArrowDown step the time by a minute (Shift: an hour), wrapping within the day. */
+  protected onTimeKeydown(e: KeyboardEvent): void {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    const [h, m] = (parseTime(this.timeText()) ?? '00:00').split(':').map(Number);
+    const step = (e.key === 'ArrowUp' ? 1 : -1) * (e.shiftKey ? 60 : 1);
+    const total = (((h * 60 + m + step) % 1440) + 1440) % 1440;
+    this.onTimeInput(`${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`);
+  }
+
+  private compose(): string {
+    if (!this.withTime()) return this.value();
+    return this.value() && this.time() ? `${this.value()}T${this.time()}` : '';
+  }
+
   private commit(v: string): void {
-    if (v === this.value()) return;
     this.value.set(v);
-    this.onChange(v);
+    this.emit();
+  }
+
+  private emit(): void {
+    const out = this.compose();
+    if (out === this.emitted) return;
+    this.emitted = out;
+    this.onChange(out);
   }
 }

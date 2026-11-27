@@ -9,6 +9,7 @@ import { AuditLogDto } from '../../api/models';
 import { isApiProblem } from '../../core/http/problem';
 import { displayMasked, RelativeTimePipe, StampPipe } from '../../ui/format';
 import { RefChip } from '../../ui/ref-chip';
+import { DatePicker } from '../../ui/date-picker';
 import { Select, SelectOption } from '../../ui/select';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
 import { AuditFilterStore } from './audit-filter.store';
@@ -42,6 +43,7 @@ const ENTITY_TYPES = [
   selector: 'fg-audit-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    DatePicker,
     ReactiveFormsModule,
     RouterLink,
     RefChip,

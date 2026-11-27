@@ -185,7 +185,7 @@
               </div>
               <div class="field">
                 <label class="label" for="ov-until">Until <span class="font-normal">(optional)</span></label>
-                <input id="ov-until" class="input" type="datetime-local" formControlName="expiresAt" />
+                <fg-date inputId="ov-until" formControlName="expiresAt" [withTime]="true" />
               </div>
               <div class="field col-span-full">
                 <label class="label" for="ov-reason">Reason</label>
