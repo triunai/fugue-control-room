@@ -5,6 +5,7 @@ import { ClaimsApi, EMPTY_CLAIM_FILTER, claimKeys } from '../../api/claims.api';
 import { OfficerWorkloadDto } from '../../api/models';
 import { AccessService } from '../../core/auth/access.service';
 import { RelativeTimePipe, StampPipe } from '../../ui/format';
+import { livePoll } from './live-poll';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
 import { MoneyPipe } from './claim-bits';
 import { SLA_DECISION_DAYS, SLA_PICKUP_DAYS } from './claims-logic';
@@ -276,8 +277,12 @@ export class TeamPage {
   protected readonly canMoney = computed(() => this.access.has('CLAIMS_EXPOSURE'));
   protected readonly canSettle = computed(() => this.access.has('CLAIMS_SETTLE'));
 
+  /** Refetch on focus and every 15 s, paused mid-dialog or mid-mutation: managers read this as the live picture. */
+  private readonly live = livePoll();
+
   protected readonly workload = injectQuery(() => ({
     queryKey: claimKeys.workload,
+    ...this.live,
     queryFn: () => this.api.workload(),
     enabled: this.canTeam(),
   }));
@@ -285,6 +290,7 @@ export class TeamPage {
   /** Every open claim (one page of 100 per open status), for the breach and no-reserve counts and each officer's oldest claim. */
   protected readonly openQuery = injectQuery(() => ({
     queryKey: [...claimKeys.all, 'open'] as const,
+    ...this.live,
     queryFn: async () =>
       (
         await Promise.all(
@@ -298,12 +304,14 @@ export class TeamPage {
 
   protected readonly approvedQuery = injectQuery(() => ({
     queryKey: [...claimKeys.all, 'approved'] as const,
+    ...this.live,
     queryFn: () => this.api.list({ ...EMPTY_CLAIM_FILTER, status: 'Approved' }, null, 100),
     enabled: this.canTeam() && this.canSettle(),
   }));
 
   protected readonly exposure = injectQuery(() => ({
     queryKey: claimKeys.exposure,
+    ...this.live,
     queryFn: () => this.api.exposure(),
     enabled: this.canMoney(),
   }));

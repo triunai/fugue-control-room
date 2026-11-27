@@ -5,6 +5,7 @@ import { ToastStore } from '../../core/ui/toast.store';
 import { ClaimsApi, EMPTY_CLAIM_FILTER, claimKeys } from '../../api/claims.api';
 import { AccessService } from '../../core/auth/access.service';
 import { RelativeTimePipe } from '../../ui/format';
+import { livePoll } from '../claims/live-poll';
 import { ClaimStatusPill, MoneyPipe } from '../claims/claim-bits';
 import { SLA_DECISION_DAYS, SLA_PICKUP_DAYS, ageDays, marketName } from '../claims/claims-logic';
 import { bySlaRisk, claimantHero, landingKind, needsMyAction, officerPrimary } from './home-logic';
@@ -272,9 +273,13 @@ export class HomePage {
       })[this.kind()],
   );
 
+  /** Refetch on focus and every 15 s, paused mid-dialog or mid-mutation: managers read this as the live picture. */
+  private readonly live = livePoll();
+
   // claimant
   protected readonly claimantQuery = injectQuery(() => ({
     queryKey: claimKeys.list(EMPTY_CLAIM_FILTER),
+    ...this.live,
     queryFn: () => this.api.list(EMPTY_CLAIM_FILTER, null, 50),
     enabled: this.kind() === 'claimant',
   }));
@@ -282,6 +287,7 @@ export class HomePage {
   /** The list rows carry no open question (contract gap), so the hero reads the one claim that needs the claimant. */
   protected readonly heroDetail = injectQuery(() => ({
     queryKey: claimKeys.one(this.hero().claim?.id ?? ''),
+    ...this.live,
     queryFn: () => this.api.get(this.hero().claim!.id),
     enabled: this.kind() === 'claimant' && this.hero().needsYou,
   }));
@@ -293,17 +299,20 @@ export class HomePage {
   // officer
   private readonly mineQuery = injectQuery(() => ({
     queryKey: claimKeys.list({ ...EMPTY_CLAIM_FILTER, assigned: 'me', status: 'UnderReview' }),
+    ...this.live,
     queryFn: () => this.api.list({ ...EMPTY_CLAIM_FILTER, assigned: 'me', status: 'UnderReview' }, null, 50),
     enabled: this.kind() === 'officer',
   }));
   private readonly unassignedQuery = injectQuery(() => ({
     queryKey: claimKeys.list({ ...EMPTY_CLAIM_FILTER, assigned: 'none', status: 'Submitted' }),
+    ...this.live,
     queryFn: () => this.api.list({ ...EMPTY_CLAIM_FILTER, assigned: 'none', status: 'Submitted' }, null, 50),
     enabled: this.kind() === 'officer',
   }));
   protected readonly officerQueries = computed(() => this.mineQuery.isPending() || this.unassignedQuery.isPending());
   private readonly waitingQuery = injectQuery(() => ({
     queryKey: claimKeys.list({ ...EMPTY_CLAIM_FILTER, assigned: 'me', status: 'InfoRequested' }),
+    ...this.live,
     queryFn: () => this.api.list({ ...EMPTY_CLAIM_FILTER, assigned: 'me', status: 'InfoRequested' }, null, 50),
     enabled: this.kind() === 'officer',
   }));
@@ -325,16 +334,19 @@ export class HomePage {
   // manager
   private readonly workloadQuery = injectQuery(() => ({
     queryKey: claimKeys.workload,
+    ...this.live,
     queryFn: () => this.api.workload(),
     enabled: this.kind() === 'manager',
   }));
   protected readonly exposureQuery = injectQuery(() => ({
     queryKey: claimKeys.exposure,
+    ...this.live,
     queryFn: () => this.api.exposure(),
     enabled: this.kind() === 'manager',
   }));
   private readonly approvedQuery = injectQuery(() => ({
     queryKey: [...claimKeys.all, 'approved'] as const,
+    ...this.live,
     queryFn: () => this.api.list({ ...EMPTY_CLAIM_FILTER, status: 'Approved' }, null, 100),
     enabled: this.kind() === 'manager',
   }));

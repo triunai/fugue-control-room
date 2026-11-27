@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { Dialog } from '@angular/cdk/dialog';
 import { TestBed } from '@angular/core/testing';
 import { QueryClient, provideTanStackQuery } from '@tanstack/angular-query';
@@ -37,5 +39,24 @@ describe('livePoll', () => {
     TestBed.resetTestingModule();
     setup([], 0);
     expect(TestBed.runInInjectionContext(() => livePoll(() => true)).refetchInterval()).toBe(false);
+  });
+});
+
+describe('screens that show live claim numbers poll', () => {
+  // Review catch 2026-11-27: Team and exposure (the manager's "real-time picture") and the persona landings never
+  // refetched, so "as of just now" froze. Every page that reads claim lists, workload or exposure uses livePoll.
+  const pages = [
+    'src/app/features/claims/claims-queue-page.ts',
+    'src/app/features/claims/my-claims-page.ts',
+    'src/app/features/claims/claim-detail-page.ts',
+    'src/app/features/claims/team-page.ts',
+    'src/app/features/home/home-page.ts',
+  ];
+  it.each(pages)('%s spreads livePoll into its queries', (path) => {
+    const src = readFileSync(resolve(process.cwd(), path), 'utf8');
+    expect(src).toContain('livePoll(');
+    const queries = (src.match(/injectQuery\(/g) ?? []).length;
+    const live = (src.match(/\.\.\.this\.live,/g) ?? []).length;
+    expect({ path, live: live >= queries }).toEqual({ path, live: true });
   });
 });
