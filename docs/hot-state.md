@@ -26,7 +26,7 @@ claims by design. No email/SMS consumer: signed webhooks are the integration poi
 (postgres:17-alpine), ids UUID v7 from the API (Uuid7.NewGuid) — "timestamped GUIDs" is right, "Postgres 18" is wrong.
 
 ## Traps hit
-Running Bruno's users folder creates a "Bruno Created" user that shows on Team and exposure (demo cosmetics; the 14:00 recreate wipes it).
+Bruno users/04 used to create a STAFF "Bruno Created" user that showed on Team; fixed going forward by nth-brunofix (92be068, claimant role); the old row on the current demo DB disappears at the 14:00 recreate.
 The API's general rate limiter answers 429 after many headless page loads; wait a minute. `.worktrees/_briefs/` belongs to the relay.
 33 (signed-in + reloaded browser check), 34 (push keepalive + ls-remote), 35 (shared test clock, background indexer). The commit hook
 toolchain leaves stray root pnpm-lock.yaml/pnpm-workspace.yaml in worktrees: delete, never commit. Lanes committed with lefthook off
