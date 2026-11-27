@@ -35,3 +35,7 @@ The KPI strip and tab counts read one 100-row page per status (six calls, "100+"
 ### #007 — Past info requests only appear as timeline notes
 WS: WS-20
 The claim DTO carries only the OPEN info request; earlier questions and answers are visible only as timeline notes. Fix: `GET /claims/{id}/info-requests` (scoped like the timeline) and a Q&A list on the detail page. Size S.
+
+### #008 — "Under the hood" panel: technical decisions and live API calls per page (owner idea, not approved to build)
+WS: WS-22
+A header toggle (`</>` or the `.` key) opens a right slide-over per page with four parts: why this page (2 lines), API calls recorded live by the HTTP interceptors (method, path, status, ms, ETag/If-Match; 409/412 appear as they happen), decisions linking to D-rows and CLAIMS.md sections on GitHub, and the guards that apply on that screen. Plus at most two inline "why" markers per page (dotted underline + hover card), e.g. "No grand total" -> D-057, "Not yours" -> assigned-officer guard. First pages: claim record, queue, team and exposure, claimant landing, report an incident, audit log. Off by default so the demo stays clean. Size M (one lane: a shared component, an interceptor log, per-page note objects co-located with the pages). Waiting for the owner's go.
