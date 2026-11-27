@@ -6,6 +6,7 @@ import {
   withInMemoryScrolling,
   withNavigationErrorHandler,
 } from '@angular/router';
+import { provideFugueErrorHandler } from './core/error-handler';
 import { reloadOnStaleChunk } from './core/stale-chunk';
 import { provideTanStackQuery } from '@tanstack/angular-query';
 import { routes } from './app.routes';
@@ -17,6 +18,7 @@ import { createQueryClient } from './core/query/query-client';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    provideFugueErrorHandler(),
     provideAppInitializer(suppressTourFromUrl),
     provideAppInitializer(hoodOffFromUrl),
     provideRouter(

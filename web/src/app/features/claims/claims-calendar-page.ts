@@ -8,6 +8,7 @@ import {
   effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -167,6 +168,7 @@ export class ClaimsCalendarPage implements AfterViewInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   private calendar: Calendar | null = null;
+  private readonly cssLoaded = signal(false);
   private readonly ready = signal(false);
 
   protected readonly isStaff = computed(() => this.access.has('CLAIMS_ALL'));
@@ -240,6 +242,12 @@ export class ClaimsCalendarPage implements AfterViewInit, OnDestroy {
   protected readonly events = computed(() => calendarEvents(this.query.data() ?? [], STATUS_TONE));
 
   constructor() {
+    // The grid is built once its stylesheets are in AND the first claims have settled, so its first layout already includes
+    // the event bars. Adding them afterwards re-lays out the day cells inside FullCalendar's own ResizeObserver callback,
+    // which the browser reports as "ResizeObserver loop completed with undelivered notifications" (an error in the console).
+    effect(() => {
+      if (this.cssLoaded() && !this.query.isPending()) untracked(() => this.createCalendar());
+    });
     // Events follow the data once the calendar exists.
     effect(() => {
       const events = this.events();
@@ -247,9 +255,13 @@ export class ClaimsCalendarPage implements AfterViewInit, OnDestroy {
     });
   }
 
-  /** FullCalendar's stylesheets are vendor assets loaded with this route; the grid is created once they have. */
+  /** FullCalendar's stylesheets are vendor assets loaded with this route. */
   async ngAfterViewInit(): Promise<void> {
     await Promise.all(CALENDAR_CSS.map(loadStylesheet));
+    this.cssLoaded.set(true);
+  }
+
+  private createCalendar(): void {
     const host = this.element.nativeElement.querySelector<HTMLElement>('.cal-host');
     if (!host || this.calendar) return;
     this.calendar = new Calendar(host, {
