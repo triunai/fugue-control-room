@@ -101,3 +101,15 @@ The integration tests start their own `postgres:17-alpine` through Testcontainer
 ## Server logs and a GUI
 
 The compose Postgres writes its log to files (`logging_collector=on`, `stderr` + `csvlog`, statements slower than 200 ms), so `docker logs fugue-postgres` shows little and pgAdmin's **Dashboard → Logs** tab shows the server log. Any GUI connects to `localhost:${POSTGRES_PORT}` (5433 here), database `fugue`, user `fugue`, password `POSTGRES_PASSWORD` from `.env`; pgAdmin 4 (`brew install --cask pgadmin4`) and Beekeeper Studio are both fine. To see every SQL statement EF Core and Dapper send while demoing: `ALTER SYSTEM SET log_statement = 'all'; SELECT pg_reload_conf();` and `ALTER SYSTEM RESET log_statement; SELECT pg_reload_conf();` to stop.
+
+## SQL files, migration script, read-only access for agents
+
+- **Runtime SQL is SQL.** Every Dapper and EF raw statement lives in `src/Fugue.Infrastructure/Persistence/Sql/<area>/<name>.sql` (embedded resources) and is loaded with `SqlScripts.Get("area/name")`. Each file's first line says what it does and who calls it, and you can paste it into psql after replacing the `@name` parameters. `SqlScriptsTests` fails if a name has no file or a file has no caller. Schema changes stay EF migrations.
+- **The migration script.** `npm run db:script` writes the idempotent SQL of all migrations to `artifacts/db/migrate.sql` (gitignored), for review or for applying with psql: `psql "$URI" -f artifacts/db/migrate.sql`.
+- **A read-only role for agents.** `scripts/db/fugue-readonly-role.sql` creates `fugue_readonly` (SELECT only, `default_transaction_read_only = on`). It reads every table, so use it on the local database only:
+  ```bash
+  read -rs FUGUE_READONLY_PASSWORD && export FUGUE_READONLY_PASSWORD   # type a password
+  psql "postgresql://fugue:$POSTGRES_PASSWORD@localhost:5433/fugue" -v ro_password="$FUGUE_READONLY_PASSWORD" -f scripts/db/fugue-readonly-role.sql
+  export FUGUE_READONLY_DATABASE_URI="postgresql://fugue_readonly:$FUGUE_READONLY_PASSWORD@localhost:5433/fugue"
+  ```
+  The script is safe to re-run (it also rotates the password). The repo's `.mcp.json` registers a `postgres-readonly` MCP server (`uvx postgres-mcp --access-mode=restricted`) that reads `FUGUE_READONLY_DATABASE_URI` from your environment; nothing secret is in the file.

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "postgres-readonly": {
+      "command": "uvx",
+      "args": ["postgres-mcp", "--access-mode=restricted"],
+      "env": {
+        "DATABASE_URI": "${FUGUE_READONLY_DATABASE_URI}"
+      }
+    }
+  }
+}
