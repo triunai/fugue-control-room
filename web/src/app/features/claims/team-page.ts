@@ -9,7 +9,15 @@ import { livePoll } from './live-poll';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
 import { MoneyPipe } from './claim-bits';
 import { SLA_DECISION_DAYS, SLA_PICKUP_DAYS } from './claims-logic';
-import { ExposureRowX, bandWindow, byLoad, exposureMatrix, oldestPerOfficer, summariseOpen } from './team-logic';
+import {
+  ExposureRowX,
+  bandWindow,
+  byLoad,
+  exposureMatrix,
+  exposureQueueParams,
+  oldestPerOfficer,
+  summariseOpen,
+} from './team-logic';
 
 /** Fields the backend is adding to the workload officers; absent until it lands. */
 type OfficerX = OfficerWorkloadDto & { oldestOpenClaimId?: string | null };
@@ -79,17 +87,12 @@ type OfficerX = OfficerWorkloadDto & { oldestOpenClaimId?: string | null };
                 <span class="kpi-l">To settle</span>
               </a>
             }
-            <a
-              class="kpi"
-              routerLink="/claims/queue"
-              [queryParams]="{ status: 'UnderReview' }"
-              data-testid="kpi-noreserve"
-            >
+            <div class="kpi" data-testid="kpi-noreserve">
               <span class="kpi-n" [class.kpi-bad]="summary().noReserve > 0">{{
                 openQuery.isSuccess() ? summary().noReserve : '…'
               }}</span>
               <span class="kpi-l">Open with no reserve</span>
-            </a>
+            </div>
           </section>
           @if (summary().oldest; as o) {
             <p class="m-0 text-muted" data-testid="kpi-oldest">
@@ -236,9 +239,19 @@ type OfficerX = OfficerWorkloadDto & { oldestOpenClaimId?: string | null };
                       @for (c of [r.motor, r.property]; track $index) {
                         <td>
                           <div class="cell">
-                            <span class="mono">{{ c.outstandingMinor | money: r.currency }}</span>
+                            <a
+                              class="mono"
+                              routerLink="/claims/queue"
+                              [queryParams]="cellParams(r.market, $index, false)"
+                              >{{ c.outstandingMinor | money: r.currency }}</a
+                            >
                             @if (c.approvedMinor) {
-                              <span class="sub mono">{{ c.approvedMinor | money: r.currency }} approved</span>
+                              <a
+                                class="sub mono"
+                                routerLink="/claims/queue"
+                                [queryParams]="cellParams(r.market, $index, true)"
+                                >{{ c.approvedMinor | money: r.currency }} approved</a
+                              >
                             }
                             <span class="cell-bar" aria-hidden="true"><span [style.width.%]="c.pct"></span></span>
                             @if (c.unreserved) {
@@ -333,6 +346,10 @@ export class TeamPage {
   protected oldestId(o: OfficerX): { id: string; number?: string } | null {
     if (o.oldestOpenClaimId) return { id: o.oldestOpenClaimId };
     return this.oldestOf().get(o.officerId) ?? null;
+  }
+
+  protected cellParams(market: string, lineIndex: number, approved: boolean) {
+    return exposureQueueParams(market, lineIndex === 0 ? 'Motor' : 'Property', approved);
   }
 
   protected band(label: string) {

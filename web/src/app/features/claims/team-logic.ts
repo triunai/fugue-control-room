@@ -9,7 +9,7 @@ export interface OpenSummary {
   pastSla: number;
   /** Submitted claims nobody picked up within the pickup SLA. */
   unassignedLate: number;
-  /** Worked claims (under review or waiting on the claimant) with no reserve: exposure cannot count them. */
+  /** Open claims (submitted, under review, waiting on the claimant) with no reserve: the same count as the exposure API's unreserved total. */
   noReserve: number;
   /** The longest-waiting open claim (the queue reads oldest first, but this does not rely on it). */
   oldest: { id: string; number: string; ageDays: number } | null;
@@ -24,7 +24,7 @@ export function summariseOpen(claims: readonly OpenClaim[], now = Date.now()): O
     const age = ageDays(c.submittedAt, now);
     if (age >= SLA_DECISION_DAYS) pastSla++;
     if (c.status === 'Submitted' && age >= SLA_PICKUP_DAYS) unassignedLate++;
-    if (c.status !== 'Submitted' && (c.reserveMinor === null || c.reserveMinor === undefined)) noReserve++;
+    if (c.reserveMinor === null || c.reserveMinor === undefined) noReserve++;
     if (!oldest || c.submittedAt < oldest.submittedAt) oldest = c;
   }
   return {
@@ -109,6 +109,15 @@ export function exposureMatrix(rows: readonly ExposureRowX[]): ExposureMatrixRow
       unreserved: m.Motor.unreserved + m.Property.unreserved,
     }))
     .sort((a, b) => a.market.localeCompare(b.market));
+}
+
+/** The queue view behind an exposure cell: open claims for the market and line, or its approved-not-settled ones. */
+export function exposureQueueParams(
+  market: string,
+  line: 'Motor' | 'Property',
+  approved = false,
+): { market: string; line: string; status?: 'Approved' } {
+  return approved ? { market, line, status: 'Approved' } : { market, line };
 }
 
 /** An ageing band label ("0-2", "15+") as the queue's age window. */
