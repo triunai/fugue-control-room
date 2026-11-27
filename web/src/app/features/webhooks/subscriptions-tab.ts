@@ -4,6 +4,7 @@ import { WebhookSubscriptionDto } from '../../api/models';
 import { webhookKeys, WebhooksApi } from '../../api/webhooks.api';
 import { CONSOLE_CONFIG } from '../../core/config';
 import { CorrelationService } from '../../core/http/correlation.service';
+import { SubmissionKey } from '../../core/http/idempotency';
 import { ToastStore } from '../../core/ui/toast.store';
 import { RelativeTimePipe } from '../../ui/format';
 import { Overlays } from '../../ui/overlays';
@@ -119,10 +120,12 @@ export class SubscriptionsTab {
   }));
 
   protected create(): void {
+    const submission = new SubmissionKey(); // one Idempotency-Key per dialog: a retried submit returns the first secret instead of creating again
     this.overlays.modal<SubscriptionDialog, SubscriptionDialogData, boolean>(SubscriptionDialog, {
       development: this.development,
       submit: async (body) => {
-        const created = await this.api.create(body);
+        const created = await this.api.create(body, submission.forBody(body));
+        submission.reset();
         void this.refresh();
         this.reveal({ name: created.name, secret: created.secret, rotated: false });
       },

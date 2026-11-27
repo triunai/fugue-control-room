@@ -4,6 +4,7 @@ import { CustomersApi, customerKeys } from '../../api/customers.api';
 import { ReceivedWebhookDto } from '../../api/models';
 import { webhookKeys, WebhooksApi } from '../../api/webhooks.api';
 import { CorrelationService } from '../../core/http/correlation.service';
+import { newIdempotencyKey } from '../../core/http/idempotency';
 import { ToastStore } from '../../core/ui/toast.store';
 import { RelativeTimePipe, StampPipe } from '../../ui/format';
 import { RefChip } from '../../ui/ref-chip';
@@ -88,7 +89,10 @@ export class SinkTab {
       const existing = this.sinkSub();
       const result = existing
         ? await this.api.rotate(existing.id)
-        : await this.api.create({ name: 'Development sink', url: this.target, eventTypes: ['customer.*'] });
+        : await this.api.create(
+            { name: 'Development sink', url: this.target, eventTypes: ['customer.*'] },
+            newIdempotencyKey(),
+          );
       await this.api.setSinkSecret(result.secret);
       return existing ? 'reconnected' : 'connected';
     },
@@ -106,11 +110,10 @@ export class SinkTab {
       const stamp = new Date().toLocaleTimeString('en-GB');
       const ref = this.correlation.id();
       this.lastTestRef.set(ref);
-      return this.customers.create({
-        name: `Sink check ${stamp}`,
-        email: `sink.${Date.now()}@example.test`,
-        phone: null,
-      });
+      return this.customers.create(
+        { name: `Sink check ${stamp}`, email: `sink.${Date.now()}@example.test`, phone: null },
+        newIdempotencyKey(),
+      );
     },
     onSuccess: (c) =>
       this.toasts.ok(

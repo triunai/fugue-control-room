@@ -9,6 +9,7 @@ import { HasPermissionDirective } from '../../core/auth/has-permission.directive
 import { applyServerErrors, controlError } from '../../core/forms/server-errors';
 import { CorrelationService } from '../../core/http/correlation.service';
 import { EtagStore } from '../../core/http/etag.store';
+import { SubmissionKey } from '../../core/http/idempotency';
 import { ApiProblem, isApiProblem } from '../../core/http/problem';
 import { ToastStore } from '../../core/ui/toast.store';
 import { RelativeTimePipe } from '../../ui/format';
@@ -59,6 +60,8 @@ export class CustomerDrawer {
 
   protected readonly isNew = this.data.id === null;
   private suppressFill = false;
+  /** One Idempotency-Key per create submission: a retry of the same form reuses it, an edited form gets a new one. */
+  private readonly submission = new SubmissionKey();
   protected readonly conflict = signal<Conflict | null>(null);
   protected readonly formErrors = signal<string[]>([]);
   protected readonly canEdit = computed(() => this.access.has(this.isNew ? 'CUSTOMERS_INSERT' : 'CUSTOMERS_EDIT'));
@@ -87,7 +90,11 @@ export class CustomerDrawer {
 
   protected readonly save = injectMutation(() => ({
     mutationFn: async (body: UpdateCustomerRequest) => {
-      if (this.isNew) return this.api.create(body);
+      if (this.isNew) {
+        const created = await this.api.create(body, this.submission.forBody(body));
+        this.submission.reset();
+        return created;
+      }
       await this.api.update(this.data.id!, body);
       return null;
     },

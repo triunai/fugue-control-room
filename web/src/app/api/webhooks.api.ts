@@ -5,6 +5,7 @@ import { CONSOLE_CONFIG } from '../core/config';
 import { CORRELATION_ID, SEND_IF_MATCH } from '../core/http/context';
 import { newCorrelationId } from '../core/http/correlation.service';
 import { EtagStore } from '../core/http/etag.store';
+import { idempotencyHeaders } from '../core/http/idempotency';
 import { getPage, params } from './http-page';
 import {
   CreateWebhookSubscriptionRequest,
@@ -57,10 +58,12 @@ export class WebhooksApi {
     return page;
   }
 
-  create(body: CreateWebhookSubscriptionRequest): Promise<WebhookSubscriptionSecretDto> {
+  /** `idempotencyKey` makes a retry safe: the same key with the same body returns the first response, with the same one-time secret. */
+  create(body: CreateWebhookSubscriptionRequest, idempotencyKey: string): Promise<WebhookSubscriptionSecretDto> {
     return firstValueFrom(
       this.http.post<WebhookSubscriptionSecretDto>(`${this.base}/subscriptions`, body, {
         context: new HttpContext().set(SEND_IF_MATCH, false),
+        headers: idempotencyHeaders(idempotencyKey),
       }),
     );
   }

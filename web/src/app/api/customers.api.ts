@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { CONSOLE_CONFIG } from '../core/config';
 import { SEND_IF_MATCH, TRACK_ETAG } from '../core/http/context';
 import { EtagStore } from '../core/http/etag.store';
+import { idempotencyHeaders } from '../core/http/idempotency';
 import { getPage, params } from './http-page';
 import { CreateCustomerRequest, CustomerDto, CustomerStatus, Page, UpdateCustomerRequest } from './models';
 
@@ -50,9 +51,13 @@ export class CustomersApi {
     );
   }
 
-  create(body: CreateCustomerRequest): Promise<CustomerDto> {
+  /** `idempotencyKey` makes a retry of this submission safe: the same key with the same body returns the first response. */
+  create(body: CreateCustomerRequest, idempotencyKey: string): Promise<CustomerDto> {
     return firstValueFrom(
-      this.http.post<CustomerDto>(this.base, body, { context: new HttpContext().set(SEND_IF_MATCH, false) }),
+      this.http.post<CustomerDto>(this.base, body, {
+        context: new HttpContext().set(SEND_IF_MATCH, false),
+        headers: idempotencyHeaders(idempotencyKey),
+      }),
     );
   }
 
