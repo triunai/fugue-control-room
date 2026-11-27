@@ -84,7 +84,7 @@ const STEPS: Record<Persona, TourStep[]> = {
   ],
   manager: [
     {
-      page: { path: '/claims/exposure' },
+      page: { path: '/claims/team' },
       selector: '[data-testid="exposure-totals"]',
       title: 'Exposure per currency',
       description: 'One total for each currency, taken from the claims as they stand now.',
@@ -96,7 +96,7 @@ const STEPS: Record<Persona, TourStep[]> = {
         'Adding PHP to THB needs an exchange rate and a date; without them the sum would be a made-up number. Each currency stays its own line.',
     },
     {
-      page: { path: '/claims/workload' },
+      page: { path: '/claims/team' },
       selector: '[data-testid="workload-kpis"]',
       title: 'Workload',
       description: 'Unassigned claims and what each officer carries, to spot an overloaded queue.',
