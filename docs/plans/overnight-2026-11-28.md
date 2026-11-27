@@ -79,7 +79,7 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
       settled figure on Team and exposure, a notification consumer for events, the Send question during an API restart).
 
 ## P1 (moved up 03:19) — agent tooling, part of the demo
-- [ ] 17a. (merged 66604db, nth-tooling, W-029, D-068; verify on the recreated stack before ticking) HARD GATE (owner 03:18/03:19): the read-only role `fugue_readonly` is created by the stack itself (initdb mount of
+- [x] 17a. (merged 66604db, nth-tooling, W-029, D-068. Verified 03:40 on the RECREATED stack (down -v, up --build at 8765f5d): role from initdb, count(*) claims = 20 as fugue_readonly; INSERT, UPDATE, CREATE TABLE, SET read_only=off + INSERT all refused by read-only transaction, BEGIN READ WRITE + INSERT refused by privilege; MCP postgres-mcp 0.3.0 over stdio: 9 tools, list_objects answers, UPDATE rejected by restricted mode; full `bru run --env compose` 105/105 requests, 127/127 tests; runbook Playwright snippet: Claims queue, 0 errors, exit 0. Not checked: `claude mcp list` approval in an interactive session. .env on this machine gained FUGUE_READONLY_DATABASE_URI (port 5433)) HARD GATE (owner 03:18/03:19): the read-only role `fugue_readonly` is created by the stack itself (initdb mount of
       `scripts/db/fugue-readonly-role.sql` or idempotent startup, whichever fits runbook 03) so it survives `down -v`;
       FUGUE_READONLY_DATABASE_URI in .env.example and runbook 00; the `.mcp.json` postgres-readonly server starts and answers a
       list-tables query; SELECT works and INSERT/UPDATE/DDL are refused by the ROLE (restricted mode is the second layer).
