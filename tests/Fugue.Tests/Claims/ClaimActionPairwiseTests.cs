@@ -318,5 +318,11 @@ public sealed class ClaimActionPairwiseTests
 
         public Task<IReadOnlyList<ClaimTimelineEntryDto>?> GetTimelineAsync(ClaimId id, ClaimScope scope, CancellationToken ct) =>
             throw new NotSupportedException();
+
+        public Task<IReadOnlyList<ClaimInfoRequestEntryDto>?> GetInfoRequestsAsync(ClaimId id, ClaimScope scope, CancellationToken ct) =>
+            throw new NotSupportedException();
+
+        public Task<IReadOnlyDictionary<ClaimStatus, int>> CountByStatusAsync(ClaimFilter filter, ClaimScope scope, CancellationToken ct) =>
+            throw new NotSupportedException();
     }
 }
