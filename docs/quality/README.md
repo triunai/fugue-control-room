@@ -41,3 +41,18 @@ Score = killed / (killed + survived + timeout + no coverage), as Stryker prints 
 - `IdempotencyKeyHeader.cs` line 35: `?? string.Empty` on a null header line; replacing the empty fallback with any other text is still rejected by the grammar that follows.
 
 No surviving mutant pointed at a production bug, so no `src/` change was needed or made.
+
+## Pairwise (PICT 3.7.4)
+
+The model `tests/pict/claims-actions.pict` has five factors: role (3: claimant, officer, manager), claim status (6), action (7: pickup, reserve, request info, approve, reject, settle, respond), assignment (3: none, the caller, another officer) and If-Match (3: current, stale, missing). The full product is 1134 combinations before constraints; three constraints (a claim has an officer exactly once it is picked up; a claimant is never the assigned officer) remove the impossible ones. PICT generated **42 cases** covering every pair of values of any two factors:
+
+```
+brew install pict                                              # PICT 3.7.4 was installed this way (not vendored)
+pict tests/pict/claims-actions.pict > tests/pict/claims-actions.cases.tsv
+```
+
+The generated table is committed (`tests/pict/claims-actions.cases.tsv`, deterministic: no random seed) and copied next to the test assembly by `Fugue.Tests.csproj`; the test needs no PICT installation. `tests/Fugue.Tests/Claims/ClaimActionPairwiseTests.cs` runs each case through the real command handler (so `ClaimFlow`) and the real `Claim` aggregate, with an in-memory repository, and checks the outcome against a small oracle (documented in the class comment: policy, then If-Match 428, then 412, then the assigned-officer rule, then the state machine). The oracle reads the permission each action needs from the `[HasPermission]` attribute on `ClaimsController`, so it is not a copy of the implementation's own table.
+
+Result of the 42 cases by outcome: success, policy refusal (403), 428, 412, `claim.not_assigned_to_you` and `claim.invalid_transition` all occur (the test `The_generated_table_exercises_success_and_every_kind_of_refusal` fails if one stops occurring). As a check that the cases can fail, inverting the assigned-officer comparison in `ClaimFlow.RequireAssignedOrManager` (a temporary local edit, reverted, never committed) made 4 of the 45 tests in the class fail.
+
+Limits: pairwise is not exhaustive (three-way interactions can be missed; run `pict ... /o:3` for more cases); the HTTP layer itself (the 403 and the headers) is covered by `ClaimsWorkflowTests` and the Bruno suite, not by these cases.
