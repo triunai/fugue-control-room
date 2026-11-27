@@ -17,6 +17,7 @@ import { ClaimStatusPill, MoneyPipe } from './claim-bits';
 import { livePoll } from './live-poll';
 import { ClaimNextStep } from './claim-next-step';
 import { ClaimRecordBanner } from './claim-record-banner';
+import { ClaimAssessmentSheet } from './claim-assessment-sheet';
 import { ClaimActionDialog, ClaimDialogData, ClaimDialogMode, ClaimDialogResult } from './claim-action-dialog';
 import { ActionState, Actor, ClaimAction, marketName } from './claims-logic';
 
@@ -46,6 +47,7 @@ const DONE: Record<Command['kind'], string> = {
     ClaimStatusPill,
     ClaimRecordBanner,
     ClaimNextStep,
+    ClaimAssessmentSheet,
     MoneyPipe,
     RelativeTimePipe,
     StampPipe,
@@ -91,7 +93,14 @@ const DONE: Record<Command['kind'], string> = {
               (act)="onNextAction($event)"
             />
 
-            <!-- assessment worksheet slot -->
+            @if (access.has('CLAIMS_HANDLE') && (c.status === 'UnderReview' || c.status === 'InfoRequested')) {
+              <!-- Univer loads only when the officer scrolls to the worksheet. -->
+              @defer (on viewport) {
+                <fg-claim-assessment-sheet [claim]="c" />
+              } @placeholder {
+                <section class="panel panel-pad text-muted">Assessment worksheet</section>
+              }
+            }
 
             @if (c.decisionReason || (c.approvedAmountMinor !== null && c.approvedAmountMinor !== undefined)) {
               <section class="panel panel-pad" aria-labelledby="dec-h">
