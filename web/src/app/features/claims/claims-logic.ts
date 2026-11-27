@@ -144,3 +144,234 @@ export function localToday(now = new Date()): string {
   const d = String(now.getDate()).padStart(2, '0');
   return `${now.getFullYear()}-${m}-${d}`;
 }
+
+/** Decision SLA used by the team page: an open claim older than this many days since submission is "past SLA". */
+export const SLA_DECISION_DAYS = 14;
+
+// ---- Record banner: the two tracks ----
+
+export type StepState = 'done' | 'current' | 'next' | 'todo';
+
+export interface TrackStep {
+  label: string;
+  state: StepState;
+  /** The step is the current one AND in an error tone (a rejected decision). */
+  error?: boolean;
+  /** A sub-state dot on the step (InfoRequested on Under review). */
+  dot?: string;
+}
+
+export interface Track {
+  steps: TrackStep[];
+  /** "2 of 4" */
+  position: string;
+}
+
+function buildTrack(labels: string[], current: number, over?: Partial<Record<number, Partial<TrackStep>>>): Track {
+  const steps = labels.map<TrackStep>((label, i) => ({
+    label,
+    state: i < current ? 'done' : i === current ? 'current' : i === current + 1 ? 'next' : 'todo',
+    ...over?.[i],
+  }));
+  return { steps, position: `${current + 1} of ${labels.length}` };
+}
+
+/** Claim track: Submitted, Under review, Decided, Closed. InfoRequested is a dot on Under review; Rejected ends the track at Decided. */
+export function claimTrack(status: ClaimStatus): Track {
+  switch (status) {
+    case 'Submitted':
+      return buildTrack(['Submitted', 'Under review', 'Decided', 'Closed'], 0);
+    case 'UnderReview':
+      return buildTrack(['Submitted', 'Under review', 'Decided', 'Closed'], 1);
+    case 'InfoRequested':
+      return buildTrack(['Submitted', 'Under review', 'Decided', 'Closed'], 1, {
+        1: { dot: 'Waiting on the claimant' },
+      });
+    case 'Approved':
+      return buildTrack(['Submitted', 'Under review', 'Decided', 'Closed'], 2);
+    case 'Rejected':
+      return buildTrack(['Submitted', 'Under review', 'Decided'], 2, { 2: { label: 'Rejected', error: true } });
+    case 'Settled':
+      return buildTrack(['Submitted', 'Under review', 'Decided', 'Closed'], 3);
+  }
+}
+
+/**
+ * Money track. Staff: No reserve, Reserve set, Approved amount, Settled. The claimant never sees the reserve, so their
+ * track is Assessing, Approved amount, Settled. A rejected claim ends the money track where it stood.
+ */
+export function moneyTrack(
+  claim: Pick<ClaimDto, 'status' | 'reserveMinor' | 'approvedAmountMinor'>,
+  staff: boolean,
+): Track {
+  const hasReserve = claim.reserveMinor !== null && claim.reserveMinor !== undefined;
+  const approved = claim.status === 'Approved' || claim.status === 'Settled';
+  if (staff) {
+    if (claim.status === 'Rejected') {
+      return buildTrack(['No reserve', 'Reserve set'], hasReserve ? 1 : 0);
+    }
+    const labels = ['No reserve', 'Reserve set', 'Approved amount', 'Settled'];
+    return buildTrack(labels, claim.status === 'Settled' ? 3 : approved ? 2 : hasReserve ? 1 : 0);
+  }
+  if (claim.status === 'Rejected') return buildTrack(['Assessing'], 0);
+  return buildTrack(['Assessing', 'Approved amount', 'Settled'], claim.status === 'Settled' ? 2 : approved ? 1 : 0);
+}
+
+// ---- Next step card ----
+
+export type NextChip = 'Ready' | 'Waiting on claimant' | 'Waiting' | 'Blocked' | 'Done';
+
+export interface Blocker {
+  label: string;
+  ok: boolean;
+}
+
+export interface NextStep {
+  chip: NextChip;
+  tone: Tone;
+  instruction: string;
+  why: string;
+  blockers: Blocker[];
+  /** The ONE primary button: an existing action's dialog, or 'answer' (focus the claimant's answer box). */
+  primary?: { kind: ClaimAction | 'answer'; label: string };
+}
+
+const CHIP_TONE: Record<NextChip, Tone> = {
+  Ready: 'acc',
+  'Waiting on claimant': 'warn',
+  Waiting: 'muted',
+  Blocked: 'err',
+  Done: 'ok',
+};
+
+function step(s: Omit<NextStep, 'tone'>): NextStep {
+  return { ...s, tone: CHIP_TONE[s.chip] };
+}
+
+/** What the signed-in person should do with THIS claim now, from real data. One pure function: (claim, actor) -> card. */
+export function nextStep(
+  claim: Pick<
+    ClaimDto,
+    'status' | 'assignedOfficerId' | 'assignedOfficerName' | 'reserveMinor' | 'approvedAmountMinor'
+  > & { openInfoRequest?: ClaimDto['openInfoRequest'] | null },
+  actor: Actor,
+): NextStep {
+  const can = (p: string) => actor.permissions.has(p);
+  const staff = can('CLAIMS_ALL');
+  const hasReserve = claim.reserveMinor !== null && claim.reserveMinor !== undefined;
+  const open = claim.openInfoRequest !== null && claim.openInfoRequest !== undefined;
+  const work = availableActions(claim, actor);
+  const mayWork = work.length > 0;
+
+  if (claim.status === 'Rejected' || claim.status === 'Settled') {
+    return step({
+      chip: 'Done',
+      instruction:
+        claim.status === 'Rejected' ? 'This claim is closed: rejected.' : 'This claim is settled and closed.',
+      why: staff ? 'Nothing more to do on it.' : WHAT_NEXT[claim.status],
+      blockers: [],
+    });
+  }
+
+  if (!staff) {
+    switch (claim.status) {
+      case 'InfoRequested':
+        return step({
+          chip: 'Ready',
+          instruction: 'We need one answer from you.',
+          why: 'Your claim is paused until you reply. As soon as you do, the review carries on.',
+          blockers: [{ label: 'Answer the question below', ok: false }],
+          primary: can('CLAIMS_RESPOND') ? { kind: 'answer', label: 'Answer now' } : undefined,
+        });
+      case 'Approved':
+        return step({
+          chip: 'Waiting',
+          instruction: 'Your claim is approved. Nothing to do.',
+          why: WHAT_NEXT.Approved,
+          blockers: [],
+        });
+      default:
+        return step({
+          chip: 'Waiting',
+          instruction: claim.status === 'Submitted' ? 'We have your claim.' : 'An officer is reviewing your claim.',
+          why: WHAT_NEXT[claim.status],
+          blockers: [],
+        });
+    }
+  }
+
+  switch (claim.status) {
+    case 'Submitted':
+      return mayWork
+        ? step({
+            chip: 'Ready',
+            instruction: 'Pick up this claim.',
+            why: 'Nobody is assigned yet. Picking it up makes you the officer and starts the review.',
+            blockers: [{ label: 'Not yet assigned to an officer', ok: true }],
+            primary: { kind: 'pickup', label: 'Pick up' },
+          })
+        : step({
+            chip: 'Waiting',
+            instruction: 'Waiting for an officer to pick it up.',
+            why: 'You do not hold the permission to handle claims.',
+            blockers: [{ label: 'Needs CLAIMS_HANDLE', ok: false }],
+          });
+    case 'UnderReview': {
+      if (!mayWork) {
+        return step({
+          chip: 'Waiting',
+          instruction: `${claim.assignedOfficerName ?? 'Another officer'} is working this claim.`,
+          why: 'Only the assigned officer, or a manager, can act on it.',
+          blockers: [{ label: 'Assigned to someone else', ok: false }],
+        });
+      }
+      const blockers: Blocker[] = [
+        { label: 'Reserve is set', ok: hasReserve },
+        { label: 'No open question to the claimant', ok: !open },
+        { label: 'Approved amount can stay within the reserve', ok: hasReserve },
+      ];
+      return hasReserve
+        ? step({
+            chip: 'Ready',
+            instruction: 'Decide this claim.',
+            why: 'The reserve is set, so you can approve (up to the reserve) or reject. Ask the claimant first if you need more.',
+            blockers,
+            primary: { kind: 'approve', label: 'Approve' },
+          })
+        : step({
+            chip: 'Blocked',
+            instruction: 'Set the reserve before you decide.',
+            why: 'A claim cannot be approved without a reserve, and the approved amount may not exceed it.',
+            blockers,
+            primary: { kind: 'reserve', label: 'Set reserve' },
+          });
+    }
+    case 'InfoRequested':
+      return step({
+        chip: 'Waiting on claimant',
+        instruction: 'Waiting for the claimant to answer.',
+        why: 'The review resumes by itself the moment they reply. You can still adjust the reserve meanwhile.',
+        blockers: [{ label: 'Claimant has answered the open question', ok: false }],
+      });
+    case 'Approved':
+      return can('CLAIMS_SETTLE')
+        ? step({
+            chip: 'Ready',
+            instruction: 'Settle this claim.',
+            why: 'It is approved. Settling records the payment as made and closes the claim.',
+            blockers: [
+              {
+                label: 'Approved amount recorded',
+                ok: claim.approvedAmountMinor !== null && claim.approvedAmountMinor !== undefined,
+              },
+            ],
+            primary: { kind: 'settle', label: 'Settle' },
+          })
+        : step({
+            chip: 'Waiting',
+            instruction: 'Waiting for a manager to settle it.',
+            why: 'Only a manager can record the payment.',
+            blockers: [{ label: 'Needs CLAIMS_SETTLE', ok: false }],
+          });
+  }
+}
