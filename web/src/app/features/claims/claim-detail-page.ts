@@ -284,6 +284,8 @@ export class ClaimDetailPage {
   protected readonly timelineQuery = injectQuery(() => ({
     queryKey: claimKeys.timeline(this.id()),
     queryFn: () => this.api.timeline(this.id()),
+    // Always re-read on open: the claim moves on elsewhere (an officer acts), and a cached timeline would lag the status.
+    staleTime: 0,
   }));
 
   /** Staff work claims; a claimant (no CLAIMS_ALL) sees their own. */
