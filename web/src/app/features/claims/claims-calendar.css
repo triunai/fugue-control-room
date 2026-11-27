@@ -1,0 +1,44 @@
+/* FullCalendar's classic palette, re-pointed at the console tokens. */
+.cal-wrap {
+  --fc-classic-primary: var(--accent);
+  --fc-classic-primary-foreground: var(--on-accent);
+  --fc-classic-button: var(--accent);
+  --fc-classic-button-border: var(--accent);
+  --fc-classic-button-strong: var(--accent-hover);
+  --fc-classic-button-strong-border: var(--accent-hover);
+  --fc-classic-button-foreground: var(--on-accent);
+  --fc-classic-background: var(--surface2);
+  --fc-classic-border: var(--line);
+  --fc-classic-today: var(--accent-soft);
+  font-family: var(--font-ui);
+}
+.cal-wrap ::ng-deep .sla-ev {
+  cursor: pointer;
+}
+.cal-wrap ::ng-deep .sla-ev.sla-overdue {
+  outline: 2px solid var(--err);
+  outline-offset: -1px;
+}
+
+.cal-seg {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border: 1.5px solid var(--control);
+  border-radius: var(--radius-control);
+  background: var(--surface2);
+}
+.cal-seg button {
+  height: 2rem;
+  padding: 0 0.8rem;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--muted);
+  font: 550 0.9rem var(--font-ui);
+  cursor: pointer;
+}
+.cal-seg button[aria-checked='true'] {
+  background: var(--accent);
+  color: var(--on-accent);
+}

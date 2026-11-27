@@ -13,7 +13,7 @@ async function enter(page: import('@playwright/test').Page, y: number, text: str
   await page.keyboard.press('Enter');
 }
 
-test.describe('reserve sheet', () => {
+test.describe('reserve sheet and SLA calendar', () => {
   test('the sheet shows open claims, saves per row and maps a stale write to a reload', async ({ page, request }) => {
     await signIn(page, 'staff@fugue.test');
     await page.goto('/claims/sheet');
@@ -51,5 +51,16 @@ test.describe('reserve sheet', () => {
     await enter(page, OWN_ROW_Y, `${amount + 1}.25`);
     await page.getByTestId('sheet-save').click();
     await expect(results.getByText('Saved', { exact: true })).toBeVisible();
+  });
+
+  test('the SLA calendar lists open claims on their due dates and opens a claim', async ({ page }) => {
+    await signIn(page, 'staff@fugue.test');
+    await page.goto('/claims/calendar');
+    await expect(page.getByTestId('sla-calendar')).toBeVisible();
+    await expect(page.getByTestId('sla-count')).toContainText('open claims on the calendar');
+    await page.waitForTimeout(1000);
+    await page.screenshot({ path: `${SHOTS}/claims-calendar.png` });
+    await page.locator('.sla-ev').first().click();
+    await expect(page).toHaveURL(/\/claims\/[0-9a-f-]{36}$/);
   });
 });
