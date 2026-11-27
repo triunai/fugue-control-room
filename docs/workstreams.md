@@ -99,6 +99,12 @@ Status: merged before 03:09; closes at the wrap.
 Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
 Refs: D-063, D-064; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
 
+### WS-39 — Structure refactor after the D-064 lanes: slice folders, IOptions, Worker host (backlog #010, items 12-14) — 🟢 ACTIVE (2026-11-28)
+ID: W-039
+Status: item 12 lane nth-refactor live from afc6fe9 (exclusive on src/ and tests/); 13 nth-options after it; 14 gated at 10:00.
+Resume: integrator merges and verifies (OpenAPI byte-identical, full-suite count equal to base 849 + 37, moves and usings only); close at the wrap.
+Refs: D-064, D-066; backlog #010; `docs/plans/overnight-2026-11-28.md` P2; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
 ### WS-23 — API versioning with Sunset, HybridCache, OpenTelemetry — ⏸ PARKED (2026-11-27)
 ID: W-023
 Status: follow-up of W-007 (closed). Not built: a v2 example with `Deprecation`/`Sunset` on v1, HybridCache on the `/me` permission lookup, OpenTelemetry traces.

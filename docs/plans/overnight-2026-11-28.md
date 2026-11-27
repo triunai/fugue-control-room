@@ -99,7 +99,7 @@ nth-options (Sonnet) item 13; (3) 11g after 13, optional, behind the same 12:00 
 13 only if time allows before 12:00, else defer; (6) about 12:00 nth-readme (Sonnet) item 11 from the final main, plus the
 one-line ClaimSearchHitDto comment fix. Then the integrator's 13:00-14:00 fixes window and the 14:00 wrap (16, 17).
 Run 12 + 13 only if every feature lane has merged by ~10:30, else defer with a D-row. 14 (Worker host) is a deferral candidate.
-- [ ] 12. Per-slice folders `Commands/ Queries/ Models/ Repos/ Helpers/` + DI extension; namespaces follow folders (IDE fix or
+- [ ] 12. (lane nth-refactor from afc6fe9, W-039; base full suite 849 + Arch 37 at push 6, 3a6fb56) Per-slice folders `Commands/ Queries/ Models/ Repos/ Helpers/` + DI extension; namespaces follow folders (IDE fix or
       `dotnet format analyzers --diagnostics IDE0130`); full suite.
 - [ ] 13. Remaining hardcoded values to IOptions (page sizes kept in step with validators, webhook replay window, SLA days).
 - [ ] 14. `Fugue.Worker` host for the four BackgroundServices + a building-blocks project for pipeline behaviours; ArchTests.
