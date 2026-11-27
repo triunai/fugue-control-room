@@ -72,6 +72,11 @@
   background: var(--surface);
   border-radius: 999px;
   padding: 0.2rem 0.7rem;
+  cursor: pointer;
+}
+.env:hover {
+  color: var(--text);
+  border-color: var(--control);
 }
 /* Shell (desktop), after the Wishes2Vows and TPMS consoles: the sidebar and the top bar are ONE frame on --surface with no rules
    between them, and the page is a rounded card inset in that frame. Only the card scrolls (no window scroll, no visible scrollbars),
