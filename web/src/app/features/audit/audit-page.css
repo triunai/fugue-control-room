@@ -91,8 +91,8 @@
 }
 .detail {
   position: sticky;
-  top: 4.6rem;
-  max-height: calc(100vh - 5.6rem);
+  top: 1rem; /* inside the scrolling page card, under the shell frame */
+  max-height: calc(100dvh - var(--shell-top) - 2.75rem);
   overflow-y: auto;
 }
 .d-head {

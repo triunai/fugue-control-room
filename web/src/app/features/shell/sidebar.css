@@ -257,29 +257,29 @@ ul {
   font-size: 0.8rem;
   font-weight: 500;
 }
-/* One frame with the top bar (desktop): the brand row is exactly the top bar's height and carries the same bottom line, so one
-   rule runs across the whole width; the sidebar's right edge starts below it, so no seam cuts between the brand and the crumbs. */
+/* Shell frame (desktop): the sidebar and the top bar are one surface with no rules between them; the brand row is exactly the top bar's
+   height so the logo and the crumbs share a baseline row. The page sits in a rounded card inside the frame (shell.css). */
 @media (min-width: 861px) {
   .side {
     padding-top: 0;
     border-right: 0;
-    background:
-      linear-gradient(var(--line), var(--line)) right var(--shell-top) / 1px calc(100% - var(--shell-top)) no-repeat,
-      var(--surface);
   }
   .side-head {
     height: var(--shell-top);
-    margin: 0 -0.85rem 0.6rem;
-    padding: 0 0.85rem;
-    border-bottom: 1px solid var(--line);
+    padding-bottom: 0;
+    margin-bottom: 0.4rem;
   }
   :host(.rail) .side-head {
     flex-direction: row;
     justify-content: center;
-    margin-inline: -0.5rem;
-    padding-inline: 0.5rem;
   }
   :host(.rail) .brand {
+    display: none;
+  }
+  .nav-scroll {
+    scrollbar-width: none;
+  }
+  .nav-scroll::-webkit-scrollbar {
     display: none;
   }
 }

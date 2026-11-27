@@ -75,6 +75,8 @@ export class Shell {
   /** The route-change entrance: the page content fades in and rises a few pixels. The first page does not animate. */
   private entered = false;
   protected enter(page: HTMLElement): void {
+    // The page card scrolls, not the window, so the router's scroll-to-top does not reach it: a new page starts at the top.
+    page.closest('main')?.scrollTo?.({ top: 0 });
     if (!this.entered) {
       this.entered = true;
       return;

@@ -35,7 +35,6 @@
   gap: 1rem;
   height: var(--shell-top);
   padding: 0 2rem;
-  /* Same surface as the sidebar: the top bar and the sidebar are one frame around the page. */
   background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
@@ -73,6 +72,43 @@
   background: var(--surface);
   border-radius: 999px;
   padding: 0.2rem 0.7rem;
+}
+/* Shell (desktop), after the Wishes2Vows and TPMS consoles: the sidebar and the top bar are ONE frame on --surface with no rules
+   between them, and the page is a rounded card inset in that frame. Only the card scrolls (no window scroll, no visible scrollbars),
+   so the frame never moves. */
+@media (min-width: 861px) {
+  .shell {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .main-col {
+    height: 100%;
+    min-height: 0;
+  }
+  .top {
+    flex: none;
+    position: static;
+    background: transparent;
+    border-bottom: 0;
+    padding-left: 1.5rem;
+  }
+  main {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0 0.75rem 0.75rem 0;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    scrollbar-width: none;
+  }
+  main::-webkit-scrollbar {
+    display: none;
+  }
 }
 @media (max-width: 860px) {
   .shell,
