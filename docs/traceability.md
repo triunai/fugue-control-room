@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 24 workstreams, 13 ADRs, 57 decisions, 157 commits (6 unlinked). Newest commit indexed: `2b9758e`.
+Counts: 24 workstreams, 13 ADRs, 57 decisions, 158 commits (6 unlinked). Newest commit indexed: `84dac9b`.
 
 ## Workstreams
 
@@ -325,9 +325,10 @@ Counts: 24 workstreams, 13 ADRs, 57 decisions, 157 commits (6 unlinked). Newest 
 **Post-core quality wave and nice-to-haves (lands together after the claims build)** — PARKED
 - Where: [board](workstreams.md)
 - Decisions and ADRs: [D-057](#d-057)
-- Commits (2):
+- Commits (3):
   - `7b9605b` docs(spine): wrap mid-window; close W-018; seed the headless continuation (2026-11-27)
   - `2b9758e` docs(spine): wrap the headless claims session (2026-11-27)
+  - `84dac9b` docs(reviews): repo-relative paths in the W-018 Codex review (2026-11-27)
 
 ### W-023
 
@@ -993,6 +994,7 @@ Counts: 24 workstreams, 13 ADRs, 57 decisions, 157 commits (6 unlinked). Newest 
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `84dac9b` | docs(reviews): repo-relative paths in the W-018 Codex review | 2026-11-27 | [W-022](#w-022) |
 | `2b9758e` | docs(spine): wrap the headless claims session | 2026-11-27 | [W-020](#w-020), [W-007](#w-007), [W-022](#w-022), [D-057](#d-057) |
 | `e3cec29` | docs(docs): journal the readability pass; SQL files in ARCHITECTURE.md | 2026-11-27 | [W-007](#w-007), [D-054](#d-054), [D-055](#d-055) |
 | `1658a9f` | Merge branch 'rd-sql': runtime SQL in embedded .sql files | 2026-11-27 | [W-007](#w-007), [D-054](#d-054) |
