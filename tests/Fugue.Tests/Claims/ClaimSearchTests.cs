@@ -248,6 +248,19 @@ public sealed class ClaimSearchTests(PostgresFixture db) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Indexed_claims_carry_no_stored_formatted_field()
+    {
+        HttpClient self = await ClientAsync(_factory, DevUsers.Self);
+        await SubmitAsync(self, "Clipped a kerb");
+        await IndexAsync(_factory);
+
+        using HttpClient engine = EngineClient();
+        JsonElement stats = await engine.GetFromJsonAsync<JsonElement>("/indexes/claims/stats");
+        Assert.True(stats.GetProperty("fieldDistribution").TryGetProperty("marketName", out _));
+        Assert.False(stats.GetProperty("fieldDistribution").TryGetProperty("_formatted", out _)); // the engine computes it per search
+    }
+
+    [Fact]
     public async Task An_exact_claim_or_policy_number_finds_only_that_claim_and_a_mistyped_one_does_not_find_it()
     {
         HttpClient self = await ClientAsync(_factory, DevUsers.Self);

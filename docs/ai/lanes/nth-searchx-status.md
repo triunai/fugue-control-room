@@ -2,7 +2,8 @@
 
 ## Commits
 - `7c2ad8a` slice 1/3: feat(api): claims index settings applied idempotently, market names, synonyms
-- slice 2/3: feat(api): exact claim and policy numbers, every word must match, highlights and facets (this commit)
+- `fe102f5` slice 2/3: feat(api): exact claim and policy numbers, every word must match, highlights, facets
+- fix(api): claim documents no longer store an empty `_formatted` field (this commit; found in the headless run's index stats)
 
 ## Gates (copied from output)
 - `dotnet build`: Build succeeded. 0 Warning(s) 0 Error(s)
@@ -12,6 +13,8 @@
 - Slice 2: `dotnet build` 0 Warning(s) 0 Error(s); format exit 0; `--filter OpenApi|ClaimSearch|AuditSearch`: Passed! Failed: 0,
   Passed: 47; `Fugue.ArchTests`: Passed! Failed: 0, Passed: 37; web `tsc` app and spec: exit 0.
 - Injected "query sent unquoted": the exact-number test fails (DoesNotContain: the mistyped number found the claim), restored.
+- Fix: new test `Indexed_claims_carry_no_stored_formatted_field` fails without the `JsonIgnore` (Failed: 1) and passes with it;
+  `--filter ClaimSearchTests`: Passed! Failed: 0, Passed: 23; format exit 0.
 
 ## What changed in shared files (exactly)
 - slice 1: none (all changes under `src/Fugue.Infrastructure/Search/` and `tests/Fugue.Tests/Claims/ClaimSearchTests.cs`)

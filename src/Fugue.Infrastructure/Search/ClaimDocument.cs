@@ -64,7 +64,9 @@ internal sealed class ClaimDocument
     [JsonPropertyName("submittedAtMs")]
     public long SubmittedAtMs { get; set; }
 
+    /// <summary>Read only: never written, so the index does not store an empty <c>_formatted</c> field with every claim.</summary>
     [JsonPropertyName("_formatted")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ClaimHighlightFields? Formatted { get; set; }
 
     public static ClaimDocument From(ClaimIndexRow row) => new()
