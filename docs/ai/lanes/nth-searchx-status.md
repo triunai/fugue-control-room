@@ -4,7 +4,8 @@
 - `7c2ad8a` slice 1/3: feat(api): claims index settings applied idempotently, market names, synonyms
 - `fe102f5` slice 2/3: feat(api): exact claim and policy numbers, every word must match, highlights, facets
 - `77feee8` fix(api): claim documents no longer store an empty `_formatted` field (found in the headless run's index stats)
-- slice 3/3: feat(web): header claim hits show why they matched and the match counts (this commit)
+- `7b8f548` slice 3/3: feat(web): header claim hits show why they matched and the match counts
+- docs(ai): this status update with the full-suite result
 
 ## Gates (copied from output)
 - `dotnet build`: Build succeeded. 0 Warning(s) 0 Error(s)
@@ -20,6 +21,8 @@
   `global-search.spec.ts`); `npm run build`: Initial total 458.34 kB raw, 120.66 kB transfer (base 120.56 kB).
   Injected the old bare-interpolation template: the new spec fails (Received " CLM-SG-2026- 000009"), restored.
 - Headless (Playwright, staff and self on :4404 -> API :5204 -> Meilisearch v1.12.8): 13/13 checks PASS, 0 console errors.
+- Full suite under the lock at `7b8f548`: Fugue.ArchTests `Passed! - Failed: 0, Passed: 37`; Fugue.Tests
+  `Passed! - Failed: 0, Passed: 776, Skipped: 0, Total: 776, Duration: 11 m 15 s`.
 - Live restart of the API against the same engine: no "settings differed" log line, `settingsUpdate` tasks for `claims` stay 1.
 
 ## What changed in shared files (exactly)
@@ -54,4 +57,4 @@
   eventually consistent, so a highlight assertion there would be timing-dependent. Covered by the integration tests instead.
 
 ## Next slice
-- none: full .NET suite under the lock, then the report.
+- none: lane complete. Report: `.worktrees/_briefs/reports/nth-searchx.md`.
