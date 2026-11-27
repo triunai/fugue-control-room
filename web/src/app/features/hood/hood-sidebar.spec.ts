@@ -8,6 +8,14 @@ import { HoodState, hoodOffFromUrl, isTypingTarget } from './hood-state';
 
 const NOTE: HoodNote = {
   why: ['First line.', 'Second line.'],
+  tests: [
+    {
+      layer: 'integration',
+      path: 'tests/Fugue.Tests/Claims/ClaimsWorkflowTests.cs',
+      name: 'A_second_officer_with_the_old_etag_gets_412_and_with_a_fresh_one_gets_409',
+      asserts: 'A stale If-Match is 412.',
+    },
+  ],
   adrs: [{ label: 'ADR-006 Data access', path: 'docs/adr/ADR-006-ef-core-reads-dapper-writes.md' }],
   decisions: [{ label: 'D-056 Review', path: 'docs/decisions.md' }],
   how: ['Calls GET /claims/{id}.', 'If-Match is checked first.'],
@@ -118,7 +126,9 @@ describe('Under the hood sidebar', () => {
     expect(f.nativeElement.textContent).toContain('First line.');
     expect(f.nativeElement.textContent).toContain('Calls GET /claims/{id}.');
     const heads = [...f.nativeElement.querySelectorAll('h3')].map((h) => (h as HTMLElement).textContent?.trim());
-    expect(heads).toEqual(['API calls live', 'Why this page', 'How the API does it', 'Guards', 'Decisions']);
+    expect(heads).toEqual(['API calls live', 'Why this page', 'How the API does it', 'Guards', 'Tested by', 'Decisions']);
+    expect(q(f, '[data-testid=hood-tests] .layer')?.textContent).toBe('integration');
+    expect(q(f, '[data-testid=hood-tests] a')?.getAttribute('href')).toContain('tests/Fugue.Tests/Claims/ClaimsWorkflowTests.cs');
     const guard = q(f, 'details.guard')!;
     expect(guard.querySelector('summary')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('412 stale');
     expect(guard.hasAttribute('open')).toBe(false);

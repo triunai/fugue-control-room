@@ -13,6 +13,12 @@ export const MY_CLAIMS_HOOD: HoodNote = {
   adrs: [
     { label: 'ADR-008 Ownership by scoping', path: 'docs/adr/ADR-008-auth-and-identity-model.md' },
   ],
+  tests: [
+    { layer: 'integration', path: 'tests/Fugue.Tests/Claims/ClaimsWorkflowTests.cs', name: 'Another_claimant_gets_404_on_the_claim_its_timeline_and_when_answering', asserts: 'Another claimant gets 404 claim.not_found on the claim, its timeline and an answer, like an unknown id; nothing changes.' },
+    { layer: 'api', path: 'bruno/fugue/claims/04-other-claimant-gets-404.bru', name: 'Another claimant gets 404 on the claim (never 403)', asserts: 'Another claimant reading the claim gets 404 with code claim.not_found.' },
+    { layer: 'web', path: 'web/src/app/features/claims/claim-record.spec.ts', name: 'never mentions the reserve to a claimant', asserts: 'For every status the claimant’s next-step card never mentions the reserve.' },
+    { layer: 'e2e', path: 'web/e2e/claims.spec.ts', name: 'claimant reports, staff picks up, claimant sees it move', asserts: 'A claimant reports a claim and finds it in My claims; staff pick it up and the claimant sees it move in plain words.' },
+  ],
   decisions: [
     { label: 'Who sees what', path: 'docs/CLAIMS.md#3-who-sees-what' },
     { label: 'D-019 Ownership by scoping, 404 across owners', path: 'docs/decisions.md' },

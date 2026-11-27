@@ -108,6 +108,22 @@ const statusClass = (s: number) => (s >= 500 || s === 0 ? 's5' : s >= 400 ? 's4'
                 }
               </ul>
             </section>
+            <section aria-labelledby="hood-tests">
+              <h3 id="hood-tests" class="sec">Tested by</h3>
+              <p class="muted">
+                dotnet test (xUnit, Testcontainers Postgres) · npm test (Vitest) · npx bru run --env compose · the
+                pre-push hook builds and runs the dotnet tests.
+              </p>
+              <ul class="tests" data-testid="hood-tests">
+                @for (x of n.tests; track x.path + x.name) {
+                  <li>
+                    <span class="layer">{{ x.layer }}</span>
+                    <a class="tname" [href]="url(x.path)" target="_blank" rel="noopener noreferrer">{{ x.name }}</a>
+                    <p class="gnote">{{ x.asserts }}</p>
+                  </li>
+                }
+              </ul>
+            </section>
             <section aria-labelledby="hood-dec">
               <h3 id="hood-dec" class="sec">Decisions</h3>
               <ul class="links">

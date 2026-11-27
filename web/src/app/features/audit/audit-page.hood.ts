@@ -14,6 +14,13 @@ export const AUDIT_HOOD: HoodNote = {
   adrs: [
     { label: 'ADR-010 Rich append-only audit log', path: 'docs/adr/ADR-010-audit-log.md' },
   ],
+  tests: [
+    { layer: 'integration', path: 'tests/Fugue.Tests/Audit/AuditSearchTests.cs', name: 'Without_a_search_engine_configured_the_endpoint_answers_503_search_unavailable', asserts: 'With no search engine configured, /audit/search answers 503 with code search.unavailable.' },
+    { layer: 'integration', path: 'tests/Fugue.Tests/Audit/AuditApiTests.cs', name: 'There_is_no_way_to_write_through_the_API', asserts: 'POST and DELETE on /audit answer 405: the log can only be read through the API.' },
+    { layer: 'api', path: 'bruno/fugue/audit/10-search-self-service-is-forbidden.bru', name: 'Without AUDIT_READ the search is 403', asserts: 'A caller without AUDIT_READ gets 403 on the audit search.' },
+    { layer: 'web', path: 'web/src/app/features/audit/audit-search.spec.ts', name: 'falls back to the filtered log with a one-line note on 503 search.unavailable', asserts: 'On 503 search.unavailable the page falls back to the filtered log with a one-line note.' },
+    { layer: 'arch', path: 'tests/Fugue.ArchTests/FitnessTests.cs', name: 'Fitness_Persistence_every_entity_is_IAuditable_unless_append_only', asserts: 'Every entity is auditable unless on the append-only allowlist, and those must carry OccurredAt.' },
+  ],
   decisions: [
     { label: 'D-031 Read API behind AUDIT_READ', path: 'docs/decisions.md' },
     { label: 'D-058 Audit search on Meilisearch', path: 'docs/decisions.md' },

@@ -14,6 +14,12 @@ export const TEAM_HOOD: HoodNote = {
   adrs: [
     { label: 'ADR-012 OpenAPI contract and GET /me', path: 'docs/adr/ADR-012-openapi-contract-and-console-boundary.md' },
   ],
+  tests: [
+    { layer: 'integration', path: 'tests/Fugue.Tests/Claims/ClaimReportsTests.cs', name: 'Exposure_totals_are_per_currency_never_across_currencies', asserts: 'Exposure totals come per currency (HKD, SGD, THB); 150000 SGD plus 200000 THB is never one number.' },
+    { layer: 'integration', path: 'tests/Fugue.Tests/Claims/ClaimReportsTests.cs', name: 'Workload_needs_the_workload_permission_and_a_claimant_is_refused', asserts: 'A claimant gets 403 on /claims/workload; a manager gets 200.' },
+    { layer: 'api', path: 'bruno/fugue/claims/24-exposure.bru', name: 'Exposure (manager): totals per currency, never mixed', asserts: 'Each currency appears once in the totals and every row carries its market’s currency.' },
+    { layer: 'web', path: 'web/src/app/features/claims/team-logic.spec.ts', name: 'scales each bar within its own currency: a huge IDR amount does not shrink the SGD bars', asserts: 'Exposure bars are scaled within one currency, so a huge IDR amount does not shrink the SGD bars.' },
+  ],
   decisions: [
     { label: 'Workload and exposure', path: 'docs/CLAIMS.md#6-workload-and-exposure' },
     { label: 'Money in minor units', path: 'docs/CLAIMS.md#7-money' },

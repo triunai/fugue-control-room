@@ -205,6 +205,37 @@
   margin-top: 0.15rem;
   color: var(--warn-ink);
 }
+.tests {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.tests li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.layer {
+  display: inline-block;
+  margin-right: 0.35rem;
+  padding: 0 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-text);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+.tname {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  overflow-wrap: anywhere;
+  color: var(--accent-text);
+}
+.tests .gnote {
+  margin: 0.2rem 0 0;
+}
 .links li {
   margin: 0.25rem 0;
 }

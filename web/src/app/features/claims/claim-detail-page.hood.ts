@@ -16,6 +16,13 @@ export const CLAIM_DETAIL_HOOD: HoodNote = {
     { label: 'ADR-004 Errors: FluentResults with ErrorType', path: 'docs/adr/ADR-004-fluentresults-with-errortype.md' },
     { label: 'ADR-011 Outbox in the same transaction', path: 'docs/adr/ADR-011-outbox-and-signed-webhooks.md' },
   ],
+  tests: [
+    { layer: 'unit', path: 'tests/Fugue.Tests/Domain/ClaimTests.cs', name: 'The_transition_table_holds_for_every_status_and_move', asserts: 'Every status x move: legal ones change status with one timeline row and event; illegal ones are 409 and change nothing.' },
+    { layer: 'integration', path: 'tests/Fugue.Tests/Claims/ClaimsWorkflowTests.cs', name: 'A_second_officer_with_the_old_etag_gets_412_and_with_a_fresh_one_gets_409', asserts: 'A stale If-Match is 412, a fresh one then meets the state machine (409); neither failure wrote a timeline row or an event.' },
+    { layer: 'api', path: 'bruno/fugue/claims/06-pickup-without-if-match.bru', name: 'Pickup without If-Match is 428', asserts: 'Pickup with no If-Match answers 428 with code claim.if_match_required.' },
+    { layer: 'web', path: 'web/src/app/core/http/interceptors.spec.ts', name: 'sends the claim tag on every claim command and stores the new tag against the claim', asserts: 'Every claim command sends the stored ETag as If-Match and keeps the new ETag from the reply.' },
+    { layer: 'e2e', path: 'web/e2e/06-claims-flow.spec.ts', name: 'a claim from report to settlement, and the changed-since-you-opened-it banner', asserts: 'A claim goes from report to settlement in the console; a stale edit shows the Changed-since-you-opened-it banner with Reload.' },
+  ],
   decisions: [
     { label: 'D-056 ETag checked before the state machine', path: 'docs/decisions.md' },
     { label: 'Concurrency and atomicity', path: 'docs/CLAIMS.md#4-concurrency-duplicates-and-atomicity' },

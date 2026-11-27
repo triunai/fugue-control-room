@@ -31,6 +31,23 @@ describe('hood notes registered by route data', () => {
 
   // The guard excerpts must be real: the file exists in the repository and every excerpt line is a line of it (indentation trimmed).
   const repo = resolve(process.cwd(), '..');
+  it.each(pages)('route "%s": every test is a real test in a real file', (path) => {
+    const note = find(path)?.data?.['hood'] as HoodNote;
+    expect(note.tests.length).toBeGreaterThanOrEqual(3);
+    expect(note.tests.length).toBeLessThanOrEqual(5);
+    for (const x of note.tests) {
+      expect(['unit', 'integration', 'arch', 'api', 'web', 'e2e']).toContain(x.layer);
+      expect(x.asserts.length).toBeLessThanOrEqual(140);
+      const file = resolve(repo, x.path);
+      expect(existsSync(file)).toBe(true);
+      expect({ path: x.path, name: x.name, found: readFileSync(file, 'utf8').includes(x.name) }).toEqual({
+        path: x.path,
+        name: x.name,
+        found: true,
+      });
+    }
+  });
+
   it.each(pages)('route "%s": every guard excerpt is copied from a real file', (path) => {
     const note = find(path)?.data?.['hood'] as HoodNote;
     for (const g of note.guards) {
