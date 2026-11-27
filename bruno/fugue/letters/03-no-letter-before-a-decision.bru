@@ -1,0 +1,23 @@
+meta {
+  name: No letter before a decision (409 claim.letter_not_available)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/letter
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{claimantToken}}
+}
+
+tests {
+  test("409 claim.letter_not_available as problem+json", function () {
+    expect(res.status).to.equal(409);
+    expect(res.headers["content-type"]).to.include("application/problem+json");
+    expect(res.body.code).to.equal("claim.letter_not_available");
+  });
+}

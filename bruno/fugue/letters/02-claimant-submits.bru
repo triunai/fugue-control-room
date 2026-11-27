@@ -1,0 +1,49 @@
+meta {
+  name: Claimant submits a claim (201)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/claims
+  body: json
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: "{{claimKey}}"
+}
+
+auth:bearer {
+  token: {{claimantToken}}
+}
+
+body:json {
+  {
+    "market": "SG",
+    "line": "Motor",
+    "policyNumber": "{{claimPolicy}}",
+    "incidentDate": "{{incidentDate}}",
+    "incidentDescription": "Rear-ended at the traffic lights.",
+    "incidentLocation": "Orchard Road"
+  }
+}
+
+script:pre-request {
+  bru.setVar("claimKey", "bruno-letter-" + Date.now());
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("claimId", res.body.id);
+    bru.setVar("claimEtag", res.headers["etag"]);
+    bru.setVar("claimNumber", res.body.number);
+  }
+}
+
+tests {
+  test("201 Submitted", function () {
+    expect(res.status).to.equal(201);
+    expect(res.body.status).to.equal("Submitted");
+  });
+}

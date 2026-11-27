@@ -1,0 +1,17 @@
+meta {
+  name: Anonymous caller gets 401 on the letter
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/letter
+  body: none
+  auth: none
+}
+
+tests {
+  test("401", function () {
+    expect(res.status).to.equal(401);
+  });
+}

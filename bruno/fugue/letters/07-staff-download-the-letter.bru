@@ -1,0 +1,28 @@
+meta {
+  name: Staff download the settlement letter (200 application/pdf)
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/letter
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{officerToken}}
+}
+
+tests {
+  test("200, a PDF, named after the claim, carrying its number and amount", function () {
+    const body = String(res.body);
+    expect(res.status).to.equal(200);
+    expect(res.headers["content-type"]).to.equal("application/pdf");
+    expect(res.headers["content-disposition"]).to.include(bru.getVar("claimNumber") + "-settlement-letter.pdf");
+    expect(body.startsWith("%PDF-")).to.equal(true);
+    expect(body).to.include(bru.getVar("claimNumber"));
+    expect(body).to.include("SGD 800.00");
+    expect(body).to.include("Sample document, not a legal letter");
+  });
+}

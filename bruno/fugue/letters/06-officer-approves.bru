@@ -1,0 +1,36 @@
+meta {
+  name: Officer approves SGD 800.00
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/decision
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{officerToken}}
+}
+
+headers {
+  If-Match: {{claimEtag}}
+}
+
+body:json {
+  { "outcome": "approve", "amountMinor": 80000, "reason": "Covered under section 4." }
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("claimEtag", res.headers["etag"]);
+  }
+}
+
+tests {
+  test("200 Approved", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.status).to.equal("Approved");
+  });
+}
