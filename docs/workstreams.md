@@ -15,6 +15,12 @@ Glyph legend:
 - `⛔ BLOCKED` — waiting on something outside the thread; `Status:` names it
 - `✅ DONE` — finished and verified
 
+### WS-20 — Claims platform: the timed build window — 🟢 ACTIVE (2026-11-27)
+ID: W-020
+Status: window opened at tag `claims-window-start` (2026-11-27 ~17:00 +08, hard stop 22:00 +08). Plan: `docs/plans/claims-window.md`.
+Resume: backend core lane, then the frontend lane on the regenerated client, Codex review on the state machine seam, README + demo script.
+Refs: `docs/plans/claims-window.md`, D-052, D-053
+
 ### WS-07 — S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry — 🟢 ACTIVE (2026-11-27)
 ID: W-007
 Status: 2026-11-27 headless run: Docker image + one-command compose lane dispatched; idempotency planned (D-050, ADR-013, `docs/plans/w007-idempotency.md`), Codex plan review running. Versioning/HybridCache/OpenTelemetry only if time.

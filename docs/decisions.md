@@ -62,8 +62,30 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-049 | Keep the W-017 Angular console; no template import | - |
 | D-050 | Idempotency keys with stored-response replay on the two create POSTs | [ADR-013](adr/ADR-013-idempotency-keys.md) |
 | D-051 | W-018 audit import: four ideas ported, nine rejected | [ADR-010](adr/ADR-010-audit-log.md) (amended) |
+| D-052 | The claims window runs in this repo, opened by a tag | - |
+| D-053 | Claims platform shape for the window | - |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-053 — Claims platform shape for the window — 2026-11-27
+WS: WS-20
+Context: the take-home brief (motor and property claims, six markets, claimants, staff, managers, one Angular app) is built inside a 5-hour window.
+Decision: one CLAIMS module in the monolith; a Claim aggregate with its state machine; an append-only claimant timeline; info requests; claimant-only visibility (404 otherwise); seven permissions and a new MANAGER role; REST for every command and query, an outbox event per transition (webhooks now, Kafka adapter keyed by ClaimId later); workload and exposure as plain SQL over live rows, never summed across currencies. Details: `docs/plans/claims-window.md`.
+Why: claim state, timeline and event must commit together; the scaffold already provides concurrency, audit, outbox and the console, so the window goes to the domain.
+Consequences: cut lines are listed in the plan; projections, saga and market-scoped toggles are "more time" items.
+Who: AI (lead) proposed, owner approved the window
+Status: accepted
+Promote: no
+
+## D-052 — The claims window runs in this repo, opened by a tag — 2026-11-27
+WS: WS-20
+Context: the brief evaluates how much is built in 2-3 h (5 h cap) with AI; there is no proctored session and the panel confirmed a disclosed starter is acceptable.
+Decision: build the claims platform in the Fugue repo after an annotated tag `claims-window-start`; everything before it is the disclosed scaffold, everything after it is the window. Two scaffold lanes started before the tag (idempotency fix round, console shell pass) land after it and keep `Refs: W-007`.
+Why: one repo keeps the full AI-orchestration history as evidence, and `git diff claims-window-start..HEAD` gives the panel the exact window.
+Consequences: README states the disclosure and the tag on its first lines; the journal logs the window as it happens.
+Who: owner (window now, disclosure confirmed) and AI (tag mechanism)
+Status: accepted
+Promote: no
 
 ## D-051 — W-018 audit import: four ideas ported, nine rejected — 2026-11-27
 WS: WS-18
