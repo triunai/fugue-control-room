@@ -15,38 +15,14 @@ Glyph legend:
 - `⛔ BLOCKED` — waiting on something outside the thread; `Status:` names it
 - `✅ DONE` — finished and verified
 
-### WS-24 — Claims follow-ups: counts endpoint, open-first queue, past questions — ⏸ PARKED (2026-11-27)
-ID: W-024
-Status: follow-up of W-020. Backlog #006 (one `GET /claims/counts` for the KPI strip and tabs; the queue defaults to open statuses) and #007 (past info requests list on the detail page).
-Resume: backend endpoint + test + snapshot, then `npm run api:gen` and the console change; one lane.
-Refs: backlog #006, #007, D-053
-
 ### WS-23 — API versioning with Sunset, HybridCache, OpenTelemetry — ⏸ PARKED (2026-11-27)
 ID: W-023
 Status: follow-up of W-007 (closed). Not built: a v2 example with `Deprecation`/`Sunset` on v1, HybridCache on the `/me` permission lookup, OpenTelemetry traces.
 Resume: after W-022; one lane each, snapshot refresh after any contract change.
 Refs: `docs/plans/roadmap.md`
 
-### WS-22 — Post-core quality wave and nice-to-haves (lands together after the claims build) — ⏸ PARKED (2026-11-27)
-ID: W-022
-Status: owner asked 2026-11-27; unblocked 18:15 (W-020 merged and closed, readability pass merged). Items: (1) explain the AI harness: the 60% context cap (wrap state ready before compaction), the lefthook-based gates that run tests automatically, the orchestration layer used for agents; (2) mutation testing with Stryker.NET on a few worth-it targets (Claim state machine, AuditRedactor, the Idempotency-Key header parser); (3) PICT pairwise tests where the input space is combinatorial (role x module state x claim status x action); (4) k6 load scripts (claims queue read, submit with Idempotency-Key, pickup race) with thresholds; (5) "Nice to haves" docs section: Univer spreadsheet (bulk reserve review / claims import) and a calendar (SLA due dates, assessor appointments), with the owner's own note on trimming them for memory-capped deploys (owner to supply the facts), driver.js tour (#002), shell (#003), roles matrix (#004).
-Resume: one lane per item (Stryker, PICT, k6 can run in parallel on disjoint folders), docs last; item 5 needs the owner's own note on trimming Univer and the calendar.
-Refs: backlog #002-#005, D-054, D-055
-
 ### WS-10 — Verify the Codex gate end to end — ⏸ PARKED (2026-11-25)
 ID: W-010
 Status: `scripts/codex-gate.mjs` invocation (`codex exec review --base <sha> ... -`) taken from `--help`, never run against a real seam push.
 Resume: make a throwaway seam change on a branch, run `node scripts/codex-gate.mjs --dry-run --base=<ref>`, then once for real; confirm `docs/reviews/codex/` receives text and the failure path records "failed". Also confirm lefthook gives git's stdin to both `spine-nudge` and `codex-gate` on a real push.
 Refs: D-014, ADR-007
-
-### WS-21 — Audit full-text search — ⏸ PARKED (2026-11-27)
-ID: W-021
-Status: follow-up of W-018. Postgres `tsvector` over action, entity, actor display and error code with a GIN index; `q=` on `GET /api/v1/audit`; a search box in the console. Meilisearch rejected (D-051).
-Resume: after the claims window.
-Refs: D-051
-
-### WS-19 — Users list endpoint for the Access screen — ⏸ PARKED (2026-11-27)
-ID: W-019
-Status: the console's Users & access screen has no list; the operator pastes a user id or picks from audit actors.
-Resume: `GET /api/v1/users` (keyset, search, `USERS_READ`), refresh the OpenAPI snapshot, regenerate the console client, add the list to the Access screen.
-Refs: ADR-008, ADR-012

@@ -6,6 +6,197 @@ Heading form: `## <YYYY-MM-DD> — <title>`. Entry key = `<date>#<n>`, where n i
 First non-blank body line must be `WS: WS-NN` (comma-separate several) or `WS: (pre-WS)`.
 Then: what was done · what was decided (cite D-NNN) · what is open (cite #NNN).
 
+## 2026-11-27 — Closed W-022: Post-core quality wave and nice-to-haves (lands together after the claims build)
+WS: WS-22
+Closed: W-022 (WS-22) Post-core quality wave and nice-to-haves (lands together after the claims build)
+Outcome: Post-core wave landed: AI harness write-up, Stryker/PICT/k6, console shell adaptation (D-060 correction: adapted, not ported), reviewer tour, roles matrix, Univer reserve sheet and assessment worksheet, SLA calendar, Meilisearch audit search, Fable readiness review (D-061) and its 15 changes, owner polish round, under-the-hood sidebar, optional Kafka publisher (D-062). Released as v0.0.2.
+Commits:
+- 7b9605b docs(spine): wrap mid-window; close W-018; seed the headless continuation
+- 2b9758e docs(spine): wrap the headless claims session
+- 626d054 docs(trace): regenerate traceability index
+- 84dac9b docs(reviews): repo-relative paths in the W-018 Codex review
+- 52a61b5 docs(trace): regenerate traceability index
+- b875f49 docs(plans): nice-to-haves wave briefs; D-058 to D-060
+- f00e2d4 docs(docs): journal the publish and the nice-to-haves wave; ledger rows
+- 3ff8ba7 fix(web): the nav scrolls above the pinned account card
+- afc0dae docs(plans): brief for the claim record and team pages lane
+- e774faf docs(docs): journal the owner's usability critique; ledger row for nth-claimui
+- c58eb38 feat(web): console shell from the reference design
+- c3f0918 test(domain): mutation testing on three targets
+- fa98e36 feat(web): reviewer tour
+- f0b5409 feat(web): claim record banner and next step card
+- 853fab0 test(application): pairwise claim action cases
+- 714ebdd feat(web): roles and permissions matrix
+- 3391e13 feat(web): team and exposure page
+- a9e1610 docs(plans): briefs for the review follow-up and Kafka lanes
+- 1f35e66 docs(docs): service boundaries, sync and async, demo script; Fable review
+- 2ff5859 refactor(web): split record and team styles out of claims.css
+- f856000 feat(web): a landing page per persona
+- 8fedec9 feat(web): route the landing and team pages, retire workload and exposure
+- 96d9b5f feat(messaging): Kafka publisher keyed by aggregate id
+- d843a4f feat(web): one Team and exposure nav item
+- 1649506 test(messaging): Kafka publisher against a real broker
+- 1f98f3a build(infra): optional Kafka broker in compose
+- 5a6b39e test(perf): k6 scripts for the claims API
+- 122beb0 feat(web): end the money track after a rejection and mark the worksheet slot
+- 2193122 test(web): screenshots of the record, team page and landings
+- 337ac62 docs(docs): nth-claimui lane status
+- 42ee9fc docs(docs): how the AI harness runs this repo
+- d293b7a docs(docs): nth-quality status trailer note
+- 4e9b0b0 Merge branch 'nth-quality': mutation, pairwise, load, harness doc
+- d708a8f feat(web): milestone steppers and a stricter next step card
+- 3ac0a3e feat(web): matrix step in the admin tour, shell e2e and screenshots
+- dbe7b7c docs(runbooks): watching claim events on Kafka
+- 02e3b07 docs(docs): nth-shell lane status
+- e596429 feat(web): the queue reads its filters from the URL and opens on Open
+- 960238c feat(web): reserve review sheet
+- fe7f2a0 test(tests): the pairwise test's repository fake implements the new reads
+- 6773d48 feat(web): tour by page key, Help entry, Starter example nav group
+- e975272 docs(docs): nth-shell lane status addendum
+- 0824bf8 feat(web): claims SLA calendar
+- f24261a feat(web): team and exposure in the order a manager asks
+- f6cac4b feat(web): nav entries and routes for the reserve sheet and the SLA calendar
+- 8b42690 feat(web): landings answer what to do next
+- a1feeac docs(web): nice-to-haves and their bundle cost
+- 69f215b feat(web): claims screens refetch on focus and every 15 s
+- 4be6dc0 docs(web): final bundle numbers from the last build
+- 06806fa docs(docs): nth-grid lane status
+- ec7bf0c Merge branch 'nth-shell': console shell, reviewer tour, roles matrix
+- 615a003 fix(web): restore the team page styles lost in the style split
+- ce006da test(web): refresh screenshots for the milestone steppers and team page
+- aae0fde docs(docs): nth-claimui lane status, addendum round
+- 59e7d77 docs(plans): brief for the wire-up lane
+- 94b4921 feat(web): wire the tour hook and show past questions on the record
+- 8d298ef docs(docs): nth-claimui lane status, round 3
+- 3adfa43 feat(web): roles matrix reads the API
+- 29f6ad8 Merge branch 'nth-claimui': claim record, next step, team page, landings
+- 3e35ef1 feat(web): open the reserve sheet in Excel
+- 71dbac4 feat(web): claim assessment worksheet
+- 09dc7e5 docs(web): Excel export, assessment worksheet and the final bundle numbers
+- 5a2eff0 fix(web): manager tour points at the team page
+- 7605975 docs(docs): nth-wire lane status
+- ae93069 Merge branch 'nth-grid': reserve sheet, SLA calendar, assessment worksheet
+- 8d486c0 feat(web): the assessment worksheet sits on the claim record
+- 268c1e2 Merge branch 'nth-claimui' round 3: tour targets and past questions
+- 3bca72e Merge branch 'nth-wire': users list, roles matrix, audit search in the console
+- 97b6ed8 docs(docs): journal the integration wave; failure mode 32
+- 8a103cc fix(web): the roles matrix reads as one grid in one type family
+- f0d0443 docs(spine): hot-state during the nice-to-haves wave; ledger row for nth-polish
+- b0b3662 docs(spine): record the owner's feature freeze and v0.0.2 in hot-state
+- 267fd79 docs(spine): backlog the under-the-hood panel design (#008)
+- eb3ce64 docs(spine): backlog #008 as a minimisable sidebar
+- 3f633b1 feat(web): Univer sheets with the full toolbar and formula bar
+- 94aa8ed fix(web): one type family in breadcrumbs and content group headers
+- 8281dfc test(web): screenshots of the sheets and the matrix
+- e330ba2 docs(docs): nth-polish lane status
+- c193a2e fix(web): next step shows N days past SLA instead of Day 18 of 14
+- d6bd75a feat(web): Activity is a collapsed disclosure remembered per session
+- 7889651 feat(web): show the console version in the sidebar footer
+- d7941ad test(web): screenshots of the claim record
+- 30577fc fix(web): a day on the SLA calendar opens the claims due that day
+- ac68687 docs(spine): owner approved the under-the-hood sidebar (layout A)
+- 6493712 docs(spine): ledger row for nth-hood
+- fdf7ecc feat(web): audit search in the shell header
+- 746f9bb docs(docs): nth-polish lane status addendum
+- 03d7002 Merge branch 'nth-polish': the owner's polish round
+- bac8503 feat(web): live API call log for the under-the-hood panel
+- e2d6d16 docs(spine): retire the nth-polish ledger row
+- 2899045 feat(web): under-the-hood sidebar, minimisable
+- 89e15b3 feat(web): under-the-hood notes for the demo pages
+- 4161452 test(web): hood screenshots
+- e0e5e80 docs(docs): nth-hood lane status
+- 80a1fbe Merge branch 'nth-hood': the under-the-hood sidebar
+- 29c3c32 docs(spine): context-cap wrap; blank console fix in flight; seed prompt
+- 284a191 fix(web): resolve Router before the await in guestGuard
+Decisions: D-054, D-055, D-058, D-059, D-060, D-061, D-062, D-057
+Follow-ups: Faithful port of the reference shell (backlog #003, reopened); owner's note on trimming Univer and the calendar for memory-capped deploys.
+
+## 2026-11-27 — Closed W-024: Claims follow-ups: counts endpoint, open-first queue, past questions
+WS: WS-24
+Closed: W-024 (WS-24) Claims follow-ups: counts endpoint, open-first queue, past questions
+Outcome: GET /api/v1/claims/counts feeds the KPI strip and tabs in one call, the queue opens on open statuses, and past info requests are listed on the claim record (backlog #006, #007); Bruno requests added.
+Commits:
+- b875f49 docs(plans): nice-to-haves wave briefs; D-058 to D-060
+- e3885f2 feat(api): claim status counts and the past questions list
+- afc0dae docs(plans): brief for the claim record and team pages lane
+- e925e63 test(api): Bruno requests for counts, questions, users and roles
+- 3fde3bf docs(docs): nth-api lane status
+- 6e202c4 Merge branch 'nth-api': claim counts, past questions, users and roles
+- f0b5409 feat(web): claim record banner and next step card
+- 3391e13 feat(web): team and exposure page
+- a9e1610 docs(plans): briefs for the review follow-up and Kafka lanes
+- 2ff5859 refactor(web): split record and team styles out of claims.css
+- f856000 feat(web): a landing page per persona
+- 8fedec9 feat(web): route the landing and team pages, retire workload and exposure
+- d843a4f feat(web): one Team and exposure nav item
+- 292e217 feat(domain): a reserve change is an event
+- 3417421 docs(reviews): Codex review of the nth-api lane
+- 122beb0 feat(web): end the money track after a rejection and mark the worksheet slot
+- 2193122 test(web): screenshots of the record, team page and landings
+- 337ac62 docs(docs): nth-claimui lane status
+- e070a41 feat(application): exposure counts unreserved claims; workload shows idle officers
+- 9fb4a5d feat(api): queue drill-down filters
+- 04e489c feat(infra): demo seed subscribes the dev sink to claim events
+- d708a8f feat(web): milestone steppers and a stricter next step card
+- 08ea1ce test(api): Bruno requests for the drill-down filters and the new report fields
+- e596429 feat(web): the queue reads its filters from the URL and opens on Open
+- a42d56c docs(docs): nth-api2 lane status
+- f24261a feat(web): team and exposure in the order a manager asks
+- 8b42690 feat(web): landings answer what to do next
+- 69f215b feat(web): claims screens refetch on focus and every 15 s
+- 3ea179b Merge branch 'nth-api2': review follow-ups (events, exposure, drill-down)
+- 615a003 fix(web): restore the team page styles lost in the style split
+- ce006da test(web): refresh screenshots for the milestone steppers and team page
+- aae0fde docs(docs): nth-claimui lane status, addendum round
+- 94b4921 feat(web): wire the tour hook and show past questions on the record
+- 8d298ef docs(docs): nth-claimui lane status, round 3
+- 29f6ad8 Merge branch 'nth-claimui': claim record, next step, team page, landings
+- 268c1e2 Merge branch 'nth-claimui' round 3: tour targets and past questions
+Decisions: D-053, D-061, D-058, D-059, D-060
+Follow-ups: none
+
+## 2026-11-27 — Closed W-021: Audit full-text search
+WS: WS-21
+Closed: W-021 (WS-21) Audit full-text search
+Outcome: Audit search shipped on Meilisearch, not Postgres tsvector: the owner reversed the earlier AI-only rejection (D-058). An indexer feeds it from the append-only audit_log; GET /api/v1/audit/search (AUDIT_READ) answers 503 when the service is down; search box on the audit page and in the shell header.
+Commits:
+- 7b9605b docs(spine): wrap mid-window; close W-018; seed the headless continuation
+- b875f49 docs(plans): nice-to-haves wave briefs; D-058 to D-060
+- 78a5b57 docs(runbooks): audit search
+- 2bc5cd3 feat(infra): Meilisearch audit index and indexer
+- addaebe feat(api): audit search endpoint
+- 7e2e4c6 docs(docs): nth-search lane status
+- 4ed4819 Merge branch 'nth-search': Meilisearch audit search
+- c58817b fix(infra): the quickstart fills the Meilisearch master key
+- 59e7d77 docs(plans): brief for the wire-up lane
+- 8a87a5f feat(web): audit search box
+- d551ca3 docs(web): screenshots for the users list and audit search
+- 7605975 docs(docs): nth-wire lane status
+- 3bca72e Merge branch 'nth-wire': users list, roles matrix, audit search in the console
+Decisions: D-058, ADR-010, D-059, D-060
+Follow-ups: none
+
+## 2026-11-27 — Closed W-019: Users list endpoint for the Access screen
+WS: WS-19
+Closed: W-019 (WS-19) Users list endpoint for the Access screen
+Outcome: GET /api/v1/users (keyset, search, USERS_READ) and the Access screen's users list with the roles x permissions matrix; contract snapshot and generated client refreshed.
+Commits:
+- 3a559aa docs(spine): wrap 2026-11-27, decisions D-045..D-048, handoff and seed prompt
+- b875f49 docs(plans): nice-to-haves wave briefs; D-058 to D-060
+- 9978c1f feat(identity): users list and roles with their permissions
+- e925e63 test(api): Bruno requests for counts, questions, users and roles
+- 3fde3bf docs(docs): nth-api lane status
+- 6e202c4 Merge branch 'nth-api': claim counts, past questions, users and roles
+- 3417421 docs(reviews): Codex review of the nth-api lane
+- 59e7d77 docs(plans): brief for the wire-up lane
+- 90aaaa3 docs(spine): ledger row for nth-wire
+- 886384c feat(web): users list on the access screen
+- d551ca3 docs(web): screenshots for the users list and audit search
+- 7605975 docs(docs): nth-wire lane status
+- 3bca72e Merge branch 'nth-wire': users list, roles matrix, audit search in the console
+Decisions: ADR-008, ADR-012, D-058, D-059, D-060, D-045, D-046, D-047, D-048
+Follow-ups: none
+
 ## 2026-11-27 — Closed W-007: S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry
 WS: WS-07
 Closed: W-007 (WS-07) S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry

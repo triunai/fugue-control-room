@@ -5,6 +5,7 @@ using Fugue.Domain.Abstractions;
 using Fugue.Infrastructure.Audit;
 using Fugue.Infrastructure.Idempotency;
 using Fugue.Infrastructure.Identity;
+using Fugue.Infrastructure.Messaging;
 using Fugue.Infrastructure.Outbox;
 using Fugue.Infrastructure.Persistence;
 using Fugue.Infrastructure.Persistence.Claims;
@@ -87,7 +88,22 @@ public static class DependencyInjection
         // whose primary handler dials only verified addresses (SSRF, DNS rebinding) and never follows redirects. The standard resilience handler adds an
         // attempt timeout, a total timeout, a rate limiter and a circuit breaker PER AUTHORITY (one failing receiver does not open the circuit for the others).
         // Its retry is limited to one attempt and disabled for POST: the outbox is the retry authority (counted, backed off for minutes, visible in webhook_deliveries).
-        services.AddScoped<Fugue.Application.Abstractions.IEventPublisher, WebhookFanOutPublisher>();
+        // Events:Publisher picks the adapters the relay calls: Webhooks (default, unchanged), Kafka, or Both (ADR-011 amendment).
+        services.AddOptions<EventPublisherOptions>().Bind(configuration.GetSection(EventPublisherOptions.Section)).ValidateOnStart();
+        services.AddSingleton<IValidateOptions<EventPublisherOptions>, EventPublisherOptionsValidator>();
+        EventPublisherMode mode = configuration.GetSection(EventPublisherOptions.Section).Get<EventPublisherOptions>()?.Publisher ?? EventPublisherMode.Webhooks;
+        if (mode is EventPublisherMode.Webhooks or EventPublisherMode.Both)
+        {
+            services.AddScoped<Fugue.Application.Abstractions.IEventPublisher, WebhookFanOutPublisher>();
+        }
+
+        if (mode is EventPublisherMode.Kafka or EventPublisherMode.Both)
+        {
+            services.AddSingleton<Confluent.Kafka.IProducer<string, string>>(sp =>
+                new Confluent.Kafka.ProducerBuilder<string, string>(KafkaEventPublisher.ProducerConfig(sp.GetRequiredService<IOptions<EventPublisherOptions>>().Value.Kafka)).Build());
+            services.AddScoped<Fugue.Application.Abstractions.IEventPublisher, KafkaEventPublisher>();
+        }
+
         services.AddSingleton<GuardedConnect>();
         IHttpStandardResiliencePipelineBuilder pipeline = services.AddHttpClient<WebhookSender>(client => client.Timeout = Timeout.InfiniteTimeSpan) // the resilience handler owns the timeouts
             .ConfigurePrimaryHttpMessageHandler(sp => new SocketsHttpHandler

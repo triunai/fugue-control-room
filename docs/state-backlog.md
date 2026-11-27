@@ -19,6 +19,7 @@ The owner wants a driver.js walkthrough as the LAST console touch, only on certa
 ### #003 — KIV: console shell closer to the reference design (collapsible nav groups, user card, breadcrumbs)
 WS: WS-07
 Owner likes a reference shell: grouped sidebar with collapsible sections and count badges, the signed-in user card at the bottom with sign-out, a version footer, breadcrumbs in the top bar, a command search. Where: `web/src/app/features/shell/`. Size M (search palette L). Close with a scoped pass: breadcrumbs + bottom user card + collapsible groups first; search later.
+Reopened 2026-11-27 19:56 (owner): nth-shell delivered an adaptation, not the reference shell; only the breadcrumbs read as ported. Still owed after submission: the reference tree line and sliding active card, count badges, theme switch, inbox bell, rail click-to-expand (D-060 correction).
 
 ### #004 — KIV: role × permission matrix on the Access screen
 WS: WS-07

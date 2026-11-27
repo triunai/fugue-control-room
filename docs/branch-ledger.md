@@ -5,5 +5,4 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | Branch | Worktree path | Base sha | Owner (lane) | W id | Status |
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
-| `nth-kafka` | `.worktrees/nth-kafka` | a9e1610 | nth-kafka (Sonnet) | W-022 | review follow-ups wave |
-| `nth-hood` | `.worktrees/nth-hood` | ac68687 | nth-hood (Sonnet) | W-022 | under-the-hood sidebar (#008) |
+| `nth-hood2` | `.worktrees/nth-hood2` | 284a191 | nth-hood2 (Sonnet) | D-062 | hood guards with code excerpts, API notes, ADR links |

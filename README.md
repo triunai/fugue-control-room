@@ -23,12 +23,25 @@ Open **http://localhost:8080** (console; the API is on :5081, Swagger at `/swagg
 
 | Account | Role | Try |
 |---|---|---|
-| `self@fugue.test` | claimant | My claims, report an incident, answer the open question on a seeded claim |
-| `staff@fugue.test` | claims officer | the queue, pick up, set a reserve, ask, approve or reject; Workload |
-| `manager@fugue.test` | manager | settle an approved claim; Exposure per currency |
-| `admin@fugue.test` | admin | everything, including the audit log and module toggles |
+| `self@fugue.test` | claimant | lands on the claim that needs them ("We need one answer from you"), answers it; reports an incident; follows the claim and money tracks |
+| `staff@fugue.test` | claims officer | lands on My work (needs my action, pick up next, waiting on claimant); the claim record's next-step card says what to do and why; assessment worksheet; reserve sheet; SLA calendar |
+| `manager@fugue.test` | manager | lands on To settle; Team and exposure (who is overloaded, what is breaching, where the money is, per currency) |
+| `admin@fugue.test` | admin | everything: users and the roles x permissions matrix, audit log with search, module toggles, webhooks with the dev sink showing `claim.*` events |
 
 Curl walk-through of every guard (404, 409, 412, 428, the required Idempotency-Key): [`docs/runbooks/11-claims.md`](docs/runbooks/11-claims.md). Day-to-day development without Docker for the API: [runbook 01](docs/runbooks/01-local-setup.md) and [runbook 09](docs/runbooks/09-console.md).
+
+## Beyond the brief (added after the claims core, at the owner's request)
+
+Kept out of the demo script (`docs/DEMO.md`) on purpose; each is documented where it lives.
+
+| Extra | Where |
+|---|---|
+| Console shell from the owner's reference design; a reviewer tour per persona and per page (Help, `?tour=off`) | `web/src/app/features/shell/` |
+| Univer reserve sheet and claim assessment worksheet, both with Open in Excel; FullCalendar SLA calendar (lazy-loaded; bundle cost in `web/README.md`) | `web/src/app/features/claims/`, D-059 |
+| Meilisearch audit search (optional service, indexer from the append-only log) | runbook 06, D-058 |
+| Kafka publisher behind the event port (optional compose profile) | runbook 12, ADR-011 amendment |
+| Mutation testing (Stryker.NET), pairwise cases (PICT), k6 load scripts | `docs/quality/`, `perf/k6/` |
+| How the AI harness runs this repo | `docs/ai/harness.md` |
 
 ## Tests
 

@@ -1,6 +1,7 @@
 # Fugue stack for development. Credentials come from the untracked .env (copy .env.example). Runbook 10.
 #   docker compose up -d postgres   DB only (the dotnet run / ng serve flow, runbooks 03 and 09)
 #   docker compose up -d --build    postgres + migrate + api (Development, seeded) + web console
+#   EVENTS_PUBLISHER=Both docker compose --profile kafka up -d --build   adds a Redpanda broker and publishes claim events to it too (runbook 12)
 services:
   postgres:
     image: postgres:17-alpine
@@ -42,6 +43,29 @@ services:
       timeout: 3s
       retries: 10
 
+  # Optional Kafka-compatible broker (profile `kafka`, runbook 12): single node, dev mode. Inside the stack use redpanda:9092; from the host localhost:${KAFKA_PORT}.
+  # Keep the image tag in step with the Testcontainers image in tests/Fugue.Tests/Messaging/KafkaPublisherTests.cs.
+  redpanda:
+    profiles: ["kafka"]
+    image: docker.redpanda.com/redpandadata/redpanda:v24.3.18
+    container_name: fugue-redpanda
+    restart: unless-stopped
+    command:
+      - redpanda
+      - start
+      - --mode=dev-container
+      - --smp=1
+      - --memory=512M
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://redpanda:9092,external://localhost:${KAFKA_PORT:-19092}
+    ports:
+      - "${KAFKA_PORT:-19092}:19092"
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -q 'Healthy:.*true'"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
   # One-shot: applies the EF migrations bundle, then exits 0. The API does not migrate on startup.
   migrate:
     build:
@@ -68,6 +92,9 @@ services:
       # Empty when unset: compose interpolates the whole file, so a hard requirement here would also break `up -d postgres`.
       # The API itself refuses to start with a missing, short or placeholder key (runbook 10, troubleshooting).
       Auth__SigningKey: ${AUTH_SIGNING_KEY:-} # secrets-scan:ignore (reference, not a value)
+      # Webhooks (default) leaves the relay as it was; Both also produces to Kafka and needs the `kafka` profile (the broker). Runbook 12.
+      Events__Publisher: ${EVENTS_PUBLISHER:-Webhooks}
+      Events__Kafka__BootstrapServers: redpanda:9092
       Search__Meilisearch__Url: http://meilisearch:7700
       Search__Meilisearch__ApiKey: ${MEILI_MASTER_KEY:?set it in .env (16+ bytes)} # secrets-scan:ignore (reference, not a value)
     ports:
