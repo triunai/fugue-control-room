@@ -46,6 +46,18 @@ export const NAV: NavGroup[] = [
         permission: 'CLAIMS_EXPOSURE',
         icon: 'M2.5 13.5h11M4 11V7M8 11V4M12 11V9',
       },
+      {
+        label: 'Reserve sheet',
+        path: '/claims/sheet',
+        permission: 'CLAIMS_HANDLE',
+        icon: 'M2.5 2.5h11v11h-11zM2.5 6.5h11M2.5 10h11M7 2.5v11',
+      },
+      {
+        label: 'SLA calendar',
+        path: '/claims/calendar',
+        permission: 'CLAIMS_READ',
+        icon: 'M2.5 3.5h11v10h-11zM2.5 6.5h11M5.5 2v3M10.5 2v3',
+      },
     ],
   },
   {

@@ -66,6 +66,20 @@ export const routes: Routes = [
         loadComponent: () => import('./features/claims/exposure-page').then((m) => m.ExposurePage),
       },
       {
+        path: 'claims/sheet',
+        canActivate: [permissionGuard],
+        data: { permission: 'CLAIMS_HANDLE', section: 'Claims', breadcrumb: 'Reserve sheet' },
+        title: 'Reserve sheet · Fugue Console',
+        loadComponent: () => import('./features/claims/reserve-sheet-page').then((m) => m.ReserveSheetPage),
+      },
+      {
+        path: 'claims/calendar',
+        canActivate: [permissionGuard],
+        data: { permission: 'CLAIMS_READ', section: 'Claims', breadcrumb: 'SLA calendar' },
+        title: 'SLA calendar · Fugue Console',
+        loadComponent: () => import('./features/claims/claims-calendar-page').then((m) => m.ClaimsCalendarPage),
+      },
+      {
         path: 'claims/:id',
         canActivate: [permissionGuard],
         data: { permission: 'CLAIMS_READ', section: 'Claims', breadcrumb: 'Claim' },

@@ -14,16 +14,19 @@ function navFor(permissions: string[]): string[] {
 }
 
 describe('permission-driven navigation: Claims', () => {
-  it('a claimant sees My claims and Report an incident, and nothing staff-only', () => {
+  it('a claimant sees My claims, Report an incident and the SLA calendar, and nothing staff-only', () => {
     const nav = navFor(CLAIMANT);
-    expect(nav).toEqual(['Claims > My claims', 'Claims > Report an incident']);
+    expect(nav).toEqual(['Claims > My claims', 'Claims > Report an incident', 'Claims > SLA calendar']);
   });
 
   it('staff see the queue and workload, not the claimant screens and not exposure', () => {
     const nav = navFor(STAFF);
     expect(nav).toContain('Claims > Claims queue');
     expect(nav).toContain('Claims > Workload');
+    expect(nav).toContain('Claims > Reserve sheet');
+    expect(nav).toContain('Claims > SLA calendar');
     expect(nav).not.toContain('Claims > My claims');
+    expect(navFor(CLAIMANT)).not.toContain('Claims > Reserve sheet');
     expect(nav).not.toContain('Claims > Exposure');
   });
 
