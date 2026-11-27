@@ -11,3 +11,11 @@ Code smells that do not block the work in hand go here, not into the current cha
 ### #001 — Outbox, delivery and subscription-less event retention
 WS: WS-06
 `outbox_messages` rows (dispatched or dead) and their `webhook_deliveries` are never pruned, and events with no subscriber still accumulate. Size M. Close with a retention job that deletes dispatched messages older than N days (deliveries cascade) and a setting; the trigger already allows DELETE. Found by the Codex S4 review (LOW), deliberately out of S4 (plan non-goals).
+
+### #002 — KIV: guided product tour (driver.js) on selected console screens
+WS: WS-07
+The owner wants a driver.js walkthrough as the LAST console touch, only on certain screens (candidates: Customers 412 flow, Audit diff, Modules switch, Webhooks secret-once). Not before submission. Where: `web/` (a tour service + per-screen step lists, opt-in, dismissible, remembered per user in localStorage). Size M. Close when the owner picks the screens and the steps.
+
+### #003 — KIV: console shell closer to the reference design (collapsible nav groups, user card, breadcrumbs)
+WS: WS-07
+Owner likes a reference shell: grouped sidebar with collapsible sections and count badges, the signed-in user card at the bottom with sign-out, a version footer, breadcrumbs in the top bar, a command search. Where: `web/src/app/features/shell/`. Size M (search palette L). Close with a scoped pass: breadcrumbs + bottom user card + collapsible groups first; search later.
