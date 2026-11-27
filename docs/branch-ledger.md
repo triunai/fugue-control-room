@@ -10,6 +10,5 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | `nth-forms` | `.worktrees/nth-forms` | dacfb06 | nth-forms (Opus), relay-dispatched | D-064 | 5: console select + date picker, Fill with an example |
 | `nth-import` | `.worktrees/nth-import` | dacfb06 | nth-import (Opus), relay-dispatched | D-064 | 11a: intake import module (spreadsheet, inbox, WhatsApp file imports) |
 | `nth-searchx` | `.worktrees/nth-searchx` | dacfb06 | nth-searchx (Opus), relay-dispatched | D-064 | 10: Meilisearch hardening |
-| `nth-fixes` | `.worktrees/nth-fixes` | dacfb06 | nth-fixes (Sonnet), relay-dispatched | D-064 | 3a, 7a, 11f, claimant wording (1b already ticked as a stale tab) |
 | `nth-pdf` | `.worktrees/nth-pdf` | dacfb06 | nth-pdf (Opus), relay-dispatched | D-064 | 11b: settlement and decision letters as PDF |
 | `nth-paid` | `.worktrees/nth-paid` | f3d7637 | nth-paid (Opus), relay-dispatched | W-037 | 11c: paid/settled figure on Team and exposure |
