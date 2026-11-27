@@ -6,3 +6,4 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
 | `nth-kafka` | `.worktrees/nth-kafka` | a9e1610 | nth-kafka (Sonnet) | W-022 | review follow-ups wave |
+| `nth-polish` | `.worktrees/nth-polish` | 8a103cc | nth-polish (Sonnet) | W-022 | Univer sheets to the reference; typography |

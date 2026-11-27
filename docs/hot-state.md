@@ -2,30 +2,31 @@
 
 OVERWRITTEN at every wrap or pause, never appended; at most 40 lines. After a wrap or days away: read this first, then do "Next action" exactly. History lives in `docs/project-log.md` and `CHANGELOG.md`.
 
-## ▶ RESUME HERE — 2026-11-27 18:20 +08 (claims core DONE; window hard stop 21:56 +08; submission 2026-11-28 15:00)
-Branch `main`, no worktrees. Nothing pushed: the repo has no remote (the owner allowed pushes mid-session; creating the remote, account and visibility, is the owner's call).
-Last green sha: 1658a9f (merge of rd-sql; later commits are docs only). Lead run: build 0 warnings; ArchTests 37 + Tests 623; `dotnet format` clean; OpenAPI snapshot identical; web 62/62, lint clean, build green; Bruno `--env compose` 82/82 requests, 104/104 tests against the rebuilt Docker stack.
+## ▶ RESUME HERE — 2026-11-27 19:25 +08 (nice-to-haves wave; submission 2026-11-28 15:00)
+Branch `main`, pushed to `origin` = github.com/triunai/fugue-control-room (public; the owner's old main is kept as branch `control-room-archive`). Push after each merge (pre-push runs the suite).
+Last green sha: 8a103cc. Lead runs: build 0 warnings; ArchTests 37 + Tests 738; web 159, lint, build clean (CommonJS allow-list for Univer/ExcelJS in angular.json); Bruno `--env compose` 101/101 requests, 123/123 tests against the rebuilt stack (Meilisearch on); live checks: audit search 75 hits, users list 6, officer landing and claim record screenshotted.
 
 ## Last action done
-Headless lead: verified the claims backend, Codex seam review (D-056: 3 accepted, 2 declined), fix round, Angular claims screens, merged `claims-core`; readability pass in two lanes (D-054 SQL files + read-only role + MCP config; D-055 one file per concept + backlog #005) merged; claims list params camelCase (18c98d4); README, `docs/CLAIMS.md`, ADR-013 amendment, how-we-use-ai refresh, failure modes 30-31, D-057; W-020 and W-007 closed; W-023, W-024 opened.
+Merged lanes nth-search, nth-api, nth-quality, nth-api2, nth-shell, nth-claimui (+ round 3 recovered by sha), nth-grid, nth-wire; assessment worksheet wired into the record; Fable review filed (D-061) and its docs done (CLAIMS.md boundaries/ER/sync-async, DEMO.md); roles matrix restyled (8a103cc).
 
 ## Next action (exact)
-Optional, owner-asked, inside the window if time allows: W-022 quality wave (`docs/workstreams.md` WS-22): Stryker.NET on the Claim state machine / AuditRedactor / Idempotency-Key parser, PICT pairwise for role x status x action, k6 scripts, harness explainer doc. Otherwise: demo prep from `~/Repos/personal-work/interview-prep/walkthrough-prep.md` section 0b (stack: `docker compose up -d --build`, console http://localhost:8080).
+1. When lane **nth-kafka** (`.worktrees/nth-kafka`, 4 commits at dbe7b7c) replies: verify (scope, `dotnet test`, `docker compose config` + `--profile kafka config`), merge `--no-ff`, rebuild, push. The owner asked "why Kafka, not my stack": keep it OPTIONAL (profile `kafka`); drop it only if the owner says so.
+2. When lane **nth-polish** (`.worktrees/nth-polish`, base 8a103cc) replies: verify, merge, rebuild web, push. It matches the Univer sheets to the owner's reference (ribbon, toolbar, formula bar, tinted inputs) and unifies breadcrumb and group-header typography.
+3. Commit the uncommitted `README.md` (personas + "Beyond the brief" table; it lists Kafka: keep only if merged), then wrap: close W-022/W-024/W-019/W-021 with `close-workstream.mjs`, `npm run trace` alone, push.
 
 ## Uncommitted work in progress
-None.
+`README.md` (main): persona rows and "Beyond the brief" table, waiting for the Kafka merge.
 
 ## In flight (open W ids)
-W-022 quality wave (unblocked) · W-024 claims follow-ups (#006 counts endpoint + open-first queue, #007 past questions) · W-023 versioning/cache/OTel · W-021 audit search · W-019 users list · W-010 Codex gate (parked, needs a remote).
+W-022 nice-to-haves (lanes nth-kafka, nth-polish) · W-024, W-019, W-021 done in code, to close · W-023 versioning/cache/OTel · W-010 Codex push gate (a remote now exists).
 
 ## Pending owner questions
-- Create a git remote (GitHub account, private or public) so pushes and CI can run? Not done: an outward-facing choice.
-- The owner's own words for the "Nice to haves" note on trimming Univer and the calendar for memory-capped deploys (which calendar library; what was trimmed). Do not invent them.
+- Keep Kafka in the repo? (optional profile; default off)
+- The owner's own words for trimming Univer and the calendar on memory-capped deploys (still not invented).
 
 ## Demo notes
-Console http://localhost:8080 · API :5081 · Postgres :5433 (pgAdmin, file logging). Personas: `self@` claimant, `staff@` officer, `manager@` manager, `admin@` (password in runbook 05). Reviewer start-here: `docs/runbooks/00-for-reviewers.md`; claims walk-through `docs/runbooks/11-claims.md`; six-minute demo script in the private prep doc, section 0b. One API instance per DB.
+`docker compose up -d --build` (needs `MEILI_MASTER_KEY` in `.env`; the quickstart sed fills it). Console http://localhost:8080 (`?tour=off` while presenting) · API :5081 · Meilisearch :7700. Script: `docs/DEMO.md`. Private prep: `~/Repos/personal-work/interview-prep/walkthrough-prep.md` sections 0b and 12.
 
 ## Owed inbox
-- `docs/traceability.md` regenerated after this wrap (commit alone).
-- KIV backlog #002 tour, #003 shell rest, #004 roles matrix; #006, #007 now W-024.
-- Stray `pnpm-lock.yaml`/`pnpm-workspace.yaml` keep appearing in new worktrees (some tool runs pnpm); delete, never commit.
+- Failure modes 30-32 recorded; stray pnpm files keep appearing in new worktrees (delete).
+- nth-quality flagged two doc contradictions it did not fix: context-reset threshold 50% (`docs/conventions/doc-spine.md`) vs 60% elsewhere; `.githooks/README.md` says to set `core.hooksPath`, which AGENTS.md forbids.
