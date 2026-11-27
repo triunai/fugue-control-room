@@ -16,5 +16,7 @@ export interface ExposureRowDto {
   market: Market;
   openCount: number;
   outstandingReserveMinor: number;
+  settledCount: number;
+  settledMinor: number;
   unreservedOpenCount: number;
 }

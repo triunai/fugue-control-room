@@ -1,7 +1,8 @@
 # Lane nth-paid status (Refs D-064, item 11c, backlog #009 part 1)
 
 ## Commits
-- slice 1: feat(api): paid (settled) count and sum on the exposure rows and totals, with tests, and this status file
+- `174c311` feat(api): paid (settled) count and sum on the exposure rows and totals (slice 1, with this status file)
+- slice 2: feat(api): OpenAPI snapshot, generated client and a Bruno request for the paid exposure fields
 
 ## Gates (copied from output)
 - `dotnet build`: 0 Warning(s), 0 Error(s)
@@ -9,6 +10,13 @@
 - Targeted `dotnet test --filter ClaimReportsTests|ClaimPaidExposureTests|ClaimSeederTests`: Passed 29, Failed 0
 - Rule 6 proof: with `OpenCount` counting settled claims again, `ClaimPaidExposureTests.Exposure_shows_the_paid_sum...` and the
   rewritten `ClaimReportsTests.Exposure_totals_are_per_currency_never_across_currencies` both fail (2 failed / 4); restored, they pass.
+
+- `npm run api:openapi`: Passed 1 (snapshot rewritten); `cd web && npm run api:gen`: orval v8.49.0 regenerated, 3 model files
+  changed (`exposureRowDto.ts`, `exposureTotalDto.ts`, `claimExposureDto.ts` doc comment)
+- Bruno `npx bru run claims --env local --env-var baseUrl=http://localhost:5210` (throwaway pg :55510, `--seed`):
+  Requests 40 (40 Passed), Tests 46/46; new `claims/40-exposure-carries-paid-settled` 3/3
+- Live as manager@fugue.test on :5210 after the Bruno run: SGD settled 2 / 265000 (seeded 185000 + the 80000 claim the Bruno
+  claims folder settles), PHP 1 / 5400000, HKD 1 / 950000, IDR, MYR, THB 0 / 0
 
 ## What changed in shared files (exactly)
 - None outside the lane's list. `ClaimsController.cs` (endpoint summary) is NOT changed: proposed text is in the lane report.
@@ -29,5 +37,4 @@
 - No ledger row for nth-paid exists in `docs/branch-ledger.md` (only rows for the dacfb06 lanes), so it was not touched.
 
 ## Next slice
-- 2: OpenAPI snapshot + generated client, Bruno exposure assertions run against the API on :5210.
 - 3: team page "Paid (settled)" figure.
