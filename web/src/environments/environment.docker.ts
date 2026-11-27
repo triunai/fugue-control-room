@@ -9,10 +9,18 @@ export const environment = {
   development: true,
   apiOrigin: '',
   demoAccounts: [
-    { email: 'admin@fugue.test', role: 'Admin', shows: 'everything, all rows, modules and webhooks' },
-    { email: 'staff@fugue.test', role: 'Staff', shows: 'every customer, no platform settings' },
-    { email: 'support@fugue.test', role: 'Group: Support', shows: 'staff rights arriving through a group' },
-    { email: 'self@fugue.test', role: 'Self-service', shows: 'only their own customer' },
+    {
+      email: 'self@fugue.test',
+      role: 'Claimant',
+      shows: 'files and follows their own claims, answers what is asked of them',
+    },
+    {
+      email: 'staff@fugue.test',
+      role: 'Claims officer',
+      shows: 'works the queue: assess, reserve, request info, decide',
+    },
+    { email: 'manager@fugue.test', role: 'Manager', shows: 'settles approved claims; team workload and exposure' },
+    { email: 'admin@fugue.test', role: 'Admin', shows: 'everything: users, roles, audit log, modules, webhooks' },
   ] as DemoAccount[],
   demoPassword: 'Fugue-Dev-Passw0rd!', // secrets-scan:ignore (seeded dev-only password, runbook 05)
 };
