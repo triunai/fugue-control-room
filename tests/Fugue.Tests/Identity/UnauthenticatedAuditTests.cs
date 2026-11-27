@@ -131,6 +131,30 @@ public sealed class UnauthenticatedAuditTests(PostgresFixture db)
     }
 
     [Fact]
+    public async Task A_forwarding_header_does_not_change_the_bucket_so_a_spoofed_address_gains_no_extra_rows()
+    {
+        await using WebApplicationFactory<Program> host = HostWithCap(2);
+        HttpClient client = host.CreateClient();
+        string[] correlations = Enumerable.Range(0, 6).Select(_ => NewCorrelation()).ToArray();
+
+        for (int i = 0; i < correlations.Length; i++)
+        {
+            HttpRequestMessage request = Get(correlations[i]);
+            request.Headers.Add("X-Forwarded-For", $"203.0.113.{i + 1}");
+            request.Headers.Add("X-Real-IP", $"198.51.100.{i + 1}");
+            Assert.Equal(HttpStatusCode.Unauthorized, (await client.SendAsync(request)).StatusCode);
+        }
+
+        long written = 0;
+        foreach (string correlation in correlations)
+        {
+            written += (await RowsAsync(correlation)).Count;
+        }
+
+        Assert.Equal(2, written);
+    }
+
+    [Fact]
     public async Task A_cap_of_zero_records_nothing_and_still_answers_401()
     {
         await using WebApplicationFactory<Program> host = HostWithCap(0);

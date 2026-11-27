@@ -241,6 +241,15 @@ public sealed class AuditOptionsValidatorTests
     }
 
     [Fact]
+    public void A_bucket_count_below_one_is_refused()
+    {
+        var validator = new AuditOptionsValidator(new Env("Development"));
+
+        Assert.False(validator.Validate(null, new AuditOptions { UnauthenticatedBuckets = 0 }).Succeeded);
+        Assert.True(validator.Validate(null, new AuditOptions { UnauthenticatedBuckets = 1 }).Succeeded);
+    }
+
+    [Fact]
     public void A_size_bound_too_small_to_hold_a_field_is_refused()
     {
         Assert.False(new AuditOptionsValidator(new Env("Development")).Validate(null, new AuditOptions { MaxChangesBytes = 10 }).Succeeded);

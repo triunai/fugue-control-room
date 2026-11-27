@@ -29,6 +29,11 @@ public sealed class AuditOptionsValidator(IHostEnvironment environment) : IValid
             failures.Add("Audit:UnauthenticatedRowsPerIpPerMinute must be 0 or more (0 records none).");
         }
 
+        if (options.UnauthenticatedBuckets < 1)
+        {
+            failures.Add("Audit:UnauthenticatedBuckets must be at least 1.");
+        }
+
         return failures.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(failures);
     }
 }

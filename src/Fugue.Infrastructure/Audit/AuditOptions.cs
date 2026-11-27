@@ -40,8 +40,14 @@ public sealed class AuditOptions
 
     /// <summary>
     /// Flood bound for <c>access_audit</c> rows of 401 challenges (<c>unauthenticated</c>): at most this many per client IP per minute (a fixed
-    /// window in memory). Past it the request is still answered 401 and counted on <c>fugue.audit.write_failures</c> (<c>reason=suppressed</c>) but no
+    /// window per bucket, in memory; see <see cref="UnauthenticatedBuckets"/>). Past it the request is still answered 401 and counted on <c>fugue.audit.write_failures</c> (<c>reason=suppressed</c>) but no
     /// row is written. 0 records none. Every other audit row is never sampled.
     /// </summary>
     public int UnauthenticatedRowsPerIpPerMinute { get; set; } = 30;
+
+    /// <summary>
+    /// How many fixed buckets the 401 limiter hashes client IPs into. Memory is proportional to this, not to the number of distinct addresses;
+    /// colliding addresses share a bucket (fewer rows, never more).
+    /// </summary>
+    public int UnauthenticatedBuckets { get; set; } = 4096;
 }
