@@ -109,5 +109,8 @@ Run 12 + 13 only if every feature lane has merged by ~10:30, else defer with a D
       branches; keep `docs/ai/lanes/<lane>-status.md` and `docs/ai/briefs/fleet-2026-11-28/` (re-copy HEADER.md if it gained
       addenda); regenerate `npm run gen:decisions` (web) and `npm run trace`, each its own commit; check docs/traceability.md
       shows every tonight W with its D/ADR and commits and count unlinked commits (target: none new); fill D-066's outcome line.
+- [ ] 17b. Calendar console error (14:00 gate): /claims/calendar logs "ResizeObserver loop completed with undelivered notifications"
+      through the ErrorHandler with the hood sidebar open (pre-existing on main). Lane nth-calfix (W-030): fix at the source, narrow
+      ErrorHandler filter only as fallback; 0 console errors and pageerrors for staff and claimant, sidebar open and toggled, 2 sizes.
 - [ ] 17. Recreate the clean demo stack (`docker compose -p fugue-demo down -v && docker compose -p fugue-demo up -d --build`),
       headless smoke as all four personas, zero console errors.
