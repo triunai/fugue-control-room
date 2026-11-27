@@ -1,0 +1,815 @@
+{
+  "sources": [
+    "docs/adr/ADR-*.md",
+    "docs/decisions.md",
+    "CHANGELOG.md"
+  ],
+  "counts": {
+    "adrs": 14,
+    "decisions": 65
+  },
+  "groups": [
+    {
+      "version": "Unreleased",
+      "date": null,
+      "entries": [
+        {
+          "kind": "D",
+          "id": "D-065",
+          "title": "Owner-steered parallel lanes, verified before merge, run overnight under a loop",
+          "date": "2026-11-28",
+          "summary": "ADR-014. One lead owns main and the spine; each ask is a lane in its own worktree with a written brief and a model sized to the work; no lane pushes or merges; the lead merges only after re-running gates, reading the…",
+          "status": "accepted",
+          "adr": "ADR-014",
+          "path": "docs/decisions.md#d-065--owner-steered-parallel-lanes-verified-before-merge-run-overnight-under-a-loop--2026-11-28"
+        },
+        {
+          "kind": "D",
+          "id": "D-064",
+          "title": "Submission-morning asks past the freeze: shell polish, USD view, add users, onboarding",
+          "date": "2026-11-28",
+          "summary": "Lift the freeze for exactly these. The lead does the shell polish, calendar drawer and workbook on main. Three lanes in separate worktrees: nth-money (an INDICATIVE USD view at fixed, dated, labelled rates, shown beside…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-064--submission-morning-asks-past-the-freeze-shell-polish-usd-view-add-users-onboarding--2026-11-28"
+        },
+        {
+          "kind": "ADR",
+          "id": "ADR-014",
+          "title": "Owner-steered parallel lanes, verified before merge, run overnight under a loop",
+          "date": "2026-11-28",
+          "summary": "One lead agent owns main and the spine. Each ask becomes a lane: its own git worktree and branch (nth-<topic>, nth = nice to",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/adr/ADR-014-owner-steered-parallel-lanes.md"
+        }
+      ]
+    },
+    {
+      "version": "v0.0.2",
+      "date": "2026-11-27",
+      "entries": [
+        {
+          "kind": "D",
+          "id": "D-063",
+          "title": "Claims search on Meilisearch (one feature past the freeze)",
+          "date": "2026-11-27",
+          "summary": "Index claims, not customers. Same pattern as audit search (D-058): a background indexer copies claim rows into a Meilisearch index; GET /api/v1/claims/search applies the claimant scope SERVER-SIDE as a Meilisearch…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-063--claims-search-on-meilisearch-one-feature-past-the-freeze--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-062",
+          "title": "Feature freeze for v0.0.2; Kafka kept but ignored",
+          "date": "2026-11-27",
+          "summary": "Freeze features: fixes and polish only until the walkthrough (the owner's \"Under the hood\" guard snippets count as polish on a shipped panel). Merge the Kafka adapter as built: Events:Publisher defaults to Webhooks, so…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-062--feature-freeze-for-v002-kafka-kept-but-ignored--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-061",
+          "title": "Fable interview-readiness review: all 15 changes accepted",
+          "date": "2026-11-27",
+          "summary": "Accept all 15. Docs now (service-boundaries diagram and split order, entity diagram, sync/async table, async across both tiers, contract ownership, ARCHITECTURE intro, docs/DEMO.md); the stepper, next-step card, team…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-061--fable-interview-readiness-review-all-15-changes-accepted--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-060",
+          "title": "Console shell ported from the owner's reference app and admin-console design",
+          "date": "2026-11-27",
+          "summary": "Lane nth-shell ports the reference shell into Angular, colours through tokens only, light theme; the nav scroll defect is fixed first as its own commit. The reference apps are not named in this public repo.",
+          "status": "accepted; delivered as an ADAPTATION, not a port (correction 2026-11-27 19:56)",
+          "adr": null,
+          "path": "docs/decisions.md#d-060--console-shell-ported-from-the-owners-reference-app-and-admin-console-design--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-059",
+          "title": "Nice-to-have UI on Univer and FullCalendar, lazy-loaded",
+          "date": "2026-11-27",
+          "summary": "A staff reserve-review sheet on Univer (@univerjs/presets; only the reserve column editable; save sends one If-Match reserve command per changed row and shows per-row results) and an SLA calendar on FullCalendar (MIT…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-059--nice-to-have-ui-on-univer-and-fullcalendar-lazy-loaded--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-058",
+          "title": "Audit search on Meilisearch, fed by an indexer",
+          "date": "2026-11-27",
+          "summary": "Meilisearch as an optional compose service; an IAuditSearch port with a Meilisearch adapter; a background indexer copies audit_log rows (already masked) in keyset batches, idempotent by id, checkpoint kept in the index…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-058--audit-search-on-meilisearch-fed-by-an-indexer--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-057",
+          "title": "Console money: ISO code plus two decimals for every market currency",
+          "date": "2026-11-27",
+          "summary": "The console shows every amount as <ISO code> <amount with two decimals> (IDR 2,500.00, SGD 2,000.00), formatted in one helper (web/src/app/features/claims/claims-logic.ts) and documented in the web README. Exposure…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-057--console-money-iso-code-plus-two-decimals-for-every-market-currency--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-056",
+          "title": "Codex claims seam review: three accepted, two declined",
+          "date": "2026-11-27",
+          "summary": "Accept #1 (a same-value reserve skips the xmin check: every claim command now forces the guarded UPDATE) and #5 (claim submit requires Idempotency-Key, 400 idempotency.key_required; other creates stay optional per…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-056--codex-claims-seam-review-three-accepted-two-declined--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-055",
+          "title": "One file per concept, not per type",
+          "date": "2026-11-27",
+          "summary": "Group by concept: all typed ids in one Ids.cs; an aggregate keeps its small enums and value types in its own file; ports grouped by concern (identity, audit, messaging); one slice stays one file; list filters bind one…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-055--one-file-per-concept-not-per-type--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-054",
+          "title": "Raw SQL lives in .sql files; a read-only Postgres MCP for agents",
+          "date": "2026-11-27",
+          "summary": "Runtime SQL moves to embedded .sql files under src/Fugue.Infrastructure/Persistence/Sql/<area>/, loaded once by SqlScripts.Get(\"area/name\"), with a test that every referenced script exists. Schema migrations stay EF…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-054--raw-sql-lives-in-sql-files-a-read-only-postgres-mcp-for-agents--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-053",
+          "title": "Claims platform shape for the window",
+          "date": "2026-11-27",
+          "summary": "One CLAIMS module in the monolith; a Claim aggregate with its state machine; an append-only claimant timeline; info requests; claimant-only visibility (404 otherwise); seven permissions and a new MANAGER role; REST for…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-053--claims-platform-shape-for-the-window--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-052",
+          "title": "The claims window runs in this repo, opened by a tag",
+          "date": "2026-11-27",
+          "summary": "Build the claims platform in the Fugue repo after an annotated tag claims-window-start; everything before it is the disclosed scaffold, everything after it is the window. Two scaffold lanes started before the tag…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-052--the-claims-window-runs-in-this-repo-opened-by-a-tag--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-051",
+          "title": "W-018 audit import: four ideas ported, nine rejected",
+          "date": "2026-11-27",
+          "summary": "Port (1) 401 challenges recorded in access_audit (unauthenticated, reason missing_token/expired/invalid_token) with a per-IP rows-per-minute cap; (2) failure rows gain error_type, error_message (the authored FugueError…",
+          "status": "accepted",
+          "adr": "ADR-010",
+          "path": "docs/decisions.md#d-051--w-018-audit-import-four-ideas-ported-nine-rejected--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-050",
+          "title": "Idempotency keys with stored-response replay on the two create POSTs",
+          "date": "2026-11-27",
+          "summary": "Opt-in [Idempotent] resource filter on POST /customers and POST /webhooks/subscriptions; Structured Field String key scoped to (user, endpoint, key), body fingerprint, atomic claim with a claim token before execute, 2xx…",
+          "status": "accepted",
+          "adr": "ADR-013",
+          "path": "docs/decisions.md#d-050--idempotency-keys-with-stored-response-replay-on-the-two-create-posts--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-049",
+          "title": "Keep the W-017 Angular console; no template import",
+          "date": "2026-11-27",
+          "summary": "No template. web/ already is the Angular 22 console (W-017, eight screens, tests and e2e). The prototype is React (TanStack Router, shadcn) with a dark crimson palette; nothing is copied from it. Its users list layout…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-049--keep-the-w-017-angular-console-no-template-import--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-048",
+          "title": "The owner's earlier design repo may be copied directly; names are scrubbed on import",
+          "date": "2026-11-27",
+          "summary": "Agents may copy code from it directly instead of re-deriving the pattern, because the owner states full authority over it. Every import is renamed to Fugue conventions and must pass the scrub gate (no employer, client…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-048--the-owners-earlier-design-repo-may-be-copied-directly-names-are-scrubbed-on-import--2026-11-27"
+        },
+        {
+          "kind": "D",
+          "id": "D-047",
+          "title": "Live permissions stream (SSE) cancelled",
+          "date": "2026-11-27",
+          "summary": "Not built. The console refetches GET /api/v1/me after login, on token refresh and on window focus.",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-047--live-permissions-stream-sse-cancelled--2026-11-27"
+        },
+        {
+          "kind": "ADR",
+          "id": "ADR-013",
+          "title": "Idempotency keys with stored-response replay",
+          "date": "2026-11-27",
+          "summary": "An opt-in [Idempotent] resource filter on the two create POSTs (it runs after authorization, before model binding, and around result execution). An optional Idempotency-Key header (a Structured Field String) is scoped…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/adr/ADR-013-idempotency-keys.md"
+        },
+        {
+          "kind": "D",
+          "id": "D-046",
+          "title": "Console stack: NgRx SignalStore for client state, TanStack Query for server state",
+          "date": "2026-11-26",
+          "summary": "Angular (latest stable) in web/; NgRx SignalStore for session and UI state, TanStack Query for Angular for server state (fetched data never lives in the store); Tailwind + Angular CDK; TypeScript client generated from…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-046--console-stack-ngrx-signalstore-for-client-state-tanstack-query-for-server-state--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-045",
+          "title": "Console palette: Vellum light",
+          "date": "2026-11-26",
+          "summary": "Vellum (aged paper, Prussian-blue accent), light mode only; red, amber and green are status colours only; tints derived with color-mix() from one token file.",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-045--console-palette-vellum-light--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-044",
+          "title": "W-016 GET /api/v1/me is the console's source for navigation and permission checks",
+          "date": "2026-11-26",
+          "summary": "GET /api/v1/me (any signed-in user, module SYSTEM, no-store) returns the caller's own identity, active roles and groups, the effective permission codes from the same query the authorizer runs, and the effectively…",
+          "status": "accepted",
+          "adr": "ADR-012",
+          "path": "docs/decisions.md#d-044--w-016-get-apiv1me-is-the-consoles-source-for-navigation-and-permission-checks--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-043",
+          "title": "W-016 console CORS policy: exact origins, no credentials, named headers",
+          "date": "2026-11-26",
+          "summary": "One named policy Console from Cors:Origins plus http://localhost:4200 in Development only; each origin must be exact (a wildcard, path or trailing slash stops the host); no credentials; methods GET POST PUT PATCH…",
+          "status": "accepted",
+          "adr": "ADR-012",
+          "path": "docs/decisions.md#d-043--w-016-console-cors-policy-exact-origins-no-credentials-named-headers--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-042",
+          "title": "W-016 the backend owns the API contract; the OpenAPI snapshot is a test-gated file",
+          "date": "2026-11-26",
+          "summary": "Swashbuckle generates the v1 document; docs/api/openapi.v1.json is its deterministic rendering and is committed. A test regenerates it in memory and fails on any difference with a message naming the refresh command (npm…",
+          "status": "accepted",
+          "adr": "ADR-012",
+          "path": "docs/decisions.md#d-042--w-016-the-backend-owns-the-api-contract-the-openapi-snapshot-is-a-test-gated-file--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-041",
+          "title": "W-006 Codex review of the S4 diff: fence, budget, lease, cancel, envelope",
+          "date": "2026-11-26",
+          "summary": "(HIGH) the result write is fenced by a random claim_token written at every claim, not by the attempt number, because redeliver restarts the number (migration AddDeliveryClaimToken); (MED) an expired lease on the final…",
+          "status": "accepted",
+          "adr": "ADR-011",
+          "path": "docs/decisions.md#d-041--w-006-codex-review-of-the-s4-diff-fence-budget-lease-cancel-envelope--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-040",
+          "title": "W-006 the publisher seam, a possible Kafka adapter, and a Development-only sink",
+          "date": "2026-11-26",
+          "summary": "IEventPublisher (Application) is the seam: the relay hands each claimed outbox message to every registered publisher. The first and only adapter is the webhook fan-out. A Kafka adapter would be one more IEventPublisher…",
+          "status": "accepted",
+          "adr": "ADR-011",
+          "path": "docs/decisions.md#d-040--w-006-the-publisher-seam-a-possible-kafka-adapter-and-a-development-only-sink--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-039",
+          "title": "W-006 the dispatcher: two stages, leases, SKIP LOCKED, outbox as the retry authority",
+          "date": "2026-11-26",
+          "summary": "Stage 1 (relay) claims pending messages with SELECT ... FOR UPDATE SKIP LOCKED in one transaction, publishes through IEventPublisher and marks them dispatched; the webhook adapter inserts one delivery per matching…",
+          "status": "accepted",
+          "adr": "ADR-011",
+          "path": "docs/decisions.md#d-039--w-006-the-dispatcher-two-stages-leases-skip-locked-outbox-as-the-retry-authority--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-038",
+          "title": "W-006 subscription secrets and the SSRF guard",
+          "date": "2026-11-26",
+          "summary": "The secret (whsec_ plus 32 random bytes) is encrypted with ASP.NET Core Data Protection (purpose Fugue.Webhooks.Secret.v1), the key ring is stored in the database (data_protection_keys, [NoAudit]) so every instance and…",
+          "status": "accepted",
+          "adr": "ADR-011",
+          "path": "docs/decisions.md#d-038--w-006-subscription-secrets-and-the-ssrf-guard--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-037",
+          "title": "W-006 the transactional outbox",
+          "date": "2026-11-26",
+          "summary": "Outbox_messages (UUIDv7 id, versioned event type such as customer.created.v1, aggregate type and id, jsonb payload, correlation id, saga id defaulting to the aggregate id, traceparent, status pending/dispatched/dead…",
+          "status": "accepted",
+          "adr": "ADR-011",
+          "path": "docs/decisions.md#d-037--w-006-the-transactional-outbox--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-036",
+          "title": "W-013 S3 review hardening of the admin surface",
+          "date": "2026-11-26",
+          "summary": "(1) override PUT/DELETE on an existing row require If-Match (xmin; 428 without, 412 stale, 412 for a concurrent create or a version sent for a vanished row), creating sends none; the list carries version. (2) group…",
+          "status": "accepted",
+          "adr": "ADR-008",
+          "path": "docs/decisions.md#d-036--w-013-s3-review-hardening-of-the-admin-surface--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-035",
+          "title": "W-013 login limiter: strict (IP, email) partition plus a loose per-email ceiling",
+          "date": "2026-11-26",
+          "summary": "Three limiters, all evaluated before password verification and chained so a request must pass each: per IP (unchanged), strict per (client IP, canonical email), and a loose per-email ceiling (default 50 per 15 minutes…",
+          "status": "accepted",
+          "adr": "ADR-008",
+          "path": "docs/decisions.md#d-035--w-013-login-limiter-strict-ip-email-partition-plus-a-loose-per-email-ceiling--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-034",
+          "title": "W-013 customer email is unique per owner",
+          "date": "2026-11-26",
+          "summary": "Unique on (user_id, canonical email) for owned rows, plus a partial unique index on email WHERE user_id IS NULL for unowned (staff-created) rows. Customers are hard-deleted, so every row counts. The 409…",
+          "status": "accepted",
+          "adr": "ADR-008",
+          "path": "docs/decisions.md#d-034--w-013-customer-email-is-unique-per-owner--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-033",
+          "title": "W-012 retention and archival of the audit log are deferred",
+          "date": "2026-11-26",
+          "summary": "No retention, archival or partitioning in W-012; the revive trigger is in docs/archive/deferred.md.",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-033--w-012-retention-and-archival-of-the-audit-log-are-deferred--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-032",
+          "title": "W-012 grant_audit and access_audit stay specialised",
+          "date": "2026-11-26",
+          "summary": "Audit_log = data changes plus command outcomes; access_audit = authN/authZ events; grant_audit = privilege changes. They stay separate and audit_log excludes them.",
+          "status": "accepted",
+          "adr": "ADR-010",
+          "path": "docs/decisions.md#d-032--w-012-grant_audit-and-access_audit-stay-specialised--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-031",
+          "title": "W-012 read API behind AUDIT_READ, admin only, keyset paged",
+          "date": "2026-11-26",
+          "summary": "GET /api/v1/audit ([Module(\"AUDIT\")], [HasPermission(\"AUDIT_READ\")]), exact-match filters, newest first, cursor over (occurred_at, id). AUDIT_READ is granted to ADMIN only; staff do not get it (an override can grant it).",
+          "status": "accepted",
+          "adr": "ADR-010",
+          "path": "docs/decisions.md#d-031--w-012-read-api-behind-audit_read-admin-only-keyset-paged--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-030",
+          "title": "W-012 safety knobs for the audit log",
+          "date": "2026-11-26",
+          "summary": "Mask at write time (built-in PasswordHash, TokenHash, SigningKey, a configurable list, [AuditMask], [NoAudit]), partial-mask email and phone by default, bound changes with MaxChangesBytes and a _truncated marker…",
+          "status": "accepted",
+          "adr": "ADR-010",
+          "path": "docs/decisions.md#d-030--w-012-safety-knobs-for-the-audit-log--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-029",
+          "title": "W-012 failed commands are recorded by AuditBehavior",
+          "date": "2026-11-26",
+          "summary": "AuditBehavior (order Logging, Audit, Validation) writes ONE failure row with the error code in one insert on its own connection and transaction (it survives a surrounding rollback), and opens the ambient scope the…",
+          "status": "accepted",
+          "adr": "ADR-010",
+          "path": "docs/decisions.md#d-029--w-012-failed-commands-are-recorded-by-auditbehavior--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-028",
+          "title": "W-012 audit rows are written in the same transaction as the change",
+          "date": "2026-11-26",
+          "summary": "An EF SaveChangesInterceptor adds the rows to the same SaveChanges; Dapper writes call IAuditTrail through SqlExecutor inside the same IUnitOfWork transaction (or a short one). A fitness rule makes every raw SQL write…",
+          "status": "accepted",
+          "adr": "ADR-010",
+          "path": "docs/decisions.md#d-028--w-012-audit-rows-are-written-in-the-same-transaction-as-the-change--2026-11-26"
+        },
+        {
+          "kind": "D",
+          "id": "D-027",
+          "title": "W-012 audit_log table shape, append-only trigger, indexes",
+          "date": "2026-11-26",
+          "summary": "Columns for who, what, change (jsonb), context and metadata; CHECKs on actor_type and outcome; a trigger rejects UPDATE, DELETE and TRUNCATE; a btree per filter ending in occurred_at DESC, id DESC; no BRIN.",
+          "status": "accepted",
+          "adr": "ADR-010",
+          "path": "docs/decisions.md#d-027--w-012-audit_log-table-shape-append-only-trigger-indexes--2026-11-26"
+        },
+        {
+          "kind": "ADR",
+          "id": "ADR-012",
+          "title": "OpenAPI contract, console CORS and GET /me",
+          "date": "2026-11-26",
+          "summary": "The backend owns the contract. Swashbuckle (6.9, net8) generates one OpenAPI 3.0 document, v1, from the controllers, the XML doc comments and the attributes. Operation ids are Controller_Action. Typed ids are string…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/adr/ADR-012-openapi-contract-and-console-boundary.md"
+        },
+        {
+          "kind": "ADR",
+          "id": "ADR-011",
+          "title": "Transactional outbox and signed outbound webhooks",
+          "date": "2026-11-26",
+          "summary": "Outbox. outbox_messages is written in the same transaction as the change (ADR-006's unit of work). Customer raises domain events; an EF SaveChanges interceptor converts them to outbox rows in the same SaveChanges…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/adr/ADR-011-outbox-and-signed-webhooks.md"
+        },
+        {
+          "kind": "ADR",
+          "id": "ADR-010",
+          "title": "Rich append-only audit log",
+          "date": "2026-11-26",
+          "summary": "Table. audit_log: UUIDv7 id, occurred_at and an actor (not IAuditable; on the append-only allowlist). Who: actor_user_id, actor_type (user, system, service; service is reserved), actor_display (the name at the time)…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/adr/ADR-010-audit-log.md"
+        },
+        {
+          "kind": "D",
+          "id": "D-026",
+          "title": "S3 base entity contract: IAuditable everywhere, append-only allowlist",
+          "date": "2026-11-25",
+          "summary": "Every mutable entity (UAM tables, Customer, tenants, groups, refresh tokens) implements IAuditable; append-only audit rows use occurred_at plus an actor and sit on a shrink-only allowlist; a fitness function enforces…",
+          "status": "accepted",
+          "adr": "ADR-008",
+          "path": "docs/decisions.md#d-026--s3-base-entity-contract-iauditable-everywhere-append-only-allowlist--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-025",
+          "title": "Customers PUT, suspend, reactivate answer 204 + ETag",
+          "date": "2026-11-25",
+          "summary": "Customers PUT, suspend, reactivate return 204 with the new ETag; DELETE already 204. Clients GET to read the result.",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-025--customers-put-suspend-reactivate-answer-204--etag--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-024",
+          "title": "S3 scope: tenants, refresh tokens, groups, grant_audit, access_audit built basic",
+          "date": "2026-11-25",
+          "summary": "Tenants (table, nullable users.tenant_id, NO query filter); refresh tokens (refresh_tokens, SHA-256 hash only, family_id, rotation, reuse revokes the family, /auth/refresh, /auth/logout, rate limited); groups…",
+          "status": "accepted",
+          "adr": "ADR-008",
+          "path": "docs/decisions.md#d-024--s3-scope-tenants-refresh-tokens-groups-grant_audit-access_audit-built-basic--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-023",
+          "title": "Module management: config kill switch plus runtime registry",
+          "date": "2026-11-25",
+          "summary": "Modules:<CODE>:Enabled (config, default true) is the hard switch; the modules table is_active is the runtime switch; effective = both. [Module(\"CODE\")] on feature controllers + an action filter -> 404 module.disabled…",
+          "status": "accepted",
+          "adr": "ADR-009",
+          "path": "docs/decisions.md#d-023--module-management-config-kill-switch-plus-runtime-registry--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-022",
+          "title": "S3 abuse controls and key hygiene (Codex 2, 10)",
+          "date": "2026-11-25",
+          "summary": "Create binds the owner to the caller without effective CUSTOMERS_ALL; built-in rate limiter on token and refresh; email change staff-only; one canonical email key with an active-row unique index; signing key = base64 of…",
+          "status": "accepted",
+          "adr": "ADR-008",
+          "path": "docs/decisions.md#d-022--s3-abuse-controls-and-key-hygiene-codex-2-10--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-021",
+          "title": "S3 deferrals and exclusions from UAM v3",
+          "date": "2026-11-25",
+          "summary": "Not built in S3: SSO columns, tenant query filter (ADR-003 toggle stays off), domain tables, user and role CRUD, password reset, lockout, RS256, permission cache. Refresh tokens, tenants, groups, grant_audit and…",
+          "status": "accepted (revised after the Codex plan review; owner accepted all 10 findings)",
+          "adr": null,
+          "path": "docs/decisions.md#d-21--s3-deferrals-and-exclusions-from-uam-v3--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-020",
+          "title": "S3 login failure is uniform; no lockout",
+          "date": "2026-11-25",
+          "summary": "One auth.invalid_credentials for every failure and one hash verify on every attempt (dummy hash when no user); no lockout; the built-in rate limiter (by IP and by canonical email, before verification, 429 + Retry-After)…",
+          "status": "accepted (revised after the Codex plan review; owner accepted all 10 findings)",
+          "adr": "ADR-008",
+          "path": "docs/decisions.md#d-20--s3-login-failure-is-uniform-no-lockout--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-019",
+          "title": "S3 ownership by repository scoping, 404 on cross-owner",
+          "date": "2026-11-25",
+          "summary": "CUSTOMERS_ALL widens scope; handlers build an OwnerScope from ICurrentUser; repositories filter; a miss is NotFound.",
+          "status": "accepted (revised after the Codex plan review; owner accepted all 10 findings)",
+          "adr": "ADR-008",
+          "path": "docs/decisions.md#d-19--s3-ownership-by-repository-scoping-404-on-cross-owner--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-018",
+          "title": "S3 permissions by uncached lookup in OnTokenValidated",
+          "date": "2026-11-25",
+          "summary": "Effective permissions are one indexed DB query per authenticated request in OnTokenValidated (once per request, can fail the ticket), added as in-memory claims. NO cache in S3; HybridCache is S5. Supersedes the first…",
+          "status": "accepted (revised after the Codex plan review; owner accepted all 10 findings)",
+          "adr": "ADR-008",
+          "path": "docs/decisions.md#d-18--s3-permissions-by-uncached-lookup-in-ontokenvalidated--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-017",
+          "title": "S3 lean UAM v3 port; precedence deny > allow > role",
+          "date": "2026-11-25",
+          "summary": "Port users, modules, resources, actions, permissions, roles, role_permissions, user_roles, user_permission_overrides (with expires_at); precedence deny override > allow override > role grant; overrides are their own…",
+          "status": "accepted (revised after the Codex plan review; owner accepted all 10 findings)",
+          "adr": "ADR-008",
+          "path": "docs/decisions.md#d-17--s3-lean-uam-v3-port-precedence-deny--allow--role--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-016",
+          "title": "S3 JWT bearer, HS256, local token endpoint, refresh in S3 (D-024)",
+          "date": "2026-11-25",
+          "summary": "JwtBearer 8.x, HS256 with a 32-byte-minimum key from env, 15 min TTL, 30 s skew, POST /api/v1/auth/token, PasswordHasher<T>; refresh tokens deferred. CLAUDE.md says Argon2id but PasswordHasher<T> is PBKDF2: owner to…",
+          "status": "accepted (revised after the Codex plan review; owner accepted all 10 findings)",
+          "adr": "ADR-008",
+          "path": "docs/decisions.md#d-16--s3-jwt-bearer-hs256-local-token-endpoint-refresh-in-s3-d-024--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-015",
+          "title": "Commit gates and the safe-command guard",
+          "date": "2026-11-25",
+          "summary": "Commit-msg runs check-refs-trailer (agent commits need a resolvable Refs:) and check-fix-has-test (a fix touching src/ touches tests/ or says Tests: none (reason)); a project-level PreToolUse hook…",
+          "status": "accepted",
+          "adr": "ADR-007",
+          "path": "docs/decisions.md#d-015--commit-gates-and-the-safe-command-guard--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-014",
+          "title": "Codex review gate is advisory, seam-triggered, capped",
+          "date": "2026-11-25",
+          "summary": "Scripts/codex-gate.mjs runs at pre-push, decides from the diff alone (seam globs), dedupes by diff hash, caps at 8 launches per day, runs detached, and never blocks or delays the push. Findings land in…",
+          "status": "accepted",
+          "adr": "ADR-007",
+          "path": "docs/decisions.md#d-014--codex-review-gate-is-advisory-seam-triggered-capped--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-013",
+          "title": "Beads is a local queue; commits cite only committed ids",
+          "date": "2026-11-25",
+          "summary": ".beads/ is gitignored; nothing beads-related is committed. A Refs: trailer may cite only W-NNN, D-NNN or ADR-NNN. core.hooksPath stays unset.",
+          "status": "accepted",
+          "adr": "ADR-007",
+          "path": "docs/decisions.md#d-013--beads-is-a-local-queue-commits-cite-only-committed-ids--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-012",
+          "title": "Pin every catch",
+          "date": "2026-11-25",
+          "summary": "No High or Medium finding closes without a regression test, an architecture test or a type that makes it unrepresentable. Recorded in AGENTS.md; the review skill enforces the loop.",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-012--pin-every-catch--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-011",
+          "title": "Fable architecture critique: accepted, with two challenges",
+          "date": "2026-11-25",
+          "summary": "Accepted nearly all of it (Dapper deferral was later overridden, D-004); kept SagaId alongside W3C trace context; kept runbooks.",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-011--fable-architecture-critique-accepted-with-two-challenges--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-010",
+          "title": "OrbStack as the container runtime",
+          "date": "2026-11-25",
+          "summary": "OrbStack.",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-010--orbstack-as-the-container-runtime--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-004",
+          "title": "EF Core reads, Dapper writes, one shared transaction",
+          "date": "2026-11-25",
+          "summary": "EF for reads and xmin-checked updates; Dapper for inserts, upserts and set-based writes; Dapper always on EF's connection and current transaction via IUnitOfWork; audit stamped on both paths (ADR-006).",
+          "status": "accepted",
+          "adr": "ADR-006",
+          "path": "docs/decisions.md#d-004--ef-core-reads-dapper-writes-one-shared-transaction--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-003",
+          "title": "Three-layer correlation: trace, correlation id, saga id",
+          "date": "2026-11-25",
+          "summary": "W3C Activity trace per hop, X-Correlation-Id per request chain, X-Saga-Id per business process (ADR-005); validated inbound, echoed outbound, in logs and Activity tags. Behaviors require FluentResults responses…",
+          "status": "accepted",
+          "adr": "ADR-005",
+          "path": "docs/decisions.md#d-003--three-layer-correlation-trace-correlation-id-saga-id--2026-11-25"
+        },
+        {
+          "kind": "D",
+          "id": "D-002",
+          "title": "Retarget .NET 8, adopt FluentResults, single-tenant default",
+          "date": "2026-11-25",
+          "summary": "Target .NET 8 (EOL check disabled on purpose, NuGet audit kept); FluentResults with our ErrorType kept (ADR-004); single-tenant by default with a Tenancy:Enabled toggle (ADR-003); add an Application layer; MapStatus…",
+          "status": "accepted",
+          "adr": "ADR-003",
+          "path": "docs/decisions.md#d-002--retarget-net-8-adopt-fluentresults-single-tenant-default--2026-11-25"
+        },
+        {
+          "kind": "ADR",
+          "id": "ADR-009",
+          "title": "Module management: configuration kill switch plus runtime registry",
+          "date": "2026-11-25",
+          "summary": "The modules table is the runtime registry (is_active, soft delete, ETag from xmin). Configuration Modules:<CODE>:Enabled (appsettings or Modules__CODE__Enabled, default true, read live) is the hard kill switch the…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/adr/ADR-009-module-management.md"
+        },
+        {
+          "kind": "ADR",
+          "id": "ADR-008",
+          "title": "Authentication, authorization and the identity model",
+          "date": "2026-11-25",
+          "summary": "Authentication. JwtBearer, HS256 pinned, issuer, audience, signature and lifetime validated (lifetime against TimeProvider), claims not remapped. The signing key is the base64 of at least 32 random bytes from…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/adr/ADR-008-auth-and-identity-model.md"
+        },
+        {
+          "kind": "ADR",
+          "id": "ADR-007",
+          "title": "AI harness gates: local beads, commit gates, advisory cross-model review, safety guard",
+          "date": "2026-11-25",
+          "summary": "Beads (bd) is a LOCAL task queue: .beads/ is gitignored and no commit references a bead id. core.hooksPath stays unset; lefthook is the only hook orchestrator.",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/adr/ADR-007-ai-harness-gates.md"
+        },
+        {
+          "kind": "ADR",
+          "id": "ADR-006",
+          "title": "EF Core for reads and concurrency-checked updates, Dapper for inserts and set-based writes",
+          "date": "2026-11-25",
+          "summary": "| Operation | Tool | Why |",
+          "status": "Accepted",
+          "adr": null,
+          "path": "docs/adr/ADR-006-ef-core-reads-dapper-writes.md"
+        },
+        {
+          "kind": "ADR",
+          "id": "ADR-005",
+          "title": "Trace, correlation and saga ids",
+          "date": "2026-11-25",
+          "summary": "Three layers, each answering one question:",
+          "status": "Accepted",
+          "adr": null,
+          "path": "docs/adr/ADR-005-trace-correlation-saga-ids.md"
+        },
+        {
+          "kind": "ADR",
+          "id": "ADR-004",
+          "title": "FluentResults, with our own ErrorType kept",
+          "date": "2026-11-25",
+          "summary": "Use FluentResults (Result, Result<T>, IError) for all handler return values.",
+          "status": "Accepted",
+          "adr": null,
+          "path": "docs/adr/ADR-004-fluentresults-with-errortype.md"
+        },
+        {
+          "kind": "ADR",
+          "id": "ADR-003",
+          "title": "Single-tenant by default, tenancy as a configuration toggle",
+          "date": "2026-11-25",
+          "summary": "Fugue is single-tenant by default. Nothing in the base scaffold assumes a tenant.",
+          "status": "Accepted",
+          "adr": null,
+          "path": "docs/adr/ADR-003-single-tenant-default-tenancy-toggle.md"
+        },
+        {
+          "kind": "D",
+          "id": "D-009",
+          "title": "MapStatus is the owner's",
+          "date": "2026-11-11",
+          "summary": "The method stayed the owner's call. Resolved 2026-11-25: the owner asked for it and approved the AI-written exhaustive switch (commit 4e8ee4e); ErrorType.Unavailable -> 503 added.",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-009--mapstatus-is-the-owners--2026-11-11"
+        },
+        {
+          "kind": "D",
+          "id": "D-008",
+          "title": "Name: Fugue",
+          "date": "2026-11-11",
+          "summary": "\"Fugue\" (independent voices over one subject).",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-008--name-fugue--2026-11-11"
+        },
+        {
+          "kind": "D",
+          "id": "D-007",
+          "title": "Clean-room rewrite after the template audit",
+          "date": "2026-11-11",
+          "summary": "Copy patterns, not files; the old code had committed secrets and a foreign domain.",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-007--clean-room-rewrite-after-the-template-audit--2026-11-11"
+        },
+        {
+          "kind": "D",
+          "id": "D-006",
+          "title": "MVC controllers over ApiControllerBase; Mediator not MediatR",
+          "date": "2026-11-11",
+          "summary": "MVC controllers with an abstract ApiControllerBase (no generic CRUD controller, no FastEndpoints); source-generated Mediator (MIT) because MediatR v13+ is commercial. See ADR-002.",
+          "status": "accepted",
+          "adr": "ADR-002",
+          "path": "docs/decisions.md#d-006--mvc-controllers-over-apicontrollerbase-mediator-not-mediatr--2026-11-11"
+        },
+        {
+          "kind": "D",
+          "id": "D-005",
+          "title": "Shared database with tenant_id, no RLS",
+          "date": "2026-11-11",
+          "summary": "Shared database with a tenant_id column only (ADR-001).",
+          "status": "superseded by D-002",
+          "adr": "ADR-001",
+          "path": "docs/decisions.md#d-005--shared-database-with-tenant_id-no-rls--2026-11-11"
+        },
+        {
+          "kind": "D",
+          "id": "D-001",
+          "title": "Adopt the doc spine",
+          "date": "2026-11-11",
+          "summary": "Keep project memory in split files by lifecycle (now, board, why, open, journal, handoff), joined by a thread key and checked by a script.",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-001--adopt-the-doc-spine--2026-11-11"
+        },
+        {
+          "kind": "ADR",
+          "id": "ADR-002",
+          "title": "MVC controllers with an abstract ApiControllerBase",
+          "date": "2026-11-11",
+          "summary": "ASP.NET Core MVC controllers. Not FastEndpoints, not minimal APIs.",
+          "status": "Accepted",
+          "adr": null,
+          "path": "docs/adr/ADR-002-controllers-with-api-controller-base.md"
+        },
+        {
+          "kind": "ADR",
+          "id": "ADR-001",
+          "title": "Shared database with a tenant_id column",
+          "date": "2026-11-11",
+          "summary": "One shared Postgres database. Every tenant-owned row carries a tenant_id column.",
+          "status": "Superseded by ADR-003",
+          "adr": null,
+          "path": "docs/adr/ADR-001-shared-db-tenant-id.md"
+        }
+      ]
+    }
+  ]
+}
