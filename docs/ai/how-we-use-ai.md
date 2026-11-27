@@ -7,12 +7,12 @@ An honest account of the operating model, with evidence. Every practice is tagge
 | Role | Model | Used for | Status |
 |---|---|---|---|
 | Lead and integrator | Claude Opus | contracts, dispatch, reconciling lanes, landing, critical seams | LIVE in Fugue (this repo was built by a lead session) |
-| Builder | Claude Sonnet | one lane per worktree, standard slices | practiced in my other repos |
+| Builder | Claude Sonnet | one lane per worktree, standard slices | LIVE in Fugue (W-018 audit import, idempotency, the claims backend, the claims console and the review fix rounds; briefs in `docs/ai/briefs/`, lane reports in `docs/ai/lanes/`) |
 | Sweeps | Claude Haiku | bounded mechanical work and audits; the template audit used six Haiku agents | LIVE in Fugue (audit, [journal](../ai-journal.md)) |
 | Adversarial architecture review | Fable | plan critique before code | LIVE in Fugue ([journal](../ai-journal.md): "Fable architecture critique") |
-| Cross-family reviewer | Codex | seam diffs, advisory | LIVE in Fugue as an advisory gate, not yet run end to end here (see section 5) |
+| Cross-family reviewer | Codex | seam diffs and plans, read-only | LIVE in Fugue: ten reviews in `docs/reviews/codex/`, each with a written disposition; findings are verified against the code before they are folded (D-056 accepted three of five and declined two with reasons) |
 
-Scale, from the 30 days before this was written: about 2,400 commits in my multi-tenant SaaS repo (Opus co-authored 1,645, Sonnet 459, Haiku 23), and 489 commits, 460 of them AI co-authored, in my mobile app repo. Those numbers are the sibling repos' history, not Fugue's. Fugue has about a dozen commits.
+Scale, from the 30 days before this was written: about 2,400 commits in my multi-tenant SaaS repo (Opus co-authored 1,645, Sonnet 459, Haiku 23), and 489 commits, 460 of them AI co-authored, in my mobile app repo. Those numbers are the sibling repos' history, not Fugue's. Fugue's own history is in `git log` (about 130 commits by the claims window, most AI co-authored and each carrying a `Refs:` trailer).
 
 Model choice is routing, not loyalty: expensive models where a mistake is costly (seams, integration, adversarial review), cheap ones where output is checked mechanically. A proposal to make one expensive model the only reviewer was rejected on cost in the SaaS repo.
 
@@ -23,11 +23,11 @@ hydrate, capture, plan, contract, lane, gates, review, land, wrap.
 1. **Hydrate**: read `docs/hot-state.md` (the resume point), then the handoff and the board. LIVE.
 2. **Capture**: every ask becomes a `W-NNN` row on `docs/workstreams.md` before any work; every call becomes a `D-NNN` the same turn, promoted to an ADR when it changes architecture or a convention (`hygiene.md`, `docs/adr/_template.md`; `adr-check` enforces the link). LIVE.
 3. **Plan**: critical seams (migrations, auth, `ApiControllerBase`) get a written plan and an independent read before code (`AGENTS.md` review gate matrix). LIVE as a rule; exercised in S2 (ADR-006).
-4. **Contract**: ten-part brief with non-goals, literal commands, stop conditions, and a mandatory "verify the premises" and "What I could NOT verify" (`.claude/skills/agent-task-contract`). LIVE as a skill; Fugue so far ran one lead session, so dispatch at scale is practiced in my other repos.
-5. **Lane**: one git worktree per write lane from an explicit sha, tracked in `docs/branch-ledger.md`. Practiced in my other repos; the ledger file is LIVE.
+4. **Contract**: ten-part brief with non-goals, literal commands, stop conditions, and a mandatory "verify the premises" and "What I could NOT verify" (`.claude/skills/agent-task-contract`). LIVE: every Fugue lane was dispatched with one (`docs/ai/briefs/`).
+5. **Lane**: one git worktree per write lane from an explicit sha, tracked in `docs/branch-ledger.md`. LIVE (`.worktrees/claims` carried the backend lane, then the console lane and a fix round side by side, each owning disjoint paths and committing by pathspec).
 6. **Gates**: secrets scan, `dotnet format`, commit-msg gates, build and tests at push, fitness functions, advisory Codex gate, the PreToolUse guard. LIVE.
 7. **Review**: `dual-gate-review` (cross-family correctness plus a strict maintainability rubric), rounds until no HIGH or MED; `migration-retrofit-qa` for EF Core. LIVE as skills; round counts are from my other repos.
-8. **Land**: the lead merges, runs the full gates on the combined tree, reconciles against git rather than reports. Practiced in my other repos; Fugue lands on `main` directly.
+8. **Land**: the lead re-runs build, tests and Bruno itself, reconciles each lane against git rather than its report, merges, and runs the gates on the combined tree. LIVE.
 9. **Wrap**: `wrap-session`: close finished threads into the project log and CHANGELOG with `close-workstream.mjs`, overwrite hot-state, write the handoff and seed prompt. LIVE.
 
 Doc flow: W row, then one project-log entry copied verbatim into CHANGELOG, row deleted, old entries archived to a cold folder with an index. `commit-link-check` verifies that commits are linked. LIVE.
@@ -53,10 +53,9 @@ Doc flow: W row, then one project-log entry copied verbatim into CHANGELOG, row 
 ## 4. Honest gaps
 
 - **TDD is mostly "pin every catch".** Tests are usually written after a review catch to pin it. RED-first is used for SQL logic and state machines (see `migration-retrofit-qa`), not as a blanket rule. Unit tests are low priority here by owner decision; the script tests for the gates are deliberately small.
-- **The Codex gate is advisory and often overridden on quota** in my SaaS repo; overrides are recorded in the commit or handoff. In Fugue the gate exists with seam detection, dedupe and the daily cap under test, but its Codex invocation was taken from `--help` and not executed end to end. Treat it as unproven until a first real seam push.
-- **No CI yet.** Hooks are client-side; `--no-verify` skips them (the guard blocks that flag for agents). CI is the real backstop and is not built.
-- **Fugue has one lead session's history.** Multi-lane fleets, landing ledgers and review-round statistics are practiced in my other repos, not evidenced here.
-- **`MapStatus` is deliberately unwritten.** 16 tests are red on purpose until I write it.
+- **The Codex gate is advisory and often overridden on quota** in my SaaS repo; overrides are recorded in the commit or handoff. In Fugue the gate exists with seam detection, dedupe and the daily cap under test, but its Codex invocation was taken from `--help` and not executed end to end. Treat it as unproven until a first real seam push; the reviews in `docs/reviews/codex/` were run by hand (`codex exec -s read-only`, failure mode 27).
+- **CI is written but has never run.** `.github/workflows/ci.yml` exists; the repo has no remote yet, so it is unproven. Until then hooks are client-side and `--no-verify` skips them (the guard blocks that flag for agents).
+- **Fleets here are small.** Fugue ran two or three lanes at a time with one lead; large fleets and review-round statistics are practiced in my other repos, not evidenced here.
 
 ## 5. How Fugue closes the sibling repos' gaps
 
