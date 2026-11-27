@@ -15,11 +15,11 @@ Glyph legend:
 - `⛔ BLOCKED` — waiting on something outside the thread; `Status:` names it
 - `✅ DONE` — finished and verified
 
-### WS-07 — S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry — ⏸ PARKED (2026-11-25)
+### WS-07 — S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry — 🟢 ACTIVE (2026-11-27)
 ID: W-007
-Status: not started; needs S4.
-Resume: plan after S4 lands.
-Refs: `docs/plans/roadmap.md`
+Status: 2026-11-27 headless run: Docker image + one-command compose lane dispatched; idempotency planned (D-050, ADR-013, `docs/plans/w007-idempotency.md`), Codex plan review running. Versioning/HybridCache/OpenTelemetry only if time.
+Resume: land the compose lane (re-verify `docker compose up`), then build idempotency slice by slice per the plan.
+Refs: `docs/plans/roadmap.md`, `docs/plans/w007-idempotency.md`, D-049, D-050
 
 ### WS-10 — Verify the Codex gate end to end — ⏸ PARKED (2026-11-25)
 ID: W-010
@@ -27,7 +27,7 @@ Status: `scripts/codex-gate.mjs` invocation (`codex exec review --base <sha> ...
 Resume: make a throwaway seam change on a branch, run `node scripts/codex-gate.mjs --dry-run --base=<ref>`, then once for real; confirm `docs/reviews/codex/` receives text and the failure path records "failed". Also confirm lefthook gives git's stdin to both `spine-nudge` and `codex-gate` on a real push.
 Refs: D-014, ADR-007
 
-### WS-18 — Import the owner's earlier audit-logging design and harden audit — ⏸ PARKED (2026-11-27)
+### WS-18 — Import the owner's earlier audit-logging design and harden audit — 🟢 ACTIVE (2026-11-27)
 ID: W-018
 Status: source cloned read-only at `~/Repos/career-work/<source-repo>/ (exact path: in the owner's seed prompt)` (outside this repo; never name it in Fugue). Copying allowed (D-048), names scrubbed on import. Compare its audit implementation with W-012's `audit_log` and take what is stronger (knobs, PII config, payload processing, retention, query shapes); keep same-transaction, append-only and never-sampled guarantees.
 Resume: Haiku sweep of the source's audit code first (paths + what it does), then a Sonnet port with tests, Codex review on the diff.

@@ -59,8 +59,30 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-046 | Console stack: NgRx SignalStore + TanStack Query, in `web/`, domain-neutral screens | - |
 | D-047 | Live permissions SSE stream cancelled | - |
 | D-048 | Owner's earlier design repo may be copied directly, names scrubbed on import | - |
+| D-049 | Keep the W-017 Angular console; no template import | - |
+| D-050 | Idempotency keys with stored-response replay on the two create POSTs | [ADR-013](adr/ADR-013-idempotency-keys.md) |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-050 — Idempotency keys with stored-response replay on the two create POSTs — 2026-11-27
+WS: WS-07
+Context: creates are the only writes that are unsafe to repeat; PUT/DELETE/transitions already carry If-Match.
+Decision: opt-in `[Idempotent]` filter on `POST /customers` and `POST /webhooks/subscriptions`; key scoped to (user, endpoint, key), body fingerprint, claim-before-execute, 2xx responses stored encrypted (Data Protection) and replayed for 24 h; 422 on reuse with a different body, 409 while in progress, non-2xx frees the key. Plan: `docs/plans/w007-idempotency.md`.
+Why: the IETF draft shape, minimal surface, keeps HTTP out of Application; encryption because the webhook create response carries a one-time secret.
+Consequences: one documented crash window (commit then die before completion); snapshot + console client change.
+Who: AI (headless lead)
+Status: accepted
+Promote: yes (ADR-013)
+
+## D-049 — Keep the W-017 Angular console; no template import — 2026-11-27
+WS: WS-07
+Context: the owner asked whether an Angular template should be cloned, and offered a Lovable prototype of the same seven-screen brief.
+Decision: no template. `web/` already is the Angular 22 console (W-017, eight screens, tests and e2e). The prototype is React (TanStack Router, shadcn) with a dark crimson palette; nothing is copied from it. Its users list layout is the reference for the W-019 list only.
+Why: porting React components to Angular costs more than building the one missing list; the Vellum palette (D-045) is already the console's scheme.
+Consequences: no new dependency; W-019 builds the list in the existing design system.
+Who: AI (headless lead), on the owner's question
+Status: accepted
+Promote: no
 
 ## D-048 — The owner's earlier design repo may be copied directly; names are scrubbed on import — 2026-11-27
 WS: WS-18
