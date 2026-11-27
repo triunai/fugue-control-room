@@ -34,7 +34,7 @@ internal sealed class ClaimsHarness(PostgresFixture db)
 
     public async Task<ClaimDto> SubmitAsync(HttpClient client, Market market = Market.SG, LineOfBusiness line = LineOfBusiness.Motor, string? policy = null)
     {
-        HttpResponseMessage response = await client.PostAsJsonAsync("/api/v1/claims", new
+        HttpResponseMessage response = await PostSubmitAsync(client, new
         {
             market = market.ToString(),
             line = line.ToString(),
@@ -46,6 +46,16 @@ internal sealed class ClaimsHarness(PostgresFixture db)
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         return (await response.Content.ReadFromJsonAsync<ClaimDto>())!;
     }
+
+    /// <summary>POSTs a claim submit with a fresh <c>Idempotency-Key</c> (the key is required on this operation).</summary>
+    public static async Task<HttpResponseMessage> PostSubmitAsync(HttpClient client, HttpContent content)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/claims") { Content = content };
+        request.Headers.TryAddWithoutValidation("Idempotency-Key", Guid.NewGuid().ToString("N"));
+        return await client.SendAsync(request);
+    }
+
+    public static Task<HttpResponseMessage> PostSubmitAsync(HttpClient client, object body) => PostSubmitAsync(client, JsonContent.Create(body));
 
     public static async Task<HttpResponseMessage> SendAsync(HttpClient client, HttpMethod method, string path, long? version, object? body = null)
     {

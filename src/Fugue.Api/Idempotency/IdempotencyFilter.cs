@@ -34,6 +34,14 @@ public sealed partial class IdempotencyFilter(IIdempotencyStore store, ICurrentU
         HeaderParse header = IdempotencyKeyHeader.Parse(http.Request.Headers[IdempotencyKeyHeader.Name]);
         if (!header.IsPresent)
         {
+            if (context.ActionDescriptor.EndpointMetadata.OfType<IdempotentAttribute>().Any(a => a.Required))
+            {
+                context.Result = Problem(
+                    http, StatusCodes.Status400BadRequest, "idempotency.key_required",
+                    "This operation requires an Idempotency-Key header, so a retry cannot create a second resource.");
+                return;
+            }
+
             await next();
             return;
         }

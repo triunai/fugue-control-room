@@ -19,7 +19,7 @@ public sealed class ClaimsContractTests(PostgresFixture db)
     {
         using HttpClient self = _h.Claimant();
 
-        HttpResponseMessage response = await self.PostAsJsonAsync("/api/v1/claims", new
+        HttpResponseMessage response = await ClaimsHarness.PostSubmitAsync(self, new
         {
             market = "ID",
             line = "Property",
@@ -38,6 +38,22 @@ public sealed class ClaimsContractTests(PostgresFixture db)
         Assert.Matches(@"^CLM-ID-\d{4}-\d{6}$", claim.Number);
         Assert.Null(claim.ReserveMinor);
         Assert.Null(claim.ClaimantUserId); // the staff group is hidden from the claimant
+    }
+
+    [Fact]
+    public async Task Submit_without_an_Idempotency_Key_is_400_and_creates_nothing_while_customers_create_stays_optional()
+    {
+        using HttpClient self = _h.Claimant();
+        string policy = ClaimsHarness.UniquePolicy();
+
+        HttpResponseMessage missing = await self.PostAsJsonAsync("/api/v1/claims", new { market = "SG", line = "Motor", policyNumber = policy, incidentDate = _h.Yesterday().Iso(), incidentDescription = "x" });
+
+        await ClaimsHarness.AssertProblemAsync(missing, HttpStatusCode.BadRequest, "idempotency.key_required");
+        Assert.Equal(0L, await _h.ScalarAsync<long>("SELECT count(*) FROM claims WHERE policy_number = @p", ("p", policy)));
+
+        using HttpClient admin = _h.Admin();
+        HttpResponseMessage customer = await admin.PostAsJsonAsync("/api/v1/customers", new { name = "No Key", email = $"nokey-{Guid.NewGuid():N}@example.test" });
+        Assert.Equal(HttpStatusCode.Created, customer.StatusCode);
     }
 
     [Fact]
@@ -212,7 +228,7 @@ public sealed class ClaimsContractTests(PostgresFixture db)
         using HttpClient self = _h.Claimant();
         using var content = new StringContent(json.Replace("{D}", _h.Yesterday().Iso(), StringComparison.Ordinal), System.Text.Encoding.UTF8, "application/json");
 
-        HttpResponseMessage response = await self.PostAsync("/api/v1/claims", content);
+        HttpResponseMessage response = await ClaimsHarness.PostSubmitAsync(self, content);
 
         await ClaimsHarness.AssertProblemAsync(response, HttpStatusCode.BadRequest, "validation.failed");
         using JsonDocument body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -225,10 +241,10 @@ public sealed class ClaimsContractTests(PostgresFixture db)
         using HttpClient self = _h.Claimant();
         DateOnly today = Markets.LocalToday(Market.SG, db.Clock.GetUtcNow());
 
-        HttpResponseMessage ok = await self.PostAsJsonAsync("/api/v1/claims", new { market = "SG", line = "Motor", policyNumber = "P", incidentDate = today.Iso(), incidentDescription = "x" });
-        HttpResponseMessage tomorrow = await self.PostAsJsonAsync("/api/v1/claims", new { market = "SG", line = "Motor", policyNumber = "P", incidentDate = today.AddDays(1).Iso(), incidentDescription = "x" });
-        HttpResponseMessage yearAgo = await self.PostAsJsonAsync("/api/v1/claims", new { market = "SG", line = "Motor", policyNumber = "P", incidentDate = today.AddYears(-1).Iso(), incidentDescription = "x" });
-        HttpResponseMessage tooOld = await self.PostAsJsonAsync("/api/v1/claims", new { market = "SG", line = "Motor", policyNumber = "P", incidentDate = today.AddYears(-1).AddDays(-1).Iso(), incidentDescription = "x" });
+        HttpResponseMessage ok = await ClaimsHarness.PostSubmitAsync(self, new { market = "SG", line = "Motor", policyNumber = "P", incidentDate = today.Iso(), incidentDescription = "x" });
+        HttpResponseMessage tomorrow = await ClaimsHarness.PostSubmitAsync(self, new { market = "SG", line = "Motor", policyNumber = "P", incidentDate = today.AddDays(1).Iso(), incidentDescription = "x" });
+        HttpResponseMessage yearAgo = await ClaimsHarness.PostSubmitAsync(self, new { market = "SG", line = "Motor", policyNumber = "P", incidentDate = today.AddYears(-1).Iso(), incidentDescription = "x" });
+        HttpResponseMessage tooOld = await ClaimsHarness.PostSubmitAsync(self, new { market = "SG", line = "Motor", policyNumber = "P", incidentDate = today.AddYears(-1).AddDays(-1).Iso(), incidentDescription = "x" });
 
         Assert.Equal(HttpStatusCode.Created, ok.StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, tomorrow.StatusCode);

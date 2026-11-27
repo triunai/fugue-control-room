@@ -23,7 +23,7 @@ public sealed class ClaimsController : ApiControllerBase
     /// <summary>Submit a claim. The caller is the claimant; the claim starts Submitted. The incident date may not be in the future or more than a year back.</summary>
     [HttpPost]
     [HasPermission(Permissions.ClaimsSubmit)]
-    [Idempotent]
+    [Idempotent(Required = true)]
     [ProducesResponseType(typeof(ClaimDto), StatusCodes.Status201Created)]
     public Task<ActionResult<ClaimDto>> Submit(SubmitClaimRequest body, CancellationToken ct) =>
         SendCreated(
