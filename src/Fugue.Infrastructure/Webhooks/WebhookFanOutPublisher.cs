@@ -14,11 +14,7 @@ namespace Fugue.Infrastructure.Webhooks;
 /// </summary>
 internal sealed class WebhookFanOutPublisher(FugueDbContext db, SqlExecutor sql, TimeProvider time) : IEventPublisher
 {
-    private const string InsertSql = """
-        INSERT INTO webhook_deliveries (id, message_id, subscription_id, occurred_at, status, attempts, next_attempt_at)
-        VALUES (@Id, @MessageId, @SubscriptionId, @Now, 'pending', 0, @Now)
-        ON CONFLICT (message_id, subscription_id) DO NOTHING
-        """;
+    private static readonly string InsertSql = SqlScripts.Get("webhooks/insert-delivery");
 
     private IReadOnlyList<(WebhookSubscriptionId Id, string[] EventTypes)>? _subscriptions;
 

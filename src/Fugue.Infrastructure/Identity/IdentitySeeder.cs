@@ -40,7 +40,7 @@ internal sealed class IdentitySeeder(FugueDbContext db, PasswordVerifier hasher,
             await using IDbContextTransaction tx = await db.Database.BeginTransactionAsync(token);
             AuditStampValue now = stamp.Capture();
             int changed = await sql.ExecuteAsync(
-                "UPDATE customers SET user_id = @UserId, updated_at = @Now, updated_by = @Actor WHERE id = @Id AND user_id IS NULL",
+                SqlScripts.Get("identity/assign-customer-owner"),
                 new { UserId = owner, Id = CustomerId.From(customerId), now.Now, now.Actor }, token);
             if (changed > 0)
             {

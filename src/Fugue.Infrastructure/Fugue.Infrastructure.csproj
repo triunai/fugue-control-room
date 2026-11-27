@@ -13,6 +13,9 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Persistence/Sql/**/*.sql" LogicalName="sql/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
     <InternalsVisibleTo Include="Fugue.Tests" />
   </ItemGroup>
   <ItemGroup>

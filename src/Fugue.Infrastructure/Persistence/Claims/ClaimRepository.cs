@@ -20,25 +20,13 @@ internal sealed class ClaimRepository(FugueDbContext db, SqlExecutor sql, IAudit
 {
     private const string UniqueViolation = "23505";
 
-    private const string Columns = """
-        id, number, market, currency, line, status, claimant_user_id, assigned_officer_id, assigned_at, policy_number, incident_date,
-        incident_description, incident_location, submitted_at, reserve_minor, approved_amount_minor, decision_reason, decided_at, settled_at,
-        created_at, created_by, updated_at, updated_by, xmin
-        """;
+    private static readonly string InsertClaimSql = SqlScripts.Get("claims/insert");
 
-    private const string InsertClaimSql = """
-        INSERT INTO claims (id, number, market, currency, line, status, claimant_user_id, assigned_officer_id, assigned_at, policy_number, incident_date,
-                            incident_description, incident_location, submitted_at, created_at, created_by, updated_at, updated_by)
-        VALUES (@Id, @Number, @Market, @Currency, @Line, @Status, @ClaimantUserId, @AssignedOfficerId, @AssignedAt, @PolicyNumber, @IncidentDate,
-                @IncidentDescription, @IncidentLocation, @SubmittedAt, @Now, @Actor, @Now, @Actor)
-        """;
+    private static readonly string InsertTimelineSql = SqlScripts.Get("claims/insert-timeline");
 
-    private const string InsertTimelineSql = """
-        INSERT INTO claim_timeline (id, claim_id, occurred_at, from_status, to_status, actor_user_id, actor_display, note, created_at, created_by, updated_at, updated_by)
-        VALUES (@Id, @ClaimId, @OccurredAt, @FromStatus, @ToStatus, @ActorUserId, @ActorDisplay, @Note, @Now, @Actor, @Now, @Actor)
-        """;
+    private static readonly string NextNumberSql = SqlScripts.Get("claims/next-number");
 
-    public Task<long> NextNumberAsync(CancellationToken ct) => sql.ExecuteScalarAsync<long>("SELECT nextval('claims_number_seq')", null, ct);
+    public Task<long> NextNumberAsync(CancellationToken ct) => sql.ExecuteScalarAsync<long>(NextNumberSql, null, ct);
 
     public async Task<Result> AddAsync(Claim claim, CancellationToken ct)
     {
@@ -132,8 +120,8 @@ internal sealed class ClaimRepository(FugueDbContext db, SqlExecutor sql, IAudit
         IQueryable<Claim> query = after is { } cursor
             // Row-value comparison is not expressible in LINQ; the rest of the query composes on top of this.
             ? ascending
-                ? db.Claims.FromSqlRaw($"SELECT {Columns} FROM claims WHERE (submitted_at, id) > ({{0}}, {{1}})", cursor.CreatedAt, cursor.Id)
-                : db.Claims.FromSqlRaw($"SELECT {Columns} FROM claims WHERE (submitted_at, id) < ({{0}}, {{1}})", cursor.CreatedAt, cursor.Id)
+                ? db.Claims.FromSqlRaw(SqlScripts.Get("claims/list-after-asc"), new NpgsqlParameter("createdAt", cursor.CreatedAt), new NpgsqlParameter("id", cursor.Id))
+                : db.Claims.FromSqlRaw(SqlScripts.Get("claims/list-after-desc"), new NpgsqlParameter("createdAt", cursor.CreatedAt), new NpgsqlParameter("id", cursor.Id))
             : db.Claims;
 
         query = Scoped(query.AsNoTracking(), scope);

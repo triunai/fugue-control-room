@@ -4,6 +4,7 @@ using Fugue.Application.Features.Audit;
 using Fugue.Domain.Audit;
 using Fugue.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Fugue.Infrastructure.Audit;
 
@@ -17,7 +18,7 @@ internal sealed class AuditLogReader(FugueDbContext db) : IAuditLogReader
     {
         IQueryable<AuditLog> query = after is { } cursor
             // Row-value comparison is not expressible in LINQ; the filters compose on top of this.
-            ? db.AuditLogs.FromSql($"SELECT * FROM audit_log WHERE (occurred_at, id) < ({cursor.CreatedAt}, {cursor.Id})")
+            ? db.AuditLogs.FromSqlRaw(SqlScripts.Get("audit/list-before"), new NpgsqlParameter("createdAt", cursor.CreatedAt), new NpgsqlParameter("id", cursor.Id))
             : db.AuditLogs;
 
         query = query.AsNoTracking();

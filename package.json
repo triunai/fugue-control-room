@@ -8,6 +8,7 @@
     "trace": "node scripts/spine/trace-index.mjs",
     "test:scripts": "node --test scripts/*.test.mjs scripts/spine/*.test.mjs",
     "api:test": "cd bruno/fugue && bru run --env local",
+    "db:script": "dotnet ef migrations script --idempotent --project src/Fugue.Infrastructure --startup-project src/Fugue.Infrastructure -o artifacts/db/migrate.sql",
     "api:openapi": "FUGUE_OPENAPI_UPDATE=1 dotnet test tests/Fugue.Tests --filter \"FullyQualifiedName~OpenApiContractTests\"",
     "api:test:compose": "cd bruno/fugue && bru run --env compose"
   },

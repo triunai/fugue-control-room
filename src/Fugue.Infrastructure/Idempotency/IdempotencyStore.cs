@@ -29,30 +29,13 @@ internal sealed class IdempotencyStore(
 
     private const int ClaimAttempts = 3;
 
-    private const string ClaimSql = """
-        INSERT INTO idempotency_keys (id, actor_id, endpoint, key, request_hash, claim_token, status, response_status, response_headers, response_body,
-                                      expires_at, created_at, created_by, updated_at, updated_by)
-        VALUES (@Id, @ActorId, @Endpoint, @Key, @RequestHash, @ClaimToken, 'pending', NULL, NULL, NULL, @ExpiresAt, @Now, @Actor, @Now, @Actor)
-        ON CONFLICT (actor_id, endpoint, key) DO UPDATE SET
-            id = EXCLUDED.id, request_hash = EXCLUDED.request_hash, claim_token = EXCLUDED.claim_token, status = 'pending',
-            response_status = NULL, response_headers = NULL, response_body = NULL, expires_at = EXCLUDED.expires_at,
-            created_at = EXCLUDED.created_at, created_by = EXCLUDED.created_by, updated_at = EXCLUDED.updated_at, updated_by = EXCLUDED.updated_by
-        WHERE idempotency_keys.expires_at < @Now
-        RETURNING claim_token
-        """;
+    private static readonly string ClaimSql = SqlScripts.Get("idempotency/claim");
 
-    private const string CompleteSql = """
-        UPDATE idempotency_keys
-        SET status = 'completed', response_status = @Status, response_headers = CAST(@Headers AS jsonb), response_body = @Body, updated_at = @Now, updated_by = @Actor
-        WHERE id = @Id AND claim_token = @ClaimToken AND status = 'pending'
-        """;
+    private static readonly string CompleteSql = SqlScripts.Get("idempotency/complete");
 
-    private const string ReleaseSql = "DELETE FROM idempotency_keys WHERE id = @Id AND claim_token = @ClaimToken";
+    private static readonly string ReleaseSql = SqlScripts.Get("idempotency/release");
 
-    private const string PurgeSql = """
-        DELETE FROM idempotency_keys
-        WHERE id IN (SELECT id FROM idempotency_keys WHERE expires_at < @Now ORDER BY expires_at LIMIT @Batch)
-        """;
+    private static readonly string PurgeSql = SqlScripts.Get("idempotency/purge-expired");
 
     private readonly IDataProtector _protector = dataProtection.CreateProtector(Purpose);
 

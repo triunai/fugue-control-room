@@ -22,11 +22,7 @@ internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAu
     private const string UniqueViolation = "23505";
     private const string ForeignKeyViolation = "23503";
 
-    private const string InsertSql = """
-        INSERT INTO customers (id, name, email, phone, status, user_id, created_at, created_by, updated_at, updated_by)
-        VALUES (@Id, @Name, @Email, @Phone, @Status, @UserId, @Now, @Actor, @Now, @Actor)
-        RETURNING xmin::text::bigint
-        """;
+    private static readonly string InsertSql = SqlScripts.Get("customers/insert");
 
     public async Task<Result<CustomerDto>> AddAsync(Customer customer, CancellationToken ct)
     {
@@ -87,10 +83,7 @@ internal sealed class CustomerRepository(FugueDbContext db, SqlExecutor sql, IAu
     {
         IQueryable<Customer> query = after is { } cursor
             // Row-value comparison is not expressible in LINQ; the rest of the query composes on top of this.
-            ? db.Customers.FromSql($"""
-                SELECT id, name, email, phone, status, user_id, created_at, created_by, updated_at, updated_by, xmin
-                FROM customers WHERE (created_at, id) > ({cursor.CreatedAt}, {cursor.Id})
-                """)
+            ? db.Customers.FromSqlRaw(SqlScripts.Get("customers/list-after"), new NpgsqlParameter("createdAt", cursor.CreatedAt), new NpgsqlParameter("id", cursor.Id))
             : db.Customers;
 
         query = Scoped(query.AsNoTracking(), scope);

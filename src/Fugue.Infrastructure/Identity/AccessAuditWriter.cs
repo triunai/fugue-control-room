@@ -22,10 +22,7 @@ internal sealed class AccessAuditWriter(
     private static readonly Action<ILogger, string, Exception?> WriteFailed =
         LoggerMessage.Define<string>(LogLevel.Warning, new EventId(1), "Could not write an access_audit row for {Event}");
 
-    private const string InsertSql = """
-        INSERT INTO access_audit (id, occurred_at, event, outcome, reason_code, user_id, email_hash, ip, user_agent, correlation_id)
-        VALUES (@Id, @OccurredAt, @Event, @Outcome, @ReasonCode, @UserId, @EmailHash, @Ip, @UserAgent, @CorrelationId)
-        """;
+    private static readonly string InsertSql = SqlScripts.Get("identity/insert-access-audit");
 
     public async Task WriteAsync(AccessAuditEntry entry, CancellationToken ct)
     {

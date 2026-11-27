@@ -31,57 +31,19 @@ internal sealed record DispatchSummary(int Relayed, int Claimed, int Delivered, 
 /// </summary>
 internal sealed partial class OutboxDispatcher(IServiceScopeFactory scopes, TimeProvider time, IOptions<WebhookOptions> options, ILogger<OutboxDispatcher> logger)
 {
-    private const string ClaimMessagesSql = """
-        SELECT id AS Id, occurred_at AS OccurredAt, event_type AS EventType, aggregate_type AS AggregateType, aggregate_id AS AggregateId,
-               payload::text AS Payload, correlation_id AS CorrelationId, saga_id AS SagaId, traceparent AS Traceparent, attempts AS Attempts
-        FROM outbox_messages
-        WHERE status = 'pending' AND next_attempt_at <= @Now
-        ORDER BY next_attempt_at, id
-        LIMIT @Batch
-        FOR UPDATE SKIP LOCKED
-        """;
+    private static readonly string ClaimMessagesSql = SqlScripts.Get("webhooks/claim-messages");
 
-    private const string ClaimDeliveriesSql = """
-        UPDATE webhook_deliveries d
-        SET status = 'in_flight', attempts = d.attempts + 1, locked_until = @LeaseUntil, claim_token = gen_random_uuid()
-        FROM (
-            SELECT id FROM webhook_deliveries
-            WHERE (status = 'pending' AND next_attempt_at <= @Now) OR (status = 'in_flight' AND locked_until <= @Now)
-            ORDER BY next_attempt_at, id
-            LIMIT @Batch
-            FOR UPDATE SKIP LOCKED
-        ) due
-        WHERE d.id = due.id
-        RETURNING d.id AS Id, d.message_id AS MessageId, d.subscription_id AS SubscriptionId, d.attempts AS Attempts, d.claim_token AS ClaimToken
-        """;
+    private static readonly string ClaimDeliveriesSql = SqlScripts.Get("webhooks/claim-deliveries");
 
     // A lease that expired on the FINAL attempt means the worker crashed or lost its result write; the budget is spent, so it dies instead of being sent again.
-    private const string ExpireSpentLeasesSql = """
-        UPDATE webhook_deliveries
-        SET status = 'dead', dead_lettered_at = @Now, locked_until = NULL, claim_token = NULL,
-            last_error = COALESCE(last_error, 'The final attempt was claimed and never recorded (the worker stopped).')
-        WHERE status = 'in_flight' AND locked_until <= @Now AND attempts >= @MaxAttempts
-        """;
+    private static readonly string ExpireSpentLeasesSql = SqlScripts.Get("webhooks/expire-spent-leases");
 
     // The lease ran out before this queued delivery was reached: give the claim back without costing an attempt, so another worker owns it cleanly.
-    private const string ReleaseSql = """
-        UPDATE webhook_deliveries
-        SET status = 'pending', attempts = attempts - 1, locked_until = NULL, claim_token = NULL
-        WHERE id = @Id AND status = 'in_flight' AND claim_token = @ClaimToken
-        """;
+    private static readonly string ReleaseSql = SqlScripts.Get("webhooks/release-delivery");
 
-    private const string MarkSucceededSql = """
-        UPDATE webhook_deliveries
-        SET status = 'succeeded', delivered_at = @Now, locked_until = NULL, claim_token = NULL, last_status_code = @StatusCode, last_error = NULL, duration_ms = @DurationMs
-        WHERE id = @Id AND status = 'in_flight' AND claim_token = @ClaimToken
-        """;
+    private static readonly string MarkSucceededSql = SqlScripts.Get("webhooks/mark-succeeded");
 
-    private const string MarkFailedSql = """
-        UPDATE webhook_deliveries
-        SET status = @Status, next_attempt_at = @NextAttemptAt, locked_until = NULL, claim_token = NULL, last_status_code = @StatusCode, last_error = @Error,
-            duration_ms = @DurationMs, dead_lettered_at = @DeadLetteredAt
-        WHERE id = @Id AND status = 'in_flight' AND claim_token = @ClaimToken
-        """;
+    private static readonly string MarkFailedSql = SqlScripts.Get("webhooks/mark-failed");
 
     private static readonly TimeSpan ResultWriteBudget = TimeSpan.FromSeconds(10);
 
@@ -105,7 +67,7 @@ internal sealed partial class OutboxDispatcher(IServiceScopeFactory scopes, Time
         IReadOnlyList<ClaimedMessage> messages = await sql.QueryAsync<ClaimedMessage>(ClaimMessagesSql, new { Now = now, Batch = opts.Dispatcher.BatchSize }, ct);
         foreach (ClaimedMessage message in messages)
         {
-            await sql.ExecuteAsync("SAVEPOINT relay_message", null, ct);
+            await sql.ExecuteAsync(SqlScripts.Get("webhooks/relay-savepoint"), null, ct);
             try
             {
                 foreach (IEventPublisher publisher in publishers)
@@ -114,17 +76,17 @@ internal sealed partial class OutboxDispatcher(IServiceScopeFactory scopes, Time
                 }
 
                 await sql.ExecuteAsync(
-                    "UPDATE outbox_messages SET status = 'dispatched', attempts = attempts + 1, dispatched_at = @Now, last_error = NULL WHERE id = @Id",
+                    SqlScripts.Get("outbox/mark-dispatched"),
                     new { Now = now, message.Id }, ct);
-                await sql.ExecuteAsync("RELEASE SAVEPOINT relay_message", null, ct);
+                await sql.ExecuteAsync(SqlScripts.Get("webhooks/relay-release-savepoint"), null, ct);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                await sql.ExecuteAsync("ROLLBACK TO SAVEPOINT relay_message", null, ct);
+                await sql.ExecuteAsync(SqlScripts.Get("webhooks/relay-rollback-savepoint"), null, ct);
                 int failed = message.Attempts + 1;
                 bool dead = failed >= opts.MaxAttempts;
                 await sql.ExecuteAsync(
-                    "UPDATE outbox_messages SET status = @Status, attempts = @Attempts, next_attempt_at = @Next, last_error = @Error WHERE id = @Id",
+                    SqlScripts.Get("outbox/mark-failed"),
                     new
                     {
                         Status = dead ? OutboxStatuses.Dead : OutboxStatuses.Pending,
@@ -134,7 +96,7 @@ internal sealed partial class OutboxDispatcher(IServiceScopeFactory scopes, Time
                         message.Id,
                     },
                     ct);
-                await sql.ExecuteAsync("RELEASE SAVEPOINT relay_message", null, ct);
+                await sql.ExecuteAsync(SqlScripts.Get("webhooks/relay-release-savepoint"), null, ct);
                 LogRelayFailed(message.Id, message.EventType, failed, dead, ex);
             }
         }

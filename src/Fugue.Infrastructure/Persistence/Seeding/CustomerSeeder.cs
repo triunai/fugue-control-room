@@ -16,13 +16,7 @@ internal sealed class CustomerSeeder(FugueDbContext db, SqlExecutor sql, IUnitOf
     private const int Count = 25;
     private static readonly DateTimeOffset Epoch = new(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-    private const string UpsertSql = """
-        INSERT INTO customers (id, name, email, phone, status, created_at, created_by, updated_at, updated_by)
-        VALUES (@Id, @Name, @Email, @Phone, @Status, @CreatedAt, @Actor, @Now, @Actor)
-        ON CONFLICT (id) DO UPDATE SET
-          name = EXCLUDED.name, email = EXCLUDED.email, phone = EXCLUDED.phone, status = EXCLUDED.status,
-          updated_at = EXCLUDED.updated_at, updated_by = EXCLUDED.updated_by
-        """;
+    private static readonly string UpsertSql = SqlScripts.Get("seeding/upsert-customer");
 
     /// <summary>The stable id of seeded customer <paramref name="index"/> (1-based).</summary>
     public static Guid IdFor(int index) => new($"01900000-0000-7000-8000-{index:D12}");

@@ -415,13 +415,42 @@ public sealed class FitnessTests
     [Fact]
     public void Fitness_Audit_audit_log_has_exactly_one_insert_statement_in_the_source()
     {
-        string[] hits = Directory.GetFiles(Path.Combine(RepoRoot(), "src"), "*.cs", SearchOption.AllDirectories)
-            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}Migrations{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
-                && !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+        // Runtime SQL lives in embedded .sql files (D-054); .cs files are scanned too, so a stray literal still counts.
+        string src = Path.Combine(RepoRoot(), "src");
+        string[] sqlFiles = SqlScriptFiles(src);
+        Assert.NotEmpty(sqlFiles); // an empty glob must fail, not pass vacuously
+
+        string[] hits = SourceFiles(src).Concat(sqlFiles)
             .Where(f => File.ReadAllText(f).Contains("INSERT INTO audit_log", StringComparison.Ordinal))
             .Select(f => Path.GetFileName(f)).ToArray();
 
-        Assert.Equal(["AuditTrail.cs"], hits);
+        Assert.Equal(["insert-audit-log.sql"], hits);
+    }
+
+    private static string[] SqlScriptFiles(string src) =>
+        Directory.GetFiles(Path.Combine(src, "Fugue.Infrastructure", "Persistence", "Sql"), "*.sql", SearchOption.AllDirectories);
+
+    private static IEnumerable<string> SourceFiles(string src) =>
+        Directory.GetFiles(src, "*.cs", SearchOption.AllDirectories)
+            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}Migrations{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
+                && !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal));
+
+    private static readonly System.Text.RegularExpressions.Regex SqlGetCall = new(@"SqlScripts\.Get\(""(?<name>[a-z0-9/-]+)""\)");
+
+    /// <summary>Each source file's text plus the text (comment lines dropped) of every .sql script it loads, so a write moved into a script is still attributed to its caller.</summary>
+    private static IEnumerable<(string File, string Text)> SourcesWithTheirSql(string src)
+    {
+        string root = Path.Combine(src, "Fugue.Infrastructure", "Persistence", "Sql");
+        Dictionary<string, string> scripts = SqlScriptFiles(src).ToDictionary(
+            f => Path.GetRelativePath(root, f).Replace('\\', '/')[..^".sql".Length],
+            f => string.Join('\n', File.ReadLines(f).Where(l => !l.TrimStart().StartsWith("--", StringComparison.Ordinal))));
+
+        return SourceFiles(src).Select(f =>
+        {
+            string text = File.ReadAllText(f);
+            string sql = string.Concat(SqlGetCall.Matches(text).Select(m => scripts.GetValueOrDefault(m.Groups["name"].Value) is { } s ? "\n" + s : string.Empty));
+            return (File: Path.GetFileName(f), Text: text + sql);
+        });
     }
 
     private static readonly System.Text.RegularExpressions.Regex RawWrite = new(@"\b(INSERT\s+INTO|UPDATE|DELETE\s+FROM)\s+(?<table>[a-z_]+)");
@@ -450,10 +479,12 @@ public sealed class FitnessTests
     {
         // A Dapper or raw-SQL write is invisible to the EF change tracker, so its class must call IAuditTrail, unless every table it writes belongs to a
         // [NoAudit] entity (outbox, deliveries, idempotency keys, session rows). The baseline lists the remaining classes that deliberately do not.
-        IEnumerable<(string File, string Text)> files = Directory.GetFiles(Path.Combine(RepoRoot(), "src"), "*.cs", SearchOption.AllDirectories)
-            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}Migrations{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
-                && !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
-            .Select(f => (File: Path.GetFileName(f), Text: File.ReadAllText(f)));
+        string src = Path.Combine(RepoRoot(), "src");
+        (string File, string Text)[] files = [.. SourcesWithTheirSql(src)];
+
+        // Not vacuous: the scan must have found scripts and raw write statements in them.
+        Assert.NotEmpty(SqlScriptFiles(src));
+        Assert.True(files.Sum(f => RawWrite.Matches(f.Text).Count) > 0, "No raw SQL write statements were found; the scan is broken.");
 
         AssertRatchet("raw-sql-writes", RawWritesWithoutAudit(files, NoAuditTables()));
     }
