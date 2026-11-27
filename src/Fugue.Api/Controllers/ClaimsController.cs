@@ -46,6 +46,20 @@ public sealed class ClaimsController : ApiControllerBase
         CancellationToken ct) =>
         SendPaged(new ListClaimsQuery(limit, status, assigned, market, line, q, cursor), ct);
 
+    /// <summary>Workload board: per officer the open claims by status, the oldest open age, decisions in the last 7 and 30 days and the median days to decide; the unassigned count; ageing bands 0-2, 3-7, 8-14, 15+ days.</summary>
+    [HttpGet("workload")]
+    [HasPermission(Permissions.ClaimsWorkload)]
+    [ProducesResponseType(typeof(ClaimWorkloadDto), StatusCodes.Status200OK)]
+    public Task<ActionResult<ClaimWorkloadDto>> Workload(CancellationToken ct) =>
+        Send(new GetClaimWorkloadQuery(), ct);
+
+    /// <summary>Exposure: per market, line and currency the open count, the outstanding reserve of open claims and the approved-not-settled amount. Totals are per currency; amounts are never added across currencies.</summary>
+    [HttpGet("exposure")]
+    [HasPermission(Permissions.ClaimsExposure)]
+    [ProducesResponseType(typeof(ClaimExposureDto), StatusCodes.Status200OK)]
+    public Task<ActionResult<ClaimExposureDto>> Exposure(CancellationToken ct) =>
+        Send(new GetClaimExposureQuery(), ct);
+
     /// <summary>Get one claim with its open question, if any. Your own claim, or any claim with CLAIMS_ALL; anything else is 404.</summary>
     [HttpGet("{id}")]
     [HasPermission(Permissions.ClaimsRead)]
