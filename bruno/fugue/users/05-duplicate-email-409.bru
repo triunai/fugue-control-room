@@ -15,7 +15,7 @@ body:json {
 }
 
 script:pre-request {
-  req.setBody({ email: bru.getVar("newUserEmail").toUpperCase(), displayName: "Bruno Duplicate", password: bru.getVar("newUserPw"), roles: ["STAFF"] }); // secrets-scan:ignore
+  req.setBody({ email: bru.getVar("newUserEmail").toUpperCase(), displayName: "Bruno test claimant (duplicate)", password: bru.getVar("newUserPw"), roles: ["SELF_SERVICE"] }); // secrets-scan:ignore
 }
 
 tests {
