@@ -32,12 +32,20 @@ export function bySlaRisk<T extends Pick<ClaimDto, 'submittedAt'>>(claims: reado
   return [...claims].sort((a, b) => a.submittedAt.localeCompare(b.submittedAt));
 }
 
-/** The officer's one obvious next click: their riskiest claim that needs action, else the oldest one to pick up. */
-export function officerPrimary<T extends Pick<ClaimDto, 'id' | 'number' | 'submittedAt'>>(
+type Work = Pick<ClaimDto, 'id' | 'number' | 'submittedAt' | 'reserveMinor'>;
+
+/** My claims needing action: no reserve first (they block everything), then oldest first. */
+export function needsMyAction<T extends Work>(claims: readonly T[]): T[] {
+  const noReserve = (c: T) => (c.reserveMinor === null || c.reserveMinor === undefined ? 0 : 1);
+  return [...claims].sort((a, b) => noReserve(a) - noReserve(b) || a.submittedAt.localeCompare(b.submittedAt));
+}
+
+/** The officer's one obvious next click: the claim of mine that needs action first, else the oldest to pick up. */
+export function officerPrimary<T extends Work>(
   mine: readonly T[],
   unassigned: readonly T[],
 ): { kind: 'work' | 'pickup'; claim: T } | null {
-  const m = bySlaRisk(mine)[0];
+  const m = needsMyAction(mine)[0];
   if (m) return { kind: 'work', claim: m };
   const u = bySlaRisk(unassigned)[0];
   return u ? { kind: 'pickup', claim: u } : null;

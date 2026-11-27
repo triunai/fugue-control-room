@@ -1,4 +1,4 @@
-import { bySlaRisk, claimantHero, landingKind, officerPrimary } from './home-logic';
+import { bySlaRisk, claimantHero, landingKind, needsMyAction, officerPrimary } from './home-logic';
 
 const has =
   (...codes: string[]) =>
@@ -56,7 +56,12 @@ describe('claimantHero', () => {
 });
 
 describe('officer work', () => {
-  const k = (id: string, submittedAt: string) => ({ id, number: `N-${id}`, submittedAt });
+  const k = (id: string, submittedAt: string, reserveMinor: number | null = 5) => ({
+    id,
+    number: `N-${id}`,
+    submittedAt,
+    reserveMinor,
+  });
 
   it('sorts by SLA risk, oldest first, without mutating', () => {
     const input = [k('a', '2026-11-20'), k('b', '2026-11-01')];
@@ -71,5 +76,10 @@ describe('officer work', () => {
     });
     expect(officerPrimary([], [k('u', '2026-10-01')])).toMatchObject({ kind: 'pickup', claim: { id: 'u' } });
     expect(officerPrimary([], [])).toBeNull();
+  });
+
+  it('needs-my-action puts claims without a reserve first, then oldest', () => {
+    const out = needsMyAction([k('a', '2026-11-01'), k('b', '2026-11-20', null), k('c', '2026-11-05', null)]);
+    expect(out.map((x) => x.id)).toEqual(['c', 'b', 'a']);
   });
 });

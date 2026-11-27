@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { injectQuery } from '@tanstack/angular-query';
+import { injectMutation, injectQuery, QueryClient } from '@tanstack/angular-query';
+import { ToastStore } from '../../core/ui/toast.store';
 import { ClaimsApi, EMPTY_CLAIM_FILTER, claimKeys } from '../../api/claims.api';
 import { AccessService } from '../../core/auth/access.service';
 import { RelativeTimePipe } from '../../ui/format';
 import { ClaimStatusPill, MoneyPipe } from '../claims/claim-bits';
-import { SLA_DECISION_DAYS, ageDays, marketName } from '../claims/claims-logic';
-import { bySlaRisk, claimantHero, landingKind, officerPrimary } from './home-logic';
+import { SLA_DECISION_DAYS, SLA_PICKUP_DAYS, ageDays, marketName } from '../claims/claims-logic';
+import { bySlaRisk, claimantHero, landingKind, needsMyAction, officerPrimary } from './home-logic';
 
 /** The page after sign-in: one landing per persona, each with one obvious primary action. */
 @Component({
@@ -32,7 +33,7 @@ import { bySlaRisk, claimantHero, landingKind, officerPrimary } from './home-log
               <div>
                 <p class="hero-kicker">{{ hero().needsYou ? 'This one needs you' : 'Where your claim stands' }}</p>
                 <h2 class="hero-title">
-                  {{ hero().needsYou ? 'We need one answer from you' : c.number }}
+                  {{ hero().needsYou ? 'We need one answer from you on ' + c.number : c.number }}
                 </h2>
                 <p class="hero-sub">
                   <a [routerLink]="['/claims', c.id]" class="num">{{ c.number }}</a> · {{ c.line }} ·
@@ -107,34 +108,61 @@ import { bySlaRisk, claimantHero, landingKind, officerPrimary } from './home-log
                 <a routerLink="/claims/queue" class="btn btn-primary" data-testid="primary-action">Open the queue</a>
               </section>
             }
+            <section class="panel panel-pad" aria-labelledby="mw-h">
+              <h2 id="mw-h" class="section-title">Needs my action</h2>
+              <p class="mt-1 mb-3 text-muted">Assigned to you and under review. No reserve first, then oldest.</p>
+              <ul class="rows" data-testid="my-work">
+                @for (c of needsAction(); track c.id) {
+                  <li>
+                    <a class="num" [routerLink]="['/claims', c.id]">{{ c.number }}</a>
+                    <span class="text-muted">{{ c.line }} · {{ market(c.market) }}</span>
+                    @if (c.reserveMinor === null || c.reserveMinor === undefined) {
+                      <span class="pill pill-err">No reserve</span>
+                    }
+                    <span [class.late]="days(c.submittedAt) >= sla">{{ days(c.submittedAt) }} d</span>
+                  </li>
+                } @empty {
+                  <li class="text-muted">Nothing assigned to you needs action.</li>
+                }
+              </ul>
+            </section>
             <div class="two">
-              <section class="panel panel-pad" aria-labelledby="mw-h">
-                <h2 id="mw-h" class="section-title">My work</h2>
-                <p class="mt-1 mb-3 text-muted">Under review and assigned to you, closest to its SLA first.</p>
-                <ul class="rows" data-testid="my-work">
-                  @for (c of mineSorted(); track c.id) {
-                    <li>
-                      <a class="num" [routerLink]="['/claims', c.id]">{{ c.number }}</a>
-                      <span class="text-muted">{{ c.line }} · {{ market(c.market) }}</span>
-                      <span [class.late]="days(c.submittedAt) >= sla">{{ days(c.submittedAt) }} d</span>
-                    </li>
-                  } @empty {
-                    <li class="text-muted">Nothing assigned to you needs action.</li>
-                  }
-                </ul>
-              </section>
               <section class="panel panel-pad" aria-labelledby="up-h">
-                <h2 id="up-h" class="section-title">To pick up</h2>
-                <p class="mt-1 mb-3 text-muted">Submitted, nobody assigned. Oldest first.</p>
+                <h2 id="up-h" class="section-title">Pick up next</h2>
+                <p class="mt-1 mb-3 text-muted">Submitted, nobody assigned. The oldest five.</p>
                 <ul class="rows" data-testid="to-pick-up">
-                  @for (c of unassignedSorted(); track c.id) {
+                  @for (c of pickUpNext(); track c.id) {
                     <li>
                       <a class="num" [routerLink]="['/claims', c.id]">{{ c.number }}</a>
                       <span class="text-muted">{{ c.line }} · {{ market(c.market) }}</span>
-                      <span [class.late]="days(c.submittedAt) >= sla">{{ days(c.submittedAt) }} d</span>
+                      <span [class.late]="days(c.submittedAt) >= pickupSla">{{ days(c.submittedAt) }} d</span>
+                      <button
+                        type="button"
+                        class="btn btn-sm"
+                        [disabled]="pickup.isPending()"
+                        (click)="pickup.mutate(c.id)"
+                        data-action="pickup"
+                      >
+                        Pick up
+                      </button>
                     </li>
                   } @empty {
                     <li class="text-muted">The pickup queue is empty.</li>
+                  }
+                </ul>
+              </section>
+              <section class="panel panel-pad" aria-labelledby="wc-h">
+                <h2 id="wc-h" class="section-title">Waiting on claimant</h2>
+                <p class="mt-1 mb-3 text-muted">Yours, paused on a question.</p>
+                <ul class="rows" data-testid="waiting">
+                  @for (c of waitingSorted(); track c.id) {
+                    <li>
+                      <a class="num" [routerLink]="['/claims', c.id]">{{ c.number }}</a>
+                      <span class="text-muted">{{ c.line }} · {{ market(c.market) }}</span>
+                      <span>{{ days(c.updatedAt) }} d waiting</span>
+                    </li>
+                  } @empty {
+                    <li class="text-muted">Nothing is waiting on a claimant.</li>
                   }
                 </ul>
               </section>
@@ -150,6 +178,21 @@ import { bySlaRisk, claimantHero, landingKind, officerPrimary } from './home-log
               <p class="hero-sub">{{ decided7() }} decided this week. Money below is per currency and never summed.</p>
             </div>
             <a routerLink="/claims/team" class="btn btn-primary" data-testid="primary-action">Open Team and exposure</a>
+          </section>
+          <section class="panel panel-pad" aria-labelledby="ts-h">
+            <h2 id="ts-h" class="section-title">To settle</h2>
+            <p class="mt-1 mb-3 text-muted">Approved and waiting for payment, oldest first.</p>
+            <ul class="rows" data-testid="to-settle">
+              @for (c of toSettle(); track c.id) {
+                <li>
+                  <a class="num" [routerLink]="['/claims', c.id]">{{ c.number }}</a>
+                  <span class="text-muted">{{ c.line }} · {{ market(c.market) }}</span>
+                  <span class="mono">{{ c.approvedAmountMinor | money: c.currency }}</span>
+                </li>
+              } @empty {
+                <li class="text-muted">Nothing is waiting to be settled.</li>
+              }
+            </ul>
           </section>
           @if (exposureQuery.data(); as e) {
             <section class="panel panel-pad" aria-labelledby="ex-h">
@@ -200,8 +243,11 @@ import { bySlaRisk, claimantHero, landingKind, officerPrimary } from './home-log
 export class HomePage {
   private readonly api = inject(ClaimsApi);
   protected readonly access = inject(AccessService);
+  private readonly toasts = inject(ToastStore);
+  private readonly queryClient = inject(QueryClient);
 
   protected readonly sla = SLA_DECISION_DAYS;
+  protected readonly pickupSla = SLA_PICKUP_DAYS;
   protected readonly market = marketName;
   protected readonly kind = computed(() => landingKind((c) => this.access.has(c)));
 
@@ -256,9 +302,25 @@ export class HomePage {
     enabled: this.kind() === 'officer',
   }));
   protected readonly officerQueries = computed(() => this.mineQuery.isPending() || this.unassignedQuery.isPending());
-  protected readonly mineSorted = computed(() => bySlaRisk(this.mineQuery.data()?.items ?? []));
-  protected readonly unassignedSorted = computed(() => bySlaRisk(this.unassignedQuery.data()?.items ?? []));
-  protected readonly primary = computed(() => officerPrimary(this.mineSorted(), this.unassignedSorted()));
+  private readonly waitingQuery = injectQuery(() => ({
+    queryKey: claimKeys.list({ ...EMPTY_CLAIM_FILTER, assigned: 'me', status: 'InfoRequested' }),
+    queryFn: () => this.api.list({ ...EMPTY_CLAIM_FILTER, assigned: 'me', status: 'InfoRequested' }, null, 50),
+    enabled: this.kind() === 'officer',
+  }));
+  protected readonly needsAction = computed(() => needsMyAction(this.mineQuery.data()?.items ?? []));
+  protected readonly pickUpNext = computed(() => bySlaRisk(this.unassignedQuery.data()?.items ?? []).slice(0, 5));
+  protected readonly waitingSorted = computed(() => bySlaRisk(this.waitingQuery.data()?.items ?? []));
+  protected readonly primary = computed(() =>
+    officerPrimary(this.mineQuery.data()?.items ?? [], this.unassignedQuery.data()?.items ?? []),
+  );
+
+  protected readonly pickup = injectMutation(() => ({
+    mutationFn: (id: string) => this.api.pickup(id),
+    onSuccess: (c) => {
+      this.toasts.ok(`Picked up ${c.number}`);
+      void this.queryClient.invalidateQueries({ queryKey: claimKeys.all });
+    },
+  }));
 
   // manager
   private readonly workloadQuery = injectQuery(() => ({
@@ -271,6 +333,12 @@ export class HomePage {
     queryFn: () => this.api.exposure(),
     enabled: this.kind() === 'manager',
   }));
+  private readonly approvedQuery = injectQuery(() => ({
+    queryKey: [...claimKeys.all, 'approved'] as const,
+    queryFn: () => this.api.list({ ...EMPTY_CLAIM_FILTER, status: 'Approved' }, null, 100),
+    enabled: this.kind() === 'manager',
+  }));
+  protected readonly toSettle = computed(() => bySlaRisk(this.approvedQuery.data()?.items ?? []).slice(0, 5));
   protected readonly unassigned = computed(() => this.workloadQuery.data()?.unassignedCount ?? 0);
   protected readonly openLoad = computed(
     () => this.workloadQuery.data()?.officers.reduce((n, o) => n + o.underReview + o.infoRequested, 0) ?? 0,
