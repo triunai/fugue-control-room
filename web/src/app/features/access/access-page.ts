@@ -12,13 +12,23 @@ import { ToastStore } from '../../core/ui/toast.store';
 import { StampPipe } from '../../ui/format';
 import { RefChip } from '../../ui/ref-chip';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
+import { RolesMatrix } from './roles-matrix';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 @Component({
   selector: 'fg-access-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, HasPermissionDirective, RefChip, StampPipe, SkeletonRows, EmptyState, ErrorState],
+  imports: [
+    ReactiveFormsModule,
+    HasPermissionDirective,
+    RefChip,
+    StampPipe,
+    SkeletonRows,
+    EmptyState,
+    ErrorState,
+    RolesMatrix,
+  ],
   templateUrl: './access-page.html',
   styleUrl: './access-page.css',
 })
