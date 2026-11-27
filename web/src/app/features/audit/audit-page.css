@@ -205,3 +205,52 @@ tr[data-kind='removed'] .old {
     max-height: none;
   }
 }
+.q-field {
+  grid-column: 1 / -1;
+}
+.note {
+  margin: 0;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.hit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.hit:hover {
+  background: var(--row-hover);
+}
+.hit.on {
+  background: var(--accent-soft);
+}
+.hit-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.snippet-k {
+  margin-right: 0.4rem;
+  color: var(--muted);
+}
+em {
+  font-style: normal;
+  font-weight: 600;
+  background: var(--accent-soft);
+  border-radius: 2px;
+  padding: 0 0.1em;
+}

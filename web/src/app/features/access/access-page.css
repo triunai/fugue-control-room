@@ -46,3 +46,19 @@
     grid-template-columns: 1fr;
   }
 }
+.user-row.on {
+  background: var(--surface2);
+}
+.dim {
+  opacity: 0.6;
+  transition: opacity 150ms;
+}
+.table-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.9rem;
+}
