@@ -27,3 +27,11 @@ The owner likes a reference "who can do what" grid: one column per role (with me
 ### #005 — Controllers stack `[FromQuery]` on every list filter parameter (DONE 2026-11-27, merge of `rd-files`)
 WS: WS-07
 `AuditController.List` (9 filters), `CustomersController.List` and the webhook deliveries list repeat `[FromQuery]` per parameter; with `[ApiController]` they are redundant and the actions stop reading as one-liners. Owner review 2026-11-27. Fix: one `[FromQuery] <X>Filter filter` record per list in `src/Fugue.Api/Contracts/` with `ToQuery()`; proof of safety = the OpenAPI snapshot is byte-identical. Size S. After the claims merge (the claims controller already follows the new style).
+
+### #006 — Claims queue counts cost one list call per status
+WS: WS-20
+The KPI strip and tab counts read one 100-row page per status (six calls, "100+" when a cursor remains), because the API has no count endpoint and workload is per officer. Fix: `GET /api/v1/claims/counts` (one grouped query under the caller's scope and filters), then one call in the console. Also: the queue's default "All" tab sorts settled and rejected claims among open ones; default to open statuses. Size S. Found by the claims-web lane (2026-11-27).
+
+### #007 — Past info requests only appear as timeline notes
+WS: WS-20
+The claim DTO carries only the OPEN info request; earlier questions and answers are visible only as timeline notes. Fix: `GET /claims/{id}/info-requests` (scoped like the timeline) and a Q&A list on the detail page. Size S.

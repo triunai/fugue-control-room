@@ -4,6 +4,99 @@ Tracks notable changes across migrations, API contracts, and project documentati
 
 > **ADR links.** An entry that reflects a real architectural decision cites it as `(ADR-NNN)`; the ADR lives in `docs/adr/`.
 
+## 2026-11-27 — Closed W-007: S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry
+WS: WS-07
+Closed: W-007 (WS-07) S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry
+Outcome: S5 essentials: idempotency keys with stored-response replay (ADR-013, two Codex reviews; required on claim submit), one-command Docker stack, CI workflow (unrun: no remote), reviewer runbook, Bruno compose env. Readability pass from the owner's review: runtime SQL in 40 embedded .sql files with tested caller headers and fitness rules that read them, a read-only DB role and restricted Postgres MCP config, db:script export (D-054); one file per concept and list filter records (D-055, backlog #005). Behaviour proven unchanged: OpenAPI snapshot byte-identical, suite green.
+Commits:
+- 451022d docs(plans): idempotency-key plan and ADR-013; keep the Angular console (D-049)
+- bd5de50 build(docker): API image with an EF migrations bundle
+- 731751d build(web): console image served by nginx with /api proxied
+- 38602b0 build(compose): one-command stack (postgres, migrate, api, web)
+- 1d3cde3 docs(runbooks): runbook 10 for the one-command stack
+- 1ca01f9 fix(infra): compose no longer requires the signing key to start postgres alone
+- a2a9746 docs(plans): idempotency plan revision 2 after the Codex review; D-051 audit import
+- 793f6f8 feat(web): modules page as a feature-switch table with a toggle and last-changed
+- 7c8d082 docs(spine): KIV backlog items for the guided tour and the console shell
+- 785124a feat(web): shell with breadcrumbs, collapsible groups and a bottom user card
+- f83e5c3 build(compose): Postgres writes file logs for pgAdmin and slow-query tracing
+- 5302c46 fix(web): keep the shell user card and footer pinned in the viewport
+- bc0eac7 docs(spine): KIV backlog item for a role x permission matrix
+- 1d92c88 feat(persistence): idempotency_keys table
+- ce0305b feat(api): Idempotency-Key filter with stored-response replay
+- 0fe9814 feat(api): document Idempotency-Key in the contract
+- 5104945 feat(web): send an Idempotency-Key on create
+- dde6eb6 fix(api): idempotency review fixes (no-store, blank key, fitness rule, contract)
+- d9b67fb fix(web): fix the Idempotency-Key and body per create submission
+- d0eee32 docs(reviews): file the Codex diff review of the idempotency store
+- c0e19c4 chore(ci): allow the scopes this repo already uses in commitlint
+- 8c6d5eb refactor(identity): name the JWT claim types once and rename the current-user adapter
+- a277d4a docs(spine): backlog the list-filter binding cleanup from the owner's review
+- 5654760 docs(plans): briefs for the readability pass lanes
+- ce403cb docs(spine): ledger rows for the readability lanes
+- ef4e2e4 docs(docs): one file per concept in CLAUDE.md; claims personas in runbook 00
+- 78f8fa9 refactor(api): list filters bind one query record
+- ac4d231 refactor(domain): typed ids and small aggregate types in one file per concept
+- f01fadd refactor(application): ports grouped by concern
+- a9081c9 refactor(persistence): runtime SQL in embedded .sql files
+- 2108c1d docs(docs): readability-files lane status
+- 07fd013 test(persistence): every SQL script referenced and present
+- 60ea816 Merge branch 'rd-files': one file per concept and list filter records
+- a182737 docs(spine): typed-id recipe points at Ids.cs; close backlog #005
+- f9deb05 build(infra): idempotent migration script and a read-only database role
+- 2e73407 docs(docs): readability-sql lane status
+- 89db40d test(arch): fitness rules read the .sql files
+- 1658a9f Merge branch 'rd-sql': runtime SQL in embedded .sql files
+- e3cec29 docs(docs): journal the readability pass; SQL files in ARCHITECTURE.md
+Decisions: D-049, D-050, D-054, D-055, ADR-013, D-051
+Follow-ups: API versioning with Deprecation/Sunset, HybridCache on /me permissions, OpenTelemetry traces (new W-023)
+
+## 2026-11-27 — Closed W-020: Claims platform: the timed build window
+WS: WS-20
+Closed: W-020 (WS-20) Claims platform: the timed build window
+Outcome: Claims platform built inside the timed window (tag claims-window-start): Claim aggregate with a guarded state machine, append-only claimant timeline, info requests, claimant-only visibility (404), ten endpoints with If-Match and a required Idempotency-Key on submit, workload and exposure per currency, seed, Bruno claims folder, and the Angular claimant/staff/manager screens. Codex seam review: 3 findings accepted and fixed, 2 declined with reasons. Verified on main: build 0 warnings, ArchTests 37 + Tests 623, web 62, Bruno 82/82 requests and 104/104 tests against the Docker stack.
+Commits:
+- dd46eca chore(spine): open the claims build window (plan, W-020, D-052, D-053)
+- a4ac736 docs(spine): hot-state resume point during the claims window
+- c054c63 docs(docs): architecture guide and how-we-work guide for the core doc pack
+- 40ee1a3 docs(spine): decisions on SQL files, a read-only DB MCP and file consolidation
+- 1fdc33b docs(docs): point architecture guide at D-054 and D-055 for SQL and file layout
+- c2154d1 docs(identity): say PBKDF2, which is what the code uses, not Argon2id
+- 3b4dcc5 ci: GitHub Actions pipeline and a reviewer start-here runbook
+- 8d77574 fix(tests): Bruno compose environment so the webhook sink is reachable from the API container
+- 7b9605b docs(spine): wrap mid-window; close W-018; seed the headless continuation
+- 4a0ea9e docs(trace): regenerate traceability index
+- 6754d1f feat(domain): Claim aggregate with its state machine
+- 641f0e8 docs(spine): hot-state: claims backend lane finished, rebase pending
+- 9571880 feat(persistence): claims, timeline and info requests
+- 4b7186c feat(api): claims contract
+- a9d2d1c fix(application): claim handling checks the ETag before the state machine
+- b851811 feat(application): claims workload and exposure
+- 0d89790 feat(infra): seed claims demo data
+- 3142577 test(api): Bruno claims collection
+- 9c2a79a feat(api): idempotent claim submit and a flat list filter
+- 506fc47 docs(ai): claims-core lane status
+- 4f33326 docs(spine): hot-state: claims backend rebased on main (506fc47)
+- 8718e07 docs(docs): journal the headless continuation start
+- 74522f0 docs(reviews): Codex claims seam review and its disposition
+- 885f089 feat(web): claims client and claimant screens
+- 6cf5e0f docs(docs): CLAIMS.md and the ADR-013 required-key amendment
+- 7fa63d7 fix(persistence): a claim command always runs the version-guarded update
+- e3d0cae docs(docs): refresh how-we-use-ai against what this repo now evidences
+- 6bcd7ab feat(web): claims queue and staff claim detail
+- 7bc4280 fix(api): claim submit requires an Idempotency-Key
+- fab8a1c feat(web): workload and exposure
+- bbf9b90 test(api): Bruno and runbook send the submit key
+- a220919 docs(docs): claims-fix lane status
+- abf1558 test(web): claims smoke and screenshots
+- 5de17a7 docs(ai): claims-web lane status
+- ce78360 docs(docs): README for the claims submission
+- 15a4635 Merge branch 'claims-core': the claims platform
+- f26fd14 docs(docs): journal the claims merge; failure modes 30 and 31
+- 18c98d4 fix(api): claims list query parameters are camelCase like every other list
+Decisions: D-052, D-053, D-056, D-057, ADR-013, D-055, D-054
+Follow-ups: claims counts endpoint and open-first queue (backlog #006); past info requests list (#007); event-fed exposure projection, Kafka publisher and consumer authorizer, settlement saga, attachments, property fields (CLAIMS.md section 8)
+
 ## 2026-11-27 — Closed W-018: Import the owner's earlier audit-logging design and harden audit
 WS: WS-18
 Closed: W-018 (WS-18) Import the owner's earlier audit-logging design and harden audit

@@ -15,22 +15,22 @@ Glyph legend:
 - `⛔ BLOCKED` — waiting on something outside the thread; `Status:` names it
 - `✅ DONE` — finished and verified
 
-### WS-20 — Claims platform: the timed build window — 🟢 ACTIVE (2026-11-27)
-ID: W-020
-Status: window open since tag `claims-window-start` (16:56 +08, hard stop 21:56 +08). Backend lane in `.worktrees/claims` (branch `claims-core`): domain, schema, contract and an ETag fix committed; rebase onto main and slices 4-7 (handling tests, workload/exposure, seed + runbook 11, Bruno) remain; status file `docs/ai/lanes/claims-core-status.md` in that worktree. Angular lane not started (brief `docs/ai/briefs/claims-web.md`).
-Resume: follow the SEED PROMPT in `docs/ai/handoffs/2026-11-27-lead.md` (evening section).
-Refs: `docs/plans/claims-window.md`, D-052, D-053
+### WS-24 — Claims follow-ups: counts endpoint, open-first queue, past questions — ⏸ PARKED (2026-11-27)
+ID: W-024
+Status: follow-up of W-020. Backlog #006 (one `GET /claims/counts` for the KPI strip and tabs; the queue defaults to open statuses) and #007 (past info requests list on the detail page).
+Resume: backend endpoint + test + snapshot, then `npm run api:gen` and the console change; one lane.
+Refs: backlog #006, #007, D-053
 
-### WS-07 — S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry — 🟢 ACTIVE (2026-11-27)
-ID: W-007
-Status: idempotency store done (ADR-013, two Codex reviews), Docker one-command stack + Bruno compose env + CI workflow + reviewer runbook done, console modules/shell done. Versioning + Sunset, HybridCache, OpenTelemetry not built. Readability pass (D-054 SQL files + read-only Postgres MCP, D-055 one file per concept, backlog #005) runs after the claims merge.
-Resume: after W-020 merges: the readability pass, then close W-007 with versioning/cache/OTel as "more time" follow-ups.
-Refs: `docs/plans/roadmap.md`, `docs/plans/w007-idempotency.md`, D-049, D-050
+### WS-23 — API versioning with Sunset, HybridCache, OpenTelemetry — ⏸ PARKED (2026-11-27)
+ID: W-023
+Status: follow-up of W-007 (closed). Not built: a v2 example with `Deprecation`/`Sunset` on v1, HybridCache on the `/me` permission lookup, OpenTelemetry traces.
+Resume: after W-022; one lane each, snapshot refresh after any contract change.
+Refs: `docs/plans/roadmap.md`
 
 ### WS-22 — Post-core quality wave and nice-to-haves (lands together after the claims build) — ⏸ PARKED (2026-11-27)
 ID: W-022
-Status: owner asked 2026-11-27; starts only after W-020's core is merged. Items: (1) explain the AI harness: the 60% context cap (wrap state ready before compaction), the lefthook-based gates that run tests automatically, the orchestration layer used for agents; (2) mutation testing with Stryker.NET on a few worth-it targets (Claim state machine, AuditRedactor, the Idempotency-Key header parser); (3) PICT pairwise tests where the input space is combinatorial (role x module state x claim status x action); (4) k6 load scripts (claims queue read, submit with Idempotency-Key, pickup race) with thresholds; (5) "Nice to haves" docs section: Univer spreadsheet (bulk reserve review / claims import) and a calendar (SLA due dates, assessor appointments), with the owner's own note on trimming them for memory-capped deploys (owner to supply the facts), driver.js tour (#002), shell (#003), roles matrix (#004).
-Resume: after the claims merge and the readability pass; one lane per item, docs last.
+Status: owner asked 2026-11-27; unblocked 18:15 (W-020 merged and closed, readability pass merged). Items: (1) explain the AI harness: the 60% context cap (wrap state ready before compaction), the lefthook-based gates that run tests automatically, the orchestration layer used for agents; (2) mutation testing with Stryker.NET on a few worth-it targets (Claim state machine, AuditRedactor, the Idempotency-Key header parser); (3) PICT pairwise tests where the input space is combinatorial (role x module state x claim status x action); (4) k6 load scripts (claims queue read, submit with Idempotency-Key, pickup race) with thresholds; (5) "Nice to haves" docs section: Univer spreadsheet (bulk reserve review / claims import) and a calendar (SLA due dates, assessor appointments), with the owner's own note on trimming them for memory-capped deploys (owner to supply the facts), driver.js tour (#002), shell (#003), roles matrix (#004).
+Resume: one lane per item (Stryker, PICT, k6 can run in parallel on disjoint folders), docs last; item 5 needs the owner's own note on trimming Univer and the calendar.
 Refs: backlog #002-#005, D-054, D-055
 
 ### WS-10 — Verify the Codex gate end to end — ⏸ PARKED (2026-11-25)

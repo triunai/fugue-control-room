@@ -67,8 +67,19 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-054 | Raw SQL lives in .sql files; a read-only Postgres MCP for agents | - |
 | D-055 | One file per concept, not per type | - |
 | D-056 | Codex claims seam review: 3 accepted (reserve race, required submit key, event names), 2 declined | [review](reviews/codex/2026-11-27-claims-seam.md) |
+| D-057 | Console money: ISO code plus two decimals for every market currency | - |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-057 — Console money: ISO code plus two decimals for every market currency — 2026-11-27
+WS: WS-20
+Context: the API stores every amount as bigint minor units with two minor digits; `Intl.NumberFormat` gives IDR zero fraction digits and renders SGD and HKD both as "$".
+Decision: the console shows every amount as `<ISO code> <amount with two decimals>` (`IDR 2,500.00`, `SGD 2,000.00`), formatted in one helper (`web/src/app/features/claims/claims-logic.ts`) and documented in the web README. Exposure totals are per currency only.
+Why: a reader must never confuse two currencies or lose the decimals the API stores; for claims staff across six markets the code is clearer than a symbol.
+Consequences: IDR shows ".00" that a local reader may find unusual; a per-currency minor-digit table (ISO 4217) is the "more time" refinement, with the API storing minor units to match.
+Who: AI (web lane proposed, lead accepted)
+Status: accepted
+Promote: no
 
 ## D-056 — Codex claims seam review: three accepted, two declined — 2026-11-27
 WS: WS-20

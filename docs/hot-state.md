@@ -2,29 +2,30 @@
 
 OVERWRITTEN at every wrap or pause, never appended; at most 40 lines. After a wrap or days away: read this first, then do "Next action" exactly. History lives in `docs/project-log.md` and `CHANGELOG.md`.
 
-## ▶ RESUME HERE — 2026-11-27 17:25 +08 (CLAIMS WINDOW OPEN, hard stop 21:56 +08; submission 2026-11-28 15:00)
-Branch `main`. Window opened at tag `claims-window-start` (dd46eca). Plan `docs/plans/claims-window.md`. Nothing pushed (no remote).
-Last green sha: 8d77574 (build 0 warnings; ArchTests 37 + Tests 462 = 499/499; ledger + adr checks clean; Bruno compose 56/56 requests, 74/74 tests; lead run at wrap).
+## ▶ RESUME HERE — 2026-11-27 18:20 +08 (claims core DONE; window hard stop 21:56 +08; submission 2026-11-28 15:00)
+Branch `main`, no worktrees. Nothing pushed: the repo has no remote (the owner allowed pushes mid-session; creating the remote, account and visibility, is the owner's call).
+Last green sha: 1658a9f (merge of rd-sql; later commits are docs only). Lead run: build 0 warnings; ArchTests 37 + Tests 623; `dotnet format` clean; OpenAPI snapshot identical; web 62/62, lint clean, build green; Bruno `--env compose` 82/82 requests, 104/104 tests against the rebuilt Docker stack.
 
 ## Last action done
-Wrap mid-window: W-018 closed; W-021, W-022 opened; failure modes 27-29; journal; evening addendum + SEED PROMPT in `docs/ai/handoffs/2026-11-27-lead.md`; claims lane briefs copied to `docs/ai/briefs/`.
+Headless lead: verified the claims backend, Codex seam review (D-056: 3 accepted, 2 declined), fix round, Angular claims screens, merged `claims-core`; readability pass in two lanes (D-054 SQL files + read-only role + MCP config; D-055 one file per concept + backlog #005) merged; claims list params camelCase (18c98d4); README, `docs/CLAIMS.md`, ADR-013 amendment, how-we-use-ai refresh, failure modes 30-31, D-057; W-020 and W-007 closed; W-023, W-024 opened.
 
 ## Next action (exact)
-Backend lane FINISHED and REBASED on main: `claims-core` at 506fc47 (all 7 slices; `AddClaims` regenerated after `AddIdempotencyKeys`, catalog row #10; `[Idempotent]` on submit with a replay test; `ClaimListFilter` record; lane report: build 0 warnings, ArchTests 37 + Tests 616 green; status file `docs/ai/lanes/claims-core-status.md` in the worktree). Paste the SEED PROMPT (handoff evening addendum) but SKIP its rebase and claims-core steps: (1) re-verify the worktree yourself (build, tests, `npx bru run --env compose` is NOT applicable there: run the claims Bruno folder against an API built from the worktree on a throwaway DB), (2) dispatch the Angular lane (`docs/ai/briefs/claims-web.md`), (3) Codex review of the claims seam, fix round, merge to main, (4) readability pass, README + `docs/CLAIMS.md`, journal, wrap. Delete the stray `pnpm-lock.yaml`/`pnpm-workspace.yaml` in the worktree.
+Optional, owner-asked, inside the window if time allows: W-022 quality wave (`docs/workstreams.md` WS-22): Stryker.NET on the Claim state machine / AuditRedactor / Idempotency-Key parser, PICT pairwise for role x status x action, k6 scripts, harness explainer doc. Otherwise: demo prep from `~/Repos/personal-work/interview-prep/walkthrough-prep.md` section 0b (stack: `docker compose up -d --build`, console http://localhost:8080).
 
 ## Uncommitted work in progress
-`.worktrees/claims` (branch `claims-core`) may hold the claims-core lane's last slice or a stash named `claims-core wip: ...`; check `git -C .worktrees/claims status` and `git -C .worktrees/claims stash list`. Main: none.
+None.
 
 ## In flight (open W ids)
-W-020 claims window (ACTIVE) · W-007 (readability pass after the claims merge) · W-021 audit search · W-022 post-core quality wave + nice-to-haves · W-019 users list · W-010 (parked).
+W-022 quality wave (unblocked) · W-024 claims follow-ups (#006 counts endpoint + open-first queue, #007 past questions) · W-023 versioning/cache/OTel · W-021 audit search · W-019 users list · W-010 Codex gate (parked, needs a remote).
 
 ## Pending owner questions
+- Create a git remote (GitHub account, private or public) so pushes and CI can run? Not done: an outward-facing choice.
 - The owner's own words for the "Nice to haves" note on trimming Univer and the calendar for memory-capped deploys (which calendar library; what was trimmed). Do not invent them.
 
 ## Demo notes
-Console http://localhost:8080 · API :5081 · Postgres :5433 (pgAdmin, file logging). Reviewer start-here: `docs/runbooks/00-for-reviewers.md`. One API instance per DB. TPMS reference app (not this repo) ran on :3100 with `tpms-local-pg` on :5434.
+Console http://localhost:8080 · API :5081 · Postgres :5433 (pgAdmin, file logging). Personas: `self@` claimant, `staff@` officer, `manager@` manager, `admin@` (password in runbook 05). Reviewer start-here: `docs/runbooks/00-for-reviewers.md`; claims walk-through `docs/runbooks/11-claims.md`; six-minute demo script in the private prep doc, section 0b. One API instance per DB.
 
 ## Owed inbox
-- `docs/ai/how-we-use-ai.md` is stale (says MapStatus unwritten); refresh in the docs pass.
-- `docs/traceability.md` regenerated at this wrap; regenerate again after the claims merge.
-- KIV backlog #002 tour, #003 shell rest, #004 roles matrix, #005 filter records.
+- `docs/traceability.md` regenerated after this wrap (commit alone).
+- KIV backlog #002 tour, #003 shell rest, #004 roles matrix; #006, #007 now W-024.
+- Stray `pnpm-lock.yaml`/`pnpm-workspace.yaml` keep appearing in new worktrees (some tool runs pnpm); delete, never commit.
