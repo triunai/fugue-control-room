@@ -192,7 +192,7 @@ public sealed class Claim : IAuditable, IVersioned, IHasDomainEvents
         return Result.Ok();
     }
 
-    /// <summary>Sets the internal reserve while the claim is being worked (UnderReview or InfoRequested). Not a status change, so no timeline row: the reserve is internal.</summary>
+    /// <summary>Sets the internal reserve while the claim is being worked (UnderReview or InfoRequested). Not a status change, so no timeline row (the reserve is internal), but it raises <c>claim.reserve.set.v1</c> (no amount).</summary>
     public Result SetReserve(long amountMinor)
     {
         if (Status is not (ClaimStatus.UnderReview or ClaimStatus.InfoRequested))
@@ -206,6 +206,7 @@ public sealed class Claim : IAuditable, IVersioned, IHasDomainEvents
         }
 
         ReserveMinor = amountMinor;
+        _events.Add(new ClaimReserveSet(Id, Number, Status, Market));
         return Result.Ok();
     }
 

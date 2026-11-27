@@ -109,7 +109,7 @@ Expect on a freshly seeded database: `workload` lists `Dev Staff` and `Dev Manag
 
 ## 6. Events
 
-Every move also emits an outbox event keyed by the claim id (so per-claim order holds): `claim.submitted.v1`, `claim.assigned.v1`, `claim.info.requested.v1`, `claim.info.provided.v1`, `claim.decided.v1` (status says approved or rejected), `claim.settled.v1`. Payloads are thin on purpose: `id`, `number`, `status`, `market` (`line` on submitted); never the description, reserve or amounts. Subscribe to `claim.*` as in runbook 07.
+Every move also emits an outbox event keyed by the claim id (so per-claim order holds): `claim.submitted.v1`, `claim.assigned.v1`, `claim.info.requested.v1`, `claim.info.provided.v1`, `claim.reserve.set.v1` (the reserve was set or revised; no amount), `claim.decided.v1` (status says approved or rejected), `claim.settled.v1`. Payloads are thin on purpose: `id`, `number`, `status`, `market` (`line` on submitted); never the description, reserve or amounts. Subscribe to `claim.*` as in runbook 07.
 
 ## 7. Regression suite (Bruno)
 

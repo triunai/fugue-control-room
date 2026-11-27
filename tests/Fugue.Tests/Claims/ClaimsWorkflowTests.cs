@@ -77,10 +77,10 @@ public sealed class ClaimsWorkflowTests(PostgresFixture db)
         Assert.Contains("Photos of the damage?", timeline[2].Note, StringComparison.Ordinal);
         Assert.Contains("Covered under section 4.", timeline[4].Note, StringComparison.Ordinal);
 
-        // One outbox event per transition, in the same order, keyed by the claim (per-claim order), with a thin payload.
+        // One outbox event per transition (and one for the reserve), in the same order, keyed by the claim (per-claim order), with a thin payload.
         List<OutboxRow> events = await OutboxProbe.ByAggregateAsync(db, claim.Id.ToString());
         Assert.Equal(
-            ["claim.submitted.v1", "claim.assigned.v1", "claim.info.requested.v1", "claim.info.provided.v1", "claim.decided.v1", "claim.settled.v1"],
+            ["claim.submitted.v1", "claim.assigned.v1", "claim.info.requested.v1", "claim.info.provided.v1", "claim.reserve.set.v1", "claim.decided.v1", "claim.settled.v1"],
             events.Select(e => e.EventType));
         Assert.All(events, e =>
         {
@@ -90,7 +90,7 @@ public sealed class ClaimsWorkflowTests(PostgresFixture db)
             Assert.Equal("HK", e.Payload.GetProperty("market").GetString());
             Assert.DoesNotContain(e.Payload.EnumerateObject(), p => p.Name is "reserveMinor" or "approvedAmountMinor" or "incidentDescription" or "reason" or "question" or "answer");
         });
-        Assert.Equal(["Submitted", "UnderReview", "InfoRequested", "UnderReview", "Approved", "Settled"], events.Select(e => e.Payload.GetProperty("status").GetString()));
+        Assert.Equal(["Submitted", "UnderReview", "InfoRequested", "UnderReview", "UnderReview", "Approved", "Settled"], events.Select(e => e.Payload.GetProperty("status").GetString()));
 
         // The scaffold writes the audit rows itself: one success row per EF update, entity Claim.
         Assert.True(await _h.ScalarAsync<long>("SELECT count(*) FROM audit_log WHERE entity_type = 'Claim' AND entity_id = @id AND outcome = 'success'", ("id", claim.Id.ToString())) >= 7);

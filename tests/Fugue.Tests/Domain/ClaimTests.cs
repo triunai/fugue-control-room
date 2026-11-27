@@ -118,10 +118,10 @@ public sealed class ClaimTests
         {
             Assert.True(result.IsSuccess, $"{move} from {from} should be legal");
             Assert.Equal(target ?? from, claim.Status);
-            // A status change writes exactly one timeline row and one event; the reserve is internal and writes neither.
+            // A status change writes exactly one timeline row and one event; the reserve is internal: an event (claim.reserve.set.v1), no timeline row.
             int expected = target is null ? 0 : 1;
             Assert.Equal(timeline + expected, claim.Timeline.Count);
-            Assert.Equal(events + expected, ((IHasDomainEvents)claim).DomainEvents.Count);
+            Assert.Equal(events + 1, ((IHasDomainEvents)claim).DomainEvents.Count);
             if (target is not null)
             {
                 ClaimTimelineEntry last = claim.Timeline.Last();
@@ -270,6 +270,32 @@ public sealed class ClaimTests
         Assert.Equal(ErrorType.Validation, error.Type);
         Assert.Equal("claim.amount_invalid", error.Code);
         Assert.Equal(1000, claim.ReserveMinor); // the earlier reserve stands
+    }
+
+    [Fact]
+    public void Setting_the_reserve_raises_a_thin_event_without_the_amount()
+    {
+        Claim claim = At(ClaimStatus.UnderReview);
+        int before = ((IHasDomainEvents)claim).DomainEvents.Count;
+
+        Assert.True(claim.SetReserve(2500).IsSuccess);
+
+        IDomainEvent evt = ((IHasDomainEvents)claim).DomainEvents.Last();
+        Assert.Equal(before + 1, ((IHasDomainEvents)claim).DomainEvents.Count);
+        Assert.Equal("claim.reserve.set.v1", evt.EventType);
+        Assert.Equal(claim.Id.ToString(), evt.AggregateId);
+        Assert.DoesNotContain(evt.GetType().GetProperties(), p => p.Name.Contains("Reserve", StringComparison.Ordinal) || p.Name.Contains("Amount", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void A_refused_reserve_raises_no_event()
+    {
+        Claim claim = At(ClaimStatus.UnderReview);
+        int before = ((IHasDomainEvents)claim).DomainEvents.Count;
+
+        Assert.True(claim.SetReserve(0).IsFailed);
+
+        Assert.Equal(before, ((IHasDomainEvents)claim).DomainEvents.Count);
     }
 
     [Fact]
