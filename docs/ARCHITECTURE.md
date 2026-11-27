@@ -1,8 +1,8 @@
 # Fugue architecture
 
-Fugue is a .NET 8 Web API with no business domain on purpose. It exists to show the parts every real API needs, done properly: layered code, typed errors, safe concurrent edits, permissions, an audit trail nobody can edit, signed webhooks and retry-safe creates. An Angular console in `web/` makes that behaviour visible.
+Fugue is a .NET 8 Web API and Angular console for motor and property claims across six markets. The claims domain (state machine, visibility, events, workload and exposure) is described in [`CLAIMS.md`](CLAIMS.md), with the service boundaries in its section 1. This page maps the platform underneath, built before the claims window as a disclosed starter, which exists to show the parts every real API needs, done properly: layered code, typed errors, safe concurrent edits, permissions, an audit trail nobody can edit, signed webhooks and retry-safe creates. An Angular console in `web/` makes that behaviour visible.
 
-The only sample aggregate is `Customer`, a neutral stand-in for any stateful record. Rules and reasons live in the ADRs; this page is the map. Decisions are in [`docs/adr/`](adr/), the live status is in [`docs/hot-state.md`](hot-state.md).
+The starter's sample aggregate is `Customer`; the claims module is built on the same patterns. Rules and reasons live in the ADRs; this page is the map. Decisions are in [`docs/adr/`](adr/), the live status is in [`docs/hot-state.md`](hot-state.md).
 
 ```mermaid
 flowchart LR

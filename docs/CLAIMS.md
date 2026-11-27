@@ -8,6 +8,40 @@ Try it: `docs/runbooks/11-claims.md` (curl walk-through, every guard), `bruno/fu
 
 A modular monolith (plan decision A). A claim's new state, its claimant-visible timeline row, its audit row and its outbox event must commit together or not at all; inside one process that is one database transaction. Splitting claims into its own service is a "with more time" item along the module line that already exists (`Features/Claims`, `Persistence/Claims`, the `CLAIMS` module toggle), and it would bring the outbox with it, not a distributed transaction.
 
+### Service boundaries in one picture
+
+```mermaid
+flowchart LR
+  SPA([Angular app: claimant, officer, manager]) -- "REST, synchronous (commands and queries)" --> CL
+  SPA -- REST --> RP
+  subgraph APP["One deployable, one Postgres (module line = CLAIMS toggle)"]
+    ID[Identity and access<br/>JWT, permissions from /me]
+    CL[Claims<br/>aggregate, state machine,<br/>timeline, info requests]
+    RP[Reporting<br/>workload, exposure]
+    AU[(Audit log<br/>append-only)]
+    OB[(Outbox)]
+  end
+  CL -- same transaction --> AU
+  CL -- same transaction --> OB
+  RP -. reads live claim rows .-> CL
+  OB -. "async, at least once" .-> PUB{{IEventPublisher}}
+  PUB -. signed webhooks .-> EXT([Notifications, payments, finance])
+  PUB -. "Kafka, key = claim id" .-> EXT
+```
+
+Solid edges are synchronous; dotted edges are asynchronous. **The boundary is the transaction:** whatever must commit with a claim's state change (its timeline row, audit row and outbox event) lives with the claim; everything that only reacts to it is a consumer of events and can be split out without a distributed transaction.
+
+| Would become a service | Order | What drives the split |
+|---|---|---|
+| Notifications (SMS, email on `claim.*`) | first | Already async; a different failure mode (a provider outage must never fail a claim). |
+| Exposure and workload reporting | second | Read-only, different consumers (finance) and scale; becomes a projection fed by claim events (reserve changes are events too). |
+| Payments and settlement | third | Talks to an external system; needs a saga and its own outbox. |
+| Claims core with identity | stays | Claim state, timeline, audit and event must commit atomically: that transaction is the boundary. |
+
+A separate team, a separate scaling or failure profile, or an external system drives a split; the number of nouns does not.
+
+**The contract between frontend and backend is owned by the backend:** the OpenAPI document is generated from the controllers, pinned by a committed snapshot that a test regenerates (`docs/api/openapi.v1.json`, D-042, ADR-012), and the Angular client is generated from it (`npm run api:gen`). A contract change is a reviewable diff in one file.
+
 | Layer | Where |
 |---|---|
 | Aggregate and state machine | `src/Fugue.Domain/Claims/Claim.cs` (+ `ClaimTimelineEntry`, `ClaimInfoRequest`, `ClaimEvents`, `Market`) |
@@ -19,6 +53,30 @@ A modular monolith (plan decision A). A claim's new state, its claimant-visible 
 ## 2. The claim and its state machine
 
 A claim (`claims` table) has a number the claimant quotes (`CLM-<market>-<yyyy>-<seq>`, one global Postgres sequence plus a unique index), a market (SG, MY, TH, HK, ID, PH) whose currency is fixed (SGD, MYR, THB, HKD, IDR, PHP), a line (Motor, Property), the claimant who owns it, the assigned officer, the incident (policy number, date, description, location), and money: an internal reserve and an approved amount, both `bigint` minor units of the market's currency.
+
+```mermaid
+erDiagram
+  USER ||--o{ CLAIM : "submits (claimant)"
+  USER |o--o{ CLAIM : "is assigned (officer)"
+  CLAIM ||--|{ CLAIM_TIMELINE : "one row per transition (append-only)"
+  CLAIM ||--o{ CLAIM_INFO_REQUEST : "at most one open"
+  CLAIM ||--o{ AUDIT_LOG : "field diffs (staff)"
+  CLAIM ||--o{ OUTBOX : "one event per transition"
+  CLAIM {
+    uuid id
+    string number "CLM-SG-2026-000001"
+    enum market "SG MY TH HK ID PH"
+    string currency "fixed by market"
+    enum line "Motor Property"
+    enum status
+    string policy_number "reference, not a policy table"
+    bigint reserve_minor "staff only"
+    bigint approved_amount_minor
+    xid xmin "ETag"
+  }
+```
+
+Policy, party and payment are deliberately references, not entities: the policy system owns cover (a real build validates the policy number against it at submit), and payments belong to the settlement consumer. Faking a policy table would add rows without adding a decision.
 
 ```mermaid
 stateDiagram-v2
@@ -73,6 +131,20 @@ At most one information request is open per claim: a partial unique index enforc
 - **Events go through the transactional outbox** (written in the same transaction as the state change, so no event is lost and none is sent for a rolled-back change) and are published today as signed webhooks. The broker seam is one interface, `IEventPublisher`: a Kafka adapter keys messages by `ClaimId` so each claim's events stay in order on one partition, and consumers dedupe on the event id (delivery is at least once).
 - **What consumes the events:** claimant notifications (SMS, email), an exposure projection for finance, the payment run after settlement, fraud scoring, a data lake. None of them belongs inside the claimant's request, and each can fail or lag without failing the claim.
 - **When Kafka would carry the intake as well:** high-volume first notice of loss from partner channels (dealers, telematics, brokers) where the sender does not wait for a human-facing answer. Then a consumer validates and calls the same application command, behind its own authorizer.
+
+| Operation | How | Why |
+|---|---|---|
+| Submit, pick up, reserve, ask, answer, decide, settle | REST command, synchronous | The caller needs the guard's verdict now (201/200, 409 with the reason, 412 stale, 428, 400). |
+| Queue, claim record, timeline, past questions, counts, workload, exposure | REST query, synchronous | Read your own write; keyset paging; as fresh as the last commit. |
+| `claim.submitted/assigned/info.requested/info.provided/reserve.set/decided/settled.v1` | Outbox event, asynchronous, at least once | Other systems react (notify the claimant, project exposure, pay, score fraud); none of them may fail or slow the claim. |
+| Partner or telematics intake at volume (not built) | Kafka in front of the same command | Nobody waits for a human answer; a consumer validates and calls the command behind its own authorizer. |
+
+### The async nature of claims, across both tiers
+
+- **Backend:** a claim moves when a person acts, days apart. Every move commits its state, timeline row, audit row and event together; consumers learn about it from the event, never by polling the database.
+- **Frontend:** the claimant's and officer's screens refetch when the window regains focus and poll every 15 to 20 seconds while open, paused while a dialog is open so the record (and its ETag) does not change under a half-filled form. A stale action still gets the 412 banner, so nothing is overwritten silently.
+- **With more time:** server-sent events to the browser, fed by the same outbox events (the events already exist; the push channel is the missing piece). SSE rather than websockets: one-way, plain HTTP, works through the existing auth and proxies.
+
 
 ## 6. Workload and exposure
 

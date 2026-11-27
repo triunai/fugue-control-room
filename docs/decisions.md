@@ -71,8 +71,18 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-058 | Audit search on Meilisearch, fed by an indexer from audit_log (owner reversed the earlier AI-only rejection) | - |
 | D-059 | Nice-to-have UI on Univer (reserve sheet) and FullCalendar (SLA calendar), lazy-loaded | - |
 | D-060 | Console shell ported from the owner's reference app and admin-console design | - |
+| D-061 | Fable interview-readiness review: all 15 changes accepted, Kafka adapter included | [review](reviews/fable/2026-11-27-interview-readiness.md) |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-061 — Fable interview-readiness review: all 15 changes accepted — 2026-11-27
+WS: WS-22
+Context: the owner found the app hard to act on; a read-only Fable review mapped the brief to the build and ranked 15 changes. The lead verified its factual claims against the code before acting (claim page never refetched; ARCHITECTURE said "no business domain"; unreserved claims summed as zero exposure; idle officers missing from workload; the seed asked for photos the UI cannot take; a reserve change raised no event): all true.
+Decision: accept all 15. Docs now (service-boundaries diagram and split order, entity diagram, sync/async table, async across both tiers, contract ownership, ARCHITECTURE intro, `docs/DEMO.md`); the stepper, next-step card, team page, landings, polling and queue defaults folded into lane nth-claimui; backend follow-ups (reserve event, unreserved count, idle officers, drill-down filters, seeded claim.* subscription, answerable seed question) in lane nth-api2; the optional Kafka adapter built in lane nth-kafka rather than left verbal. The review's advice to keep audit search, the sheet and the calendar off the presentation is adopted in the demo script; they stay in the product because the owner asked for them.
+Why: the review answered the brief's named questions where the build was weakest, and every one of its claims survived a check.
+Who: AI (Fable reviewer, lead disposition), owner (asked for the review)
+Status: accepted
+Promote: no
 
 ## D-060 — Console shell ported from the owner's reference app and admin-console design — 2026-11-27
 WS: WS-22
