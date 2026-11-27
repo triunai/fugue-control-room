@@ -9,6 +9,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Calendar } from 'fullcalendar';
 import dayGridPlugin from 'fullcalendar/daygrid';
@@ -18,6 +19,7 @@ import classicTheme from 'fullcalendar/themes/classic';
 import { injectQuery } from '@tanstack/angular-query';
 import { ClaimsApi, claimKeys } from '../../api/claims.api';
 import { AccessService } from '../../core/auth/access.service';
+import { DatePicker } from '../../ui/date-picker';
 import { ErrorState } from '../../ui/states';
 import { STATUS_TONE } from './claims-logic';
 import { loadStylesheet } from './lazy-css';
@@ -40,7 +42,7 @@ const CALENDAR_CSS = [
 @Component({
   selector: 'fg-claims-calendar-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ErrorState, RouterLink, ClaimStatusPill],
+  imports: [DatePicker, FormsModule, ErrorState, RouterLink, ClaimStatusPill],
   host: { '(document:keydown.escape)': 'closeDay()' },
   styleUrl: './claims-calendar.css',
   template: `
@@ -74,7 +76,7 @@ const CALENDAR_CSS = [
       </div>
       <div class="cal-pick">
         <label class="text-sm" for="cal-day">Show what is due on</label>
-        <input id="cal-day" type="date" class="input" [value]="day()" (change)="pickDay($any($event.target).value)" />
+        <fg-date inputId="cal-day" [ngModel]="day()" (ngModelChange)="pickDay($event)" />
       </div>
       @if (day(); as d) {
         <div class="dd-scrim" (click)="closeDay()" aria-hidden="true"></div>
