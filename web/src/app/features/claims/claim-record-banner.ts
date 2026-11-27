@@ -1,7 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { ClaimDto } from '../../api/models';
 import { ClaimStatusPill } from './claim-bits';
-import { Actor, Track, claimTrack, marketFlag, marketName, moneyChip, moneyTrack } from './claims-logic';
+import { Overlays } from '../../ui/overlays';
+import { Icon } from '../../ui/icon';
+import { ClaimTracksDialog } from './claim-tracks-dialog';
+import { Actor, Track, claimTrack, marketFlag, marketName, moneyChip, moneyTrack, stepHelp } from './claims-logic';
 import { HelpButton } from '../shell/help-button';
 import { startTour } from './tour-hook';
 
@@ -9,7 +12,7 @@ import { startTour } from './tour-hook';
 @Component({
   selector: 'fg-claim-record-banner',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ClaimStatusPill, HelpButton],
+  imports: [ClaimStatusPill, HelpButton, Icon],
   styleUrl: './claim-record.css',
   template: `
     <header class="record-banner" data-testid="record-banner" data-tour="record-banner">
@@ -23,7 +26,7 @@ import { startTour } from './tour-hook';
           @if (staff()) {
             <span class="pill pill-muted" data-testid="money-chip">{{ chip() }}</span>
           }
-          <fg-help-button (pressed)="help()" />
+          <fg-help-button (pressed)="tour()" />
         </div>
       </div>
       <p class="rb-meta">
@@ -39,6 +42,12 @@ import { startTour } from './tour-hook';
           <span>Officer {{ o }}</span>
         }
       </p>
+      <div class="rb-tracks-bar">
+        <button type="button" class="how-btn" data-testid="how-claim-moves" (click)="howItMoves()">
+          <fg-icon name="info" />
+          How a claim moves
+        </button>
+      </div>
       <div class="rb-tracks">
         @for (t of tracks(); track t.name) {
           <div class="track" [attr.data-testid]="'track-' + t.name.toLowerCase()" [attr.title]="t.hint">
@@ -53,6 +62,13 @@ import { startTour } from './tour-hook';
                 @for (s of t.track.steps; track s.label) {
                   <li
                     class="step"
+                    tabindex="0"
+                    [attr.aria-describedby]="tipId(t.name, s.label)"
+                    (mouseenter)="tip.set(tipId(t.name, s.label))"
+                    (mouseleave)="tip.set(null)"
+                    (focus)="tip.set(tipId(t.name, s.label))"
+                    (blur)="tip.set(null)"
+                    (keydown.escape)="tip.set(null)"
                     [class.done]="s.checked"
                     [class.current]="s.state === 'current'"
                     [class.next]="s.state === 'next'"
@@ -67,6 +83,13 @@ import { startTour } from './tour-hook';
                     @if (s.checked && s.date) {
                       <span class="step-date">{{ s.date.slice(0, 10) }}</span>
                     }
+                    <span
+                      class="step-tip"
+                      role="tooltip"
+                      [id]="tipId(t.name, s.label)"
+                      [class.open]="tip() === tipId(t.name, s.label)"
+                      >{{ help(s.label) }}</span
+                    >
                     @if (s.state === 'next') {
                       <span class="step-next">Next{{ s.caption ? ' · ' + s.caption : '' }}</span>
                     } @else if (s.caption) {
@@ -95,7 +118,21 @@ export class ClaimRecordBanner {
     { name: 'Payout', hint: 'Where the payout is: reserve, approved amount, paid', track: moneyTrack(this.claim(), this.actor()) },
   ]);
 
-  protected help(): void {
+  protected readonly tip = signal<string | null>(null);
+  private readonly overlays = inject(Overlays);
+
+  protected tipId(track: string, label: string): string {
+    return `tip-${track}-${label}`.toLowerCase().replace(/\s+/g, '-');
+  }
+  protected help = stepHelp;
+
+  protected howItMoves(): void {
+    this.overlays.modal<ClaimTracksDialog, void, void>(ClaimTracksDialog, undefined, {
+      ariaLabelledBy: 'tracks-title',
+    });
+  }
+
+  protected tour(): void {
     startTour('claim-detail');
   }
 }

@@ -1,5 +1,5 @@
 import { ClaimStatus } from '../../api/models';
-import { Actor, claimTrack, moneyChip, moneyTrack, nextStep, slaDayCaption, slaDue } from './claims-logic';
+import { Actor, claimTrack, moneyChip, moneyTrack, nextStep, slaDayCaption, slaDue, stepHelp } from './claims-logic';
 
 const actor = (userId: string | undefined, ...permissions: string[]): Actor => ({
   userId,
@@ -169,7 +169,7 @@ describe('nextStep', () => {
   it('UnderReview without a reserve: Blocked, primary Set reserve, secondaries Request info and Reject', () => {
     const n = step({ status: 'UnderReview' }, officer);
     expect(n.chip).toBe('Blocked');
-    expect(n.instruction).toBe('Set a reserve.');
+    expect(n.instruction).toBe('You set the reserve, the amount we expect to pay, before this claim can be approved.');
     expect(n.primary?.kind).toBe('reserve');
     expect(n.secondary.map((s) => s.kind)).toEqual(['requestInfo', 'reject']);
     expect(n.blockers.map((b) => b.ok)).toEqual([true, false, true]);
@@ -218,7 +218,9 @@ describe('nextStep', () => {
   it('Approved: manager Ready to settle <amount>, officer waits on the manager, claimant sees the payment amount', () => {
     const c = { status: 'Approved' as const, reserveMinor: 5, approvedAmountMinor: 400000 };
     expect(step(c, manager)).toMatchObject({ chip: 'Ready', primary: { kind: 'settle' } });
-    expect(step(c, manager).instruction.replace(/\u00a0/g, ' ')).toBe('Settle SGD 4,000.00.');
+    expect(step(c, manager).instruction.replace(/\u00a0/g, ' ')).toBe(
+      'You settle this claim: record the payment of SGD 4,000.00 as made, which closes it.',
+    );
     const o = step(c, officer);
     expect(o.chip).toBe('Waiting on manager');
     expect(o.primary).toBeUndefined();
@@ -251,5 +253,34 @@ describe('nextStep', () => {
       const n = step({ status, reserveMinor: 5, openInfoRequest: status === 'InfoRequested' ? q : null }, claimant);
       expect(JSON.stringify(n).toLowerCase()).not.toContain('reserve');
     }
+  });
+});
+
+describe('next step copy: one plain sentence per state, who acts, plus the action', () => {
+  const o = (c: Partial<Fx> & { status: ClaimStatus }, a: Actor) => nextStep({ ...base, ...c }, a, NOW).instruction.replace(/\u00a0/g, ' ');
+  it('officer states', () => {
+    expect(o({ status: 'Submitted', assignedOfficerId: null }, officer)).toBe(
+      'Nobody has this claim yet: you pick it up, which makes you its officer and starts the review.',
+    );
+    expect(o({ status: 'Submitted', assignedOfficerId: null }, claimant)).toBe('We have your claim.');
+    expect(o({ status: 'UnderReview', reserveMinor: 500000 }, officer)).toBe(
+      'You decide this claim: approve it up to SGD 5,000.00, or reject it.',
+    );
+    expect(o({ status: 'InfoRequested', openInfoRequest: q }, officer)).toBe(
+      'The claimant must answer our question, asked 2 days ago; the review resumes by itself when they do.',
+    );
+  });
+  it('an approved claim: the officer waits on a manager', () => {
+    const c = { status: 'Approved' as const, reserveMinor: 5, approvedAmountMinor: 400000 };
+    expect(o(c, officer)).toBe('A manager will record the payment and close this claim; you have nothing to do.');
+  });
+});
+
+describe('stepHelp', () => {
+  it('explains every milestone on both tracks, never leaking the reserve to the claimant wording', () => {
+    for (const l of ['Reported', 'Picked up', 'Decided', 'Approved', 'Rejected', 'Closed', 'Reserved', 'Assessed', 'Paid'])
+      expect(stepHelp(l).length).toBeGreaterThan(20);
+    expect(stepHelp('Assessed').toLowerCase()).not.toContain('reserve');
+    expect(stepHelp('nope')).toBe('nope');
   });
 });

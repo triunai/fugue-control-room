@@ -309,6 +309,30 @@ export function moneyChip(
   }
 }
 
+// ---- What each milestone means (the hover / focus popover on the record banner) ----
+
+export const TRACK_HELP: Record<'Handling' | 'Payout', string> = {
+  Handling: 'The Handling track follows the work on the claim: who has it and whether it has been decided.',
+  Payout: 'The Payout track follows the money: the amount set aside, the approved amount, and the payment.',
+};
+
+const STEP_HELP: Record<string, string> = {
+  Reported: 'The claim was submitted. It waits in the queue until a claims officer picks it up.',
+  'Picked up': 'An officer took the claim and is reviewing it. They may ask the claimant a question; the track stays here until they decide.',
+  Decided: 'The officer decides: approve (with an amount) or reject. The claimant sees the decision and its reason.',
+  Approved: 'The officer approved the claim and fixed the amount to pay.',
+  Rejected: 'The claim was rejected. The reason is shown to the claimant and nothing is paid.',
+  Closed: 'The claim is finished: either the payment was recorded by a manager, or it was rejected.',
+  Reserved: 'The officer has set aside the amount the claim is expected to cost. It counts towards our exposure.',
+  Assessed: 'We have assessed your claim. The amount is shown once it is approved.',
+  Paid: 'A manager recorded the payment as made. This closes the claim.',
+};
+
+/** One plain sentence on what a milestone means, for the popover. Unknown labels fall back to the label itself. */
+export function stepHelp(label: string): string {
+  return STEP_HELP[label] ?? label;
+}
+
 // ---- Next step card ----
 
 export type NextChip =
@@ -424,8 +448,8 @@ export function nextStep(claim: CardClaim, actor: Actor, now = Date.now()): Next
       case 'InfoRequested':
         return card({
           chip: 'Action needed',
-          instruction: 'We need one answer from you.',
-          why: 'Your claim is paused until you reply. As soon as you do, the review carries on.',
+          instruction: 'We need one answer from you: your claim is paused until you reply, then the review carries on.',
+          why: 'The question is shown below.',
           question: claim.openInfoRequest?.question,
           blockers: [{ label: 'Answer the question', ok: false }],
           primary: can('CLAIMS_RESPOND') ? { kind: 'answer', label: 'Answer now' } : undefined,
@@ -450,24 +474,24 @@ export function nextStep(claim: CardClaim, actor: Actor, now = Date.now()): Next
       return mayWork
         ? card({
             chip: age >= SLA_PICKUP_DAYS ? 'Overdue' : 'Ready',
-            instruction: 'Pick up this claim.',
+            instruction: 'Nobody has this claim yet: you pick it up, which makes you its officer and starts the review.',
             why:
               age >= SLA_PICKUP_DAYS
-                ? `Nobody is assigned and it has waited ${age} days (pickup target is ${SLA_PICKUP_DAYS}).`
-                : 'Nobody is assigned yet. Picking it up makes you the officer and starts the review.',
+                ? `It has waited ${age} days; the pickup target is ${SLA_PICKUP_DAYS}.`
+                : 'It was reported recently and is still inside the pickup target.',
             primary: { kind: 'pickup', label: 'Pick up' },
           })
         : card({
             chip: 'Waiting',
-            instruction: 'Waiting for an officer to pick it up.',
-            why: 'You do not hold the permission to handle claims.',
+            instruction: 'A claims officer will pick this claim up; you cannot act on it.',
+            why: 'Your role does not include handling claims.',
           });
     case 'UnderReview': {
       if (!mayWork) {
         return card({
           chip: 'Not yours',
-          instruction: `Assigned to ${claim.assignedOfficerName ?? 'another officer'}.`,
-          why: 'Only they or a manager can act on it.',
+          instruction: `${claim.assignedOfficerName ?? 'Another officer'} is handling this claim; only they or a manager can act on it.`,
+          why: 'It is theirs until they decide it or a manager steps in.',
         });
       }
       const mine = claim.assignedOfficerId === actor.userId;
@@ -481,8 +505,8 @@ export function nextStep(claim: CardClaim, actor: Actor, now = Date.now()): Next
       return hasReserve
         ? card({
             chip: 'Ready',
-            instruction: `Decide: approve up to ${money(claim.reserveMinor)}, or reject.`,
-            why: 'The reserve is set. Ask the claimant first if you need more information.',
+            instruction: `You decide this claim: approve it up to ${money(claim.reserveMinor)}, or reject it.`,
+            why: 'The reserve is set, so nothing blocks the decision. Ask the claimant first if you need more information.',
             caption: [day.text, caption].filter(Boolean).join(' · '),
             captionOverdue: day.overdue,
             blockers,
@@ -495,8 +519,8 @@ export function nextStep(claim: CardClaim, actor: Actor, now = Date.now()): Next
           })
         : card({
             chip: 'Blocked',
-            instruction: 'Set a reserve.',
-            why: 'A claim cannot be approved without one, and exposure cannot count it until it is set.',
+            instruction: 'You set the reserve, the amount we expect to pay, before this claim can be approved.',
+            why: 'Until it is set the claim cannot be approved and exposure does not count it.',
             caption,
             blockers,
             primary: { kind: 'reserve', label: 'Set reserve' },
@@ -511,8 +535,10 @@ export function nextStep(claim: CardClaim, actor: Actor, now = Date.now()): Next
       return card({
         chip: 'Waiting on claimant',
         instruction:
-          asked === null ? 'Waiting for the claimant to answer.' : `Waiting for the claimant: asked ${asked} days ago.`,
-        why: 'The review resumes by itself the moment they reply.',
+          asked === null
+            ? 'The claimant must answer our question; the review resumes by itself when they do.'
+            : `The claimant must answer our question, asked ${asked} days ago; the review resumes by itself when they do.`,
+        why: 'Nobody on the team needs to act until they reply.',
         question: claim.openInfoRequest?.question,
         blockers: [{ label: 'Claimant has answered', ok: false }],
         secondary: mayWork ? [{ kind: 'reserve', label: 'Change reserve' }] : [],
@@ -522,13 +548,13 @@ export function nextStep(claim: CardClaim, actor: Actor, now = Date.now()): Next
       return can('CLAIMS_SETTLE')
         ? card({
             chip: 'Ready',
-            instruction: `Settle ${money(claim.approvedAmountMinor)}.`,
-            why: 'It is approved. Settling records the payment as made and closes the claim.',
+            instruction: `You settle this claim: record the payment of ${money(claim.approvedAmountMinor)} as made, which closes it.`,
+            why: 'It is approved, and only a manager can record the payment.',
             primary: { kind: 'settle', label: 'Settle' },
           })
         : card({
             chip: 'Waiting on manager',
-            instruction: 'Waiting for a manager to settle it.',
+            instruction: 'A manager will record the payment and close this claim; you have nothing to do.',
             why: 'Only a manager can record the payment.',
           });
   }
