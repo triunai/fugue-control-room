@@ -1592,6 +1592,17 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                             ResourceId = new Guid("01900000-0000-7000-8002-000000000007"),
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000023"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000001"),
+                            Code = "USERS_VIEW",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000008"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
                         });
                 });
 
@@ -1819,6 +1830,18 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                             IsDeleted = false,
                             ModuleId = new Guid("01900000-0000-7000-8001-000000000006"),
                             Name = "Claims",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8002-000000000008"),
+                            Code = "USERS",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            ModuleId = new Guid("01900000-0000-7000-8001-000000000003"),
+                            Name = "Users",
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = "migration"
                         });
@@ -2167,6 +2190,15 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                         {
                             RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
                             PermissionId = new Guid("01900000-0000-7000-8004-000000000022"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000023"),
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "migration",
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),

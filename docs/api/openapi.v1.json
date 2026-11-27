@@ -1311,6 +1311,51 @@
         ],
         "type": "object"
       },
+      "RoleDto": {
+        "additionalProperties": false,
+        "description": "A role with every permission it grants, for a role by permission matrix. Permissions are ordered by module, then code.",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/RolePermissionDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "code",
+          "isActive",
+          "name",
+          "permissions"
+        ],
+        "type": "object"
+      },
+      "RolePermissionDto": {
+        "additionalProperties": false,
+        "description": "A granted permission code and the module that owns its resource.",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "module": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "module"
+        ],
+        "type": "object"
+      },
       "SetClaimReserveRequest": {
         "additionalProperties": false,
         "description": "Body of a reserve update: bigint minor units in the claim's currency (for example 125000 is 1,250.00 in a two-decimal currency).",
@@ -1477,6 +1522,51 @@
           "isActive",
           "name",
           "url"
+        ],
+        "type": "object"
+      },
+      "UserDto": {
+        "additionalProperties": false,
+        "description": "A user as the admin console lists them: who, whether they can sign in, the roles assigned directly and the groups they belong to (by code). The password hash and every other credential field stay out of this type on purpose.",
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "groups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "createdAt",
+          "displayName",
+          "email",
+          "groups",
+          "id",
+          "isActive",
+          "roles"
         ],
         "type": "object"
       },
@@ -4818,6 +4908,131 @@
         ]
       }
     },
+    "/api/v1/roles": {
+      "get": {
+        "operationId": "Roles_List",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RoleDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "List every role with the permission codes it grants and the module that owns each, ordered by role code.",
+        "tags": [
+          "Roles"
+        ]
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "operationId": "Users_List",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Link": {
+                "$ref": "#/components/headers/Link"
+              },
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              },
+              "X-Next-Cursor": {
+                "$ref": "#/components/headers/X-Next-Cursor"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "List users, keyset paged (oldest account first). Each row: id, email, display name, active, the roles assigned directly, the group codes and when the account was created. `q` matches the email or the display name.",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
     "/api/v1/webhooks/deliveries": {
       "get": {
         "operationId": "Webhooks_ListDeliveries",
@@ -5522,6 +5737,14 @@
     {
       "description": "Per-user permission overrides: an explicit allow or deny, optionally expiring. Deny wins over allow wins over role.",
       "name": "Overrides"
+    },
+    {
+      "description": "Roles: what each role grants, for a role by permission matrix. Read only.",
+      "name": "Roles"
+    },
+    {
+      "description": "Users: a read-only directory for the admin console. Never returns a password hash or any credential field.",
+      "name": "Users"
     },
     {
       "description": "Outbound webhook subscriptions (ADR-011): CRUD plus secret rotation. The secret appears only in the create and rotate responses, never again. One-liners only; every action needs `WEBHOOKS_MANAGE` (admin by default).",

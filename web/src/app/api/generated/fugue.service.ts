@@ -53,6 +53,7 @@ import type {
   ReceivedWebhookDto,
   RefreshRequest,
   RequestClaimInfoRequest,
+  RoleDto,
   SetClaimReserveRequest,
   SetModuleActiveRequest,
   SetOverrideRequest,
@@ -61,6 +62,8 @@ import type {
   TokenDto,
   UpdateCustomerRequest,
   UpdateWebhookSubscriptionRequest,
+  UserDto,
+  UsersListParams,
   WebhookDeliveryDto,
   WebhookSubscriptionDto,
   WebhookSubscriptionSecretDto,
@@ -1639,6 +1642,76 @@ export class FugueAPIService {
   }
 
 /**
+ * @summary List every role with the permission codes it grants and the module that owns each, ordered by role code.
+ */
+ rolesList<TData = RoleDto[]>( options?: HttpClientBodyOptions): Observable<TData>;
+ rolesList<TData = RoleDto[]>( options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ rolesList<TData = RoleDto[]>( options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  rolesList<TData = RoleDto[]>(
+     options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(
+      `/api/v1/roles`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(
+      `/api/v1/roles`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.get<TData>(
+      `/api/v1/roles`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary List users, keyset paged (oldest account first). Each row: id, email, display name, active, the roles assigned directly, the group codes and when the account was created. `q` matches the email or the display name.
+ */
+ usersList<TData = UserDto[]>(params?: UsersListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ usersList<TData = UserDto[]>(params?: UsersListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ usersList<TData = UserDto[]>(params?: UsersListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  usersList<TData = UserDto[]>(
+    params?: UsersListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(
+      `/api/v1/users`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,}
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(
+      `/api/v1/users`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,}
+    );
+    }
+
+    return this.http.get<TData>(
+      `/api/v1/users`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+        params: filteredParams,}
+    );
+  }
+
+/**
  * @summary List deliveries (status, attempts, last result; never a body or header), newest first, keyset paged.
  */
  webhooksListDeliveries<TData = WebhookDeliveryDto[]>(params?: WebhooksListDeliveriesParams, options?: HttpClientBodyOptions): Observable<TData>;
@@ -1971,6 +2044,8 @@ export type ModulesSetActiveClientResult = NonNullable<void>
 export type OverridesListClientResult = NonNullable<OverrideDto[]>
 export type OverridesRemoveClientResult = NonNullable<void>
 export type OverridesSetClientResult = NonNullable<void>
+export type RolesListClientResult = NonNullable<RoleDto[]>
+export type UsersListClientResult = NonNullable<UserDto[]>
 export type WebhooksListDeliveriesClientResult = NonNullable<WebhookDeliveryDto[]>
 export type WebhooksRedeliverClientResult = NonNullable<void>
 export type WebhooksListClientResult = NonNullable<WebhookSubscriptionDto[]>

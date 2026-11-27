@@ -139,6 +139,8 @@ public static class DependencyInjection
         services.AddScoped<Fugue.Application.Features.Modules.IModuleRegistry, ModuleRegistry>();
         services.AddScoped<Fugue.Application.Features.Groups.IGroupAdmin, GroupAdmin>();
         services.AddScoped<Fugue.Application.Features.Overrides.IOverrideAdmin, OverrideAdmin>();
+        services.AddScoped<Fugue.Application.Features.Users.IUserDirectory, UserDirectory>();
+        services.AddScoped<Fugue.Application.Features.Roles.IRoleCatalog, RoleCatalog>();
         services.AddScoped<IGrantAuditWriter, GrantAuditWriter>();
         services.AddScoped<IIdentitySeeder, IdentitySeeder>();
         return services;

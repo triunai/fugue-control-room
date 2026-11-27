@@ -39,6 +39,7 @@ public static class IdentityCatalog
         ("AUDIT", "Audit log", AuditModule),
         ("WEBHOOKS", "Webhooks", WebhooksModule),
         ("CLAIMS", "Claims", ClaimsModule),
+        ("USERS", "Users", IdentityModule),
     ];
 
     private static readonly string[] ActionCodes = ["VIEW", "INSERT", "EDIT", "DELETE", "SUSPEND", "ALL", "MANAGE", "READ", "SUBMIT", "RESPOND", "HANDLE", "SETTLE", "WORKLOAD", "EXPOSURE"];

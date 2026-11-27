@@ -29,6 +29,8 @@ Rules worth knowing: approving needs a reserve and `0 < amount <= reserve`; only
 | `POST /` | `CLAIMS_SUBMIT` | body `market, line, policyNumber, incidentDate, incidentDescription, incidentLocation?`; header `Idempotency-Key` required; 201 + `Location` + `ETag`. Incident date: not in the future, not older than a year (market's calendar day) |
 | `GET /` | `CLAIMS_READ` | keyset paged (`limit`, `cursor`; next page in `Link` and `X-Next-Cursor`). Claimant: own claims, newest first. Staff (`CLAIMS_ALL`): all claims, OLDEST first. Filters `status` (repeat or comma), `assigned=me\|none\|any`, `market`, `line`, `q` (claim or policy number) |
 | `GET /{id}`, `GET /{id}/timeline` | `CLAIMS_READ` | own claim or `CLAIMS_ALL`, else 404 |
+| `GET /{id}/info-requests` | `CLAIMS_READ` | every question newest first: `question`, `askedBy`, `askedAt`, `answer`, `answeredAt` (null while open); same scope as the timeline (404 outside it); a claimant reads staff askers as `Claims team` |
+| `GET /counts` | `CLAIMS_READ` | claims per status (`byStatus`, every status present, zero included) plus `total`; claimant: own, staff: all; filters `assigned`, `market`, `line`, `q` as the list (no `status`) |
 | `POST /{id}/pickup` | `CLAIMS_HANDLE` | `If-Match` required |
 | `PUT /{id}/reserve` | `CLAIMS_HANDLE` | body `{amountMinor}` |
 | `POST /{id}/info-requests` | `CLAIMS_HANDLE` | body `{question}` |
