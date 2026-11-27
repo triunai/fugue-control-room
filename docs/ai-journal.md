@@ -203,3 +203,9 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
 - **Decision:** accepted all four critiques. Renamed the adapter to `JwtCurrentUser`, centralised claim-type names, added a folder map (done). Owner chose `.sql` files over static SQL classes or stored procedures (D-054) and asked for a read-only Postgres MCP for agents; consolidation by concept replaces "one type per file" (D-055). Overrode the AI's first instinct to keep the old convention.
 - **Why:** readability for the panel and for agents beats a convention adopted by default; the AI's measurements kept the change targeted instead of a rewrite.
 
+## 2026-11-27 17:20 - Verification caught three false claims; wrap mid-window
+- **Asked:** the owner asked for a core doc pack, CI, a reviewer runbook and Bruno for the panel, then to wrap and continue headless.
+- **AI proposed:** writer agents verified every doc claim against code and found: rule files said Argon2id but the code uses PBKDF2; the explainer placed 428 in MVC (the handler returns it); the audit diagram drew the success path in the wrong order. The lead ran the new reviewer Bruno command itself and found 2 of 56 requests failing (webhook sink unreachable from the container).
+- **Decision:** accepted all corrections; the owner approved amending the Argon2id wording to match the code. Challenged the CI lane's "verified" claim: the YAML parsed but nothing had run, so the lead ran the runbook command end to end (56/56 after the fix).
+- **Why:** the panel probes every line; a doc that overclaims is worse than a missing doc.
+

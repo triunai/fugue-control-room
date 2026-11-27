@@ -17,15 +17,21 @@ Glyph legend:
 
 ### WS-20 — Claims platform: the timed build window — 🟢 ACTIVE (2026-11-27)
 ID: W-020
-Status: window opened at tag `claims-window-start` (2026-11-27 ~17:00 +08, hard stop 22:00 +08). Plan: `docs/plans/claims-window.md`.
-Resume: backend core lane, then the frontend lane on the regenerated client, Codex review on the state machine seam, README + demo script.
+Status: window open since tag `claims-window-start` (16:56 +08, hard stop 21:56 +08). Backend lane in `.worktrees/claims` (branch `claims-core`): domain, schema, contract and an ETag fix committed; rebase onto main and slices 4-7 (handling tests, workload/exposure, seed + runbook 11, Bruno) remain; status file `docs/ai/lanes/claims-core-status.md` in that worktree. Angular lane not started (brief `docs/ai/briefs/claims-web.md`).
+Resume: follow the SEED PROMPT in `docs/ai/handoffs/2026-11-27-lead.md` (evening section).
 Refs: `docs/plans/claims-window.md`, D-052, D-053
 
 ### WS-07 — S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry — 🟢 ACTIVE (2026-11-27)
 ID: W-007
-Status: 2026-11-27 headless run: Docker image + one-command compose lane dispatched; idempotency planned (D-050, ADR-013, `docs/plans/w007-idempotency.md`), Codex plan review running. Versioning/HybridCache/OpenTelemetry only if time.
-Resume: land the compose lane (re-verify `docker compose up`), then build idempotency slice by slice per the plan.
+Status: idempotency store done (ADR-013, two Codex reviews), Docker one-command stack + Bruno compose env + CI workflow + reviewer runbook done, console modules/shell done. Versioning + Sunset, HybridCache, OpenTelemetry not built. Readability pass (D-054 SQL files + read-only Postgres MCP, D-055 one file per concept, backlog #005) runs after the claims merge.
+Resume: after W-020 merges: the readability pass, then close W-007 with versioning/cache/OTel as "more time" follow-ups.
 Refs: `docs/plans/roadmap.md`, `docs/plans/w007-idempotency.md`, D-049, D-050
+
+### WS-22 — Post-core quality wave and nice-to-haves (lands together after the claims build) — ⏸ PARKED (2026-11-27)
+ID: W-022
+Status: owner asked 2026-11-27; starts only after W-020's core is merged. Items: (1) explain the AI harness: the 60% context cap (wrap state ready before compaction), the lefthook-based gates that run tests automatically, the orchestration layer used for agents; (2) mutation testing with Stryker.NET on a few worth-it targets (Claim state machine, AuditRedactor, the Idempotency-Key header parser); (3) PICT pairwise tests where the input space is combinatorial (role x module state x claim status x action); (4) k6 load scripts (claims queue read, submit with Idempotency-Key, pickup race) with thresholds; (5) "Nice to haves" docs section: Univer spreadsheet (bulk reserve review / claims import) and a calendar (SLA due dates, assessor appointments), with the owner's own note on trimming them for memory-capped deploys (owner to supply the facts), driver.js tour (#002), shell (#003), roles matrix (#004).
+Resume: after the claims merge and the readability pass; one lane per item, docs last.
+Refs: backlog #002-#005, D-054, D-055
 
 ### WS-10 — Verify the Codex gate end to end — ⏸ PARKED (2026-11-25)
 ID: W-010
@@ -33,11 +39,11 @@ Status: `scripts/codex-gate.mjs` invocation (`codex exec review --base <sha> ...
 Resume: make a throwaway seam change on a branch, run `node scripts/codex-gate.mjs --dry-run --base=<ref>`, then once for real; confirm `docs/reviews/codex/` receives text and the failure path records "failed". Also confirm lefthook gives git's stdin to both `spine-nudge` and `codex-gate` on a real push.
 Refs: D-014, ADR-007
 
-### WS-18 — Import the owner's earlier audit-logging design and harden audit — 🟢 ACTIVE (2026-11-27)
-ID: W-018
-Status: source cloned read-only at `~/Repos/career-work/<source-repo>/ (exact path: in the owner's seed prompt)` (outside this repo; never name it in Fugue). Copying allowed (D-048), names scrubbed on import. Compare its audit implementation with W-012's `audit_log` and take what is stronger (knobs, PII config, payload processing, retention, query shapes); keep same-transaction, append-only and never-sampled guarantees.
-Resume: Haiku sweep of the source's audit code first (paths + what it does), then a Sonnet port with tests, Codex review on the diff.
-Refs: D-048, ADR-010
+### WS-21 — Audit full-text search — ⏸ PARKED (2026-11-27)
+ID: W-021
+Status: follow-up of W-018. Postgres `tsvector` over action, entity, actor display and error code with a GIN index; `q=` on `GET /api/v1/audit`; a search box in the console. Meilisearch rejected (D-051).
+Resume: after the claims window.
+Refs: D-051
 
 ### WS-19 — Users list endpoint for the Access screen — ⏸ PARKED (2026-11-27)
 ID: W-019

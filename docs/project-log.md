@@ -6,6 +6,25 @@ Heading form: `## <YYYY-MM-DD> — <title>`. Entry key = `<date>#<n>`, where n i
 First non-blank body line must be `WS: WS-NN` (comma-separate several) or `WS: (pre-WS)`.
 Then: what was done · what was decided (cite D-NNN) · what is open (cite #NNN).
 
+## 2026-11-27 — Closed W-018: Import the owner's earlier audit-logging design and harden audit
+WS: WS-18
+Closed: W-018 (WS-18) Import the owner's earlier audit-logging design and harden audit
+Outcome: Swept the owner's earlier audit package against W-012 and ported four ideas: 401 challenges recorded in access_audit with a fixed-bucket per-IP cap; failure rows carry error_type, an audit-safe error_message (field names or exception type, never handler text) and duration_ms; a Fugue.Audit meter plus a structured fallback log for lost writes; a fitness test that every audited command has a named action. Nine ideas rejected (async writer, sampling, body capture, regex masking, XFF trust, header attribution, DELETE purge, dual writes, search index). Two Codex reviews (port: 2 HIGH, 1 MED, 1 LOW) all fixed and pinned.
+Commits:
+- 3a559aa docs(spine): wrap 2026-11-27, decisions D-045..D-048, handoff and seed prompt
+- b16305e feat(persistence): failure detail columns on audit_log
+- 0f42b77 feat(application): failure rows carry error type, message and duration
+- 1beae91 feat(observability): audit write-failure meter and structured fallback log
+- def832a feat(identity): record 401 challenges in access_audit with a per-IP cap
+- d3083b0 test(arch): every audited command has a named action
+- a2a9746 docs(plans): idempotency plan revision 2 after the Codex review; D-051 audit import
+- 0cb8623 fix(application): audit failure rows never store handler message text
+- 9267ef7 fix(api): bound the 401 audit limiter to a fixed bucket array
+- 0da2242 fix(api): an audit-side cancellation keeps the 401
+- e2bd64b docs(api): refresh the audit error message description in the OpenAPI snapshot
+Decisions: D-048, D-051, D-050, ADR-013, D-045, D-046, D-047
+Follow-ups: Audit full-text search (Postgres tsvector, q= on GET /audit); success rows could carry elapsed time
+
 ## 2026-11-27 — Closed W-011: Project README
 WS: WS-11
 Closed: W-011 (WS-11) Project README
