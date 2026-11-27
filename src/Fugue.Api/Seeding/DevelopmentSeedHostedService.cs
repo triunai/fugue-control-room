@@ -24,6 +24,19 @@ internal sealed partial class DevelopmentSeedHostedService(IServiceScopeFactory 
 
         // The claims seed needs the dev users (claimants and officers), so it runs after them.
         LogClaims(await scope.ServiceProvider.GetRequiredService<IClaimSeeder>().SeedAsync(cancellationToken));
+
+        // Claim events land in the dev sink during a demo (runbooks 07 and 11). Delivery to http needs Webhooks:AllowInsecureLocal, which only Development honours.
+        string sinkUrl = configuration["Seed:DevSinkUrl"] ?? $"{LocalBase()}/api/v1/dev/webhook-sink";
+        LogSink(await scope.ServiceProvider.GetRequiredService<IDevSinkSeeder>().SeedAsync(sinkUrl, cancellationToken), sinkUrl);
+    }
+
+    /// <summary>The first configured listen URL with a wildcard host made local, else the default dev port.</summary>
+    private string LocalBase()
+    {
+        string? first = (configuration["urls"] ?? configuration["ASPNETCORE_URLS"])?.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault();
+        return first is null
+            ? "http://localhost:5080"
+            : first.Replace("://*", "://localhost", StringComparison.Ordinal).Replace("://+", "://localhost", StringComparison.Ordinal).Replace("://0.0.0.0", "://localhost", StringComparison.Ordinal).TrimEnd('/');
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Seeded {Count} development customers")]
@@ -34,6 +47,9 @@ internal sealed partial class DevelopmentSeedHostedService(IServiceScopeFactory 
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Seeded {Count} development claims")]
     private partial void LogClaims(int count);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Dev webhook sink subscribed to claim.* at {Url} (created: {Created})")]
+    private partial void LogSink(bool created, string url);
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }

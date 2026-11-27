@@ -71,7 +71,7 @@ Expect: `201 Created`, a `Location` ending in the new id, an `ETag`, and a body 
 ```bash
 call POST /$ID/pickup $STAFF                                                   # 200, status UnderReview, you are the officer
 call PUT  /$ID/reserve $STAFF '{"amountMinor":250000}'                         # SGD 2,500.00 (minor units); the claimant never sees it
-call POST /$ID/info-requests $STAFF '{"question":"Photos of the damage?"}'     # status InfoRequested
+call POST /$ID/info-requests $STAFF '{"question":"What is the other driver registration number?"}'     # status InfoRequested
 RID=$(curl -s $B/$ID -H "Authorization: Bearer $SELF" | sed 's/.*"openInfoRequest":{"id":"\([^"]*\)".*/\1/')
 call POST /$ID/info-requests/$RID/response $SELF '{"answer":"Attached."}'      # the claimant answers: UnderReview again
 call POST /$ID/decision $STAFF '{"outcome":"approve","amountMinor":200000,"reason":"Covered."}'   # Approved
@@ -105,7 +105,7 @@ Expect on a freshly seeded database: `workload` lists `Dev Staff` and `Dev Manag
 
 ## 5. The seed
 
-`--seed` (Development) writes 20 claims, idempotently (a second run writes none): every market, both lines, every status, amounts in minor units (all six currencies treated as 2 decimals, so IDR 15,000,000 is `1500000000`), timelines built through the real state machine, a mix of officers (`staff@`, `manager@`), three claims owned by `self@` (one InfoRequested with an open question), and no outbox events (seeding must not fire webhooks). Their numbers are `CLM-<market>-<year>-9000NN`.
+`--seed` (Development) writes 20 claims, idempotently (a second run writes none): every market, both lines, every status, amounts in minor units (all six currencies treated as 2 decimals, so IDR 15,000,000 is `1500000000`), timelines built through the real state machine, a mix of officers (`staff@`, `manager@`), three claims owned by `self@` (one InfoRequested with an open question), and no outbox events (seeding must not fire webhooks). The seeded questions are ones a text answer satisfies (the other driver's registration and where the car is; which rooms are affected). Also in Development the seed subscribes the dev sink to `claim.*` (a subscription named `dev sink (claim events)`, created once, its URL corrected to the API's own listen URL or `Seed:DevSinkUrl`, and the sink is given its secret on every start because the sink forgets it), so with `Webhooks__AllowInsecureLocal=true` the Webhooks screen's sink tab shows claim events as you act on a claim, with no manual subscribe step. Their numbers are `CLM-<market>-<year>-9000NN`.
 
 ## 6. Events
 

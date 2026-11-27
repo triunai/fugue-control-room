@@ -139,12 +139,14 @@ internal sealed class ClaimSeeder(FugueDbContext db, SqlExecutor sql, IUnitOfWor
         {
             Ok(claim.RequestInfo(
                 spec.Line == LineOfBusiness.Motor
-                    ? "Could you upload photos of the damage and the other party's registration number?"
-                    : "Please send two repair quotes and a photo of the affected area.",
+                    ? "What is the other driver's registration number, and where is your car now?"
+                    : "Which rooms are affected, and is the property safe to stay in tonight?",
                 officerId, officerName, At(20)));
             if (spec.Final != ClaimStatus.InfoRequested)
             {
-                Ok(claim.ProvideInfo(claim.OpenInfoRequest!.Id, "Photos and the details are attached; the quotes follow by email.", claimantId, claimantName, At(30)));
+                Ok(claim.ProvideInfo(claim.OpenInfoRequest!.Id, spec.Line == LineOfBusiness.Motor
+                        ? "Their registration is SGX 4821 K; the car is at the repair workshop on Kallang Road."
+                        : "The kitchen and the hallway; the water is off and we are staying with family tonight.", claimantId, claimantName, At(30)));
             }
         }
 
