@@ -7,10 +7,35 @@
   --fc-classic-button-strong: var(--accent-hover);
   --fc-classic-button-strong-border: var(--accent-hover);
   --fc-classic-button-foreground: var(--on-accent);
-  --fc-classic-background: var(--surface2);
+  --fc-classic-background: var(--surface);
+  --fc-classic-foreground: var(--text);
   --fc-classic-border: var(--line);
-  --fc-classic-today: var(--accent-soft);
+  --fc-classic-faint: color-mix(in oklab, var(--bg) 70%, var(--surface));
+  --fc-classic-muted: var(--bg);
+  --fc-classic-strong: var(--line);
+  --fc-classic-faint-foreground: var(--control);
+  --fc-classic-muted-foreground: var(--muted);
+  --fc-classic-today: color-mix(in oklab, var(--gold) 24%, var(--surface));
+  --fc-classic-now: var(--err);
+  --fc-classic-highlight: var(--accent-soft);
   font-family: var(--font-ui);
+}
+/* The grid is a rounded card in the console's warm paper, not a hard-edged white box. FullCalendar 7 hashes its class names,
+   so these hook on the stable bits: our .cal-host, the ARIA roles (the grid is role=table) and the dates' aria-current. */
+.cal-wrap ::ng-deep .cal-host [role='table'] {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+  background: var(--surface);
+}
+.cal-wrap ::ng-deep [role='cell'][aria-current='date'] {
+  background: color-mix(in oklab, var(--gold) 24%, var(--surface));
+  box-shadow: inset 0 0 0 2px var(--gold);
+  border-radius: 6px;
+}
+.cal-wrap ::ng-deep .sla-ev {
+  border-radius: 6px;
+  font-weight: 550;
 }
 .cal-wrap ::ng-deep .sla-ev {
   cursor: pointer;
