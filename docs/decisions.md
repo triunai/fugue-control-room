@@ -66,8 +66,19 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-053 | Claims platform shape for the window | - |
 | D-054 | Raw SQL lives in .sql files; a read-only Postgres MCP for agents | - |
 | D-055 | One file per concept, not per type | - |
+| D-056 | Codex claims seam review: 3 accepted (reserve race, required submit key, event names), 2 declined | [review](reviews/codex/2026-11-27-claims-seam.md) |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-056 — Codex claims seam review: three accepted, two declined — 2026-11-27
+WS: WS-20
+Context: Codex (read-only, gpt family) reviewed `main..claims-core` at 506fc47 for the state machine, visibility, permissions, concurrency, atomicity and money. No illegal transition found; five findings.
+Decision: accept #1 (a same-value reserve skips the xmin check: every claim command now forces the guarded UPDATE) and #5 (claim submit requires `Idempotency-Key`, 400 `idempotency.key_required`; other creates stay optional per ADR-013); accept #3 as a doc fix (plan H amended to the dotted event names the fitness rule forces). Decline #2 (handler-level permission checks: authorization is enforced at the HTTP edge and pinned by an arch test; handlers scope data only) and #4 (a 403 for lacking the permission is identical for every id, so it reveals nothing).
+Why: fix what a real race or a real duplicate can break; keep one authorization model rather than two that can disagree.
+Consequences: a second transport (Kafka consumer) needs its own authorizer before it dispatches commands: listed under "with more time". Submit clients must send a key (the console already does).
+Who: AI (review and disposition), Codex (findings)
+Status: accepted
+Promote: no
 
 ## D-055 — One file per concept, not per type — 2026-11-27
 WS: WS-20
