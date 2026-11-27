@@ -16,7 +16,9 @@ namespace Fugue.Tests.Claims;
 /// <summary>
 /// GET /api/v1/claims/search against a real Meilisearch (same pinned image as docker-compose.yml, D-063): a claimant's search never returns another
 /// claimant's claim (the scope is an engine filter), staff see every claim, a changed claim is re-indexed, an empty q is 400 and with no engine
-/// configured (or an unreachable one) the answer is 503.
+/// configured (or an unreachable one) the answer is 503. Hardening (D-064 item 10): market names, codes, lines and their synonyms match, exact claim
+/// and policy numbers match exactly (a mistyped one finds nothing), every word must match, hits say why they matched (highlights), facets count the
+/// matches under the caller's scope, and the index settings are sent only when the engine's differ.
 /// </summary>
 [Collection(PostgresCollectionDefinition.Name)]
 public sealed class ClaimSearchTests(PostgresFixture db) : IAsyncLifetime
@@ -34,11 +36,13 @@ public sealed class ClaimSearchTests(PostgresFixture db) : IAsyncLifetime
 
     private readonly ClaimsHarness _h = new(db);
     private WebApplicationFactory<Program> _factory = null!;
+    private string _url = null!;
 
     public async Task InitializeAsync()
     {
         await _meili.StartAsync();
-        _factory = Engine($"http://{_meili.Hostname}:{_meili.GetMappedPublicPort(7700)}");
+        _url = $"http://{_meili.Hostname}:{_meili.GetMappedPublicPort(7700)}";
+        _factory = Engine(_url);
     }
 
     public async Task DisposeAsync()
@@ -177,12 +181,210 @@ public sealed class ClaimSearchTests(PostgresFixture db) : IAsyncLifetime
         Assert.Null(MeilisearchClaimSearch.BuildFilter(new ClaimSearchFilter("x", null, 20)));
     }
 
-    private async Task<ClaimDto> SubmitAsync(HttpClient client, string description)
+    [Fact]
+    public async Task Market_codes_market_names_lines_and_their_synonyms_all_find_the_claim()
+    {
+        HttpClient self = await ClientAsync(_factory, DevUsers.Self);
+        HttpClient staff = await ClientAsync(_factory, DevUsers.Staff);
+        // Market and line alone match many claims in the shared database, so each query pairs them with a word only this claim carries.
+        string rare = "Quillmorph" + Guid.NewGuid().ToString("N")[..6];
+        ClaimDto home = await SubmitAsync(self, rare + " pipe burst in the kitchen", market: "MY", line: "Property");
+        string rare2 = "Vexbramble" + Guid.NewGuid().ToString("N")[..6];
+        ClaimDto car = await SubmitAsync(self, rare2 + " scraped at the lights");
+        await IndexAsync(_factory);
+
+        foreach (string q in new[] { "Malaysia", "malaysia", "MY", "Property", "home" })
+        {
+            Assert.Equal(home.Number, (await NumbersAsync(staff, q + " " + rare)).FirstOrDefault());
+        }
+
+        foreach (string q in new[] { "Singapore", "SG", "Motor", "car", "SG motor", "Singapore car" })
+        {
+            Assert.Equal(car.Number, (await NumbersAsync(staff, q + " " + rare2)).FirstOrDefault());
+        }
+    }
+
+    [Fact]
+    public async Task Index_settings_are_sent_once_a_restart_sends_none_and_drift_is_put_back()
+    {
+        await IndexAsync(_factory); // first start: the engine has the defaults, so one settings update
+        Assert.Equal(1, await SettingsUpdatesAsync());
+
+        await using (WebApplicationFactory<Program> restart = Engine(_url))
+        {
+            await IndexAsync(restart); // a new process compares and finds nothing to change
+        }
+
+        Assert.Equal(1, await SettingsUpdatesAsync());
+
+        using HttpClient engine = EngineClient();
+        HttpResponseMessage drift = await engine.PutAsJsonAsync("/indexes/claims/settings/synonyms", new Dictionary<string, string[]>());
+        Assert.Equal(HttpStatusCode.Accepted, drift.StatusCode);
+        await WaitForEngineAsync(engine);
+        await using (WebApplicationFactory<Program> again = Engine(_url))
+        {
+            await IndexAsync(again); // someone changed a setting this app owns: the next start puts it back
+        }
+
+        Assert.Equal(3, await SettingsUpdatesAsync());
+        JsonElement synonyms = await engine.GetFromJsonAsync<JsonElement>("/indexes/claims/settings/synonyms");
+        Assert.Equal("singapore", synonyms.GetProperty("sg")[0].GetString());
+        Assert.Equal("motor", synonyms.GetProperty("car")[0].GetString());
+    }
+
+    [Fact]
+    public async Task A_checkpoint_from_an_older_document_shape_restarts_the_indexer_from_the_beginning()
+    {
+        await IndexAsync(_factory);
+        MeilisearchClaimSearch search = _factory.Services.GetRequiredService<MeilisearchClaimSearch>();
+        Assert.NotNull(await search.ReadCheckpointAsync(default));
+
+        using HttpClient engine = EngineClient();
+        var older = new { id = "claims", updatedAt = "2099-01-01T00:00:00.0000000+00:00", claimId = Guid.NewGuid().ToString() }; // no shape
+        Assert.Equal(HttpStatusCode.Accepted, (await engine.PostAsJsonAsync("/indexes/claims_checkpoint/documents", new[] { older })).StatusCode);
+        await WaitForEngineAsync(engine);
+
+        Assert.Null(await search.ReadCheckpointAsync(default));
+    }
+
+    [Fact]
+    public async Task Indexed_claims_carry_no_stored_formatted_field()
+    {
+        HttpClient self = await ClientAsync(_factory, DevUsers.Self);
+        await SubmitAsync(self, "Clipped a kerb");
+        await IndexAsync(_factory);
+
+        using HttpClient engine = EngineClient();
+        JsonElement stats = await engine.GetFromJsonAsync<JsonElement>("/indexes/claims/stats");
+        Assert.True(stats.GetProperty("fieldDistribution").TryGetProperty("marketName", out _));
+        Assert.False(stats.GetProperty("fieldDistribution").TryGetProperty("_formatted", out _)); // the engine computes it per search
+    }
+
+    [Fact]
+    public async Task An_exact_claim_or_policy_number_finds_only_that_claim_and_a_mistyped_one_does_not_find_it()
+    {
+        HttpClient self = await ClientAsync(_factory, DevUsers.Self);
+        HttpClient staff = await ClientAsync(_factory, DevUsers.Staff);
+        ClaimDto claim = await SubmitAsync(self, "Rear-ended at the lights");
+        await IndexAsync(_factory);
+
+        Assert.Equal([claim.Number], await NumbersAsync(staff, claim.Number));
+        Assert.Equal([claim.Number], await NumbersAsync(staff, claim.Number.ToLowerInvariant()));
+        Assert.Equal([claim.Number], await NumbersAsync(staff, claim.PolicyNumber));
+
+        // One digit off: another claim may really carry that number (numbers are sequential), but never this one and never a near miss.
+        string typo = claim.Number[..^1] + (claim.Number[^1] == '9' ? '8' : (char)(claim.Number[^1] + 1));
+        string[] found = await NumbersAsync(staff, typo);
+        Assert.DoesNotContain(claim.Number, found);
+        Assert.All(found, n => Assert.Equal(typo, n));
+        string policyTypo = claim.PolicyNumber[..^1] + (claim.PolicyNumber[^1] == 'A' ? 'B' : 'A');
+        Assert.Empty(await NumbersAsync(staff, policyTypo));
+    }
+
+    [Fact]
+    public async Task Every_word_must_match_so_the_exact_description_finds_the_claim_and_a_wrong_market_does_not()
+    {
+        HttpClient self = await ClientAsync(_factory, DevUsers.Self);
+        HttpClient staff = await ClientAsync(_factory, DevUsers.Staff);
+        ClaimDto exact = await SubmitAsync(self, "Fresh stack sink check"); // the owner's report: this description did not find its claim
+        string rare = "Plinkwort" + Guid.NewGuid().ToString("N")[..6];
+        ClaimDto claim = await SubmitAsync(self, rare + " hit a bollard");
+        await IndexAsync(_factory);
+
+        Assert.Contains(exact.Number, await NumbersAsync(staff, "Fresh stack sink check"));
+        Assert.Equal([claim.Number], await NumbersAsync(staff, "Singapore " + rare));
+        Assert.Empty(await NumbersAsync(staff, "Thailand " + rare));
+        Assert.Empty(await NumbersAsync(staff, "home " + rare)); // the claim is Motor, home means Property
+    }
+
+    [Fact]
+    public async Task Hits_say_why_they_matched_and_facets_count_the_matches_under_the_callers_scope()
+    {
+        HttpClient self = await ClientAsync(_factory, DevUsers.Self);
+        HttpClient self2 = await ClientAsync(_factory, DevUsers.Self2);
+        HttpClient staff = await ClientAsync(_factory, DevUsers.Staff);
+        string rare = "Grommelfen" + Guid.NewGuid().ToString("N")[..6];
+        ClaimDto claim = await SubmitAsync(self, "Reversed into a pillar, " + rare + " says the sensor failed");
+        await IndexAsync(_factory);
+
+        JsonElement body = await SearchAsync(staff, "SG car " + rare);
+        JsonElement hit = Assert.Single(body.GetProperty("hits").EnumerateArray());
+        JsonElement highlights = hit.GetProperty("highlights");
+        Assert.Equal("<em>SG</em>", highlights.GetProperty("market").GetString());
+        Assert.Equal("<em>Motor</em>", highlights.GetProperty("line").GetString()); // matched through the synonym car -> motor
+        Assert.Contains("<em>" + rare + "</em>", highlights.GetProperty("incidentDescription").GetString(), StringComparison.Ordinal);
+        Assert.False(highlights.TryGetProperty("policyNumber", out _)); // only matched fields appear
+        Assert.Equal("<em>Singapore</em>", (await SearchAsync(staff, "Singapore " + rare)).GetProperty("hits")[0].GetProperty("highlights").GetProperty("marketName").GetString());
+
+        JsonElement facets = body.GetProperty("facets");
+        Assert.Equal(1, facets.GetProperty("market").GetProperty("SG").GetInt32());
+        Assert.Equal(1, facets.GetProperty("line").GetProperty("Motor").GetInt32());
+        Assert.Equal(1, facets.GetProperty("status").GetProperty("Submitted").GetInt32());
+
+        // Another claimant's search for the same words: no hit and no count leaks through the facets.
+        JsonElement theirs = await SearchAsync(self2, "SG car " + rare);
+        Assert.Empty(theirs.GetProperty("hits").EnumerateArray());
+        Assert.False(theirs.TryGetProperty("facets", out JsonElement f) && f.ValueKind == JsonValueKind.Object
+            && f.EnumerateObject().Any(p => p.Value.EnumerateObject().Any()));
+    }
+
+    [Theory]
+    [InlineData("SG motor", "SG motor")]
+    [InlineData("CLM-SG-2026-900013", "\"CLM-SG-2026-900013\"")]
+    [InlineData("clm-sg-2026-900013 motor", "\"clm-sg-2026-900013\" motor")]
+    [InlineData("CLM-SG-2026-9000", "CLM-SG-2026-9000")] // a claim number still being typed stays a prefix
+    [InlineData("POL-SG-100200", "\"POL-SG-100200\"")]
+    [InlineData("900013", "\"900013\"")]
+    [InlineData("2026 motor", "2026 motor")] // under 5 characters the engine allows no typo anyway
+    [InlineData("  Orchard   Road ", "Orchard Road")]
+    [InlineData("\"Fresh stack\" sink", "\"Fresh stack\" sink")] // the caller's own phrase is sent as typed
+    public void Identifier_tokens_are_sent_as_exact_phrases(string typed, string sent) =>
+        Assert.Equal(sent, MeilisearchClaimSearch.BuildQuery(typed));
+
+    private static async Task<JsonElement> SearchAsync(HttpClient client, string q)
+    {
+        HttpResponseMessage response = await client.GetAsync("/api/v1/claims/search?q=" + Uri.EscapeDataString(q));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        return await response.Content.ReadFromJsonAsync<JsonElement>();
+    }
+
+    private HttpClient EngineClient()
+    {
+        var client = new HttpClient { BaseAddress = new Uri(_url) };
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", MasterKey);
+        return client;
+    }
+
+    /// <summary>Settings updates the engine has recorded for the claims index (every one re-indexes the whole index).</summary>
+    private async Task<int> SettingsUpdatesAsync()
+    {
+        using HttpClient engine = EngineClient();
+        JsonElement tasks = await engine.GetFromJsonAsync<JsonElement>("/tasks?indexUids=claims&types=settingsUpdate");
+        return tasks.GetProperty("total").GetInt32();
+    }
+
+    private static async Task WaitForEngineAsync(HttpClient engine)
+    {
+        for (int i = 0; i < 200; i++)
+        {
+            JsonElement pending = await engine.GetFromJsonAsync<JsonElement>("/tasks?statuses=enqueued,processing");
+            if (pending.GetProperty("total").GetInt32() == 0)
+            {
+                return;
+            }
+
+            await Task.Delay(25);
+        }
+
+        throw new TimeoutException("Meilisearch tasks did not finish.");
+    }
+
+    private async Task<ClaimDto> SubmitAsync(HttpClient client, string description, string market = "SG", string line = "Motor")
     {
         HttpResponseMessage response = await ClaimsHarness.PostSubmitAsync(client, new
         {
-            market = "SG",
-            line = "Motor",
+            market,
+            line,
             policyNumber = ClaimsHarness.UniquePolicy(),
             incidentDate = _h.Yesterday().Iso(),
             incidentDescription = description,

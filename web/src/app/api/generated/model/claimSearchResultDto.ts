@@ -6,11 +6,14 @@
  * OpenAPI spec version: v1
  */
 import type { ClaimSearchHitDto } from './claimSearchHitDto';
+import type { ClaimSearchResultDtoFacets } from './claimSearchResultDtoFacets';
 
 /**
- * EstimatedTotalHits is the engine's estimate of all matches, not the page size.
+ * EstimatedTotalHits is the engine's estimate of all matches, not the page size. Facets counts every match (not only this page) by `status`, `market` and `line`, under the same scope as the hits.
  */
 export interface ClaimSearchResultDto {
   estimatedTotalHits: number;
+  /** @nullable */
+  facets?: ClaimSearchResultDtoFacets;
   hits: ClaimSearchHitDto[];
 }

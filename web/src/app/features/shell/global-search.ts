@@ -1,19 +1,57 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuditApi, EMPTY_AUDIT_FILTER } from '../../api/audit.api';
 import { ClaimsApi } from '../../api/claims.api';
 import { AccessService } from '../../core/auth/access.service';
 import { AuditFilterStore } from '../audit/audit-filter.store';
 import { ClaimStatusPill } from '../claims/claim-bits';
-import { ClaimRow, DROPDOWN_HITS, SearchRow, isSearchOff, toClaimRows, toRows } from './global-search-logic';
+import type { HighlightSegment } from '../audit/highlight';
+import {
+  ClaimRow,
+  DROPDOWN_HITS,
+  SearchRow,
+  facetSummary,
+  isSearchOff,
+  toClaimRows,
+  toRows,
+} from './global-search-logic';
 
 type State = 'idle' | 'loading' | 'ok' | 'off' | 'error';
+
+/**
+ * Highlight segments as text, matched words in <em>. Text bindings only, so no markup from a claim ever reaches the DOM.
+ * Every segment is an element: Angular drops whitespace-only text between elements but pads a bare interpolation with the
+ * template's line breaks, which would put spaces inside "CLM-<em>SG</em>-2026".
+ */
+@Component({
+  selector: 'fg-gs-hl',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: `
+    em {
+      font-style: normal;
+      font-weight: 600;
+      color: var(--text);
+      background: var(--accent-soft);
+      border-radius: 3px;
+    }
+  `,
+  template: `@for (s of segments(); track $index) {
+    @if (s.em) {
+      <em>{{ s.text }}</em>
+    } @else {
+      <span>{{ s.text }}</span>
+    }
+  }`,
+})
+class Highlighted {
+  readonly segments = input.required<HighlightSegment[]>();
+}
 
 /** The header search: a Claims group for anyone with CLAIMS_READ (scoped server-side) and an Audit group for AUDIT_READ. Typing (debounced) or Enter opens the dropdown. */
 @Component({
   selector: 'fg-global-search',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ClaimStatusPill],
+  imports: [ClaimStatusPill, Highlighted],
   host: { '(document:click)': 'outside($event)', '(keydown.escape)': 'close()' },
   styleUrl: './global-search.css',
   template: `
@@ -47,12 +85,26 @@ type State = 'idle' | 'loading' | 'ok' | 'off' | 'error';
               @case ('ok') {
                 @if (claimRows().length === 0) {
                   <p class="gs-note">No matching claims</p>
+                } @else if (claimFacets()) {
+                  <p class="gs-facets" data-testid="claim-facets" title="Matches by market, line and status">
+                    {{ claimTotal() }} {{ claimTotal() === 1 ? 'match' : 'matches' }} · {{ claimFacets() }}
+                  </p>
                 }
                 @for (c of claimRows(); track c.id) {
                   <button type="button" class="gs-row" data-testid="claim-hit" (click)="openClaim(c)">
-                    <span class="gs-action">{{ c.number }} <fg-claim-status [status]="c.status" /></span>
-                    <span class="gs-meta">{{ c.meta }}</span>
-                    <span class="gs-meta gs-line">{{ c.description }}</span>
+                    <span class="gs-action"
+                      ><fg-gs-hl [segments]="c.number" /> <fg-claim-status [status]="c.status"
+                    /></span>
+                    <span class="gs-meta"><fg-gs-hl [segments]="c.meta" /></span>
+                    <span class="gs-meta gs-line"><fg-gs-hl [segments]="c.description" /></span>
+                    @if (c.matched.length) {
+                      <span class="gs-meta gs-why" data-testid="claim-why">
+                        Matched on
+                        @for (m of c.matched; track m.label) {
+                          <span class="gs-why-item">{{ m.label }}: <fg-gs-hl [segments]="m.text" /></span>
+                        }
+                      </span>
+                    }
                   </button>
                 }
               }
@@ -116,13 +168,16 @@ export class GlobalSearch implements OnDestroy {
   protected readonly rows = signal<SearchRow[]>([]);
   protected readonly claimState = signal<State>('idle');
   protected readonly claimRows = signal<ClaimRow[]>([]);
+  protected readonly claimFacets = signal('');
+  protected readonly claimTotal = signal(0);
   protected get canClaims(): boolean {
     return this.access.has('CLAIMS_READ');
   }
   protected get canAudit(): boolean {
     return this.access.has('AUDIT_READ');
   }
-  protected readonly placeholder = () => (this.canClaims ? 'Search claims: number, policy, place' : 'Search the audit trail');
+  protected readonly placeholder = () =>
+    this.canClaims ? 'Search claims: number, policy, place' : 'Search the audit trail';
 
   ngOnDestroy(): void {
     clearTimeout(this.timer);
@@ -148,6 +203,8 @@ export class GlobalSearch implements OnDestroy {
           (result) => {
             if (mine !== this.seq) return;
             this.claimRows.set(toClaimRows(result));
+            this.claimFacets.set(facetSummary(result));
+            this.claimTotal.set(result.estimatedTotalHits);
             this.claimState.set('ok');
           },
           (e) => {

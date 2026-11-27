@@ -5,17 +5,20 @@
  * REST API of Fugue. Every error is an RFC 9457 `application/problem+json` body with a stable `code`. Mutations of a versioned resource need `If-Match` with the ETag of the last read. Lists are keyset paged: follow `X-Next-Cursor`. Send `X-Correlation-Id` (and optionally `X-Saga-Id`) to correlate calls; both are echoed. Authenticate with `POST /api/v1/auth/token` and send the access token as a Bearer token.
  * OpenAPI spec version: v1
  */
+import type { ClaimSearchHitDtoHighlights } from './claimSearchHitDtoHighlights';
 import type { ClaimStatus } from './claimStatus';
 import type { LineOfBusiness } from './lineOfBusiness';
 import type { Market } from './market';
 
 /**
- * One hit, shaped like a queue row. ClaimantName is staff-only (null for a claimant, who only ever finds their own claims).
+ * One hit, shaped like a queue row. ClaimantName is staff-only (null for a claimant, who only ever finds their own claims). Highlights says why the claim matched: field name (`number`, `policyNumber`, `claimantName`, `marketName`, `market`, `line`, `incidentLocation`, `incidentDescription`) to its text with the matched words wrapped in `<em>` (the description cropped around the match). Only matched fields appear; the rest of the text is NOT HTML-escaped, so render it as text.
  */
 export interface ClaimSearchHitDto {
   /** @nullable */
   claimantName?: string | null;
   currency: string;
+  /** @nullable */
+  highlights?: ClaimSearchHitDtoHighlights;
   id: string;
   incidentDescription: string;
   /** @nullable */

@@ -52,9 +52,11 @@ public sealed class ClaimsController : ApiControllerBase
         Send(filter.ToQuery(), ct);
 
     /// <summary>
-    /// Full-text search over claims (D-063): claim number, policy number, place, description and claimant name, typo tolerant. The scope is applied by the
-    /// search filter itself: a claimant only ever finds their own claims, staff with CLAIMS_ALL find every claim. `q` is required. Eventually consistent
-    /// (an indexer copies rows). 503 `search.unavailable` when the search engine is not configured or unreachable.
+    /// Full-text search over claims (D-063): claim number, policy number, claimant name, market code and name, line, place and description. Every word
+    /// must match; words are typo tolerant and have synonyms (SG/Singapore, car/motor, home/property, ...), but a claim or policy number matches exactly.
+    /// Each hit carries `highlights` (why it matched) and the result `facets` (counts by status, market, line). The scope is applied by the search filter
+    /// itself: a claimant only ever finds their own claims, staff with CLAIMS_ALL find every claim. `q` is required. Eventually consistent (an indexer
+    /// copies rows). 503 `search.unavailable` when the search engine is not configured or unreachable.
     /// </summary>
     [HttpGet("search")]
     [HasPermission(Permissions.ClaimsRead)]

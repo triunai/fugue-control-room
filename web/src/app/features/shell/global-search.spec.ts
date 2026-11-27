@@ -6,7 +6,7 @@ import type { AuditSearchResultDto, ClaimSearchResultDto } from '../../api/gener
 import { AccessService } from '../../core/auth/access.service';
 import { ApiProblem } from '../../core/http/problem';
 import { GlobalSearch } from './global-search';
-import { isSearchOff, searchVisible, toRows } from './global-search-logic';
+import { facetSummary, isSearchOff, searchVisible, toClaimRows, toRows } from './global-search-logic';
 
 const hit = (i: number, over: object = {}) => ({
   id: `h${i}`,
@@ -132,5 +132,81 @@ describe('global search dropdown', () => {
   it('a 503 on claims shows "Search is unavailable" in the dropdown', async () => {
     const { root } = await typeAndSearch(['CLAIMS_READ'], OFF, () => Promise.resolve(AUDIT));
     expect(root.querySelector('[data-testid="claims-search-off"]')!.textContent).toContain('Search is unavailable');
+  });
+});
+
+const HIGHLIGHTED: ClaimSearchResultDto = {
+  estimatedTotalHits: 3,
+  facets: { market: { SG: 2, MY: 1 }, line: { Motor: 3 }, status: { UnderReview: 2, Submitted: 1, Settled: 0 } },
+  hits: [
+    {
+      ...CLAIMS.hits[0],
+      claimantName: 'Sam <b>Lee</b>',
+      highlights: {
+        number: 'CLM-SG-2026-<em>000009</em>',
+        line: '<em>Motor</em>',
+        incidentDescription: '…<em>Rear</em>-ended at the lights',
+        marketName: '<em>Singapore</em>',
+        claimantName: 'Sam <b><em>Lee</em></b>',
+      },
+    },
+  ],
+};
+
+describe('claim hits say why they matched', () => {
+  it('marks the matched words in the number, meta and description, and lists matches in hidden fields', () => {
+    const [row] = toClaimRows(HIGHLIGHTED);
+    expect(row.number).toEqual([
+      { text: 'CLM-SG-2026-', em: false },
+      { text: '000009', em: true },
+    ]);
+    expect(row.meta).toEqual([
+      { text: 'SG', em: false },
+      { text: ' · ', em: false },
+      { text: 'Motor', em: true },
+      { text: ' · ', em: false },
+      { text: 'Orchard Road', em: false },
+    ]);
+    expect(row.description[1]).toEqual({ text: 'Rear', em: true });
+    expect(row.matched.map((m) => m.label)).toEqual(['Claimant', 'Market']);
+    // Anything but <em> stays literal text (Angular escapes it), so a name can never inject markup.
+    expect(row.matched[0].text).toEqual([
+      { text: 'Sam <b>', em: false },
+      { text: 'Lee', em: true },
+      { text: '</b>', em: false },
+    ]);
+  });
+
+  it('without highlights a row shows the plain values and no "matched on" line', () => {
+    const [row] = toClaimRows(CLAIMS);
+    expect(row.number).toEqual([{ text: 'CLM-SG-2026-000009', em: false }]);
+    expect(row.description).toEqual([{ text: 'Rear-ended at the lights', em: false }]);
+    expect(row.matched).toEqual([]);
+  });
+
+  it('summarises the facet counts, largest first, with status labels and zero counts dropped', () => {
+    expect(facetSummary(HIGHLIGHTED)).toBe('Market SG 2, MY 1 · Line Motor 3 · Status Under review 2, Submitted 1');
+    expect(facetSummary(CLAIMS)).toBe('');
+  });
+
+  it('the dropdown renders <em> marks, the "matched on" line and the counts', async () => {
+    const { root } = await typeAndSearch(
+      ['CLAIMS_READ'],
+      () => Promise.resolve(HIGHLIGHTED),
+      () => Promise.resolve(AUDIT),
+    );
+    const hitEl = root.querySelector('[data-testid="claim-hit"]')!;
+    expect(Array.from(hitEl.querySelectorAll('em')).map((e) => e.textContent)).toEqual([
+      '000009',
+      'Motor',
+      'Rear',
+      'Lee',
+      'Singapore',
+    ]);
+    expect(hitEl.querySelector('b')).toBeNull();
+    // No padding around the marks: the number reads exactly as stored.
+    expect(hitEl.querySelector('.gs-action fg-gs-hl')!.textContent).toBe('CLM-SG-2026-000009');
+    expect(root.querySelector('[data-testid="claim-why"]')!.textContent).toContain('Market:');
+    expect(root.querySelector('[data-testid="claim-facets"]')!.textContent).toContain('3 matches · Market SG 2, MY 1');
   });
 });
