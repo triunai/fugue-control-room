@@ -12,6 +12,8 @@ set -a; source .env; set +a
 ASPNETCORE_ENVIRONMENT=Development Webhooks__AllowInsecureLocal=true Webhooks__MaxAttempts=3 Webhooks__BaseDelaySeconds=2 \
   ASPNETCORE_URLS=http://localhost:5080 dotnet run --project src/Fugue.Api -- --seed
 ```
+With `--seed` the sink is already subscribed to `claim.*` (subscription `dev sink (claim events)`, secret handed to the sink at startup; see runbook 11 section 5), so claim moves show up in the sink with no steps from section 2; sections 2 onward subscribe it to `customer.*` by hand.
+
 In another terminal sign in as admin (`WEBHOOKS_MANAGE` is admin only):
 ```bash
 PW='Fugue-Dev-Passw0rd!'  # secrets-scan:ignore

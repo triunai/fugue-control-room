@@ -1,0 +1,22 @@
+meta {
+  name: Counts filtered by officerId and maxAgeDays
+  type: http
+  seq: 34
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/counts?officerId={{assignedOfficerId}}&maxAgeDays=1
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{officerToken}}
+}
+
+tests {
+  test("200 and at least the new claim is counted", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.total).to.be.at.least(1);
+  });
+}

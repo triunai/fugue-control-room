@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Fugue.Application.Features.Claims;
+using Fugue.Application.Features.Webhooks.Sink;
 using Fugue.Domain.Claims;
 using Fugue.Domain.Identity;
 using Fugue.Infrastructure.Persistence.Seeding;
@@ -34,6 +35,38 @@ public sealed class ClaimSeederTests(PostgresFixture db) : IClassFixture<Postgre
         }
 
         return rows;
+    }
+
+    [Fact]
+    public async Task Seeded_questions_can_be_answered_in_text_and_never_ask_for_uploads()
+    {
+        List<string> questions = await RowsAsync("SELECT question FROM claim_info_requests", r => r.GetString(0));
+
+        Assert.NotEmpty(questions);
+        Assert.DoesNotContain(questions, q => q.Contains("photo", StringComparison.OrdinalIgnoreCase) || q.Contains("upload", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task The_dev_sink_subscription_for_claim_events_is_seeded_once_and_the_sink_trusts_its_secret()
+    {
+        await using AsyncServiceScope scope = db.Factory.Services.CreateAsyncScope();
+        IDevSinkSeeder seeder = scope.ServiceProvider.GetRequiredService<IDevSinkSeeder>();
+        IDevWebhookSink sink = scope.ServiceProvider.GetRequiredService<IDevWebhookSink>();
+
+        bool first = await seeder.SeedAsync("http://localhost:5080/api/v1/dev/webhook-sink", default);
+        string? secret = sink.Secret;
+        sink.Secret = null; // a restart: the sink forgets, the subscription stays
+        bool second = await seeder.SeedAsync("http://localhost:5199/api/v1/dev/webhook-sink", default);
+
+        Assert.True(first || (await RowsAsync("SELECT count(*) FROM webhook_subscriptions WHERE name = 'dev sink (claim events)'", r => r.GetInt64(0))).Single() == 1);
+        Assert.False(second);
+        Assert.NotNull(sink.Secret);
+        Assert.StartsWith("whsec_", sink.Secret, StringComparison.Ordinal);
+        Assert.True(!first || secret == sink.Secret); // the secret read back is the one generated on create
+        List<(string Url, string Types, bool Active)> rows = await RowsAsync(
+            "SELECT url, array_to_string(event_types, ','), is_active FROM webhook_subscriptions WHERE name = 'dev sink (claim events)'",
+            r => (r.GetString(0), r.GetString(1), r.GetBoolean(2)));
+        Assert.Equal(("http://localhost:5199/api/v1/dev/webhook-sink", "claim.*", true), Assert.Single(rows)); // the moved port is corrected, never duplicated
     }
 
     [Fact]

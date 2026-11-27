@@ -75,6 +75,18 @@ public sealed record ClaimSettled(ClaimId Id, string Number, ClaimStatus Status,
     string IDomainEvent.AggregateId => Id.ToString();
 }
 
+/// <summary>The internal reserve was set or revised. Thin like the others: no amount (the reserve is internal; a consumer reads the claim over REST).</summary>
+public sealed record ClaimReserveSet(ClaimId Id, string Number, ClaimStatus Status, Market Market) : IDomainEvent
+{
+    public const string Type = "claim.reserve.set.v1";
+
+    string IDomainEvent.EventType => Type;
+
+    string IDomainEvent.AggregateType => ClaimEventNames.Aggregate;
+
+    string IDomainEvent.AggregateId => Id.ToString();
+}
+
 internal static class ClaimEventNames
 {
     public const string Aggregate = "claim";

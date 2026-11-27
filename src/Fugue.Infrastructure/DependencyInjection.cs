@@ -136,6 +136,7 @@ public static class DependencyInjection
         services.AddScoped<IClaimRepository, ClaimRepository>();
         services.AddScoped<IClaimReports, ClaimReports>();
         services.AddScoped<IClaimSeeder, ClaimSeeder>();
+        services.AddScoped<IDevSinkSeeder, DevSinkSeeder>();
 
         services.Configure<PasswordOptions>(o =>
         {

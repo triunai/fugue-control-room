@@ -27,18 +27,18 @@ Rules worth knowing: approving needs a reserve and `0 < amount <= reserve`; only
 | Call | Permission | Notes |
 |---|---|---|
 | `POST /` | `CLAIMS_SUBMIT` | body `market, line, policyNumber, incidentDate, incidentDescription, incidentLocation?`; header `Idempotency-Key` required; 201 + `Location` + `ETag`. Incident date: not in the future, not older than a year (market's calendar day) |
-| `GET /` | `CLAIMS_READ` | keyset paged (`limit`, `cursor`; next page in `Link` and `X-Next-Cursor`). Claimant: own claims, newest first. Staff (`CLAIMS_ALL`): all claims, OLDEST first. Filters `status` (repeat or comma), `assigned=me\|none\|any`, `market`, `line`, `q` (claim or policy number) |
+| `GET /` | `CLAIMS_READ` | keyset paged (`limit`, `cursor`; next page in `Link` and `X-Next-Cursor`). Claimant: own claims, newest first. Staff (`CLAIMS_ALL`): all claims, OLDEST first. Filters `status` (repeat or comma), `assigned=me\|none\|any`, `officerId` (staff; a claimant gets nothing), `minAgeDays` / `maxAgeDays` (whole elapsed days since submit, UTC, inclusive; 400 when negative, over 3650 or max below min), `market`, `line`, `q` (claim or policy number) |
 | `GET /{id}`, `GET /{id}/timeline` | `CLAIMS_READ` | own claim or `CLAIMS_ALL`, else 404 |
 | `GET /{id}/info-requests` | `CLAIMS_READ` | every question newest first: `question`, `askedBy`, `askedAt`, `answer`, `answeredAt` (null while open); same scope as the timeline (404 outside it); a claimant reads staff askers as `Claims team` |
-| `GET /counts` | `CLAIMS_READ` | claims per status (`byStatus`, every status present, zero included) plus `total`; claimant: own, staff: all; filters `assigned`, `market`, `line`, `q` as the list (no `status`) |
+| `GET /counts` | `CLAIMS_READ` | claims per status (`byStatus`, every status present, zero included) plus `total`; claimant: own, staff: all; filters `assigned`, `officerId`, `minAgeDays`, `maxAgeDays`, `market`, `line`, `q` as the list (no `status`) |
 | `POST /{id}/pickup` | `CLAIMS_HANDLE` | `If-Match` required |
 | `PUT /{id}/reserve` | `CLAIMS_HANDLE` | body `{amountMinor}` |
 | `POST /{id}/info-requests` | `CLAIMS_HANDLE` | body `{question}` |
 | `POST /{id}/info-requests/{requestId}/response` | `CLAIMS_RESPOND` | body `{answer}`; the claim must be the caller's own |
 | `POST /{id}/decision` | `CLAIMS_HANDLE` | body `{outcome: approve\|reject, amountMinor?, reason}` |
 | `POST /{id}/settle` | `CLAIMS_SETTLE` | Approved only |
-| `GET /workload` | `CLAIMS_WORKLOAD` | per officer: open by status, oldest open age, decided in 7 and 30 days, median days to decide; unassigned; ageing bands |
-| `GET /exposure` | `CLAIMS_EXPOSURE` | per market, line and currency: open count, outstanding reserve, approved-not-settled; totals per currency |
+| `GET /workload` | `CLAIMS_WORKLOAD` | per officer (idle officers who can handle claims included, with zeros): open by status, oldest open age and `oldestOpenClaimId`, decided in 7 and 30 days, median days to decide; unassigned; ageing bands |
+| `GET /exposure` | `CLAIMS_EXPOSURE` | per market, line and currency: open count, outstanding reserve, `unreservedOpenCount` (open claims with no reserve: unknown, not zero), approved-not-settled; totals per currency |
 
 Every mutation after submit answers 200 with the claim as it now stands and its new `ETag`. Errors are RFC 9457 problems; the `code` is stable: `claim.not_found` (404), `claim.version_mismatch` (412), `claim.if_match_required` (428), `claim.invalid_transition`, `claim.reserve_required`, `claim.not_assigned_to_you` (409), `claim.amount_invalid` (400), `claim.info_request_not_found` (404), `idempotency.key_required` (400, submit without an `Idempotency-Key`).
 
@@ -71,7 +71,7 @@ Expect: `201 Created`, a `Location` ending in the new id, an `ETag`, and a body 
 ```bash
 call POST /$ID/pickup $STAFF                                                   # 200, status UnderReview, you are the officer
 call PUT  /$ID/reserve $STAFF '{"amountMinor":250000}'                         # SGD 2,500.00 (minor units); the claimant never sees it
-call POST /$ID/info-requests $STAFF '{"question":"Photos of the damage?"}'     # status InfoRequested
+call POST /$ID/info-requests $STAFF '{"question":"What is the other driver registration number?"}'     # status InfoRequested
 RID=$(curl -s $B/$ID -H "Authorization: Bearer $SELF" | sed 's/.*"openInfoRequest":{"id":"\([^"]*\)".*/\1/')
 call POST /$ID/info-requests/$RID/response $SELF '{"answer":"Attached."}'      # the claimant answers: UnderReview again
 call POST /$ID/decision $STAFF '{"outcome":"approve","amountMinor":200000,"reason":"Covered."}'   # Approved
@@ -105,12 +105,12 @@ Expect on a freshly seeded database: `workload` lists `Dev Staff` and `Dev Manag
 
 ## 5. The seed
 
-`--seed` (Development) writes 20 claims, idempotently (a second run writes none): every market, both lines, every status, amounts in minor units (all six currencies treated as 2 decimals, so IDR 15,000,000 is `1500000000`), timelines built through the real state machine, a mix of officers (`staff@`, `manager@`), three claims owned by `self@` (one InfoRequested with an open question), and no outbox events (seeding must not fire webhooks). Their numbers are `CLM-<market>-<year>-9000NN`.
+`--seed` (Development) writes 20 claims, idempotently (a second run writes none): every market, both lines, every status, amounts in minor units (all six currencies treated as 2 decimals, so IDR 15,000,000 is `1500000000`), timelines built through the real state machine, a mix of officers (`staff@`, `manager@`), three claims owned by `self@` (one InfoRequested with an open question), and no outbox events (seeding must not fire webhooks). The seeded questions are ones a text answer satisfies (the other driver's registration and where the car is; which rooms are affected). Also in Development the seed subscribes the dev sink to `claim.*` (a subscription named `dev sink (claim events)`, created once, its URL corrected to the API's own listen URL or `Seed:DevSinkUrl`, and the sink is given its secret on every start because the sink forgets it), so with `Webhooks__AllowInsecureLocal=true` the Webhooks screen's sink tab shows claim events as you act on a claim, with no manual subscribe step. Their numbers are `CLM-<market>-<year>-9000NN`.
 
 ## 6. Events
 
-Every move also emits an outbox event keyed by the claim id (so per-claim order holds): `claim.submitted.v1`, `claim.assigned.v1`, `claim.info.requested.v1`, `claim.info.provided.v1`, `claim.decided.v1` (status says approved or rejected), `claim.settled.v1`. Payloads are thin on purpose: `id`, `number`, `status`, `market` (`line` on submitted); never the description, reserve or amounts. Subscribe to `claim.*` as in runbook 07.
+Every move also emits an outbox event keyed by the claim id (so per-claim order holds): `claim.submitted.v1`, `claim.assigned.v1`, `claim.info.requested.v1`, `claim.info.provided.v1`, `claim.reserve.set.v1` (the reserve was set or revised; no amount), `claim.decided.v1` (status says approved or rejected), `claim.settled.v1`. Payloads are thin on purpose: `id`, `number`, `status`, `market` (`line` on submitted); never the description, reserve or amounts. Subscribe to `claim.*` as in runbook 07.
 
 ## 7. Regression suite (Bruno)
 
-`bruno/fugue/claims/` replays this walk-through as 30 requests with assertions: submit (201, Location, ETag), the claimant's own list, 404 for another claimant, the staff queue oldest first, 428, 412 stale then 409 fresh, reserve required (409), over the reserve (400), not the assigned officer (409), the question and the answer (and 404 for the wrong claimant), approve, 403 for staff settling, the manager settling, settle again (409), the claimant's timeline, workload, exposure and its 403, the per-status counts (and a 400 for a bad filter) and the past questions (and 404 for another claimant). Run it with the API up and seeded (`npm run api:test`, or `cd bruno/fugue && npx bru run claims --env local`). The suite signs in five accounts per run and the sign-in limiter allows 20 per minute per IP, so wait a minute between two full runs.
+`bruno/fugue/claims/` replays this walk-through as 38 requests with assertions: submit (201, Location, ETag), the claimant's own list, 404 for another claimant, the staff queue oldest first, 428, 412 stale then 409 fresh, reserve required (409), over the reserve (400), not the assigned officer (409), the question and the answer (and 404 for the wrong claimant), approve, 403 for staff settling, the manager settling, settle again (409), the claimant's timeline, workload, exposure and its 403, the per-status counts (and a 400 for a bad filter) and the past questions (and 404 for another claimant), then the drill-down filters (`officerId`, `minAgeDays`, `maxAgeDays` on the list and counts, a 400 for max below min, an empty answer for a claimant using `officerId`), the workload's `oldestOpenClaimId` and the exposure's `unreservedOpenCount`. Run it with the API up and seeded (`npm run api:test`, or `cd bruno/fugue && npx bru run claims --env local`). The suite signs in five accounts per run and the sign-in limiter allows 20 per minute per IP, so wait a minute between two full runs.

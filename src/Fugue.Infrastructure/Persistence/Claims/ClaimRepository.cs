@@ -235,6 +235,23 @@ internal sealed class ClaimRepository(FugueDbContext db, SqlExecutor sql, IAudit
             _ => query,
         };
 
+        if (filter.OfficerId is { } officerGuid)
+        {
+            // Staff only: a claimant never learns who handles their claim, so the officer filter must not become a way to probe it.
+            UserId officer = UserId.From(officerGuid);
+            query = scope.All ? query.Where(c => c.AssignedOfficerId == officer) : query.Where(_ => false);
+        }
+
+        if (filter.SubmittedAtOrBefore is { } atOrBefore)
+        {
+            query = query.Where(c => c.SubmittedAt <= atOrBefore);
+        }
+
+        if (filter.SubmittedAfter is { } after)
+        {
+            query = query.Where(c => c.SubmittedAt > after);
+        }
+
         if (filter.Market is { } market)
         {
             query = query.Where(c => c.Market == market);

@@ -9,7 +9,7 @@ import type { ExposureRowDto } from './exposureRowDto';
 import type { ExposureTotalDto } from './exposureTotalDto';
 
 /**
- * The company's exposure per market and line, in the market's own currency. Amounts are bigint minor units and are NEVER added across currencies: `Totals` are per currency. `OutstandingReserveMinor` sums the reserves of open claims only; an approved claim leaves it and shows as `ApprovedNotSettled` until it is settled; rejected and settled claims are not exposure.
+ * The company's exposure per market and line, in the market's own currency. Amounts are bigint minor units and are NEVER added across currencies: `Totals` are per currency. `OutstandingReserveMinor` sums the reserves of open claims only; an approved claim leaves it and shows as `ApprovedNotSettled` until it is settled; rejected and settled claims are not exposure. `UnreservedOpenCount` is the open claims with no reserve yet: their exposure is unknown, so it must not be read as zero.
  */
 export interface ClaimExposureDto {
   asOf: string;

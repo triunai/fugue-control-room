@@ -1,0 +1,28 @@
+meta {
+  name: Staff read the claim to learn its assigned officer
+  type: http
+  seq: 31
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{officerToken}}
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("assignedOfficerId", res.body.assignedOfficerId);
+  }
+}
+
+tests {
+  test("200 and the claim has an assigned officer", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.assignedOfficerId).to.be.a("string");
+  });
+}

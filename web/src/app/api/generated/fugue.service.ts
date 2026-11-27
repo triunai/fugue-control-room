@@ -379,7 +379,7 @@ export class FugueAPIService {
   }
 
 /**
- * @summary List claims, keyset paged. A claimant sees their own, newest first; staff with CLAIMS_ALL see every claim, oldest first (the work queue). Filter by `status` (repeat it or comma separate), `assigned` (me, none, any), `market`, `line` and `q` (claim number or policy number).
+ * @summary List claims, keyset paged. A claimant sees their own, newest first; staff with CLAIMS_ALL see every claim, oldest first (the work queue). Filter by `status` (repeat it or comma separate), `assigned` (me, none, any), `officerId` (staff), `minAgeDays` / `maxAgeDays` (whole days since submission, UTC, inclusive), `market`, `line` and `q` (claim number or policy number).
  */
  claimsList<TData = ClaimDto[]>(params?: ClaimsListParams, options?: HttpClientBodyOptions): Observable<TData>;
  claimsList<TData = ClaimDto[]>(params?: ClaimsListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
@@ -452,7 +452,7 @@ export class FugueAPIService {
   }
 
 /**
- * @summary Claim counts per status for the tabs: every status is present (zero included) plus a total. Same scope as the list (a claimant counts their own, staff all) and the same `assigned`, `market`, `line` and `q` filters; `status` is not a filter here.
+ * @summary Claim counts per status for the tabs: every status is present (zero included) plus a total. Same scope as the list (a claimant counts their own, staff all) and the same `assigned`, `officerId`, `minAgeDays`, `maxAgeDays`, `market`, `line` and `q` filters; `status` is not a filter here.
  */
  claimsCounts<TData = ClaimCountsDto>(params?: ClaimsCountsParams, options?: HttpClientBodyOptions): Observable<TData>;
  claimsCounts<TData = ClaimCountsDto>(params?: ClaimsCountsParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
