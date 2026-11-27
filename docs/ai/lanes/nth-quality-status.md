@@ -10,7 +10,8 @@ Branch `nth-quality`, base `b875f49`. No `src/**` or `web/**` change (`git diff 
 | `853fab0` | test(application): pairwise claim action cases |
 | `5a6b39e` | test(perf): k6 scripts for the claims API |
 | `42ee9fc` | docs(docs): how the AI harness runs this repo |
-| (this file) | docs(docs): nth-quality lane status |
+| `de9dc73` | docs(docs): nth-quality lane status (committed WITHOUT the `Refs:`/`Co-Authored-By` trailer block, my slip; no amend per the brief) |
+| (follow-up) | docs(docs): nth-quality status trailer note (this correction) |
 
 ## Validation (copied from output, worktree at `42ee9fc`)
 
