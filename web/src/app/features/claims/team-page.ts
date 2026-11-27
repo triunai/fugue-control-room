@@ -8,7 +8,7 @@ import { RelativeTimePipe, StampPipe } from '../../ui/format';
 import { livePoll } from './live-poll';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
 import { MoneyPipe } from './claim-bits';
-import { SLA_DECISION_DAYS, SLA_PICKUP_DAYS } from './claims-logic';
+import { SLA_DECISION_DAYS, SLA_PICKUP_DAYS, marketFlag } from './claims-logic';
 import {
   ExposureRowX,
   bandWindow,
@@ -234,7 +234,7 @@ type OfficerX = OfficerWorkloadDto & { oldestOpenClaimId?: string | null };
                   @for (r of matrix(); track r.market) {
                     <tr>
                       <th scope="row">
-                        {{ r.marketName }} <span class="sub mono">{{ r.currency }}</span>
+                        <span aria-hidden="true">{{ flag(r.market) }}</span> {{ r.marketName }} <span class="sub mono">{{ r.currency }}</span>
                       </th>
                       @for (c of [r.motor, r.property]; track $index) {
                         <td>
@@ -284,6 +284,7 @@ export class TeamPage {
   private readonly api = inject(ClaimsApi);
   private readonly access = inject(AccessService);
 
+  protected readonly flag = marketFlag;
   protected readonly slaDays = SLA_DECISION_DAYS;
   protected readonly pickupDays = SLA_PICKUP_DAYS;
   protected readonly canTeam = computed(() => this.access.has('CLAIMS_WORKLOAD'));

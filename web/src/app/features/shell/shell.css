@@ -89,3 +89,8 @@
   }
 }
 
+/* Entrance-animation host only: each page owns its own .page padding and max-width. */
+.page-host {
+  width: 100%;
+  min-width: 0;
+}
