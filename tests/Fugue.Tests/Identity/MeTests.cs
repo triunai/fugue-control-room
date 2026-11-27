@@ -16,7 +16,7 @@ namespace Fugue.Tests.Identity;
 [Collection(PostgresCollectionDefinition.Name)]
 public sealed class MeTests(PostgresFixture db)
 {
-    private static readonly string[] AllModules = ["AUDIT", "CUSTOMERS", "IDENTITY", "SYSTEM", "WEBHOOKS"];
+    private static readonly string[] AllModules = ["AUDIT", "CLAIMS", "CUSTOMERS", "IDENTITY", "SYSTEM", "WEBHOOKS"];
 
     private static string[] Sorted(IEnumerable<string> codes) => [.. codes.Order(StringComparer.Ordinal)];
 
@@ -45,19 +45,22 @@ public sealed class MeTests(PostgresFixture db)
     }
 
     [Fact]
-    public async Task Staff_has_only_the_customers_permissions_but_sees_every_enabled_module()
+    public async Task Staff_has_the_customers_and_claims_staff_permissions_and_sees_every_enabled_module()
     {
         using HttpClient staff = db.ClientAs(DevUsers.Staff);
 
         MeDto me = await Me(staff);
 
         Assert.Equal([RoleCodes.Staff], me.Roles);
-        Assert.Equal(Sorted(Permissions.All.Where(p => p.StartsWith("CUSTOMERS_", StringComparison.Ordinal))), me.Permissions);
+        Assert.Equal(
+            Sorted(Permissions.All.Where(p => p.StartsWith("CUSTOMERS_", StringComparison.Ordinal))
+                .Concat([Permissions.ClaimsRead, Permissions.ClaimsAll, Permissions.ClaimsHandle, Permissions.ClaimsWorkload])),
+            me.Permissions);
         Assert.Equal(AllModules, me.Modules.Select(m => m.Code)); // modules are what is switched on, not what this user may use
     }
 
     [Fact]
-    public async Task Self_service_has_view_and_edit_and_nothing_else()
+    public async Task Self_service_has_customer_view_and_edit_and_the_claimant_claims_set_and_nothing_else()
     {
         using HttpClient self = db.ClientAs(DevUsers.Self);
 
@@ -65,7 +68,9 @@ public sealed class MeTests(PostgresFixture db)
 
         Assert.Equal(DevUsers.Self, me.Email);
         Assert.Equal([RoleCodes.SelfService], me.Roles);
-        Assert.Equal([Permissions.CustomersEdit, Permissions.CustomersView], me.Permissions);
+        Assert.Equal(
+            [Permissions.ClaimsRead, Permissions.ClaimsRespond, Permissions.ClaimsSubmit, Permissions.CustomersEdit, Permissions.CustomersView],
+            me.Permissions);
     }
 
     [Fact]
@@ -96,7 +101,9 @@ public sealed class MeTests(PostgresFixture db)
 
         MeDto me = await Me(client);
 
-        Assert.Equal([Permissions.AuditRead, Permissions.CustomersView], me.Permissions);
+        Assert.Equal(
+            [Permissions.AuditRead, Permissions.ClaimsRead, Permissions.ClaimsRespond, Permissions.ClaimsSubmit, Permissions.CustomersView],
+            me.Permissions);
     }
 
     [Fact]
@@ -113,7 +120,8 @@ public sealed class MeTests(PostgresFixture db)
             MeDto me = await Me(staff);
 
             Assert.DoesNotContain(me.Modules, m => m.Code == ModuleCodes.Customers);
-            Assert.Empty(me.Permissions); // staff held only customers permissions
+            Assert.DoesNotContain(me.Permissions, p => p.StartsWith("CUSTOMERS_", StringComparison.Ordinal)); // the customers permissions go with the module
+            Assert.Contains(Permissions.ClaimsRead, me.Permissions); // other modules are untouched
             Assert.Equal([RoleCodes.Staff], me.Roles); // the role is still held; it just grants nothing now
         }
         finally
