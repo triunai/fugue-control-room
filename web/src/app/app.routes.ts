@@ -6,8 +6,11 @@ import { ACCESS_HOOD } from './features/access/access-page.hood';
 import { AUDIT_HOOD } from './features/audit/audit-page.hood';
 import { SCORE_HOOD } from './features/audit/score-page.hood';
 import { CLAIM_DETAIL_HOOD } from './features/claims/claim-detail-page.hood';
+import { CLAIM_ASSESSMENT_HOOD } from './features/claims/claim-assessment-page.hood';
+import { CLAIMS_CALENDAR_HOOD } from './features/claims/claims-calendar-page.hood';
 import { CLAIMS_QUEUE_HOOD } from './features/claims/claims-queue-page.hood';
 import { MY_CLAIMS_HOOD } from './features/claims/my-claims-page.hood';
+import { RESERVE_SHEET_HOOD } from './features/claims/reserve-sheet-page.hood';
 import { REPORT_HOOD } from './features/claims/report-page.hood';
 import { TEAM_HOOD } from './features/claims/team-page.hood';
 import { CUSTOMERS_HOOD } from './features/customers/customers-page.hood';
@@ -90,21 +93,21 @@ export const routes: Routes = [
       {
         path: 'claims/sheet',
         canActivate: [permissionGuard],
-        data: { permission: 'CLAIMS_HANDLE', section: 'Claims', breadcrumb: 'Reserve sheet' },
+        data: { hood: RESERVE_SHEET_HOOD, permission: 'CLAIMS_HANDLE', section: 'Claims', breadcrumb: 'Reserve sheet' },
         title: 'Reserve sheet · Fugue Console',
         loadComponent: () => import('./features/claims/reserve-sheet-page').then((m) => m.ReserveSheetPage),
       },
       {
         path: 'claims/calendar',
         canActivate: [permissionGuard],
-        data: { permission: 'CLAIMS_READ', section: 'Claims', breadcrumb: 'SLA calendar' },
+        data: { hood: CLAIMS_CALENDAR_HOOD, permission: 'CLAIMS_READ', section: 'Claims', breadcrumb: 'SLA calendar' },
         title: 'SLA calendar · Fugue Console',
         loadComponent: () => import('./features/claims/claims-calendar-page').then((m) => m.ClaimsCalendarPage),
       },
       {
         path: 'claims/:id/assessment',
         canActivate: [permissionGuard],
-        data: { permission: 'CLAIMS_HANDLE', section: 'Claims', breadcrumb: 'Assessment' },
+        data: { hood: CLAIM_ASSESSMENT_HOOD, permission: 'CLAIMS_HANDLE', section: 'Claims', breadcrumb: 'Assessment' },
         title: 'Assessment · Fugue Console',
         loadComponent: () => import('./features/claims/claim-assessment-page').then((m) => m.ClaimAssessmentPage),
       },
