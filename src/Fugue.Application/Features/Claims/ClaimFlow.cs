@@ -8,8 +8,8 @@ using Fugue.Domain.Ids;
 namespace Fugue.Application.Features.Claims;
 
 /// <summary>
-/// The shape every state-changing claim command shares: require If-Match (428), load within the caller's scope (404), run the aggregate's guarded
-/// move (409/400), save with the version check (412), and answer with the claim as it now stands.
+/// The shape every state-changing claim command shares: require If-Match (428), load within the caller's scope (404), check the version (412), run the
+/// aggregate's guarded move (409/400), save with the version check again, and answer with the claim as it now stands.
 /// </summary>
 internal static class ClaimFlow
 {
@@ -25,6 +25,13 @@ internal static class ClaimFlow
         if (claim is null)
         {
             return Result.Fail<ClaimDto>(ClaimErrors.NotFound(id));
+        }
+
+        // A stale ETag is 412 whatever state the claim is in now: the caller must re-read before the state machine gets a say. The repository
+        // checks again on save (the SQL write carries the version) for a write that races in after this load.
+        if (claim.RowVersion != expected)
+        {
+            return Result.Fail<ClaimDto>(ClaimErrors.VersionMismatch());
         }
 
         Result moved = move(claim);
