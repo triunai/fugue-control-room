@@ -98,24 +98,36 @@ public sealed class ClaimSearchTests(PostgresFixture db) : IAsyncLifetime
     [Fact]
     public async Task Search_matches_policy_place_and_description_and_a_changed_claim_is_reindexed()
     {
-        HttpClient self = await ClientAsync(_factory, DevUsers.Self);
-        HttpClient staff = await ClientAsync(_factory, DevUsers.Staff);
-        ClaimDto claim = await SubmitAsync(self, "Hailstorm dented the bonnet");
-        await IndexAsync(_factory);
+        // The fixture database and clock are shared by the whole collection, and other tests leave claims with later updated_at values
+        // (ClaimReportsTests writes around 2030-03). The cursor follows the latest updated_at, so this test runs after all of them and
+        // puts the clock back when it is done.
+        DateTimeOffset original = db.Clock.Now;
+        db.Clock.Now = new DateTimeOffset(2099, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        try
+        {
+            HttpClient self = await ClientAsync(_factory, DevUsers.Self);
+            HttpClient staff = await ClientAsync(_factory, DevUsers.Staff);
+            ClaimDto claim = await SubmitAsync(self, "Hailstorm dented the bonnet");
+            await IndexAsync(_factory);
 
-        Assert.Contains(claim.Number, await NumbersAsync(self, claim.PolicyNumber));
-        Assert.Contains(claim.Number, await NumbersAsync(staff, "Hailstorm"));
-        Assert.Contains(claim.Number, await NumbersAsync(staff, "Orchard"));
+            Assert.Contains(claim.Number, await NumbersAsync(self, claim.PolicyNumber));
+            Assert.Contains(claim.Number, await NumbersAsync(staff, "Hailstorm"));
+            Assert.Contains(claim.Number, await NumbersAsync(staff, "Orchard"));
 
-        db.Clock.Now = db.Clock.Now.AddMinutes(5); // the fixture clock is frozen; a real change gets a later updated_at, which is what the cursor follows
-        HttpResponseMessage pickup = await ClaimsHarness.SendAsync(staff, HttpMethod.Post, $"/api/v1/claims/{claim.Id}/pickup", claim.Version);
-        Assert.Equal(HttpStatusCode.OK, pickup.StatusCode);
-        Assert.True(await IndexAsync(_factory) >= 1);
+            db.Clock.Now = db.Clock.Now.AddMinutes(5); // a real change gets a later updated_at, which is what the cursor follows
+            HttpResponseMessage pickup = await ClaimsHarness.SendAsync(staff, HttpMethod.Post, $"/api/v1/claims/{claim.Id}/pickup", claim.Version);
+            Assert.Equal(HttpStatusCode.OK, pickup.StatusCode);
+            Assert.True(await IndexAsync(_factory) >= 1);
 
-        HttpResponseMessage hits = await staff.GetAsync("/api/v1/claims/search?q=" + claim.Number);
-        JsonElement hit = (await hits.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("hits").EnumerateArray().First();
-        Assert.Equal("UnderReview", hit.GetProperty("status").GetString());
-        Assert.False(hit.TryGetProperty("claimantUserId", out _));
+            HttpResponseMessage hits = await staff.GetAsync("/api/v1/claims/search?q=" + claim.Number);
+            JsonElement hit = (await hits.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("hits").EnumerateArray().First();
+            Assert.Equal("UnderReview", hit.GetProperty("status").GetString());
+            Assert.False(hit.TryGetProperty("claimantUserId", out _));
+        }
+        finally
+        {
+            db.Clock.Now = original;
+        }
     }
 
     [Fact]
