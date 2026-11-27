@@ -41,7 +41,7 @@ test('a claim from report to settlement, and the changed-since-you-opened-it ban
   await claimant.getByLabel('Your answer').fill('Photos are in the shared folder.');
   await claimant.getByRole('button', { name: 'Send answer' }).click();
   await expect(claimant.getByText('Answer sent')).toBeVisible();
-  await expect(claimant.getByText('An officer is reviewing your claim.', { exact: true })).toBeVisible();
+  await expect(claimant.getByTestId('next-instruction')).toHaveText('An officer is reviewing your claim.');
   await expect(claimant.locator('body')).not.toContainText('2,500.00');
 
   // 412: the officer's page is now stale because the manager changes the claim through the API first.

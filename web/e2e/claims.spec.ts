@@ -27,16 +27,20 @@ test('claimant reports, staff picks up, claimant sees it move', async ({ browser
   const heading = claimant.getByRole('heading', { level: 1 });
   await expect(heading).toHaveText(/^CLM-SG-\d{4}-\d+$/);
   const number = (await heading.textContent())!.trim();
-  await expect(claimant.getByText('We have your claim.', { exact: true })).toBeVisible();
+  await expect(claimant.getByTestId('next-instruction')).toHaveText('We have your claim.');
 
   // It is in My claims.
   await claimant.getByRole('link', { name: 'My claims' }).first().click();
   await expect(claimant.getByRole('link', { name: number })).toBeVisible();
 
-  // Staff: find it in the queue by number and pick it up.
+  // Staff: find it by number and pick it up. Search is indexed after the claim is written, so retry on a fresh load.
   await signIn(staff, 'staff@fugue.test');
   await expect(staff).toHaveURL(/claims\/queue/);
-  await staff.getByPlaceholder('Claim or policy number').fill(number);
+  await expect(async () => {
+    await staff.reload();
+    await staff.getByPlaceholder('Search by claim number, policy, place or description').fill(number);
+    await expect(staff.getByRole('link', { name: number })).toBeVisible({ timeout: 2_500 });
+  }).toPass({ timeout: 30_000 });
   await staff.getByRole('link', { name: number }).click();
   await expect(staff.getByRole('heading', { level: 1 })).toHaveText(number);
   await staff.getByRole('button', { name: 'Pick up' }).click();
@@ -46,7 +50,7 @@ test('claimant reports, staff picks up, claimant sees it move', async ({ browser
 
   // Claimant: the claim moved, in plain words.
   await claimant.getByRole('link', { name: number }).click();
-  await expect(claimant.getByText('An officer is reviewing your claim')).toBeVisible();
+  await expect(claimant.getByTestId('next-instruction')).toHaveText('An officer is reviewing your claim.');
   await expect(claimant.getByTestId('timeline')).toContainText('A claims officer has started reviewing your claim.');
 });
 
