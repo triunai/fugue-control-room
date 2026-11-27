@@ -34,6 +34,12 @@ public interface IPasswordVerifier
     bool Verify(string? hash, string password);
 }
 
+/// <summary>Hashes a new password (the same <c>PasswordHasher</c> settings <see cref="IPasswordVerifier"/> checks against).</summary>
+public interface IPasswordHasher
+{
+    string Hash(string password);
+}
+
 /// <summary>An issued access token.</summary>
 public sealed record IssuedToken(string Value, DateTimeOffset ExpiresAt);
 

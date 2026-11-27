@@ -171,6 +171,7 @@ public static class DependencyInjection
         });
         services.AddSingleton<PasswordVerifier>();
         services.AddSingleton<IPasswordVerifier>(sp => sp.GetRequiredService<PasswordVerifier>());
+        services.AddSingleton<IPasswordHasher>(sp => sp.GetRequiredService<PasswordVerifier>());
         services.AddSingleton<IModuleConfig, ConfigModuleSwitch>();
         services.AddScoped<IUserAccessReader, UserAccessReader>();
         services.AddScoped<Fugue.Application.Features.Me.IMeReader, MeReader>();
@@ -181,6 +182,7 @@ public static class DependencyInjection
         services.AddScoped<Fugue.Application.Features.Groups.IGroupAdmin, GroupAdmin>();
         services.AddScoped<Fugue.Application.Features.Overrides.IOverrideAdmin, OverrideAdmin>();
         services.AddScoped<Fugue.Application.Features.Users.IUserDirectory, UserDirectory>();
+        services.AddScoped<Fugue.Application.Features.Users.IUserAdmin, UserAdmin>();
         services.AddScoped<Fugue.Application.Features.Roles.IRoleCatalog, RoleCatalog>();
         services.AddScoped<IGrantAuditWriter, GrantAuditWriter>();
         services.AddScoped<IIdentitySeeder, IdentitySeeder>();

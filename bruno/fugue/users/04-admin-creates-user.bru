@@ -1,0 +1,38 @@
+meta {
+  name: Admin creates a staff user who can sign in: 201
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/v1/users
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}
+
+script:pre-request {
+  bru.setVar("newUserEmail", "bruno-" + Date.now() + "@fugue.test");
+  bru.setVar("newUserPw", "Bruno-Initial-" + Date.now()); // secrets-scan:ignore
+  req.setBody({ email: bru.getVar("newUserEmail"), displayName: "Bruno Created", password: bru.getVar("newUserPw"), roles: ["STAFF"] }); // secrets-scan:ignore
+}
+
+tests {
+  test("201 with Location, the staff role and no password", async function () {
+    expect(res.status).to.equal(201);
+    expect(res.headers.location).to.include("/api/v1/users/" + res.body.id);
+    expect(res.body.email).to.equal(bru.getVar("newUserEmail"));
+    expect(res.body.roles).to.eql(["STAFF"]);
+    expect(JSON.stringify(res.body).toLowerCase()).to.not.include("password");
+    const signIn = await bru.sendRequest({
+      method: "POST",
+      url: bru.getEnvVar("baseUrl") + "/api/v1/auth/token",
+      headers: { "Content-Type": "application/json" },
+      data: { email: bru.getVar("newUserEmail"), password: bru.getVar("newUserPw") }, // secrets-scan:ignore
+    });
+    expect(signIn.status).to.equal(200);
+  });
+}

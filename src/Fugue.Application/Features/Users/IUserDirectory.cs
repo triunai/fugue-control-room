@@ -1,4 +1,5 @@
 using Fugue.Application.Common;
+using Fugue.Domain.Ids;
 
 namespace Fugue.Application.Features.Users;
 
@@ -10,4 +11,7 @@ public interface IUserDirectory
     /// to learn whether another page exists. <paramref name="search"/> matches the email or the display name, case-insensitively.
     /// </summary>
     Task<IReadOnlyList<UserDto>> ListAsync(string? search, KeysetCursor? after, int take, CancellationToken ct);
+
+    /// <summary>One live user, or null when unknown or soft-deleted.</summary>
+    Task<UserDto?> GetAsync(UserId id, CancellationToken ct);
 }

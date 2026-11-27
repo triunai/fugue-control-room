@@ -25,9 +25,15 @@ internal sealed class UserDirectory(FugueDbContext db) : IUserDirectory
             query = query.Where(u => EF.Functions.ILike(u.Email, pattern, "\\") || EF.Functions.ILike(u.DisplayName, pattern, "\\"));
         }
 
-        var page = await query.OrderBy(u => u.CreatedAt).ThenBy(u => u.Id).Take(take)
-            .Select(u => new { u.Id, u.Email, u.DisplayName, u.IsActive, u.CreatedAt })
-            .ToListAsync(ct);
+        return await ProjectAsync(query.OrderBy(u => u.CreatedAt).ThenBy(u => u.Id).Take(take), ct);
+    }
+
+    public async Task<UserDto?> GetAsync(UserId id, CancellationToken ct) =>
+        (await ProjectAsync(db.Users.AsNoTracking().Where(u => u.Id == id && !u.IsDeleted), ct)).SingleOrDefault();
+
+    private async Task<IReadOnlyList<UserDto>> ProjectAsync(IQueryable<User> query, CancellationToken ct)
+    {
+        var page = await query.Select(u => new { u.Id, u.Email, u.DisplayName, u.IsActive, u.CreatedAt }).ToListAsync(ct);
         UserId[] ids = [.. page.Select(u => u.Id)];
 
         // Two follow-up reads for the page only (never per row): direct roles, then group memberships.

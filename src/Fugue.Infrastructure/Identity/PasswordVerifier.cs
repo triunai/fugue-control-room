@@ -18,7 +18,7 @@ public sealed class PasswordOptions
 /// the string). Verifying with no stored hash checks a dummy produced with the same settings, so timing does not reveal
 /// whether an account exists.
 /// </summary>
-public sealed class PasswordVerifier : IPasswordVerifier
+public sealed class PasswordVerifier : IPasswordVerifier, IPasswordHasher
 {
     private readonly PasswordHasher<User> _hasher;
     private readonly string _dummyHash;
