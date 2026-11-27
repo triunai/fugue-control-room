@@ -1,5 +1,6 @@
 using System.Globalization;
 using Fugue.Api.Correlation;
+using Fugue.Api.Idempotency;
 using Fugue.Api.Modules;
 using Fugue.Domain.Identity;
 using Fugue.Domain.Results;
@@ -28,6 +29,7 @@ internal sealed class FugueOperationFilter : IOperationFilter
         bool anonymous = metadata.OfType<IAllowAnonymous>().Any();
         IfMatchAttribute? ifMatchAttribute = context.MethodInfo.GetCustomAttributes(typeof(IfMatchAttribute), inherit: false).OfType<IfMatchAttribute>().FirstOrDefault();
         bool ifMatch = ifMatchAttribute is not null;
+        bool idempotent = context.MethodInfo.GetCustomAttributes(typeof(IdempotentAttribute), inherit: false).Length > 0;
 
         // SYSTEM is the one module that can never be switched off, so its endpoints have no module gate to answer 404.
         bool gated = metadata.OfType<ModuleAttribute>().Any(m => m.Code != ModuleCodes.System);
@@ -84,6 +86,11 @@ internal sealed class FugueOperationFilter : IOperationFilter
             Share(operation, 428);
         }
 
+        if (idempotent)
+        {
+            AddIdempotency(operation, context);
+        }
+
         if (metadata.OfType<EnableRateLimitingAttribute>().Any())
         {
             Share(operation, 429);
@@ -104,7 +111,7 @@ internal sealed class FugueOperationFilter : IOperationFilter
                 response.Description = text;
             }
 
-            AddHeaders(context, response, status, ifMatch, paged);
+            AddHeaders(context, response, status, ifMatch, paged, idempotent);
             TrimMediaTypes(response.Content);
         }
 
@@ -132,7 +139,7 @@ internal sealed class FugueOperationFilter : IOperationFilter
         }
     }
 
-    private static void AddHeaders(OperationFilterContext context, OpenApiResponse response, string status, bool ifMatch, bool paged)
+    private static void AddHeaders(OperationFilterContext context, OpenApiResponse response, string status, bool ifMatch, bool paged, bool idempotent)
     {
         response.Headers ??= new Dictionary<string, OpenApiHeader>();
         response.Headers[CorrelationHeaders.CorrelationId] = HeaderRef(CorrelationHeaders.CorrelationId);
@@ -153,10 +160,47 @@ internal sealed class FugueOperationFilter : IOperationFilter
             response.Headers["Link"] = HeaderRef("Link");
         }
 
-        if (status is "429" or "503")
+        if (status is "429" or "503" || (idempotent && status == "409"))
         {
             response.Headers["Retry-After"] = HeaderRef("Retry-After");
         }
+
+        if (idempotent && status.StartsWith('2'))
+        {
+            response.Headers[IdempotencyFilter.ReplayedHeader] = HeaderRef(IdempotencyFilter.ReplayedHeader);
+        }
+    }
+
+    /// <summary>
+    /// An <c>[Idempotent]</c> action (ADR-013): the optional <c>Idempotency-Key</c> header, 413 and 422 as shared problems, and a 409 that lists the idempotency
+    /// codes next to the action's own (for customers, <c>customer.email_taken</c>). <c>Retry-After</c> and <c>Idempotent-Replayed</c> are added with the headers.
+    /// </summary>
+    private static void AddIdempotency(OpenApiOperation operation, OperationFilterContext context)
+    {
+        operation.Parameters ??= [];
+        operation.Parameters.Add(new OpenApiParameter
+        {
+            Name = IdempotencyKeyHeader.Name,
+            In = ParameterLocation.Header,
+            Required = false,
+            Description = "Makes the request safe to retry. One quoted string (`\"order-7f3a\"`, with `\\\"` and `\\\\` escapes) or a plain token of letters, digits, `.`, `_`, `:` and `-`, 1 to 255 characters; "
+                + "anything else is 400 `idempotency.key_invalid`. The same key with the same body returns the first response (with `Idempotent-Replayed: true`) for 24 hours instead of creating again; "
+                + "the same key with a different body is 422. A request that failed with a 4xx frees the key; one whose outcome is unknown keeps it (409). Without the header the request is not idempotent.",
+            Schema = new OpenApiSchema { Type = "string", MaxLength = IdempotencyKeyHeader.MaxLength },
+        });
+
+        string[] codes = [.. context.MethodInfo.GetCustomAttributes(typeof(ProblemResponseAttribute), inherit: false).OfType<ProblemResponseAttribute>()
+            .Where(a => a.StatusCode == StatusCodes.Status409Conflict).SelectMany(a => a.Codes), "idempotency.in_progress", "idempotency.outcome_unknown"];
+        if (!operation.Responses.TryGetValue("409", out OpenApiResponse? conflict))
+        {
+            OpenApiSchema problem = context.SchemaGenerator.GenerateSchema(typeof(ProblemDetails), context.SchemaRepository);
+            conflict = new OpenApiResponse { Content = new Dictionary<string, OpenApiMediaType> { [ProblemResponseAttribute.ProblemContentType] = new() { Schema = problem } } };
+            operation.Responses["409"] = conflict;
+        }
+
+        conflict.Description = $"{FugueDocumentFilter.Reasons["409"].Split(':')[0]}. Codes: {string.Join(", ", codes.Select(c => $"`{c}`"))}.";
+        Share(operation, 413);
+        Share(operation, 422);
     }
 
     private static OpenApiHeader HeaderRef(string id) =>

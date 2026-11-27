@@ -101,6 +101,18 @@ docker exec -it fugue-postgres psql -U fugue -d fugue -c "select status, attempt
 ```
 Try `update outbox_messages set payload = '{}'` on a row: the trigger refuses it (the payload is immutable; status columns stay writable).
 
+## 8. Retry a subscription create safely (Idempotency-Key)
+
+`POST /webhooks/subscriptions` accepts the optional `Idempotency-Key` header (ADR-013; the rules and error codes are in runbook 04, section 11). The secret is shown only once, so a retry matters here: with the same key and body the retry returns the SAME subscription and the SAME secret instead of creating a second subscription.
+
+```bash
+KEY="hook-$(date +%s)"
+BODY='{"name":"retry hook","url":"http://localhost:5080/api/v1/dev/webhook-sink","eventTypes":["customer.*"]}'
+for i in 1 2; do curl -si -X POST localhost:5080/api/v1/webhooks/subscriptions -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -H "Idempotency-Key: \"$KEY\"" -d "$BODY" | grep -iE '^HTTP|^idempotent-replayed|^cache-control|"secret"'; done
+```
+Expect: two `201` answers with the same `whsec_...` secret; the second has `Idempotent-Replayed: true`. Responses to a keyed create carry `Cache-Control: no-store`. The stored copy is encrypted with Data Protection (the key ring sits unencrypted in the same database, so this protects against a leaked table or log, not a full database dump). Delete the subscription afterwards (section 2 shows the id).
+
 ## If it does not work
 
 | Symptom | Cause | Fix |

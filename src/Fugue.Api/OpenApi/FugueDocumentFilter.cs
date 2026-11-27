@@ -21,6 +21,8 @@ internal sealed class FugueDocumentFilter : IDocumentFilter
         ["403"] = "Forbidden: the caller lacks the permission (code `auth.forbidden`).",
         ["404"] = "Not Found: no such resource, or it is outside the caller's scope, or its module is disabled (code `module.disabled`).",
         ["409"] = "Conflict: the request conflicts with the current state.",
+        ["413"] = "Payload Too Large: a request with an Idempotency-Key is too large to fingerprint (code `idempotency.body_too_large`).",
+        ["422"] = "Unprocessable Entity: the Idempotency-Key was already used with a different request body (code `idempotency.key_reused`).",
         ["412"] = "Precondition Failed: the If-Match version is stale; read the resource again.",
         ["428"] = "Precondition Required: the If-Match header is missing.",
         ["429"] = "Too Many Requests: wait for Retry-After seconds.",
@@ -35,6 +37,8 @@ internal sealed class FugueDocumentFilter : IDocumentFilter
         ["403"] = "Forbidden",
         ["404"] = "NotFound",
         ["412"] = "PreconditionFailed",
+        ["413"] = "PayloadTooLarge",
+        ["422"] = "UnprocessableEntity",
         ["428"] = "PreconditionRequired",
         ["429"] = "TooManyRequests",
         ["503"] = "ServiceUnavailable",
@@ -62,6 +66,7 @@ internal sealed class FugueDocumentFilter : IDocumentFilter
         swaggerDoc.Components.Headers["Location"] = Header("URL of the created resource.", new OpenApiSchema { Type = "string", Format = "uri" });
         swaggerDoc.Components.Headers["X-Next-Cursor"] = Header("Opaque cursor for the next page; absent on the last page. Pass it as the `cursor` query parameter.", new OpenApiSchema { Type = "string" });
         swaggerDoc.Components.Headers["Link"] = Header("RFC 8288 link to the next page (`rel=\"next\"`); absent on the last page.", new OpenApiSchema { Type = "string" });
+        swaggerDoc.Components.Headers["Idempotent-Replayed"] = Header("`true` when this response is a replay of the first response for the same Idempotency-Key; absent on the first.", new OpenApiSchema { Type = "boolean" });
         swaggerDoc.Components.Headers["Retry-After"] = Header("Seconds to wait before retrying.", new OpenApiSchema { Type = "integer", Format = "int32" });
     }
 

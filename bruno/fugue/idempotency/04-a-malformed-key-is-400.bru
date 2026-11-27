@@ -1,0 +1,30 @@
+meta {
+  name: A malformed key is 400
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers
+  body: json
+  auth: inherit
+}
+
+headers {
+  Idempotency-Key: "unterminated
+}
+
+body:json {
+  {
+    "name": "Never created",
+    "email": "never-{{idemEmail}}",
+    "phone": null
+  }
+}
+
+tests {
+  test("400 idempotency.key_invalid", function () {
+    expect(res.status).to.equal(400);
+    expect(res.body.code).to.equal("idempotency.key_invalid");
+  });
+}

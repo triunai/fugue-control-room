@@ -98,6 +98,30 @@ curl -si -X DELETE $B/$ID -H "If-Match: $ETAG" | head -1
 ```
 Expect: `204 No Content`. A following `GET` is `404` with `"code":"customer.not_found"`.
 
+## 11. Retry a create safely (Idempotency-Key)
+
+`POST /customers` accepts an optional `Idempotency-Key` header (ADR-013): one quoted string, or a plain token of letters, digits, `.`, `_`, `:`, `-` (1 to 255 characters). The same key with the same body returns the FIRST response instead of creating again.
+
+```bash
+KEY="demo-$(date +%s)"
+BODY='{"name":"Retry Me","email":"retry-me@example.test"}'
+curl -si -X POST $B -H 'Content-Type: application/json' -H "Idempotency-Key: \"$KEY\"" -d "$BODY" | grep -iE '^HTTP|^location|^etag|^idempotent-replayed'
+curl -si -X POST $B -H 'Content-Type: application/json' -H "Idempotency-Key: \"$KEY\"" -d "$BODY" | grep -iE '^HTTP|^location|^etag|^idempotent-replayed'
+```
+Expect: both `201` with the same `Location` and `ETag`; only the second has `Idempotent-Replayed: true`, and only one customer exists. Keys live 24 hours.
+
+| Case | Answer |
+|---|---|
+| Same key, different body | `422` `idempotency.key_reused`, nothing created |
+| First request still running | `409` `idempotency.in_progress` with `Retry-After: 1`; retry |
+| First request crashed or timed out server-side | `409` `idempotency.outcome_unknown` after 60 s: check whether the customer exists, otherwise retry with a NEW key |
+| First request got a 400 or a 409 (`customer.email_taken`) | the key is freed; fix the request and reuse the key |
+| Malformed key (empty quotes, over 255 characters, two header lines, a list) | `400` `idempotency.key_invalid` |
+| Body over 64 KiB with a key | `413` `idempotency.body_too_large` |
+| No header | exactly the behaviour without idempotency |
+
+Another user with the same key is independent. The stored response is encrypted at rest; it is deleted after 24 hours by a background purge.
+
 ## Run the same flows with Bruno
 
 With the API running on port 5080 (runbook 03, step 4):

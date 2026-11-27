@@ -44,6 +44,27 @@ public sealed partial class OpenApiDocumentTests
     }
 
     [Fact]
+    public void Exactly_the_two_idempotent_creates_document_the_Idempotency_Key_header_and_its_problems()
+    {
+        string[] withHeader = [.. Operations()
+            .Where(o => o.Operation["parameters"]?.AsArray().Any(p => p!["name"]!.GetValue<string>() == "Idempotency-Key" && p["in"]!.GetValue<string>() == "header" && p["required"] is null) == true)
+            .Select(o => o.Operation["operationId"]!.GetValue<string>()).Order(StringComparer.Ordinal)];
+
+        Assert.Equal(["Customers_Create", "Webhooks_Create"], withHeader);
+        foreach (string id in withHeader)
+        {
+            JsonObject operation = Operations().Single(o => o.Operation["operationId"]!.GetValue<string>() == id).Operation["responses"]!.AsObject();
+            Assert.Contains("idempotency.in_progress", operation["409"]!["description"]!.GetValue<string>(), StringComparison.Ordinal);
+            Assert.NotNull(operation["409"]!["headers"]!["Retry-After"]);
+            Assert.Equal("#/components/responses/UnprocessableEntity", operation["422"]!["$ref"]!.GetValue<string>());
+            Assert.Equal("#/components/responses/PayloadTooLarge", operation["413"]!["$ref"]!.GetValue<string>());
+            Assert.NotNull(operation["201"]!["headers"]!["Idempotent-Replayed"]);
+        }
+
+        Assert.Contains("customer.email_taken", Operations().Single(o => o.Operation["operationId"]!.GetValue<string>() == "Customers_Create").Operation["responses"]!["409"]!["description"]!.GetValue<string>(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Only_the_anonymous_operations_have_no_bearer_requirement()
     {
         string[] open = [.. Operations().Where(o => o.Operation["security"] is null).Select(o => o.Operation["operationId"]!.GetValue<string>()).Order(StringComparer.Ordinal)];

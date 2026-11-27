@@ -1,0 +1,43 @@
+meta {
+  name: Create a webhook subscription with an Idempotency-Key
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/v1/webhooks/subscriptions
+  body: json
+  auth: inherit
+}
+
+headers {
+  Idempotency-Key: "{{idemHookKey}}"
+}
+
+body:json {
+  {
+    "name": "bruno idempotent hook",
+    "url": "{{baseUrl}}/api/v1/dev/webhook-sink",
+    "eventTypes": ["customer.*"]
+  }
+}
+
+script:pre-request {
+  bru.setVar("idemHookKey", "bruno-idem-hook-" + Date.now());
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("idemHookId", res.body.id);
+    bru.setVar("idemHookSecret", res.body.secret);
+    bru.setVar("idemHookEtag", res.headers["etag"]);
+  }
+}
+
+tests {
+  test("201 with a one-time secret", function () {
+    expect(res.status).to.equal(201);
+    expect(res.body.secret).to.match(/^whsec_/);
+    expect(res.headers["cache-control"]).to.include("no-store");
+  });
+}

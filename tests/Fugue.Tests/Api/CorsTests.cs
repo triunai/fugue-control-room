@@ -94,7 +94,7 @@ public sealed class CorsTests
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         Assert.Equal([ConsoleOrigin], Values(response, "Access-Control-Allow-Origin"));
         string[] exposed = [.. Values(response, "Access-Control-Expose-Headers").Select(h => h.ToLowerInvariant())];
-        foreach (string header in new[] { "etag", "link", "x-next-cursor", "x-correlation-id", "x-saga-id", "retry-after", "location" })
+        foreach (string header in new[] { "etag", "link", "x-next-cursor", "x-correlation-id", "x-saga-id", "retry-after", "location", "idempotent-replayed" })
         {
             Assert.Contains(header, exposed);
         }

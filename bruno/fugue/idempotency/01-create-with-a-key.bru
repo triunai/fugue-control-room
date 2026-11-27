@@ -1,0 +1,43 @@
+meta {
+  name: Create a customer with an Idempotency-Key
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers
+  body: json
+  auth: inherit
+}
+
+headers {
+  Idempotency-Key: "{{idemKey}}"
+}
+
+body:json {
+  {
+    "name": "Idempotent Bruno",
+    "email": "{{idemEmail}}",
+    "phone": null
+  }
+}
+
+script:pre-request {
+  bru.setVar("idemKey", "bruno-idem-" + Date.now());
+  bru.setVar("idemEmail", "idem-" + Date.now() + "@example.test");
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("idemCustomerId", res.body.id);
+    bru.setVar("idemLocation", res.headers["location"]);
+    bru.setVar("idemEtag", res.headers["etag"]);
+  }
+}
+
+tests {
+  test("201 Created, not a replay", function () {
+    expect(res.status).to.equal(201);
+    expect(res.headers["idempotent-replayed"]).to.equal(undefined);
+  });
+}

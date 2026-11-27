@@ -1,0 +1,33 @@
+meta {
+  name: The same key and body replays the first response
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/customers
+  body: json
+  auth: inherit
+}
+
+headers {
+  Idempotency-Key: "{{idemKey}}"
+}
+
+body:json {
+  {
+    "name": "Idempotent Bruno",
+    "email": "{{idemEmail}}",
+    "phone": null
+  }
+}
+
+tests {
+  test("201 with the same customer, flagged as a replay", function () {
+    expect(res.status).to.equal(201);
+    expect(res.headers["idempotent-replayed"]).to.equal("true");
+    expect(res.body.id).to.equal(bru.getVar("idemCustomerId"));
+    expect(res.headers["location"]).to.equal(bru.getVar("idemLocation"));
+    expect(res.headers["etag"]).to.equal(bru.getVar("idemEtag"));
+  });
+}

@@ -7,6 +7,12 @@
           "type": "string"
         }
       },
+      "Idempotent-Replayed": {
+        "description": "`true` when this response is a replay of the first response for the same Idempotency-Key; absent on the first.",
+        "schema": {
+          "type": "boolean"
+        }
+      },
       "Link": {
         "description": "RFC 8288 link to the next page (`rel=\"next\"`); absent on the last page.",
         "schema": {
@@ -80,6 +86,21 @@
           }
         },
         "description": "Not Found: no such resource, or it is outside the caller's scope, or its module is disabled (code `module.disabled`).",
+        "headers": {
+          "X-Correlation-Id": {
+            "$ref": "#/components/headers/X-Correlation-Id"
+          }
+        }
+      },
+      "PayloadTooLarge": {
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetails"
+            }
+          }
+        },
+        "description": "Payload Too Large: a request with an Idempotency-Key is too large to fingerprint (code `idempotency.body_too_large`).",
         "headers": {
           "X-Correlation-Id": {
             "$ref": "#/components/headers/X-Correlation-Id"
@@ -161,6 +182,21 @@
           }
         },
         "description": "Unauthorized: no valid bearer token (code `auth.unauthenticated`).",
+        "headers": {
+          "X-Correlation-Id": {
+            "$ref": "#/components/headers/X-Correlation-Id"
+          }
+        }
+      },
+      "UnprocessableEntity": {
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetails"
+            }
+          }
+        },
+        "description": "Unprocessable Entity: the Idempotency-Key was already used with a different request body (code `idempotency.key_reused`).",
         "headers": {
           "X-Correlation-Id": {
             "$ref": "#/components/headers/X-Correlation-Id"
@@ -1492,6 +1528,17 @@
       },
       "post": {
         "operationId": "Customers_Create",
+        "parameters": [
+          {
+            "description": "Makes the request safe to retry. One quoted string (`\"order-7f3a\"`, with `\\\"` and `\\\\` escapes) or a plain token of letters, digits, `.`, `_`, `:` and `-`, 1 to 255 characters; anything else is 400 `idempotency.key_invalid`. The same key with the same body returns the first response (with `Idempotent-Replayed: true`) for 24 hours instead of creating again; the same key with a different body is 422. A request that failed with a 4xx frees the key; one whose outcome is unknown keeps it (409). Without the header the request is not idempotent.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "schema": {
+              "maxLength": 255,
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1514,6 +1561,9 @@
             "headers": {
               "ETag": {
                 "$ref": "#/components/headers/ETag"
+              },
+              "Idempotent-Replayed": {
+                "$ref": "#/components/headers/Idempotent-Replayed"
               },
               "Location": {
                 "$ref": "#/components/headers/Location"
@@ -1543,12 +1593,21 @@
                 }
               }
             },
-            "description": "Conflict. Codes: `customer.email_taken`.",
+            "description": "Conflict. Codes: `customer.email_taken`, `idempotency.in_progress`, `idempotency.outcome_unknown`.",
             "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
               "X-Correlation-Id": {
                 "$ref": "#/components/headers/X-Correlation-Id"
               }
             }
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
           },
           "503": {
             "$ref": "#/components/responses/ServiceUnavailable"
@@ -3184,6 +3243,17 @@
       },
       "post": {
         "operationId": "Webhooks_Create",
+        "parameters": [
+          {
+            "description": "Makes the request safe to retry. One quoted string (`\"order-7f3a\"`, with `\\\"` and `\\\\` escapes) or a plain token of letters, digits, `.`, `_`, `:` and `-`, 1 to 255 characters; anything else is 400 `idempotency.key_invalid`. The same key with the same body returns the first response (with `Idempotent-Replayed: true`) for 24 hours instead of creating again; the same key with a different body is 422. A request that failed with a 4xx frees the key; one whose outcome is unknown keeps it (409). Without the header the request is not idempotent.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "schema": {
+              "maxLength": 255,
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -3207,6 +3277,9 @@
               "ETag": {
                 "$ref": "#/components/headers/ETag"
               },
+              "Idempotent-Replayed": {
+                "$ref": "#/components/headers/Idempotent-Replayed"
+              },
               "Location": {
                 "$ref": "#/components/headers/Location"
               },
@@ -3226,6 +3299,30 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict. Codes: `idempotency.in_progress`, `idempotency.outcome_unknown`.",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/Retry-After"
+              },
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "413": {
+            "$ref": "#/components/responses/PayloadTooLarge"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
           },
           "503": {
             "$ref": "#/components/responses/ServiceUnavailable"

@@ -52,7 +52,7 @@ public static class ConsoleCors
     public static readonly string[] AllowedMethods = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 
     public static readonly string[] ExposedResponseHeaders =
-        ["ETag", "Link", "X-Next-Cursor", CorrelationHeaders.CorrelationId, CorrelationHeaders.SagaId, "Retry-After", "Location"];
+        ["ETag", "Link", "X-Next-Cursor", CorrelationHeaders.CorrelationId, CorrelationHeaders.SagaId, "Retry-After", "Location", "Idempotent-Replayed"];
 
     public static IServiceCollection AddConsoleCors(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
