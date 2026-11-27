@@ -26,7 +26,10 @@ internal sealed class AuditRowFactory(
         string outcome,
         string? errorCode,
         string? changesJson,
-        IReadOnlyDictionary<string, object?>? extraMetadata = null)
+        IReadOnlyDictionary<string, object?>? extraMetadata = null,
+        string? errorType = null,
+        string? errorMessage = null,
+        int? durationMs = null)
     {
         AuditRequestInfo http = request.Current;
         Guid? actor = user.UserId;
@@ -46,6 +49,9 @@ internal sealed class AuditRowFactory(
             EntityId = Clip(entityId, 128),
             Outcome = outcome,
             ErrorCode = Clip(errorCode, 128),
+            ErrorType = Clip(errorType, 64),
+            ErrorMessage = Clip(errorMessage, 2000),
+            DurationMs = durationMs,
             Changes = changesJson,
             CorrelationId = Clip(NullIfEmpty(correlation.CorrelationId), 64),
             SagaId = Clip(correlation.SagaId, 64),

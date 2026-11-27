@@ -74,6 +74,31 @@ public sealed class AuditApiTests(PostgresFixture db)
     }
 
     [Fact]
+    public async Task A_failure_row_exposes_its_error_type_message_and_duration_and_a_success_row_exposes_them_as_null()
+    {
+        HttpClient admin = db.ClientAs(DevUsers.Admin);
+        string ok = NewCorrelation();
+        string failed = NewCorrelation();
+        CustomerDto customer = await CreateAsync(admin, ok);
+        var duplicate = new HttpRequestMessage(HttpMethod.Post, "/api/v1/customers")
+        {
+            Content = JsonContent.Create(new { name = "Dup", email = customer.Email, phone = (string?)null }),
+        };
+        duplicate.Headers.Add("X-Correlation-Id", failed);
+        Assert.Equal(HttpStatusCode.Conflict, (await admin.SendAsync(duplicate)).StatusCode);
+
+        JsonElement success = Assert.Single(await PageAsync(await admin.GetAsync($"/api/v1/audit?correlationId={ok}")));
+        JsonElement failure = Assert.Single(await PageAsync(await admin.GetAsync($"/api/v1/audit?correlationId={failed}")));
+
+        Assert.Equal(JsonValueKind.Null, success.GetProperty("errorType").ValueKind);
+        Assert.Equal(JsonValueKind.Null, success.GetProperty("errorMessage").ValueKind);
+        Assert.Equal(JsonValueKind.Null, success.GetProperty("durationMs").ValueKind);
+        Assert.Equal("Conflict", failure.GetProperty("errorType").GetString());
+        Assert.Equal("A customer with this email already exists.", failure.GetProperty("errorMessage").GetString());
+        Assert.True(failure.GetProperty("durationMs").GetInt32() >= 0);
+    }
+
+    [Fact]
     public async Task Pages_are_keyset_ordered_newest_first_with_a_cursor_header_and_no_row_is_repeated()
     {
         (string email, Fugue.Domain.Ids.UserId actor) = await db.NewUserAsync([RoleCodes.Admin]);

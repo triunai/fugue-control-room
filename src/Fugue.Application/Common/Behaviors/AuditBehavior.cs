@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using FluentResults;
 using Fugue.Application.Abstractions;
 using Fugue.Domain.Abstractions;
@@ -14,7 +15,7 @@ namespace Fugue.Application.Common.Behaviors;
 /// the SaveChanges interceptor reads, so SUCCESSES are written by the interceptor in the same transaction as the change and this
 /// behavior never writes one (no double rows). When the command FAILS (a business error or an unhandled exception) nothing was
 /// changed, so it writes ONE <c>outcome = failure</c> row with the error code in its own short transaction. A failing audit write is
-/// logged and never changes the command's result. Queries pass through; a command marked <see cref="NoAuditAttribute"/> is skipped
+/// logged and never changes the command's result. The failure row also carries the error type, the handler's message (never an exception's) and the duration. Queries pass through; a command marked <see cref="NoAuditAttribute"/> is skipped
 /// (authentication commands are recorded in <c>access_audit</c>).
 /// Order: Logging, Audit, Validation, so validation failures are audited too.
 /// </summary>
@@ -42,20 +43,25 @@ public sealed partial class AuditBehavior<TMessage, TResponse>(IServiceProvider 
             AuditNaming<TMessage>.Action,
             display,
             new Dictionary<string, object?> { ["command"] = typeof(TMessage).Name });
+        long started = Stopwatch.GetTimestamp();
         try
         {
             TResponse response = await next(message, cancellationToken);
             if (response.IsFailed)
             {
-                string code = response.Errors is [FugueError fugue, ..] ? fugue.Code : "unexpected";
-                await TryRecordFailureAsync(trail, scope, logger, message, code, cancellationToken);
+                FailureDetail detail = response.Errors is [FugueError fugue, ..]
+                    ? new(fugue.Code, fugue.Type.ToString(), Clip(fugue.Message), ElapsedMs(started))
+                    : new("unexpected", nameof(ErrorType.Failure), null, ElapsedMs(started));
+                await TryRecordFailureAsync(trail, scope, logger, message, detail, cancellationToken);
             }
 
             return response;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            await TryRecordFailureAsync(trail, scope, logger, message, "unhandled", cancellationToken);
+            // The type name only: Exception.Message can carry SQL values or personal data and must never reach an audit row.
+            await TryRecordFailureAsync(
+                trail, scope, logger, message, new("unhandled", UnhandledType, ex.GetType().FullName, ElapsedMs(started)), cancellationToken);
             throw;
         }
         finally
@@ -82,13 +88,24 @@ public sealed partial class AuditBehavior<TMessage, TResponse>(IServiceProvider 
         }
     }
 
+    private const string UnhandledType = "Unhandled";
+    private const int MaxMessageLength = 2000;
+
+    private readonly record struct FailureDetail(string Code, string Type, string? Message, int DurationMs);
+
+    private static string? Clip(string? value) => value is { Length: > MaxMessageLength } ? value[..MaxMessageLength] : value;
+
+    private static int ElapsedMs(long started) => (int)Math.Min(int.MaxValue, (long)Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+
     private static async Task TryRecordFailureAsync(
-        IAuditTrail trail, IAuditScope scope, ILogger logger, TMessage message, string errorCode, CancellationToken ct)
+        IAuditTrail trail, IAuditScope scope, ILogger logger, TMessage message, FailureDetail detail, CancellationToken ct)
     {
         try
         {
             await trail.RecordFailureAsync(
-                new AuditFailure(AuditNaming<TMessage>.Action, AuditNaming<TMessage>.EntityType, AuditNaming<TMessage>.EntityId(message), errorCode, scope.Metadata),
+                new AuditFailure(
+                    AuditNaming<TMessage>.Action, AuditNaming<TMessage>.EntityType, AuditNaming<TMessage>.EntityId(message), detail.Code, scope.Metadata,
+                    detail.Type, detail.Message, detail.DurationMs),
                 ct);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)

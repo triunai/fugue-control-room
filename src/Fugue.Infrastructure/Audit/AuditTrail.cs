@@ -12,9 +12,9 @@ internal sealed class AuditTrail(SqlExecutor sql, AuditRowFactory factory, Audit
 {
     private const string InsertSql = """
         INSERT INTO audit_log (id, occurred_at, actor_user_id, actor_type, actor_display, tenant_id, permission_used, action, entity_type, entity_id,
-                               outcome, error_code, changes, correlation_id, saga_id, trace_id, http_method, route_template, client_ip, user_agent, metadata)
+                               outcome, error_code, error_type, error_message, duration_ms, changes, correlation_id, saga_id, trace_id, http_method, route_template, client_ip, user_agent, metadata)
         VALUES (@Id, @OccurredAt, @ActorUserId, @ActorType, @ActorDisplay, @TenantId, @PermissionUsed, @Action, @EntityType, @EntityId,
-                @Outcome, @ErrorCode, CAST(@Changes AS jsonb), @CorrelationId, @SagaId, @TraceId, @HttpMethod, @RouteTemplate, @ClientIp, @UserAgent, CAST(@Metadata AS jsonb))
+                @Outcome, @ErrorCode, @ErrorType, @ErrorMessage, @DurationMs, CAST(@Changes AS jsonb), @CorrelationId, @SagaId, @TraceId, @HttpMethod, @RouteTemplate, @ClientIp, @UserAgent, CAST(@Metadata AS jsonb))
         """;
 
     public async Task RecordAsync(AuditEntry entry, CancellationToken ct)
@@ -38,7 +38,8 @@ internal sealed class AuditTrail(SqlExecutor sql, AuditRowFactory factory, Audit
         }
 
         AuditLog row = factory.Create(
-            failure.Action, failure.Action, failure.EntityType, failure.EntityId, AuditOutcomes.Failure, failure.ErrorCode, null, failure.Metadata);
+            failure.Action, failure.Action, failure.EntityType, failure.EntityId, AuditOutcomes.Failure, failure.ErrorCode, null, failure.Metadata,
+            failure.ErrorType, failure.ErrorMessage, failure.DurationMs);
 
         // Own connection and transaction: a failure row must survive the rollback of a surrounding unit of work, and an aborted
         // surrounding transaction (a unique violation) must not stop it being written.
@@ -59,6 +60,9 @@ internal sealed class AuditTrail(SqlExecutor sql, AuditRowFactory factory, Audit
         row.EntityId,
         row.Outcome,
         row.ErrorCode,
+        row.ErrorType,
+        row.ErrorMessage,
+        row.DurationMs,
         row.Changes,
         row.CorrelationId,
         row.SagaId,

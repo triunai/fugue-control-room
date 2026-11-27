@@ -123,6 +123,39 @@ public sealed class AuditCaptureTests(PostgresFixture db)
         Assert.Null(row.Changes);
         Assert.Equal("CUSTOMERS_INSERT", row.PermissionUsed);
         Assert.Equal("Dev Admin", row.ActorDisplay);
+        Assert.Equal("Conflict", row.ErrorType);
+        Assert.Equal("A customer with this email already exists.", row.ErrorMessage); // the handler's own message
+        Assert.True(row.DurationMs >= 0);
+    }
+
+    [Fact]
+    public async Task A_success_row_leaves_the_failure_detail_columns_null()
+    {
+        string correlation = NewCorrelation();
+
+        await CreateAsync(db.ClientAs(DevUsers.Admin), correlation: correlation);
+
+        AuditRow row = Assert.Single(await AuditProbe.ByCorrelationAsync(db, correlation));
+        Assert.Equal("success", row.Outcome);
+        Assert.Equal((null, null, null), (row.ErrorType, row.ErrorMessage, row.DurationMs));
+    }
+
+    [Fact]
+    public async Task An_unhandled_exception_row_stores_the_exception_type_and_never_its_message()
+    {
+        await using AsyncServiceScope scope = db.Factory.Services.CreateAsyncScope();
+        var command = new Fugue.Application.Features.Customers.Commands.UpdateCustomerCommand(Fugue.Domain.Ids.CustomerId.New(), "n", "e@example.test", null, 1);
+        string sentinel = "secret-" + Guid.NewGuid().ToString("N"); // stands for a SQL value or an email an exception message could carry
+        var behavior = new Fugue.Application.Common.Behaviors.AuditBehavior<
+            Fugue.Application.Features.Customers.Commands.UpdateCustomerCommand, FluentResults.Result<CustomerDto>>(scope.ServiceProvider);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await behavior.Handle(command, (_, _) => throw new InvalidOperationException($"duplicate key value ({sentinel})"), default));
+
+        AuditRow row = Assert.Single(await AuditProbe.ByEntityAsync(db, "Customer", command.Id.ToString()));
+        Assert.Equal(("failure", "unhandled", "Unhandled", "System.InvalidOperationException"), (row.Outcome, row.ErrorCode, row.ErrorType, row.ErrorMessage));
+        Assert.True(row.DurationMs >= 0);
+        Assert.Equal(0L, await AuditProbe.CountContainingAsync(db, sentinel));
     }
 
     [Fact]

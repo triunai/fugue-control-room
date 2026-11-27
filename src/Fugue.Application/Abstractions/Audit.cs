@@ -23,8 +23,21 @@ public sealed record AuditEntry(
     string? DefaultAction = null,
     IReadOnlyDictionary<string, object?>? Metadata = null);
 
-/// <summary>A command that did not change anything because it failed: written as ONE <c>outcome = failure</c> row.</summary>
-public sealed record AuditFailure(string Action, string? EntityType, string? EntityId, string ErrorCode, IReadOnlyDictionary<string, object?>? Metadata);
+/// <summary>
+/// A command that did not change anything because it failed: written as ONE <c>outcome = failure</c> row.
+/// <paramref name="ErrorType"/> is the <c>ErrorType</c> name (<c>Unhandled</c> for an exception) and <paramref name="ErrorMessage"/> the message the
+/// handler authored on its <c>FugueError</c>; for an exception it is the exception type's full name and NEVER <c>Exception.Message</c>
+/// (exception text can carry SQL values or personal data). <paramref name="DurationMs"/> is how long the rest of the pipeline took.
+/// </summary>
+public sealed record AuditFailure(
+    string Action,
+    string? EntityType,
+    string? EntityId,
+    string ErrorCode,
+    IReadOnlyDictionary<string, object?>? Metadata,
+    string? ErrorType = null,
+    string? ErrorMessage = null,
+    int? DurationMs = null);
 
 /// <summary>
 /// Writes <c>audit_log</c> rows that EF's change tracker cannot produce (ADR-010). Successful EF writes are captured automatically

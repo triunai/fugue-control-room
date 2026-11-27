@@ -8,7 +8,7 @@ namespace Fugue.Tests.Audit;
 public sealed record AuditRow(
     Guid Id, DateTimeOffset OccurredAt, Guid? ActorUserId, string ActorType, string? ActorDisplay, string? PermissionUsed, string Action, string? EntityType,
     string? EntityId, string Outcome, string? ErrorCode, JsonElement? Changes, string? CorrelationId, string? TraceId, string? HttpMethod,
-    string? RouteTemplate, string? ClientIp, string? UserAgent, JsonElement? Metadata)
+    string? RouteTemplate, string? ClientIp, string? UserAgent, JsonElement? Metadata, string? ErrorType = null, string? ErrorMessage = null, int? DurationMs = null)
 {
     public JsonElement Change(string field) => Changes!.Value.GetProperty(field);
 
@@ -19,7 +19,7 @@ internal static class AuditProbe
 {
     private const string Columns =
         "id, occurred_at, actor_user_id, actor_type, actor_display, permission_used, action, entity_type, entity_id, outcome, error_code, changes::text, " +
-        "correlation_id, trace_id, http_method, route_template, client_ip, user_agent, metadata::text";
+        "correlation_id, trace_id, http_method, route_template, client_ip, user_agent, metadata::text, error_type, error_message, duration_ms";
 
     public static Task<List<AuditRow>> ByCorrelationAsync(PostgresFixture db, string correlationId) =>
         QueryAsync(db, "correlation_id = @v", correlationId);
@@ -44,7 +44,7 @@ internal static class AuditProbe
         {
             rows.Add(new AuditRow(
                 r.GetGuid(0), r.GetFieldValue<DateTimeOffset>(1), r.IsDBNull(2) ? null : r.GetGuid(2), r.GetString(3), Str(r, 4), Str(r, 5), r.GetString(6), Str(r, 7),
-                Str(r, 8), r.GetString(9), Str(r, 10), Json(r, 11), Str(r, 12), Str(r, 13), Str(r, 14), Str(r, 15), Str(r, 16), Str(r, 17), Json(r, 18)));
+                Str(r, 8), r.GetString(9), Str(r, 10), Json(r, 11), Str(r, 12), Str(r, 13), Str(r, 14), Str(r, 15), Str(r, 16), Str(r, 17), Json(r, 18), Str(r, 19), Str(r, 20), r.IsDBNull(21) ? null : r.GetInt32(21)));
         }
 
         return rows;

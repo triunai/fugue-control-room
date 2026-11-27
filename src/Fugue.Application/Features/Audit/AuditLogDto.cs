@@ -4,6 +4,7 @@ namespace Fugue.Application.Features.Audit;
 
 /// <summary>
 /// One audit row as the read API returns it. Values were masked when the row was written (ADR-010), so nothing here can be un-masked.
+/// <paramref name="ErrorType"/>, <paramref name="ErrorMessage"/> and <paramref name="DurationMs"/> are set on failure rows only (the message is the handler's own, never an exception's).
 /// <paramref name="Changes"/> is <c>{ "field": { "old": ..., "new": ... } }</c>; <paramref name="Metadata"/> holds extras such as the command name.
 /// </summary>
 public sealed record AuditLogDto(
@@ -19,6 +20,9 @@ public sealed record AuditLogDto(
     string? EntityId,
     string Outcome,
     string? ErrorCode,
+    string? ErrorType,
+    string? ErrorMessage,
+    int? DurationMs,
     JsonElement? Changes,
     string? CorrelationId,
     string? SagaId,

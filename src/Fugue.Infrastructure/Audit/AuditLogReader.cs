@@ -62,7 +62,7 @@ internal sealed class AuditLogReader(FugueDbContext db) : IAuditLogReader
 
     private static AuditLogDto ToDto(AuditLog a) => new(
         a.Id.Value, a.OccurredAt, a.ActorUserId, a.ActorType, a.ActorDisplay, a.TenantId, a.PermissionUsed, a.Action, a.EntityType, a.EntityId,
-        a.Outcome, a.ErrorCode, Parse(a.Changes), a.CorrelationId, a.SagaId, a.TraceId, a.HttpMethod, a.RouteTemplate, a.ClientIp, a.UserAgent, Parse(a.Metadata));
+        a.Outcome, a.ErrorCode, a.ErrorType, a.ErrorMessage, a.DurationMs, Parse(a.Changes), a.CorrelationId, a.SagaId, a.TraceId, a.HttpMethod, a.RouteTemplate, a.ClientIp, a.UserAgent, Parse(a.Metadata));
 
     private static JsonElement? Parse(string? json)
     {

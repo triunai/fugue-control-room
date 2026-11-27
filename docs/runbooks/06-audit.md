@@ -63,7 +63,7 @@ curl -s -X POST localhost:5080/api/v1/customers -H "Authorization: Bearer $TOKEN
   -H 'Content-Type: application/json' -d '{"name":"Dup","email":"ada.audit@example.test"}' -o /dev/null -w "%{http_code}\n"
 curl -s "localhost:5080/api/v1/audit?correlationId=$CID2" -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
 ```
-Expect `409`, then one row with `outcome` `failure`, `errorCode` `customer.email_taken`, `changes` null. A validation error (`400`) or a stale `If-Match` (`412`) leaves a row the same way. Sign-in failures are NOT here: they are in `access_audit`.
+Expect `409`, then one row with `outcome` `failure`, `errorCode` `customer.email_taken`, `changes` null. A validation error (`400`) or a stale `If-Match` (`412`) leaves a row the same way. The row also carries `errorType` (`Conflict`), `errorMessage` (the handler's own message, capped at 2000 characters) and `durationMs`. These three are null on success rows. For an unhandled exception `errorType` is `Unhandled` and `errorMessage` is the exception TYPE name only, never the exception's text (it can carry SQL values or personal data). Sign-in failures are NOT here: they are in `access_audit`.
 
 ## 5. The same data in psql
 

@@ -100,6 +100,8 @@ public sealed class AuditBehaviorTests
         AuditFailure failure = Assert.Single(trail.Failures);
         Assert.Equal(("customers.update", "Customer", Update.Id.ToString(), "customer.version_mismatch"), (failure.Action, failure.EntityType, failure.EntityId, failure.ErrorCode));
         Assert.Equal("UpdateCustomerCommand", failure.Metadata!["command"]);
+        Assert.Equal(("PreconditionFailed", CustomerErrors.VersionMismatch().Message), (failure.ErrorType, failure.ErrorMessage)); // the handler's own error type and message
+        Assert.True(failure.DurationMs >= 0);
         Assert.Equal("customers.update", trail.ActionSeenInScope); // the ambient scope was open while the row was written
         Assert.Null(services.GetRequiredService<IAuditScope>().Action); // and is closed afterwards
     }
@@ -125,7 +127,24 @@ public sealed class AuditBehaviorTests
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await behavior.Handle(Update, (_, _) => throw new InvalidOperationException("boom"), default));
 
-        Assert.Equal("unhandled", Assert.Single(trail.Failures).ErrorCode);
+        AuditFailure failure = Assert.Single(trail.Failures);
+        Assert.Equal(("unhandled", "Unhandled", "System.InvalidOperationException"), (failure.ErrorCode, failure.ErrorType, failure.ErrorMessage));
+        Assert.DoesNotContain("boom", failure.ErrorMessage); // the exception's own text is never stored
+    }
+
+    [Fact]
+    public async Task A_long_handler_message_is_capped_at_2000_characters_and_a_non_fugue_error_stores_no_message()
+    {
+        (IServiceProvider services, RecordingTrail trail) = Build();
+        var behavior = new AuditBehavior<UpdateCustomerCommand, Result<CustomerDto>>(services);
+        string longMessage = new('x', 3000);
+
+        await behavior.Handle(
+            Update, Returns<UpdateCustomerCommand, Result<CustomerDto>>(Result.Fail<CustomerDto>(FugueErrors.Conflict("customer.long", longMessage))), default);
+        await behavior.Handle(Update, Returns<UpdateCustomerCommand, Result<CustomerDto>>(Result.Fail<CustomerDto>("plain failure")), default);
+
+        Assert.Equal(2000, trail.Failures[0].ErrorMessage!.Length);
+        Assert.Equal(("unexpected", "Failure", null), (trail.Failures[1].ErrorCode, trail.Failures[1].ErrorType, trail.Failures[1].ErrorMessage));
     }
 
     [Fact]
