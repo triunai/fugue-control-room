@@ -37,6 +37,15 @@ const DONE: Record<Command['kind'], string> = {
   settle: 'Claim settled',
 };
 
+const ACTIVITY_KEY = 'fugue.claim.activityOpen';
+function readActivityOpen(): boolean {
+  try {
+    return sessionStorage.getItem(ACTIVITY_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
 /** One claim, for both audiences: the claimant's view (status in plain words, timeline, answer box) and the staff view (actions, internal facts). */
 @Component({
   selector: 'fg-claim-detail-page',
@@ -183,8 +192,16 @@ const DONE: Record<Command['kind'], string> = {
               </section>
             }
 
-            <section class="panel panel-pad" aria-labelledby="t-h" data-tour="claim-timeline">
-              <h2 id="t-h" class="section-title">Activity</h2>
+            <details
+              class="panel panel-pad activity"
+              data-tour="claim-timeline"
+              data-testid="activity"
+              [open]="activityOpen()"
+              (toggle)="setActivityOpen($event)"
+            >
+              <summary class="section-title">
+                Activity<span class="text-muted text-sm"> ({{ timelineQuery.data()?.length ?? 0 }})</span>
+              </summary>
               @if (timelineQuery.isPending()) {
                 <span class="skeleton" style="width: 60%"></span>
               } @else if (timelineQuery.isError()) {
@@ -202,7 +219,7 @@ const DONE: Record<Command['kind'], string> = {
                   }
                 </ol>
               }
-            </section>
+            </details>
           </div>
 
           <aside class="stack" aria-label="Claim details">
@@ -323,6 +340,18 @@ export class ClaimDetailPage {
 
   /** Answered questions only: the open one has its own panel. A failed read just hides the list. */
   protected readonly pastQuestions = computed(() => (this.questionsQuery.data() ?? []).filter((q) => !!q.answer));
+
+  /** The Activity disclosure is collapsed by default; its state is remembered for the browser session. */
+  protected readonly activityOpen = signal(readActivityOpen());
+  protected setActivityOpen(e: Event): void {
+    const open = (e.target as HTMLDetailsElement).open;
+    this.activityOpen.set(open);
+    try {
+      sessionStorage.setItem(ACTIVITY_KEY, open ? '1' : '0');
+    } catch {
+      /* storage unavailable: the state just is not remembered */
+    }
+  }
 
   /** The activity list, newest first. */
   protected readonly activity = computed(() =>

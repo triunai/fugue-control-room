@@ -7,6 +7,7 @@ import { filter, firstValueFrom, map, startWith } from 'rxjs';
 import { AccessService } from '../../core/auth/access.service';
 import { CONSOLE_CONFIG } from '../../core/config';
 import { CORRELATION_ID } from '../../core/http/context';
+import { footerLabel } from '../../core/version';
 import { PrefsStore } from '../../core/ui/prefs.store';
 import { AccountMenu } from './account-menu';
 import { activeItem } from './active-nav';
@@ -34,6 +35,7 @@ export class Sidebar {
   private readonly http = inject(HttpClient);
   private readonly apiBase = inject(CONSOLE_CONFIG).apiBase;
 
+  protected readonly footer = footerLabel();
   protected readonly collapsed = this.prefs.sidebarCollapsed;
   protected readonly folded = computed(() => new Set(this.prefs.collapsedGroups()));
   /** Count badges per nav path. The slot is wired; nothing fills it yet (no API call just for a badge). */

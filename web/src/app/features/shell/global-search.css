@@ -1,0 +1,104 @@
+:host {
+  display: block;
+  flex: 0 1 26rem;
+  min-width: 12rem;
+}
+.gs {
+  position: relative;
+}
+.gs-input {
+  width: 100%;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--text);
+  background: var(--surface2);
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  padding: 0.35rem 6.5rem 0.35rem 0.9rem;
+}
+.gs-input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+.gs-badge {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  pointer-events: none;
+}
+.gs-menu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem;
+  background: var(--surface2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-overlay);
+}
+.gs-note {
+  margin: 0;
+  padding: 0.6rem 0.7rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.gs-row,
+.gs-all {
+  font: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  color: var(--text);
+}
+.gs-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.45rem 0.7rem;
+}
+.gs-row:hover,
+.gs-row:focus-visible,
+.gs-all:hover,
+.gs-all:focus-visible {
+  background: var(--row-hover);
+}
+.gs-action {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.gs-action em {
+  font-style: normal;
+  background: var(--accent-soft);
+  border-radius: 3px;
+}
+.gs-meta {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.gs-all {
+  margin-top: 0.2rem;
+  padding: 0.5rem 0.7rem;
+  border-top: 1px solid var(--line-soft);
+  border-radius: 0 0 var(--radius-control) var(--radius-control);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-text);
+}
+@media (max-width: 700px) {
+  :host {
+    display: none;
+  }
+}

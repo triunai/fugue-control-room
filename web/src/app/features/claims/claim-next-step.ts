@@ -20,7 +20,7 @@ import { Actor, NextAction, nextStep } from './claims-logic';
             <h2 class="section-title m-0">Next step</h2>
             <span [class]="'pill pill-' + s.tone" data-testid="next-chip">{{ s.chip }}</span>
             @if (s.caption) {
-              <span class="text-muted text-sm" data-testid="next-caption">{{ s.caption }}</span>
+              <span class="text-sm" [class.text-muted]="!s.captionOverdue" [class.caption-overdue]="s.captionOverdue" data-testid="next-caption">{{ s.caption }}</span>
             }
           </div>
           <div class="nc-actions">

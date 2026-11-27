@@ -333,6 +333,8 @@ export interface NextStep {
   why: string;
   /** "Day 5 of 14", "Acting as manager on X's claim". */
   caption?: string;
+  /** Set when the caption reports an overdue SLA: shown in the error tone. */
+  captionOverdue?: boolean;
   /** The claimant's open question, shown on the card. */
   question?: string;
   blockers: Blocker[];
@@ -373,6 +375,13 @@ function card(
   c: Omit<NextStep, 'tone' | 'secondary' | 'blockers'> & Partial<Pick<NextStep, 'secondary' | 'blockers'>>,
 ): NextStep {
   return { blockers: [], secondary: [], ...c, tone: CHIP_TONE[c.chip] };
+}
+
+/** "Day N of D" while within the SLA, "N days past SLA" (error tone) once over it. */
+export function slaDayCaption(age: number, slaDays: number): { text: string; overdue: boolean } {
+  if (age <= slaDays) return { text: `Day ${age} of ${slaDays}`, overdue: false };
+  const over = age - slaDays;
+  return { text: `${over} day${over === 1 ? '' : 's'} past SLA`, overdue: true };
 }
 
 const daysBetween = (iso: string, now: number) => Math.max(0, Math.floor((now - new Date(iso).getTime()) / DAY));
@@ -461,12 +470,14 @@ export function nextStep(claim: CardClaim, actor: Actor, now = Date.now()): Next
         { label: 'Reserve set', ok: hasReserve },
         { label: 'No open question', ok: !open },
       ];
+      const day = slaDayCaption(age, SLA_DECISION_DAYS);
       return hasReserve
         ? card({
             chip: 'Ready',
             instruction: `Decide: approve up to ${money(claim.reserveMinor)}, or reject.`,
             why: 'The reserve is set. Ask the claimant first if you need more information.',
-            caption: [`Day ${age} of ${SLA_DECISION_DAYS}`, caption].filter(Boolean).join(' · '),
+            caption: [day.text, caption].filter(Boolean).join(' · '),
+            captionOverdue: day.overdue,
             blockers,
             primary: { kind: 'approve', label: 'Approve' },
             secondary: [

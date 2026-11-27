@@ -13,6 +13,7 @@ import { AccessService } from '../../core/auth/access.service';
 import type { UniverHandle } from './univer-loader';
 import { XlsxCell, downloadXlsx } from './xlsx-export';
 import { loadStylesheet } from './lazy-css';
+import { sheetHostHeight, sheetRowCount } from './sheet-layout';
 import { fetchOpenClaims } from './open-claims';
 import { Actor, STATUS_LABEL, ageDays, currencyOf } from './claims-logic';
 import {
@@ -43,25 +44,6 @@ import {
             are never added together.
           </p>
         </div>
-        <div class="sheet-actions">
-          <span class="text-muted text-sm" data-testid="sheet-pending"
-            >{{ pending() }} unsaved change{{ pending() === 1 ? '' : 's' }}</span
-          >
-          <button type="button" class="btn" [disabled]="saving()" (click)="reload()">Reload</button>
-          <button type="button" class="btn" data-tour="sheet-excel" [disabled]="!ready()" (click)="openInExcel()">
-            Open in Excel
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            data-testid="sheet-save"
-            data-tour="sheet-save"
-            [disabled]="saving() || !ready()"
-            (click)="save()"
-          >
-            {{ saving() ? 'Saving' : 'Save changes' }}
-          </button>
-        </div>
       </header>
 
       @if (loadError()) {
@@ -86,7 +68,31 @@ import {
         </section>
       }
 
-      <div class="sheet-host panel" data-tour="sheet-grid" aria-label="Reserve spreadsheet"></div>
+      <div class="sheet-frame" data-tour="sheet-grid">
+        <div class="sheet-host" [style.height.px]="hostHeight()" aria-label="Reserve spreadsheet"></div>
+      </div>
+      <footer class="sheet-foot">
+        <p class="text-muted text-sm sheet-caption">Tinted cells are editable inputs; everything else is read-only.</p>
+        <div class="sheet-actions">
+          <span class="text-muted text-sm" data-testid="sheet-pending"
+            >{{ pending() }} unsaved change{{ pending() === 1 ? '' : 's' }}</span
+          >
+          <button type="button" class="btn" [disabled]="saving()" (click)="reload()">Reload</button>
+          <button type="button" class="btn" data-tour="sheet-excel" [disabled]="!ready()" (click)="openInExcel()">
+            Open in Excel
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            data-testid="sheet-save"
+            data-tour="sheet-save"
+            [disabled]="saving() || !ready()"
+            (click)="save()"
+          >
+            {{ saving() ? 'Saving' : 'Save changes' }}
+          </button>
+        </div>
+      </footer>
     </div>
   `,
 })
@@ -97,6 +103,7 @@ export class ReserveSheetPage implements AfterViewInit, OnDestroy {
 
   protected readonly ready = signal(false);
   protected readonly saving = signal(false);
+  protected readonly hostHeight = signal(sheetHostHeight(1));
   protected readonly pending = signal(0);
   protected readonly loadError = signal('');
   protected readonly results = signal<RowResult[]>([]);
@@ -135,6 +142,7 @@ export class ReserveSheetPage implements AfterViewInit, OnDestroy {
       this.rows = claims.map((c) => toSheetRow(c, actor));
       const header = SHEET_COLUMNS as readonly string[];
       const body = this.rows.map((r) => this.rowCells(r.claim));
+      this.hostHeight.set(sheetHostHeight(sheetRowCount(body.length)));
       this.univer = lib.createSheet(this.hostEl(), header, body, RESERVE_COL, () => this.refreshPending());
       this.pending.set(0);
       this.ready.set(true);

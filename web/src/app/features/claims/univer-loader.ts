@@ -1,6 +1,7 @@
 import { type FUniver, LocaleType, createUniver, mergeLocales } from '@univerjs/presets';
 import { UniverSheetsCorePreset } from '@univerjs/preset-sheets-core';
 import sheetsCoreEnUS from '@univerjs/preset-sheets-core/locales/en-US';
+import { RESERVE_COLUMN_WIDTHS, ASSESSMENT_COLUMN_WIDTHS, sheetRowCount } from './sheet-layout';
 
 /** What the page keeps: the facade to read and write cells, and a dispose that tears the whole instance down. */
 export interface UniverHandle {
@@ -13,7 +14,7 @@ function token(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
-/** A bare Univer instance (no toolbar, formula bar or menus) mounted into `container`. */
+/** A Univer instance with the full ribbon (Start / Formulas / View tabs), toolbar, formula bar and context menu. */
 function boot(container: HTMLElement) {
   return createUniver({
     locale: LocaleType.EN_US,
@@ -21,11 +22,10 @@ function boot(container: HTMLElement) {
     presets: [
       UniverSheetsCorePreset({
         container,
-        header: false,
-        toolbar: false,
+        header: true,
+        toolbar: true,
         footer: false,
-        formulaBar: false,
-        contextMenu: false,
+        contextMenu: true,
       }),
     ],
   });
@@ -49,9 +49,11 @@ export function createSheet(
   const headBg = token('--surface');
   const text = token('--text');
   const muted = token('--muted');
-  const accentSoft = token('--accent-soft');
+  const input = token('--sheet-input');
   const put = (r: number, c: number, cell: object) => ((cellData[r] ??= {})[c] = cell);
-  header.forEach((h, c) => put(0, c, { v: h, s: { bl: 1, bg: { rgb: headBg }, cl: { rgb: text } } }));
+  header.forEach((h, c) =>
+    put(0, c, { v: h, s: { bl: 1, bg: { rgb: headBg }, cl: { rgb: text }, ...(c >= editableCol ? { ht: 3 } : {}) } }),
+  );
   body.forEach((row, i) =>
     row.forEach((v, c) => {
       if (v === null) return;
@@ -61,7 +63,8 @@ export function createSheet(
         t: typeof v === 'number' ? 2 : 1,
         s: {
           cl: { rgb: reserve ? text : muted },
-          ...(reserve ? { bg: { rgb: accentSoft }, n: { pattern: '#,##0.00' } } : {}),
+          ...(reserve ? { bg: { rgb: input }, n: { pattern: '#,##0.00' } } : {}),
+          ...(c >= editableCol ? { ht: 3 } : {}),
         },
       });
     }),
@@ -75,10 +78,10 @@ export function createSheet(
       s1: {
         id: 's1',
         name: 'Open claims',
-        rowCount: body.length + 4,
+        rowCount: sheetRowCount(body.length),
         columnCount: header.length,
         freeze: { xSplit: 1, ySplit: 1, startRow: 1, startColumn: 1 },
-        columnData: Object.fromEntries([190, 70, 80, 90, 120, 160, 130, 90].map((width, c) => [c, { w: width }])),
+        columnData: Object.fromEntries(RESERVE_COLUMN_WIDTHS.map((width, c) => [c, { w: width }])),
         cellData,
       },
     },
@@ -118,11 +121,11 @@ export function createAssessmentSheet(
   const text = token('--text');
   const muted = token('--muted');
   const headBg = token('--surface');
-  const accentSoft = token('--accent-soft');
+  const input = token('--sheet-input');
   const cellData: Record<number, Record<number, object>> = {
     0: {
       0: { v: 'Item', s: { bl: 1, bg: { rgb: headBg }, cl: { rgb: text } } },
-      1: { v: `Amount (${currency})`, s: { bl: 1, bg: { rgb: headBg }, cl: { rgb: text } } },
+      1: { v: `Amount (${currency})`, s: { bl: 1, bg: { rgb: headBg }, cl: { rgb: text }, ht: 3 } },
     },
   };
   labels.forEach((label, i) => {
@@ -131,8 +134,8 @@ export function createAssessmentSheet(
     cellData[row] = {
       0: { v: label, s: { cl: { rgb: total ? text : muted }, ...(total ? { bl: 1 } : {}) } },
       1: total
-        ? { f: formulas[row], s: { bl: 1, n: { pattern: '#,##0.00' }, cl: { rgb: text } } }
-        : { s: { bg: { rgb: accentSoft }, n: { pattern: '#,##0.00' }, cl: { rgb: text } } },
+        ? { f: formulas[row], s: { bl: 1, n: { pattern: '#,##0.00' }, cl: { rgb: text }, ht: 3 } }
+        : { s: { bg: { rgb: input }, n: { pattern: '#,##0.00' }, cl: { rgb: text }, ht: 3 } },
     };
   });
   univerAPI.createWorkbook({
@@ -143,9 +146,9 @@ export function createAssessmentSheet(
       s1: {
         id: 's1',
         name: 'Assessment',
-        rowCount: labels.length + 2,
+        rowCount: sheetRowCount(labels.length),
         columnCount: 2,
-        columnData: { 0: { w: 260 }, 1: { w: 170 } },
+        columnData: Object.fromEntries(ASSESSMENT_COLUMN_WIDTHS.map((width, c) => [c, { w: width }])),
         cellData,
       },
     },

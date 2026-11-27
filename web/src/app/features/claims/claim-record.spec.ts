@@ -1,5 +1,5 @@
 import { ClaimStatus } from '../../api/models';
-import { Actor, claimTrack, moneyChip, moneyTrack, nextStep, slaDue } from './claims-logic';
+import { Actor, claimTrack, moneyChip, moneyTrack, nextStep, slaDayCaption, slaDue } from './claims-logic';
 
 const actor = (userId: string | undefined, ...permissions: string[]): Actor => ({
   userId,
@@ -181,6 +181,15 @@ describe('nextStep', () => {
     expect(n.primary?.kind).toBe('approve');
     expect(n.caption).toBe('Day 3 of 14');
     expect(n.blockers.every((b) => b.ok)).toBe(true);
+  });
+
+  it('SLA caption: Day N of 14 within the SLA, N days past SLA once over', () => {
+    expect(slaDayCaption(14, 14)).toEqual({ text: 'Day 14 of 14', overdue: false });
+    expect(slaDayCaption(15, 14)).toEqual({ text: '1 day past SLA', overdue: true });
+    expect(slaDayCaption(18, 14)).toEqual({ text: '4 days past SLA', overdue: true });
+    const n = step({ status: 'UnderReview', reserveMinor: 500000, submittedAt: '2026-11-09T00:00:00Z' }, officer);
+    expect(n.caption).toBe('4 days past SLA');
+    expect(n.captionOverdue).toBe(true);
   });
 
   it('another officer\'s claim: "Not yours", no button at all; a manager acts and is told so', () => {

@@ -1,12 +1,12 @@
-/* record banner and its tracks */
+/* record banner and its tracks: a colour band, light text on it */
 .record-banner {
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
-  padding: 1rem 1.25rem 1.1rem;
-  border: 1px solid var(--line);
+  gap: 0.8rem;
+  padding: 1.2rem 1.5rem 1.3rem;
   border-radius: var(--radius-panel);
-  background: linear-gradient(180deg, var(--accent-soft), var(--surface2) 140%);
+  background: linear-gradient(120deg, var(--band-start), var(--band-end));
+  color: var(--on-band);
 }
 .rb-top {
   display: flex;
@@ -21,8 +21,11 @@
   flex-wrap: wrap;
   gap: 0.2rem 0.9rem;
 }
+.rb-title .page-title {
+  color: var(--on-band);
+}
 .rb-sub {
-  color: var(--muted);
+  color: var(--on-band-muted);
 }
 .rb-chips {
   display: flex;
@@ -30,20 +33,23 @@
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+.rb-chips ::ng-deep .pill {
+  background: var(--on-band);
+}
 .rb-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.2rem 1.2rem;
   margin: 0;
   font-size: 0.9rem;
-  color: var(--muted);
+  color: var(--on-band-muted);
 }
 .rb-tracks {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.8rem 1.5rem;
-  padding-top: 0.6rem;
-  border-top: 1px solid var(--line-soft);
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--on-band-line);
 }
 @media (max-width: 900px) {
   .rb-tracks {
@@ -54,15 +60,17 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 0.45rem;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--on-band-muted);
 }
 .track-pos {
   font-variant-numeric: tabular-nums;
-  text-transform: none;
-  letter-spacing: 0;
+  font-weight: 400;
+}
+.track-note {
+  color: var(--on-band-muted);
 }
 .stepper {
   display: flex;
@@ -79,7 +87,7 @@
   align-items: flex-start;
   gap: 0.2rem;
   padding-top: 1.5rem;
-  color: var(--muted);
+  color: var(--on-band-muted);
   font-size: 0.9rem;
 }
 .step::before {
@@ -89,14 +97,14 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--line);
+  background: var(--on-band-line);
 }
 .step.done::before,
 .step.current::before {
-  background: var(--accent);
+  background: var(--on-band);
 }
 .step.error::before {
-  background: var(--err);
+  background: var(--band-err);
 }
 .step-dot {
   position: absolute;
@@ -105,46 +113,48 @@
   width: 1.15rem;
   height: 1.15rem;
   border-radius: 50%;
-  border: 2px solid var(--line);
-  background: var(--surface2);
+  border: 2px solid var(--on-band-muted);
+  background: var(--band-start);
   font-size: 0.7rem;
   line-height: 1;
   display: grid;
   place-items: center;
 }
 .step.done .step-dot {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
+  background: var(--on-band);
+  border-color: var(--on-band);
+  color: var(--band-start);
 }
 .step.current .step-dot {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  border-color: var(--on-band);
+  box-shadow: 0 0 0 3px var(--on-band-line);
 }
 .step.error .step-dot {
-  background: var(--err);
-  border-color: var(--err);
-  color: var(--on-accent);
+  background: var(--band-err);
+  border-color: var(--band-err);
+  color: var(--band-start);
 }
 .step.current .step-label {
-  color: var(--text);
+  color: var(--on-band);
   font-weight: 700;
 }
+.step.done .step-label {
+  color: var(--on-band);
+}
 .step.error .step-label {
-  color: var(--err-ink);
+  color: var(--band-err);
 }
 .step.next .step-dot {
   border-style: dashed;
-  border-color: var(--control);
 }
 .step-sub {
   font-size: 0.8rem;
-  color: var(--warn-ink);
+  color: var(--band-warn);
 }
 .step-next {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--accent-text);
+  color: var(--on-band);
 }
 
 /* next step card */
@@ -286,23 +296,23 @@
 }
 .track-note {
   margin: 0;
-  color: var(--muted);
+  color: var(--on-band-muted);
 }
 .step-date {
   font-size: 0.78rem;
-  color: var(--muted);
+  color: var(--on-band-muted);
   font-variant-numeric: tabular-nums;
 }
 .step.warn .step-dot {
-  border-color: var(--warn);
-  background: var(--warn);
-  color: var(--on-accent);
+  border-color: var(--band-warn);
+  background: var(--band-warn);
+  color: var(--band-start);
 }
 .step.warn::before {
-  background: var(--warn);
+  background: var(--band-warn);
 }
 .step.warn .step-label {
-  color: var(--warn-ink);
+  color: var(--band-warn);
 }
 .nc-actions {
   display: flex;
@@ -315,4 +325,9 @@
   padding: 0.6rem 0.8rem;
   border-left: 3px solid var(--warn);
   background: var(--surface);
+}
+
+.caption-overdue {
+  color: var(--err-ink);
+  font-weight: 600;
 }

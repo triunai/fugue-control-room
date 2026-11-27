@@ -61,19 +61,9 @@
   color: var(--text);
   text-decoration: underline;
 }
-.crumbs li.section {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--accent-text);
-}
 .crumbs li:last-child span {
   color: var(--text);
-  font-family: var(--font-display);
-  font-size: 1.3rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
 }
 .env {
   font-family: var(--font-mono);
@@ -99,17 +89,3 @@
   }
 }
 
-.help {
-  font: inherit;
-  font-size: 0.85rem;
-  color: var(--accent-text);
-  background: none;
-  border: 1.5px solid var(--line);
-  border-radius: 999px;
-  padding: 0.2rem 0.8rem;
-  cursor: pointer;
-}
-.help:hover {
-  border-color: var(--control);
-  background: var(--accent-soft);
-}
