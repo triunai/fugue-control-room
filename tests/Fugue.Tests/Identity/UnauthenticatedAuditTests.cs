@@ -1,10 +1,12 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using Fugue.Application.Abstractions;
 using Fugue.Domain.Identity;
 using Fugue.Tests.Audit;
 using Fugue.Tests.Persistence;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 
 namespace Fugue.Tests.Identity;
@@ -152,6 +154,27 @@ public sealed class UnauthenticatedAuditTests(PostgresFixture db)
         }
 
         Assert.Equal(2, written);
+    }
+
+    private sealed class CancelingWriter : IAccessAuditWriter
+    {
+        public Task WriteAsync(AccessAuditEntry entry, CancellationToken ct) => throw new TaskCanceledException("audit store timed out");
+    }
+
+    [Fact]
+    public async Task An_audit_side_cancellation_with_a_live_request_keeps_the_401_and_is_counted()
+    {
+        await using WebApplicationFactory<Program> host = HostWithCap(1000).WithWebHostBuilder(b =>
+            b.ConfigureServices(services => services.AddSingleton<IAccessAuditWriter>(new CancelingWriter())));
+        using var capture = new AuditMeterCapture();
+
+        HttpResponseMessage response = await host.CreateClient().SendAsync(Get(NewCorrelation()));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal("Bearer", response.Headers.WwwAuthenticate.Single().Scheme);
+        using JsonDocument body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal("auth.unauthenticated", body.RootElement.GetProperty("code").GetString());
+        Assert.True(capture.Count("access_audit", "canceled") >= 1);
     }
 
     [Fact]

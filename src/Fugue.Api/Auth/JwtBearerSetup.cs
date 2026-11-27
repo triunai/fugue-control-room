@@ -121,6 +121,11 @@ public sealed class JwtBearerSetup(IOptions<AuthOptions> auth, TimeProvider time
             await http.RequestServices.GetRequiredService<IAccessAuditWriter>().WriteAsync(
                 new AccessAuditEntry("unauthenticated", "denied", reason, null, null, client), http.RequestAborted);
         }
+        catch (OperationCanceledException) when (!http.RequestAborted.IsCancellationRequested)
+        {
+            // The audit write was canceled on its own (a timeout inside the store), not because the client left: keep the 401 and count the lost row.
+            AuditMetrics.RecordWriteFailure(AuditMetrics.AccessAuditTable, CanceledReason);
+        }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // Auditing is best effort: a 401 must stay a 401 even when the audit services cannot be built (no database, a broken container).
@@ -128,6 +133,8 @@ public sealed class JwtBearerSetup(IOptions<AuthOptions> auth, TimeProvider time
             ChallengeAuditFailed(http.RequestServices.GetService<ILoggerFactory>()?.CreateLogger(typeof(JwtBearerSetup).FullName!), ex);
         }
     }
+
+    private const string CanceledReason = "canceled";
 
     private static readonly Action<ILogger, Exception?> ChallengeAuditLog =
         LoggerMessage.Define(LogLevel.Warning, new EventId(1), "Could not record the unauthenticated access_audit row for a 401");
