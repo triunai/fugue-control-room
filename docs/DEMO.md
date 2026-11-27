@@ -16,7 +16,7 @@ The walkthrough order, one line to say at each step. Every ask in the brief is s
 | 10 | 10:30 | Manager `manager@fugue.test` acts on a claim the officer just changed: the 412 banner | "ETag and If-Match on every command; stale is checked before the state machine, so you are told to re-read." |
 | 11 | 11:30 | Manager: Team and exposure; settle from "To settle" | "Exposure is reserve on open claims plus approved-not-settled, per currency. No grand total: SGD plus IDR needs a rate and a rate date, a finance decision." |
 | 12 | 13:00 | Same page: "unreserved" counts | "An open claim with no reserve is unknown exposure, so the page counts it instead of showing zero." |
-| 13 | 14:00 | Admin `admin@fugue.test`: the claim's audit history, then Webhooks, the dev sink tab with `claim.*` events (or `docker compose --profile kafka` and the topic consumer, runbook 12) | "Three records, three audiences: the timeline for the claimant, the audit diff for staff, events for other systems, all in one transaction." |
+| 13 | 14:00 | Admin `admin@fugue.test`: the claim's audit history, then Webhooks, the dev sink tab with `claim.*` events | "Three records, three audiences: the timeline for the claimant, the audit diff for admins, events for other systems, all in one transaction." |
 | 14 | 15:30 | `docs/ai-journal.md`: the 17:20, 17:50 and 18:00 entries | "The journal records where a check contradicted an agent's report, and what I overrode. A review is evidence, not a verdict." |
 | 15 | 17:00 | `docs/CLAIMS.md` section 8 | "What I cut, in the order I cut it, and what comes next." |
 

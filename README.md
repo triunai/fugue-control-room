@@ -32,6 +32,8 @@ Curl walk-through of every guard (404, 409, 412, 428, the required Idempotency-K
 
 ## Beyond the brief (added after the claims core, at the owner's request)
 
+The timed claims build is the range between the tags `claims-window-start` and `claims-window-end` (`git log claims-window-start..claims-window-end`); what follows the second tag is listed here.
+
 Kept out of the demo script (`docs/DEMO.md`) on purpose; each is documented where it lives.
 
 | Extra | Where |
