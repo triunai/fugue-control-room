@@ -209,3 +209,9 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
 - **Decision:** accepted all corrections; the owner approved amending the Argon2id wording to match the code. Challenged the CI lane's "verified" claim: the YAML parsed but nothing had run, so the lead ran the runbook command end to end (56/56 after the fix).
 - **Why:** the panel probes every line; a doc that overclaims is worse than a missing doc.
 
+
+## 2026-11-27 17:40 - Headless continuation: verify, then run the frontend and the review in parallel
+- **Asked:** continue headless from the seed prompt; mid-turn the owner also allowed commits and pushes as the work goes.
+- **AI proposed:** re-run the backend lane's numbers before trusting them (build 0 warnings, ArchTests 37 + Tests 616, lead run in `.worktrees/claims` at 506fc47: they matched the lane report). The seed said "rebase, then dispatch the remaining backend slices"; the lane had already done both, so that step was skipped instead of re-run. Because the backend is finished, the Codex seam review and the Angular lane start together instead of in sequence: the review is read-only, the web builder owns only `web/**`, and a later backend fix round commits by pathspec in the same worktree.
+- **Decision:** accepted. Deleted the stray `pnpm-lock.yaml`/`pnpm-workspace.yaml` (a pnpm run left them; the repo uses npm). No push: the repo has no remote yet, and creating one (account, visibility) is left to the owner.
+- **Why:** about four hours remain; running the review alongside the UI saves the longest serial wait, and the merge surface between `src/**` and `web/**` is empty.
