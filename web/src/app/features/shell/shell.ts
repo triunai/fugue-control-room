@@ -55,51 +55,53 @@ import { NAV } from './nav';
             </svg>
           </button>
         </div>
-        @for (group of groups(); track group.label) {
-          @let open = collapsed() || !folded().has(group.label);
-          <button
-            type="button"
-            class="group"
-            [attr.aria-expanded]="open"
-            [attr.aria-controls]="'grp-' + group.label"
-            (click)="prefs.toggleGroup(group.label)"
-          >
-            <span>{{ group.label }}</span>
-            @if (group.badge > 0) {
-              <span class="badge">{{ group.badge }}</span>
-            }
-            <span class="fold" aria-hidden="true">{{ open ? '−' : '+' }}</span>
-          </button>
-          <ul role="list" [id]="'grp-' + group.label" [hidden]="!open">
-            @for (item of group.items; track item.path) {
-              <li>
-                <a
-                  class="item"
-                  [routerLink]="item.path"
-                  routerLinkActive="on"
-                  ariaCurrentWhenActive="page"
-                  [attr.data-tip]="item.label"
-                  [attr.aria-label]="collapsed() ? item.label : null"
-                >
-                  <svg width="17" height="17" viewBox="0 0 16 16" aria-hidden="true">
-                    <path
-                      [attr.d]="item.icon"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.4"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                  <span class="label">{{ item.label }}</span>
-                  @if (badges()[item.path]; as n) {
-                    <span class="badge">{{ n }}</span>
-                  }
-                </a>
-              </li>
-            }
-          </ul>
-        }
+        <div class="nav-scroll">
+          @for (group of groups(); track group.label) {
+            @let open = collapsed() || !folded().has(group.label);
+            <button
+              type="button"
+              class="group"
+              [attr.aria-expanded]="open"
+              [attr.aria-controls]="'grp-' + group.label"
+              (click)="prefs.toggleGroup(group.label)"
+            >
+              <span>{{ group.label }}</span>
+              @if (group.badge > 0) {
+                <span class="badge">{{ group.badge }}</span>
+              }
+              <span class="fold" aria-hidden="true">{{ open ? '−' : '+' }}</span>
+            </button>
+            <ul role="list" [id]="'grp-' + group.label" [hidden]="!open">
+              @for (item of group.items; track item.path) {
+                <li>
+                  <a
+                    class="item"
+                    [routerLink]="item.path"
+                    routerLinkActive="on"
+                    ariaCurrentWhenActive="page"
+                    [attr.data-tip]="item.label"
+                    [attr.aria-label]="collapsed() ? item.label : null"
+                  >
+                    <svg width="17" height="17" viewBox="0 0 16 16" aria-hidden="true">
+                      <path
+                        [attr.d]="item.icon"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.4"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    <span class="label">{{ item.label }}</span>
+                    @if (badges()[item.path]; as n) {
+                      <span class="badge">{{ n }}</span>
+                    }
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+        </div>
         <div class="side-foot">
           @if (me(); as me) {
             <div class="card">
@@ -187,14 +189,21 @@ import { NAV } from './nav';
       position: sticky;
       top: 0;
       height: 100vh;
-      overflow-y: auto;
+      height: 100dvh;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       background: var(--surface);
       border-right: 1px solid var(--line);
       padding: 1.1rem 0.85rem 1rem;
     }
+    .nav-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+    }
     .side-head {
+      flex: none;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -316,8 +325,8 @@ import { NAV } from './nav';
       color: var(--accent);
     }
     .side-foot {
-      margin-top: auto;
-      padding-top: 1rem;
+      flex: none;
+      padding-top: 0.75rem;
     }
     .card {
       border: 1.5px solid var(--line);
@@ -459,7 +468,10 @@ import { NAV } from './nav';
     /* Icon rail: labels hide, a tooltip names each control on hover or keyboard focus. */
     .rail .side {
       padding-inline: 0.5rem;
-      overflow-x: visible;
+      overflow: visible;
+    }
+    .rail .nav-scroll {
+      overflow: visible;
     }
     .rail .side-head {
       flex-direction: column;
@@ -522,6 +534,7 @@ import { NAV } from './nav';
       .side {
         position: static;
         height: auto;
+        overflow: visible;
         flex-direction: row;
         flex-wrap: wrap;
         gap: 0.25rem;
@@ -533,6 +546,9 @@ import { NAV } from './nav';
       .side-foot {
         width: 100%;
         padding-top: 0.5rem;
+      }
+      .nav-scroll {
+        overflow: visible;
       }
       .side ul[hidden] {
         display: flex;
