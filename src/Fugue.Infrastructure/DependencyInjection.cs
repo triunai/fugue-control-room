@@ -54,10 +54,18 @@ public static class DependencyInjection
             services.AddScoped<AuditIndexSource>();
             services.AddSingleton<AuditIndexer>();
             services.AddHostedService(sp => sp.GetRequiredService<AuditIndexer>());
+
+            // Claim search (D-063): same engine and options, its own indexes and indexer.
+            services.AddSingleton<MeilisearchClaimSearch>();
+            services.AddSingleton<Fugue.Application.Features.Claims.IClaimSearch>(sp => sp.GetRequiredService<MeilisearchClaimSearch>());
+            services.AddScoped<ClaimIndexSource>();
+            services.AddSingleton<ClaimIndexer>();
+            services.AddHostedService(sp => sp.GetRequiredService<ClaimIndexer>());
         }
         else
         {
             services.AddSingleton<Fugue.Application.Features.Audit.IAuditSearch, DisabledAuditSearch>();
+            services.AddSingleton<Fugue.Application.Features.Claims.IClaimSearch, DisabledClaimSearch>();
         }
 
         // Outbox (ADR-011): events raised by aggregates become outbox rows in the same SaveChanges (EF path) or through IOutbox (Dapper path).

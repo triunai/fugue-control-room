@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { injectInfiniteQuery } from '@tanstack/angular-query';
 import { ClaimsApi, EMPTY_CLAIM_FILTER, claimKeys } from '../../api/claims.api';
@@ -6,13 +6,14 @@ import { RelativeTimePipe, StampPipe } from '../../ui/format';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
 import { livePoll } from './live-poll';
 import { ClaimStatusPill } from './claim-bits';
+import { ClaimSearchHits, SEARCH_OFF_NOTE, SEARCH_PLACEHOLDER, injectClaimSearch } from './claim-search';
 import { marketName } from './claims-logic';
 
 /** The claimant's own claims, newest first (the API scopes the list; there is no owner filter to send). */
 @Component({
   selector: 'fg-my-claims-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, ClaimStatusPill, RelativeTimePipe, StampPipe, SkeletonRows, EmptyState, ErrorState],
+  imports: [RouterLink, ClaimStatusPill, ClaimSearchHits, RelativeTimePipe, StampPipe, SkeletonRows, EmptyState, ErrorState],
   styleUrl: './claims.css',
   template: `
     <div class="page">
@@ -27,8 +28,35 @@ import { marketName } from './claims-logic';
         <a routerLink="/claims/new" class="btn btn-primary">Report an incident</a>
       </header>
 
+      <div class="toolbar" role="search">
+        <label class="search">
+          <span class="sr-only">{{ placeholder }}</span>
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+            <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6" />
+            <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+          </svg>
+          <input
+            class="input"
+            type="search"
+            [placeholder]="placeholder"
+            [value]="searchText()"
+            (input)="searchText.set($any($event.target).value)"
+          />
+        </label>
+      </div>
+
+      @if (search.unavailable()) {
+        <p class="note" role="status" data-testid="search-unavailable">{{ offNote }}</p>
+      }
+
       <div class="table-wrap">
-        @if (query.isPending()) {
+        @if (search.active()) {
+          @if (search.query.isPending()) {
+            <fg-skeleton-rows [rows]="3" />
+          } @else {
+            <fg-claim-search-hits [hits]="search.hits()" [total]="search.total()" />
+          }
+        } @else if (query.isPending()) {
           <fg-skeleton-rows [rows]="5" />
         } @else if (query.isError() && !rows().length) {
           <fg-error-state [error]="query.error()" (retry)="query.refetch()" />
@@ -87,6 +115,11 @@ import { marketName } from './claims-logic';
 export class MyClaimsPage {
   private readonly api = inject(ClaimsApi);
   private readonly router = inject(Router);
+
+  protected readonly searchText = signal('');
+  protected readonly placeholder = SEARCH_PLACEHOLDER;
+  protected readonly offNote = SEARCH_OFF_NOTE;
+  protected readonly search = injectClaimSearch(() => this.searchText());
 
   private readonly live = livePoll();
   protected readonly query = injectInfiniteQuery(() => ({

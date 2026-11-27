@@ -1,10 +1,10 @@
-import type { AuditSearchResultDto } from '../../api/generated/model';
+import type { AuditSearchResultDto, ClaimSearchResultDto } from '../../api/generated/model';
 import { isApiProblem } from '../../core/http/problem';
 import { HighlightSegment, highlightSegments } from '../audit/highlight';
 
-/** The header search is for people who can read the audit trail. */
+/** The header search is for anyone who can read claims (a Claims group) or the audit trail (an Audit group). */
 export function searchVisible(has: (code: string) => boolean): boolean {
-  return has('AUDIT_READ');
+  return has('CLAIMS_READ') || has('AUDIT_READ');
 }
 
 export const DROPDOWN_HITS = 8;
@@ -37,4 +37,23 @@ export function toRows(result: AuditSearchResultDto, max = DROPDOWN_HITS): Searc
 /** 503 `search.unavailable` means the engine is off: the dropdown says "Search is off". */
 export function isSearchOff(error: unknown): boolean {
   return isApiProblem(error) && error.status === 503;
+}
+
+export interface ClaimRow {
+  id: string;
+  number: string;
+  status: ClaimSearchResultDto['hits'][number]['status'];
+  meta: string;
+  description: string;
+}
+
+/** The top claim hits for the dropdown: number, status, market and line, and one line of the description. */
+export function toClaimRows(result: ClaimSearchResultDto, max = DROPDOWN_HITS): ClaimRow[] {
+  return result.hits.slice(0, max).map((h) => ({
+    id: h.id,
+    number: h.number,
+    status: h.status,
+    meta: `${h.market} · ${h.line}${h.incidentLocation ? ' · ' + h.incidentLocation : ''}`,
+    description: h.incidentDescription,
+  }));
 }

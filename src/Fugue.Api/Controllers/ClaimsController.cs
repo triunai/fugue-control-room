@@ -50,6 +50,17 @@ public sealed class ClaimsController : ApiControllerBase
     public Task<ActionResult<ClaimCountsDto>> Counts([FromQuery] ClaimCountsFilter filter, CancellationToken ct) =>
         Send(filter.ToQuery(), ct);
 
+    /// <summary>
+    /// Full-text search over claims (D-063): claim number, policy number, place, description and claimant name, typo tolerant. The scope is applied by the
+    /// search filter itself: a claimant only ever finds their own claims, staff with CLAIMS_ALL find every claim. `q` is required. Eventually consistent
+    /// (an indexer copies rows). 503 `search.unavailable` when the search engine is not configured or unreachable.
+    /// </summary>
+    [HttpGet("search")]
+    [HasPermission(Permissions.ClaimsRead)]
+    [ProducesResponseType(typeof(ClaimSearchResultDto), StatusCodes.Status200OK)]
+    public Task<ActionResult<ClaimSearchResultDto>> Search([FromQuery] string? q, [FromQuery] int? limit, CancellationToken ct) =>
+        Send(new SearchClaimsQuery(q, limit), ct);
+
     /// <summary>Workload board: per officer the open claims by status, the oldest open age, decisions in the last 7 and 30 days and the median days to decide; the unassigned count; ageing bands 0-2, 3-7, 8-14, 15+ days.</summary>
     [HttpGet("workload")]
     [HasPermission(Permissions.ClaimsWorkload)]

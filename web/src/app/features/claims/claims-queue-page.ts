@@ -7,6 +7,7 @@ import { StampPipe } from '../../ui/format';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
 import { livePoll } from './live-poll';
 import { ClaimStatusPill, MoneyPipe } from './claim-bits';
+import { ClaimSearchHits, SEARCH_OFF_NOTE, SEARCH_PLACEHOLDER, injectClaimSearch } from './claim-search';
 import { ClaimsFilterStore } from './claims-filter.store';
 import { filterToParams, hasFilterParams, paramsToFilter } from './claims-query-params';
 import { MARKETS, ageDays } from './claims-logic';
@@ -26,7 +27,7 @@ const TABS: { v: ClaimFilter['status']; l: string }[] = [
 @Component({
   selector: 'fg-claims-queue-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, ClaimStatusPill, MoneyPipe, StampPipe, SkeletonRows, EmptyState, ErrorState],
+  imports: [RouterLink, ClaimStatusPill, ClaimSearchHits, MoneyPipe, StampPipe, SkeletonRows, EmptyState, ErrorState],
   styleUrl: './claims.css',
   template: `
     <div class="page">
@@ -56,7 +57,7 @@ const TABS: { v: ClaimFilter['status']; l: string }[] = [
 
       <div class="toolbar" role="search">
         <label class="search">
-          <span class="sr-only">Search by claim or policy number</span>
+          <span class="sr-only">{{ placeholder }}</span>
           <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
             <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6" />
             <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
@@ -64,7 +65,7 @@ const TABS: { v: ClaimFilter['status']; l: string }[] = [
           <input
             class="input"
             type="search"
-            placeholder="Claim or policy number"
+            [placeholder]="placeholder"
             [value]="searchText()"
             (input)="searchText.set($any($event.target).value)"
           />
@@ -117,8 +118,18 @@ const TABS: { v: ClaimFilter['status']; l: string }[] = [
         }
       </div>
 
+      @if (search.unavailable()) {
+        <p class="note" role="status" data-testid="search-unavailable">{{ offNote }}</p>
+      }
+
       <div class="table-wrap">
-        @if (query.isPending()) {
+        @if (search.active()) {
+          @if (search.query.isPending()) {
+            <fg-skeleton-rows [rows]="4" [widths]="['16%', '16%', '30%', '10%', '10%']" />
+          } @else {
+            <fg-claim-search-hits [hits]="search.hits()" [total]="search.total()" [showClaimant]="true" />
+          }
+        } @else if (query.isPending()) {
           <fg-skeleton-rows [rows]="8" [widths]="['16%', '16%', '10%', '10%', '10%', '12%']" />
         } @else if (query.isError() && !rows().length) {
           <fg-error-state [error]="query.error()" (retry)="query.refetch()" />
@@ -200,6 +211,9 @@ export class ClaimsQueuePage {
   ];
 
   protected readonly searchText = signal(this.filters.q());
+  protected readonly placeholder = SEARCH_PLACEHOLDER;
+  protected readonly offNote = SEARCH_OFF_NOTE;
+  protected readonly search = injectClaimSearch(() => this.searchText());
 
   private readonly filter = computed<ClaimFilter>(() => ({
     status: this.filters.status(),
