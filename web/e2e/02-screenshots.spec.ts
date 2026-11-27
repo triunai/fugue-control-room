@@ -23,7 +23,7 @@ test.describe('screenshots', () => {
     await page.screenshot({ path: `${SHOTS}/audit-diff.png` });
 
     await page.getByRole('link', { name: 'Modules' }).click();
-    await expect(page.getByRole('heading', { name: 'Customers', level: 2 })).toBeVisible();
+    await expect(page.getByRole('switch', { name: 'Switch Customers' })).toBeVisible();
     await page.screenshot({ path: `${SHOTS}/modules.png` });
 
     await page.goto('/webhooks?tab=sink');

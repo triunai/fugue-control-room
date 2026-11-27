@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { injectMutation, injectQuery, QueryClient } from '@tanstack/angular-query';
 import { ModuleDto } from '../../api/models';
 import { moduleKeys, ModulesApi } from '../../api/modules.api';
@@ -8,13 +8,16 @@ import { isApiProblem } from '../../core/http/problem';
 import { ToastStore } from '../../core/ui/toast.store';
 import { Overlays } from '../../ui/overlays';
 import { ErrorState } from '../../ui/states';
+import { Switch } from '../../ui/switch';
+import { LastChanged } from './last-changed';
+import { whenOff } from './when-off';
 
 const PROTECTED = 'SYSTEM';
 
 @Component({
   selector: 'fg-modules-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ErrorState],
+  imports: [ErrorState, Switch, LastChanged],
   templateUrl: './modules-page.html',
   styleUrl: './modules-page.css',
 })
@@ -43,7 +46,7 @@ export class ModulesPage {
           tone: 'warn',
           status: 412,
           title: 'Changed since you loaded it',
-          body: 'Someone else switched this module first. The cards now show the current state.',
+          body: 'Someone else switched this module first. The table now shows the current state.',
           code: e.code,
           ref: e.correlationId,
         });
@@ -63,17 +66,16 @@ export class ModulesPage {
     return m.code === PROTECTED;
   }
 
-  protected canToggle(m: ModuleDto): boolean {
-    return this.access.has('MODULES_MANAGE') && !this.locked(m);
-  }
+  protected readonly onCount = computed(() => (this.modules.data() ?? []).filter((m) => m.effective).length);
 
-  protected explain(m: ModuleDto): string {
-    if (this.locked(m)) return 'Holds sign-in and module management itself, so it can never be switched off.';
+  protected whenOff = whenOff;
+
+  protected disabledReason(m: ModuleDto): string | null {
+    if (this.locked(m)) return null;
     if (!m.configEnabled)
-      return `Off in configuration (Modules__${m.code}__Enabled). The switch here cannot override it; an operator must change the setting.`;
-    if (!m.dbActive)
-      return 'Switched off here. Its endpoints answer 404 module.disabled and its permissions drop out of everyone’s access.';
-    return 'Running. Switching it off hides it from every user on their next request; its data stays intact.';
+      return `Off in configuration (Modules__${m.code}__Enabled); the switch cannot override it. An operator must change the setting.`;
+    if (!this.access.has('MODULES_MANAGE')) return 'You need MODULES_MANAGE to switch modules';
+    return null;
   }
 
   protected async flip(m: ModuleDto): Promise<void> {

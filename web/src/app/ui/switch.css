@@ -1,0 +1,104 @@
+:host {
+  position: relative;
+  display: inline-flex;
+}
+.sw {
+  display: inline-flex;
+  padding: 0.25rem;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
+}
+.sw:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.sw[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+.sw-pending {
+  cursor: progress !important;
+  opacity: 0.65;
+}
+.sw-pending .sw-thumb {
+  animation: sw-pulse 900ms ease-in-out infinite alternate;
+}
+.sw-track {
+  position: relative;
+  width: 2.6rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--err);
+  background: color-mix(in oklab, var(--err) 18%, var(--surface));
+  transition:
+    background-color 150ms,
+    border-color 150ms;
+}
+.sw-on .sw-track {
+  border-color: var(--ok);
+  background: var(--ok);
+}
+.sw-thumb {
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  display: grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: -0.55rem;
+  border-radius: 50%;
+  background: var(--err);
+  color: var(--ok-ink);
+  transition:
+    transform 160ms ease,
+    background-color 150ms;
+}
+.sw-on .sw-thumb {
+  transform: translateX(1.1rem);
+  background: var(--surface2);
+}
+.sw[aria-disabled='true']:not(.sw-pending) .sw-track {
+  opacity: 0.7;
+}
+.sw-tip {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 0.35rem);
+  z-index: 10;
+  max-width: 16rem;
+  width: max-content;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-control);
+  background: var(--text);
+  color: var(--surface2);
+  font-size: 0.8rem;
+  line-height: 1.35;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-50%);
+  transition: opacity 120ms;
+}
+:host(:hover) .sw-tip,
+:host(:focus-within) .sw-tip {
+  opacity: 1;
+}
+@keyframes sw-pulse {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sw-track,
+  .sw-thumb,
+  .sw-tip {
+    transition: none;
+  }
+  .sw-pending .sw-thumb {
+    animation: none;
+  }
+}
