@@ -30,7 +30,7 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
 - [x] 4. (dacfb06; on :8080 The Score of the users.create correlation: 4 steps, 0 errors) nth-score ("The Score" per-correlation inspector from real audit/outbox/delivery rows): wait, verify, merge.
 - [ ] 3a. Users & access roles matrix: granted cells become the console check icon (navy, aria-label/title "Granted"); empty cells
       get an sr-only "Not granted". Follow-up commit on main (nth-uam merged); icon source is `ui/icon.ts` from nth-claimpage.
-- [ ] 3b. Item 3 caveats: run the three new Bruno requests (04 admin creates user, 05 duplicate email 409, 06 staff 403) on :8080.
+- [x] 3b. (03:29 `npx bru run users --env compose` on :8080: 6/6 requests, 6/6 tests; 04 -> 201, 05 -> 409, 06 -> 403; role escalation 403 is covered by UserCreationTests, no Bruno request) Item 3 caveats: run the three new Bruno requests (04 admin creates user, 05 duplicate email 409, 06 staff 403) on :8080.
 - [ ] 4a. Item 4 caveats: prove 4a95058's loosened AuditSearchTests assertion still fails when the indexer misses the rows (inject
       the condition, failure mode 35); record `outbox_messages.correlation_id` has no index as a backlog row, not a migration today.
 - [ ] 5. Forms: no native OS popups. Console-styled select (CDK overlay listbox, keyboard + a11y) and date picker for every
