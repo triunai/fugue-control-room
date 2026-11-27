@@ -94,7 +94,7 @@ jobs:
       # The compose API listens on 5081; the Bruno `local` environment points at 5080 (dotnet run), so override the base URL.
       - name: Run the Bruno suite
         working-directory: bruno/fugue
-        run: npx bru run --env local --env-var baseUrl=http://localhost:5081
+        run: npx bru run --env compose
       - name: API logs on failure
         if: failure()
         run: docker compose logs api

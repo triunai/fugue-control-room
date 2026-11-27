@@ -58,7 +58,7 @@ cd web && npm ci && npm test     # console unit tests
 With the stack from step 2 running (the Bruno `local` environment points at port 5080, the `dotnet run` port, so override it for the compose API on 5081):
 ```bash
 npm ci
-cd bruno/fugue && npx bru run --env local --env-var baseUrl=http://localhost:5081
+cd bruno/fugue && npx bru run --env compose
 ```
 Expect every request to pass. `npm run api:test` runs the same suite but against `localhost:5080`; use it only when you run the API on the host (runbook 05).
 
