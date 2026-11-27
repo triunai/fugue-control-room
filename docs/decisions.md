@@ -64,8 +64,30 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-051 | W-018 audit import: four ideas ported, nine rejected | [ADR-010](adr/ADR-010-audit-log.md) (amended) |
 | D-052 | The claims window runs in this repo, opened by a tag | - |
 | D-053 | Claims platform shape for the window | - |
+| D-054 | Raw SQL lives in .sql files; a read-only Postgres MCP for agents | - |
+| D-055 | One file per concept, not per type | - |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-055 — One file per concept, not per type — 2026-11-27
+WS: WS-20
+Context: owner review: 250 source files, 53 under 20 lines, 24 one-struct files in `Domain/Ids`; hard to read for people and agents.
+Decision: group by concept: all typed ids in one `Ids.cs`; an aggregate keeps its small enums and value types in its own file; ports grouped by concern (identity, audit, messaging); one slice stays one file; list filters bind one `[FromQuery]` record (backlog #005). CLAUDE.md's "one type per file" rule is replaced. Done as one readability pass after the claims backend merges; proof = build 0 warnings, full suite green, OpenAPI snapshot byte-identical.
+Why: fewer, fuller files show the shape of the system; tiny files cost opens and context without adding meaning.
+Consequences: a large mechanical diff in one commit series; `git log --follow` still traces moved code.
+Who: owner (asked), AI (rules)
+Status: accepted
+Promote: no
+
+## D-054 — Raw SQL lives in .sql files; a read-only Postgres MCP for agents — 2026-11-27
+WS: WS-20
+Context: owner review: 28 raw SQL statements are inline string constants across 11 Infrastructure files.
+Decision: runtime SQL moves to embedded `.sql` files under `src/Fugue.Infrastructure/Persistence/Sql/<area>/`, loaded once by `SqlScripts.Get("area/name")`, with a test that every referenced script exists. Schema migrations stay EF Core; `npm run db:script` exports them as one idempotent `.sql` script any Postgres runner or psql can apply. Agents inspect the database through a Postgres MCP server in restricted (read-only) mode using a SELECT-only `fugue_readonly` role, configured in the project `.mcp.json`.
+Why: SQL that is reviewable as SQL (highlighting, paste into pgAdmin, DBA review); migrations runnable without .NET; agents can read live data and plans but cannot write.
+Consequences: a script name can drift from its caller: the existence test plus the integration tests that execute every statement catch it.
+Who: owner (format and the MCP), AI (loader, role, export)
+Status: accepted
+Promote: no
 
 ## D-053 — Claims platform shape for the window — 2026-11-27
 WS: WS-20

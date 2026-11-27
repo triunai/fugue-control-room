@@ -197,3 +197,9 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
 - **Decision:** accepted, with the owner's timing (now, not tomorrow) and the owner's confirmation that the panel accepts a disclosed starter. Challenged the AI's scope: a Lovable/TPMS-style claims UI was tempting; the backend stays first, per the brief.
 - **Why:** the brief says a strong backend with a partial frontend beats a rushed pair, and the scaffold already carries the plumbing, so the window goes to the domain decisions the panel will probe.
 
+## 2026-11-27 17:12 - Owner code review mid-window
+- **Asked:** the owner opened the code and challenged it: the Auth folder had seven files nobody could read and a "hardcoded model"; an audit list action stacked nine `[FromQuery]` attributes; raw SQL was inline in C#; too many tiny files.
+- **AI proposed:** measured before agreeing: every controller action is already a one-liner (enforced by arch tests), the audit list is the only outlier; "Claims" in `ClaimsCurrentUser` meant JWT claims and would clash with the new insurance Claims feature; 28 inline SQL statements in 11 files; 250 source files, 53 under 20 lines.
+- **Decision:** accepted all four critiques. Renamed the adapter to `JwtCurrentUser`, centralised claim-type names, added a folder map (done). Owner chose `.sql` files over static SQL classes or stored procedures (D-054) and asked for a read-only Postgres MCP for agents; consolidation by concept replaces "one type per file" (D-055). Overrode the AI's first instinct to keep the old convention.
+- **Why:** readability for the panel and for agents beats a convention adopted by default; the AI's measurements kept the change targeted instead of a rewrite.
+
