@@ -1,0 +1,51 @@
+From claims@harbourbrokers.example Fri Nov 27 10:15:00 2026
+From: "Harbour Brokers Claims" <claims@harbourbrokers.example>
+To: claims-inbox@fugue.test
+Subject: =?UTF-8?Q?New_claim_=E2=80=93_water_damage?=
+Date: Fri, 27 Nov 2026 10:15:00 +0800
+Message-ID: <hb-20261127-001@harbourbrokers.example>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="b1"
+
+--b1
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Dear claims team,
+
+Please register a claim for our client.
+
+Insured: Dev Self-Service One (self@fugue.test)
+Policy number: POL-HK-300201
+Date of incident: 25/11/2026
+Location: Flat 12B, Tai Koo Shing, Hong Kong
+
+A pipe burst in the flat above; water came through the ceiling and damaged t=
+he kitchen cabinets and flooring =E2=80=93 photos to follow.
+
+Regards,
+Harbour Brokers
+--b1
+Content-Type: text/html; charset=utf-8
+
+<p>Dear claims team,</p><p>Please register a claim for our client.</p>
+--b1--
+
+From self2@fugue.test Sat Nov 28 08:02:00 2026
+From: Dev Self-Service Two <self2@fugue.test>
+To: claims-inbox@fugue.test
+Subject: Car accident yesterday
+Date: Sat, 28 Nov 2026 08:02:00 +0700
+Message-ID: <a1b2c3@mail.fugue.test>
+Content-Type: text/plain; charset=utf-8
+
+Hello,
+
+My car was hit from behind at a junction on Sukhumvit Road yesterday evening.
+The rear bumper is cracked.
+My policy is POL-TH-300202.
+Market: Thailand
+>From the other driver I have a photo of his licence.
+
+On Fri, 27 Nov 2026 at 20:00, Claims <claims-inbox@fugue.test> wrote:
+> How can we help?

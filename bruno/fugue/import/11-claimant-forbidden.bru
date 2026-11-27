@@ -1,0 +1,38 @@
+meta {
+  name: A claimant gets 403 on the import endpoints
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{baseUrl}}/api/v1/import/claims
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{importClaimantToken}}
+}
+
+script:post-response {
+  let status;
+  try {
+    const check = await bru.sendRequest({
+      method: "POST",
+      url: bru.getEnvVar("baseUrl") + "/api/v1/import/check",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + bru.getVar("importClaimantToken") },
+      data: { drafts: [{ key: "a" }] },
+    });
+    status = check.status;
+  } catch (e) {
+    status = e.response ? e.response.status : e.status;
+  }
+  bru.setVar("claimantCheckStatus", status);
+}
+
+tests {
+  test("403 on the list and on the check (CLAIMS_HANDLE is staff only)", function () {
+    expect(res.status).to.equal(403);
+    expect(bru.getVar("claimantCheckStatus")).to.equal(403);
+  });
+}

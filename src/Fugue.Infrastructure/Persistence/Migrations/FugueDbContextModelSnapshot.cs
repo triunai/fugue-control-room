@@ -316,6 +316,87 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Fugue.Domain.Claims.ClaimImport", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("key");
+
+                    b.Property<Guid>("ClaimId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("claim_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("file_name");
+
+                    b.Property<string>("FileSha256")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("file_sha256");
+
+                    b.Property<Guid>("ImportedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("imported_by");
+
+                    b.Property<string>("Item")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("item");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("source");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Key")
+                        .HasName("pk_claim_imports");
+
+                    b.HasIndex("ClaimId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_claim_imports_claim");
+
+                    b.HasIndex("ImportedBy")
+                        .HasDatabaseName("ix_claim_imports_imported_by");
+
+                    b.HasIndex("CreatedAt", "Key")
+                        .IsDescending()
+                        .HasDatabaseName("ix_claim_imports_created_at");
+
+                    b.ToTable("claim_imports", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_claim_imports_key_sha256", "key ~ '^[0-9a-f]{64}$'");
+
+                            t.HasCheckConstraint("ck_claim_imports_source", "source IN ('Spreadsheet', 'Email', 'WhatsApp')");
+                        });
+                });
+
             modelBuilder.Entity("Fugue.Domain.Claims.ClaimInfoRequest", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3037,6 +3118,23 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_claims_users_claimant_user_id");
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Claims.ClaimImport", b =>
+                {
+                    b.HasOne("Fugue.Domain.Claims.Claim", null)
+                        .WithMany()
+                        .HasForeignKey("ClaimId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_claim_imports_claims_claim_id");
+
+                    b.HasOne("Fugue.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("ImportedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_claim_imports_users_imported_by");
                 });
 
             modelBuilder.Entity("Fugue.Domain.Claims.ClaimInfoRequest", b =>

@@ -1,0 +1,31 @@
+meta {
+  name: Staff reads a WhatsApp chat export (one draft, transcript as the note)
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/api/v1/import/files?source=WhatsApp
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{importStaffToken}}
+}
+
+body:multipart-form {
+  file: @file(../../tests/Fugue.Tests/Import/Fixtures/WhatsApp Chat with +65 9123 4567.txt)
+}
+
+tests {
+  test("one draft: SG from +65, the policy and email read from the chat, the transcript as the note", function () {
+    expect(res.status).to.equal(200);
+    const d = res.body.drafts[0];
+    expect(res.body.drafts.length).to.equal(1);
+    expect(d.market).to.equal("SG");
+    expect(d.policyNumber).to.equal("POL-SG-300301");
+    expect(d.claimantEmail).to.equal("self@fugue.test");
+    expect(d.note).to.include("Fugue Claims: Sorry to hear that.");
+  });
+}

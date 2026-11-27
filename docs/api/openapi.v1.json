@@ -534,6 +534,22 @@
         ],
         "type": "object"
       },
+      "CheckImportDraftsRequest": {
+        "additionalProperties": false,
+        "description": "Body of a draft check: the drafts as the reviewer has them, raw text, in the order to answer in.",
+        "properties": {
+          "drafts": {
+            "items": {
+              "$ref": "#/components/schemas/ImportDraftInput"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "drafts"
+        ],
+        "type": "object"
+      },
       "ClaimCountsDto": {
         "additionalProperties": false,
         "description": "Claims per status under the caller's scope and the list's filters (status excluded). Every status is present, zero included.",
@@ -982,6 +998,68 @@
         ],
         "type": "object"
       },
+      "CreateImportedClaimRequest": {
+        "additionalProperties": false,
+        "description": "Body of a create from a reviewed draft. `Key`, `FileName`, `FileSha256` and `Item` are echoed from the parse response; the claim fields are the normalised values from the check; `ClaimantEmail` names the account the claim belongs to; `Note` goes on the timeline.",
+        "properties": {
+          "claimantEmail": {
+            "type": "string"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "fileSha256": {
+            "type": "string"
+          },
+          "incidentDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "incidentDescription": {
+            "type": "string"
+          },
+          "incidentLocation": {
+            "nullable": true,
+            "type": "string"
+          },
+          "item": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "line": {
+            "$ref": "#/components/schemas/LineOfBusiness"
+          },
+          "market": {
+            "$ref": "#/components/schemas/Market"
+          },
+          "note": {
+            "nullable": true,
+            "type": "string"
+          },
+          "policyNumber": {
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/ImportSource"
+          }
+        },
+        "required": [
+          "claimantEmail",
+          "fileName",
+          "fileSha256",
+          "incidentDate",
+          "incidentDescription",
+          "item",
+          "key",
+          "line",
+          "market",
+          "policyNumber",
+          "source"
+        ],
+        "type": "object"
+      },
       "CreateUserRequest": {
         "additionalProperties": false,
         "description": "Body of a user create. `Password` is the initial password the administrator hands over (12 to 128 characters); `Roles` are role codes, at least one, each granting nothing the caller does not hold.",
@@ -1270,6 +1348,321 @@
           "memberCount",
           "name",
           "roles"
+        ],
+        "type": "object"
+      },
+      "ImportCheckDto": {
+        "additionalProperties": false,
+        "description": "The verdict on one draft. `Ready`: it passes the Report an incident rules, the claimant account exists and may own claims, and the item was not imported before. `Errors` are keyed by field (camelCase), with the same messages Report an incident shows. The normalised values are what to send to create.",
+        "properties": {
+          "claimant": {
+            "$ref": "#/components/schemas/ImportClaimantDto"
+          },
+          "errors": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object"
+          },
+          "imported": {
+            "$ref": "#/components/schemas/ImportedRefDto"
+          },
+          "incidentDate": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "line": {
+            "$ref": "#/components/schemas/LineOfBusiness"
+          },
+          "market": {
+            "$ref": "#/components/schemas/Market"
+          },
+          "ready": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "errors",
+          "key",
+          "ready"
+        ],
+        "type": "object"
+      },
+      "ImportClaimantDto": {
+        "additionalProperties": false,
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "displayName",
+          "id"
+        ],
+        "type": "object"
+      },
+      "ImportDraftDto": {
+        "additionalProperties": false,
+        "description": "A draft read from an email or a chat: raw text for each field (null when nothing was found) and how each value was inferred.",
+        "properties": {
+          "claimantEmail": {
+            "nullable": true,
+            "type": "string"
+          },
+          "claimantName": {
+            "nullable": true,
+            "type": "string"
+          },
+          "hints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "imported": {
+            "$ref": "#/components/schemas/ImportedRefDto"
+          },
+          "incidentDate": {
+            "nullable": true,
+            "type": "string"
+          },
+          "incidentDescription": {
+            "nullable": true,
+            "type": "string"
+          },
+          "incidentLocation": {
+            "nullable": true,
+            "type": "string"
+          },
+          "item": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "line": {
+            "nullable": true,
+            "type": "string"
+          },
+          "market": {
+            "nullable": true,
+            "type": "string"
+          },
+          "note": {
+            "nullable": true,
+            "type": "string"
+          },
+          "policyNumber": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "hints",
+          "item",
+          "key"
+        ],
+        "type": "object"
+      },
+      "ImportDraftInput": {
+        "additionalProperties": false,
+        "description": "A draft as the reviewer has it (raw text, possibly edited), sent back to be checked. Market accepts the code or the country name, line is case-insensitive, the date accepts yyyy-mm-dd or day-first d/m/yyyy.",
+        "properties": {
+          "claimantEmail": {
+            "nullable": true,
+            "type": "string"
+          },
+          "incidentDate": {
+            "nullable": true,
+            "type": "string"
+          },
+          "incidentDescription": {
+            "nullable": true,
+            "type": "string"
+          },
+          "incidentLocation": {
+            "nullable": true,
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "line": {
+            "nullable": true,
+            "type": "string"
+          },
+          "market": {
+            "nullable": true,
+            "type": "string"
+          },
+          "policyNumber": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "type": "object"
+      },
+      "ImportFileDto": {
+        "additionalProperties": false,
+        "description": "What the server read from an uploaded file. A spreadsheet comes back as `Sheet` (the reviewer maps its columns in the browser); an inbox export or a chat comes back as `Drafts`. `FileSha256` identifies the upload; each row or draft carries its own key and, when that item was imported before, the claim it became.",
+        "properties": {
+          "drafts": {
+            "items": {
+              "$ref": "#/components/schemas/ImportDraftDto"
+            },
+            "type": "array"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "fileSha256": {
+            "type": "string"
+          },
+          "sheet": {
+            "$ref": "#/components/schemas/ImportSheetDto"
+          },
+          "source": {
+            "$ref": "#/components/schemas/ImportSource"
+          }
+        },
+        "required": [
+          "drafts",
+          "fileName",
+          "fileSha256",
+          "source"
+        ],
+        "type": "object"
+      },
+      "ImportSheetDto": {
+        "additionalProperties": false,
+        "properties": {
+          "headers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/ImportSheetRowDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "headers",
+          "rows"
+        ],
+        "type": "object"
+      },
+      "ImportSheetRowDto": {
+        "additionalProperties": false,
+        "description": "One data row; `Number` is the row number in the spreadsheet (the header is row 1).",
+        "properties": {
+          "cells": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "imported": {
+            "$ref": "#/components/schemas/ImportedRefDto"
+          },
+          "key": {
+            "type": "string"
+          },
+          "number": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cells",
+          "key",
+          "number"
+        ],
+        "type": "object"
+      },
+      "ImportSource": {
+        "enum": [
+          "Spreadsheet",
+          "Email",
+          "WhatsApp"
+        ],
+        "type": "string"
+      },
+      "ImportedClaimDto": {
+        "additionalProperties": false,
+        "description": "One imported claim, newest first, for the Import page's \"Imported\" list.",
+        "properties": {
+          "claimId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "claimNumber": {
+            "type": "string"
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "importedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "importedBy": {
+            "type": "string"
+          },
+          "item": {
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/ImportSource"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ClaimStatus"
+          }
+        },
+        "required": [
+          "claimId",
+          "claimNumber",
+          "fileName",
+          "importedAt",
+          "importedBy",
+          "item",
+          "source",
+          "status"
+        ],
+        "type": "object"
+      },
+      "ImportedRefDto": {
+        "additionalProperties": false,
+        "description": "The claim an item already became.",
+        "properties": {
+          "claimId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "claimNumber": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "claimId",
+          "claimNumber"
         ],
         "type": "object"
       },
@@ -5157,6 +5550,320 @@
         ]
       }
     },
+    "/api/v1/import/check": {
+      "post": {
+        "operationId": "Import_Check",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckImportDraftsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ImportCheckDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            },
+            "description": "Bad Request. Codes: `validation.failed`.",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Check drafts against the Report an incident rules (the same validator), the claimant account and the import ledger. Nothing is created; every draft gets a verdict with field errors, the normalised market, line and date, the claimant found and the claim an earlier import became.",
+        "tags": [
+          "Import"
+        ]
+      }
+    },
+    "/api/v1/import/claims": {
+      "get": {
+        "operationId": "Import_Imported",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ImportedClaimDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            },
+            "description": "Bad Request. Codes: `validation.failed`.",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "The most recent imports, newest first (`limit` 1 to 50, default 20): the claim, its status, the file and item, who imported it and when.",
+        "tags": [
+          "Import"
+        ]
+      },
+      "post": {
+        "operationId": "Import_Create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateImportedClaimRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimDto"
+                }
+              }
+            },
+            "description": "Created",
+            "headers": {
+              "ETag": {
+                "$ref": "#/components/headers/ETag"
+              },
+              "Location": {
+                "$ref": "#/components/headers/Location"
+              },
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            },
+            "description": "Bad Request. Codes: `validation.failed`, `import.claimant_unknown`, `import.claimant_cannot_own_claims`.",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict. Codes: `import.already_imported`.",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Create the claim from one reviewed draft, owned by the claimant account named by `claimantEmail` and submitted the normal way (Submitted, timeline, audit, `claim.submitted` event), with an import note on its timeline. 409 `import.already_imported` when the item's key was imported before. Not `[Idempotent]` on purpose: the item's key in the import ledger already makes a retry harmless (409 naming the claim it became).",
+        "tags": [
+          "Import"
+        ]
+      }
+    },
+    "/api/v1/import/files": {
+      "post": {
+        "operationId": "Import_ReadFile",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "$ref": "#/components/schemas/ImportSource"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "encoding": {
+                "file": {
+                  "style": "form"
+                }
+              },
+              "schema": {
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportFileDto"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationProblemDetails"
+                }
+              }
+            },
+            "description": "Bad Request. Codes: `import.unreadable`, `validation.failed`.",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Read an uploaded file (multipart field `file`) as `source`: Spreadsheet (.csv, .xlsx) returns the header and rows for column mapping; Email (.eml, .mbox) and WhatsApp (chat export .txt) return drafts. Nothing is stored. Items imported before carry the claim they became. 400 `import.unreadable` when the file is not what the source expects.",
+        "tags": [
+          "Import"
+        ]
+      }
+    },
     "/api/v1/me": {
       "get": {
         "description": "Drives the console's navigation and permission checks. The permission list is exactly what the API enforces (deny beats allow beats role; permissions of a disabled module are absent), looked up fresh on every call and never cached by clients or proxies.",
@@ -6594,6 +7301,10 @@
     {
       "description": "Groups: members inherit the group's roles. Minimal administration; every change writes a grant_audit row.",
       "name": "Groups"
+    },
+    {
+      "description": "Intake import (item 11a): staff turn a spreadsheet, an inbox export (.eml/.mbox) or a WhatsApp chat export into DRAFT claims, review them, and create claims one by one through the normal submit path. These are FILE imports standing in for live Microsoft Graph, Gmail and WhatsApp Business connectors: no external service is called. Staff only (`CLAIMS_HANDLE`); idempotent by the item's content key; every create is audited.",
+      "name": "Import"
     },
     {
       "description": "The signed-in caller's own identity and effective access. Needs no permission: every authenticated user may read their own.",

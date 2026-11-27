@@ -19,6 +19,8 @@ public sealed class FugueDbContext(DbContextOptions<FugueDbContext> options) : D
 
     public DbSet<ClaimInfoRequest> ClaimInfoRequests => Set<ClaimInfoRequest>();
 
+    public DbSet<ClaimImport> ClaimImports => Set<ClaimImport>();
+
     public DbSet<Tenant> Tenants => Set<Tenant>();
 
     public DbSet<User> Users => Set<User>();

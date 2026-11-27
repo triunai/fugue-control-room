@@ -1,0 +1,37 @@
+meta {
+  name: Sign in staff and a claimant
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/me
+  body: none
+  auth: inherit
+}
+
+script:pre-request {
+  async function login(email) {
+    const res = await bru.sendRequest({
+      method: "POST",
+      url: bru.getEnvVar("baseUrl") + "/api/v1/auth/token",
+      headers: { "Content-Type": "application/json" },
+      data: { email: email, password: bru.getEnvVar("devPw") }, // secrets-scan:ignore
+    });
+    return res.data.accessToken;
+  }
+  bru.setVar("importStaffToken", await login("staff@fugue.test"));
+  bru.setVar("importClaimantToken", await login(bru.getEnvVar("selfEmail")));
+  // Bruno cannot build a file in memory, so the create requests use their own random 64-hex key and a unique policy; the
+  // console sends the key the parse returned. The ledger treats both the same.
+  const hex = Array.from({ length: 64 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
+  bru.setVar("importKey", hex);
+  bru.setVar("importPolicy", "BRU-IMP-" + Date.now());
+  bru.setVar("importDate", new Date(Date.now() - 86400000).toISOString().slice(0, 10));
+}
+
+tests {
+  test("signed in", function () {
+    expect(res.status).to.equal(200);
+  });
+}

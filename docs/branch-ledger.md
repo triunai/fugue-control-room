@@ -7,4 +7,3 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | Branch | Worktree path | Base sha | Owner (lane) | W id | Status |
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
-| `nth-import` | `.worktrees/nth-import` | dacfb06 | nth-import (Opus), relay-dispatched | D-064 | 11a: intake import module (spreadsheet, inbox, WhatsApp file imports) |

@@ -161,6 +161,10 @@ public static class DependencyInjection
         services.AddScoped<IClaimRepository, ClaimRepository>();
         services.AddScoped<IClaimReports, ClaimReports>();
         services.AddScoped<IClaimSeeder, ClaimSeeder>();
+        services.AddScoped<Fugue.Application.Features.Import.IImportStore, Persistence.Import.ImportStore>(); // item 11a
+        services.AddOptions<Import.ImportOptions>().Bind(configuration.GetSection(Import.ImportOptions.Section)).ValidateOnStart();
+        services.AddSingleton<IValidateOptions<Import.ImportOptions>, Import.ImportOptionsValidator>();
+        services.AddSingleton<Fugue.Application.Features.Import.IImportSettings, Import.ConfigImportSettings>();
         services.AddScoped<IDevSinkSeeder, DevSinkSeeder>();
 
         services.Configure<PasswordOptions>(o =>

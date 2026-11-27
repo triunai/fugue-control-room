@@ -1,0 +1,40 @@
+meta {
+  name: The same item again is 409 import.already_imported
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/v1/import/claims
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{importStaffToken}}
+}
+
+body:json {
+  {
+    "source": "Spreadsheet",
+    "key": "{{importKey}}",
+    "fileName": "bruno (1).csv",
+    "fileSha256": "{{importKey}}",
+    "item": "Row 2",
+    "market": "SG",
+    "line": "Motor",
+    "policyNumber": "{{importPolicy}}",
+    "incidentDate": "{{importDate}}",
+    "incidentDescription": "Rear-ended at the lights (Bruno import).",
+    "claimantEmail": "{{selfEmail}}"
+  }
+}
+
+tests {
+  test("409 problem naming the claim it already became", function () {
+    expect(res.status).to.equal(409);
+    expect(res.headers["content-type"]).to.include("application/problem+json");
+    expect(res.body.code).to.equal("import.already_imported");
+    expect(res.body.detail || res.body.title).to.include(bru.getVar("importClaimNumber"));
+  });
+}
