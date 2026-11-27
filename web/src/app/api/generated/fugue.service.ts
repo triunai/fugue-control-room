@@ -40,6 +40,7 @@ import type {
   ClaimsListParams,
   ClaimsSearchParams,
   CreateCustomerRequest,
+  CreateUserRequest,
   CreateWebhookSubscriptionRequest,
   CustomerDto,
   CustomersListParams,
@@ -1788,6 +1789,77 @@ export class FugueAPIService {
   }
 
 /**
+ * @summary Create a user with an initial password (12 to 128 characters, never returned) and at least one role. The email is unique among live users (409 `user.email_taken`); an unknown role is a 400 on `roles`; a role granting a permission the caller does not hold is 403 `user.role_escalation`. The role grants are written to grant_audit with the user. Not `[Idempotent]` on purpose: the unique email already makes a retry safe (409), and the key store would keep a hash of a body that carries the password.
+ */
+ usersCreate<TData = UserDto>(createUserRequest?: CreateUserRequest, options?: HttpClientBodyOptions): Observable<TData>;
+ usersCreate<TData = UserDto>(createUserRequest?: CreateUserRequest, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ usersCreate<TData = UserDto>(createUserRequest?: CreateUserRequest, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  usersCreate<TData = UserDto>(
+    createUserRequest?: CreateUserRequest, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+      `/api/v1/users`,
+      createUserRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+      `/api/v1/users`,
+      createUserRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.post<TData>(
+      `/api/v1/users`,
+      createUserRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary Get one user (same shape as a list row). An unknown or deleted user is 404.
+ */
+ usersGet<TData = UserDto>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+ usersGet<TData = UserDto>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ usersGet<TData = UserDto>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  usersGet<TData = UserDto>(
+    id: string, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(
+      `/api/v1/users/${id}`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(
+      `/api/v1/users/${id}`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.get<TData>(
+      `/api/v1/users/${id}`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
  * @summary List deliveries (status, attempts, last result; never a body or header), newest first, keyset paged.
  */
  webhooksListDeliveries<TData = WebhookDeliveryDto[]>(params?: WebhooksListDeliveriesParams, options?: HttpClientBodyOptions): Observable<TData>;
@@ -2124,6 +2196,8 @@ export type OverridesRemoveClientResult = NonNullable<void>
 export type OverridesSetClientResult = NonNullable<void>
 export type RolesListClientResult = NonNullable<RoleDto[]>
 export type UsersListClientResult = NonNullable<UserDto[]>
+export type UsersCreateClientResult = NonNullable<UserDto>
+export type UsersGetClientResult = NonNullable<UserDto>
 export type WebhooksListDeliveriesClientResult = NonNullable<WebhookDeliveryDto[]>
 export type WebhooksRedeliverClientResult = NonNullable<void>
 export type WebhooksListClientResult = NonNullable<WebhookSubscriptionDto[]>

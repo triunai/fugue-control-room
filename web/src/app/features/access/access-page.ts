@@ -15,9 +15,11 @@ import { HasPermissionDirective } from '../../core/auth/has-permission.directive
 import { CorrelationService } from '../../core/http/correlation.service';
 import { ToastStore } from '../../core/ui/toast.store';
 import { StampPipe } from '../../ui/format';
+import { Overlays } from '../../ui/overlays';
 import { RefChip } from '../../ui/ref-chip';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
 import { RolesMatrix } from './roles-matrix';
+import { UserCreateDrawer } from './user-create-drawer';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -43,6 +45,7 @@ export class AccessPage {
   private readonly toasts = inject(ToastStore);
   private readonly correlation = inject(CorrelationService);
   private readonly fb = inject(NonNullableFormBuilder);
+  private readonly overlays = inject(Overlays);
   protected readonly access = inject(AccessService);
 
   protected readonly codes = PERMISSION_CODES;
@@ -113,6 +116,11 @@ export class AccessPage {
     onSuccess: (_d, o) => this.toasts.ok(`Override on ${o.permission} removed`, undefined, this.correlation.id()),
     onSettled: () => this.queryClient.invalidateQueries({ queryKey: ['access', 'overrides'] }),
   }));
+
+  /** The drawer refreshes the list itself on success (it invalidates the users query). */
+  protected addUser(): void {
+    this.overlays.drawer<UserCreateDrawer, null, UserDto | false>(UserCreateDrawer, null);
+  }
 
   protected pickUser(u: UserDto): void {
     this.pick(u.id, u.displayName || u.email);

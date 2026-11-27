@@ -31,6 +31,7 @@ export * from './claimStatusCountDto';
 export * from './claimTimelineEntryDto';
 export * from './claimWorkloadDto';
 export * from './createCustomerRequest';
+export * from './createUserRequest';
 export * from './createWebhookSubscriptionRequest';
 export * from './customerDto';
 export * from './customersListParams';

@@ -23,6 +23,15 @@
           [value]="userSearch()"
           (input)="userSearch.set($any($event.target).value)"
         />
+        <button
+          *hasPermission="'USERS_MANAGE'"
+          type="button"
+          class="btn btn-primary"
+          data-testid="add-user"
+          (click)="addUser()"
+        >
+          Add user
+        </button>
       </div>
     </div>
     @if (users.isPending()) {
