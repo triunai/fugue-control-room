@@ -19,7 +19,7 @@ headers {
 }
 
 body:json {
-  { "question": "Please upload photos of the damage." }
+  { "question": "What is the other driver registration number?" }
 }
 
 script:post-response {
@@ -33,6 +33,6 @@ tests {
   test("200, InfoRequested, the question is open", function () {
     expect(res.status).to.equal(200);
     expect(res.body.status).to.equal("InfoRequested");
-    expect(res.body.openInfoRequest.question).to.equal("Please upload photos of the damage.");
+    expect(res.body.openInfoRequest.question).to.equal("What is the other driver registration number?");
   });
 }

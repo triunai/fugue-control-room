@@ -1,0 +1,21 @@
+meta {
+  name: maxAgeDays below minAgeDays is 400
+  type: http
+  seq: 35
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims?minAgeDays=5&maxAgeDays=4
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{officerToken}}
+}
+
+tests {
+  test("400", function () {
+    expect(res.status).to.equal(400);
+  });
+}

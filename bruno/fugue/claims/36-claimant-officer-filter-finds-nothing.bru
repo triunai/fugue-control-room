@@ -1,0 +1,22 @@
+meta {
+  name: A claimant cannot use officerId to find who handles a claim
+  type: http
+  seq: 36
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims?officerId={{assignedOfficerId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{claimantToken}}
+}
+
+tests {
+  test("200 and an empty list", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body).to.eql([]);
+  });
+}

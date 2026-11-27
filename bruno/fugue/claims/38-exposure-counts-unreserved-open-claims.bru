@@ -1,0 +1,23 @@
+meta {
+  name: Exposure carries unreservedOpenCount on rows and totals
+  type: http
+  seq: 38
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/exposure
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{managerToken}}
+}
+
+tests {
+  test("200 and the unreserved count is a number on every row and total", function () {
+    expect(res.status).to.equal(200);
+    res.body.rows.forEach(function (r) { expect(r.unreservedOpenCount).to.be.a("number"); });
+    res.body.totals.forEach(function (t) { expect(t.unreservedOpenCount).to.be.a("number"); });
+  });
+}

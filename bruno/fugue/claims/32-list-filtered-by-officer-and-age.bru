@@ -1,0 +1,23 @@
+meta {
+  name: Staff list filtered by officerId and age
+  type: http
+  seq: 32
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims?officerId={{assignedOfficerId}}&minAgeDays=0&maxAgeDays=1&limit=100
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{officerToken}}
+}
+
+tests {
+  test("200 and the new claim is in the officer's young claims", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.map(function (c) { return c.id; })).to.include(bru.getVar("claimId"));
+    res.body.forEach(function (c) { expect(c.assignedOfficerId).to.equal(bru.getVar("assignedOfficerId")); });
+  });
+}
