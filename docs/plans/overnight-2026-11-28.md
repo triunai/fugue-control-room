@@ -13,7 +13,7 @@ Order inside P1: demo-visible first (5 to 9), then 11a and 11b, then 10, 11c. Fe
       dev-server sign-in timed out at 03:03 (proxy ECONNREFUSED to :5081, then unexplained); check on the rebuilt :8080 instead.
 - [ ] 2. Push main (keepalive; origin was fb10684 at 03:02).
 
-- [ ] 1b. Open claim (Closest to its SLA card) and Pick up (Pick up next) on Home as staff must land on /claims/<id>. Owner saw both
+- [x] 1b. (stale tab, no code change: 03:27 fresh headless staff context, signed in + reloaded on :8080 at dacfb06+, Open claim -> /claims/01a21cfb-37b2-..., Pick up -> /claims/01a21cfb-37af-..., 0 console errors) Open claim (Closest to its SLA card) and Pick up (Pick up next) on Home as staff must land on /claims/<id>. Owner saw both
       dead at 03:12; the relay found a stale pre-redeploy tab (incognito works). CHECK in a fresh, signed-in, reloaded headless
       context; tick "stale tab, no code change" if both pass, fix in a lane only if one fails. Optional: a "New version, reload" toast.
 
