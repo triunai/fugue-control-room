@@ -12,6 +12,14 @@ Motor and property claims across six APAC markets (SG, MY, TH, HK, ID, PH), for 
 
 ## Quickstart (Docker only)
 
+You need Docker and nothing else: Postgres, the schema migrations and the seed data all run in containers.
+
+```bash
+./start.sh   # creates .env with fresh secrets, moves any port already in use, builds, waits, prints the URLs
+```
+
+The same by hand (or on Windows without Git Bash):
+
 ```bash
 cp .env.example .env
 sed -i.bak "s|REPLACE_ME|$(openssl rand -hex 16)|g; s|GENERATE_WITH_openssl_rand_base64_32|$(openssl rand -base64 32)|g" .env && rm .env.bak

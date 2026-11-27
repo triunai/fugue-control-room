@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { ClaimDto } from '../../api/models';
 import { ClaimStatusPill } from './claim-bits';
-import { Actor, Track, claimTrack, marketName, moneyChip, moneyTrack } from './claims-logic';
+import { Actor, Track, claimTrack, marketFlag, marketName, moneyChip, moneyTrack } from './claims-logic';
 import { HelpButton } from '../shell/help-button';
 import { startTour } from './tour-hook';
 
@@ -16,7 +16,7 @@ import { startTour } from './tour-hook';
       <div class="rb-top">
         <div class="rb-title">
           <h1 class="page-title">{{ claim().number }}</h1>
-          <span class="rb-sub">{{ claim().line }} · {{ market() }}</span>
+          <span class="rb-sub">{{ claim().line }} · <span aria-hidden="true">{{ flag() }}</span> {{ market() }}</span>
         </div>
         <div class="rb-chips">
           <fg-claim-status [status]="claim().status" />
@@ -87,6 +87,7 @@ export class ClaimRecordBanner {
   readonly actor = input.required<Actor>();
 
   protected readonly staff = computed(() => this.actor().permissions.has('CLAIMS_ALL'));
+  protected readonly flag = computed(() => marketFlag(this.claim().market));
   protected readonly market = computed(() => marketName(this.claim().market));
   protected readonly chip = computed(() => moneyChip(this.claim()));
   protected readonly tracks = computed<{ name: string; hint: string; track: Track }[]>(() => [

@@ -79,4 +79,15 @@ describe('Shell sidebar', () => {
     prefs.openGroup('Claims');
     expect(prefs.collapsedGroups()).not.toContain('Claims');
   });
+
+  it('wraps the outlet in a padding-free host so each page owns the only .page padding', () => {
+    const root = render().nativeElement as HTMLElement;
+    expect(root.querySelector('main .page-host')).not.toBeNull();
+    expect(root.querySelector('main .page')).toBeNull();
+  });
+
+  it('folds the starter example group on first run', () => {
+    render();
+    expect(TestBed.inject(PrefsStore).collapsedGroups()).toContain('Starter example');
+  });
 });
