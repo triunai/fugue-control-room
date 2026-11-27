@@ -1,0 +1,18 @@
+.kpis-5 {
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+}
+.kpi {
+  text-decoration: none;
+}
+.kpi-sub {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.unreserved {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--warn-ink);
+}
+.cell-right {
+  align-items: flex-end;
+}
