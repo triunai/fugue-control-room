@@ -4,7 +4,7 @@ using Mediator;
 
 namespace Fugue.Application.Features.Claims.Queries;
 
-/// <summary>Contract. Open count, outstanding reserve and approved-not-settled amount per market, line and currency, with totals per currency only.</summary>
+/// <summary>Contract. Open count, outstanding reserve, approved-not-settled amount and paid (settled) amount per market, line and currency, with totals per currency only.</summary>
 public sealed record GetClaimExposureQuery : IQuery<Result<ClaimExposureDto>>;
 
 public sealed class GetClaimExposureHandler(IClaimReports reports, IAuditStamp stamp) : IQueryHandler<GetClaimExposureQuery, Result<ClaimExposureDto>>

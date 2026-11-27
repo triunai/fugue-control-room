@@ -7,7 +7,7 @@ using Npgsql;
 namespace Fugue.Infrastructure.Persistence.Claims;
 
 /// <summary>
-/// The workload board and the exposure table, read through EF only (ADR-006: no reads through Dapper): LINQ for the counts and sums, one EF raw
+/// The workload board and the exposure table (with what has been paid), read through EF only (ADR-006: no reads through Dapper): LINQ for the counts and sums, one EF raw
 /// SQL statement for the per-officer board because the median needs <c>percentile_cont</c>. Live rows, so a result is as fresh as the last commit.
 /// </summary>
 internal sealed class ClaimReports(FugueDbContext db) : IClaimReports
@@ -43,31 +43,37 @@ internal sealed class ClaimReports(FugueDbContext db) : IClaimReports
 
     public async Task<ClaimExposureDto> GetExposureAsync(DateTimeOffset asOf, CancellationToken ct)
     {
-        // Only claims still carrying money: open ones (their reserve) and approved ones awaiting settlement (their approved amount).
+        // Claims that carry or carried money: open ones (their reserve), approved ones awaiting settlement (their approved amount) and settled ones
+        // (paid: their approved amount, which Settle never changes). Rejected claims carry none.
         var grouped = await db.Claims.AsNoTracking()
-            .Where(c => c.Status == ClaimStatus.Submitted || c.Status == ClaimStatus.UnderReview || c.Status == ClaimStatus.InfoRequested || c.Status == ClaimStatus.Approved)
+            .Where(c => c.Status == ClaimStatus.Submitted || c.Status == ClaimStatus.UnderReview || c.Status == ClaimStatus.InfoRequested
+                || c.Status == ClaimStatus.Approved || c.Status == ClaimStatus.Settled)
             .GroupBy(c => new { c.Market, c.Line, c.Currency })
             .Select(g => new
             {
                 g.Key.Market,
                 g.Key.Line,
                 g.Key.Currency,
-                OpenCount = g.Count(c => c.Status != ClaimStatus.Approved),
-                Reserve = g.Sum(c => c.Status != ClaimStatus.Approved ? c.ReserveMinor ?? 0 : 0),
-                Unreserved = g.Count(c => c.Status != ClaimStatus.Approved && c.ReserveMinor == null),
+                OpenCount = g.Count(c => c.Status != ClaimStatus.Approved && c.Status != ClaimStatus.Settled),
+                Reserve = g.Sum(c => c.Status != ClaimStatus.Approved && c.Status != ClaimStatus.Settled ? c.ReserveMinor ?? 0 : 0),
+                Unreserved = g.Count(c => c.Status != ClaimStatus.Approved && c.Status != ClaimStatus.Settled && c.ReserveMinor == null),
                 ApprovedCount = g.Count(c => c.Status == ClaimStatus.Approved),
                 ApprovedAmount = g.Sum(c => c.Status == ClaimStatus.Approved ? c.ApprovedAmountMinor ?? 0 : 0),
+                SettledCount = g.Count(c => c.Status == ClaimStatus.Settled),
+                SettledAmount = g.Sum(c => c.Status == ClaimStatus.Settled ? c.ApprovedAmountMinor ?? 0 : 0),
             })
             .ToListAsync(ct);
 
         List<ExposureRowDto> rows = [.. grouped
-            .Select(g => new ExposureRowDto(g.Market, g.Line, g.Currency, g.OpenCount, g.Reserve, g.ApprovedCount, g.ApprovedAmount, g.Unreserved))
+            .Select(g => new ExposureRowDto(
+                g.Market, g.Line, g.Currency, g.OpenCount, g.Reserve, g.ApprovedCount, g.ApprovedAmount, g.Unreserved, g.SettledCount, g.SettledAmount))
             .OrderBy(r => r.Market).ThenBy(r => r.Line)];
 
         // Totals are per currency: a row is only ever added to rows of the SAME currency.
         List<ExposureTotalDto> totals = [.. rows.GroupBy(r => r.Currency).OrderBy(g => g.Key, StringComparer.Ordinal)
             .Select(g => new ExposureTotalDto(
-                g.Key, g.Sum(r => r.OpenCount), g.Sum(r => r.OutstandingReserveMinor), g.Sum(r => r.ApprovedNotSettledCount), g.Sum(r => r.ApprovedNotSettledMinor), g.Sum(r => r.UnreservedOpenCount)))];
+                g.Key, g.Sum(r => r.OpenCount), g.Sum(r => r.OutstandingReserveMinor), g.Sum(r => r.ApprovedNotSettledCount), g.Sum(r => r.ApprovedNotSettledMinor), g.Sum(r => r.UnreservedOpenCount),
+                g.Sum(r => r.SettledCount), g.Sum(r => r.SettledMinor)))];
 
         return new ClaimExposureDto(asOf, rows, totals);
     }
