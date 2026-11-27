@@ -117,7 +117,9 @@ public sealed class ClaimSearchTests(PostgresFixture db) : IAsyncLifetime
             db.Clock.Now = db.Clock.Now.AddMinutes(5); // a real change gets a later updated_at, which is what the cursor follows
             HttpResponseMessage pickup = await ClaimsHarness.SendAsync(staff, HttpMethod.Post, $"/api/v1/claims/{claim.Id}/pickup", claim.Version);
             Assert.Equal(HttpStatusCode.OK, pickup.StatusCode);
-            Assert.True(await IndexAsync(_factory) >= 1);
+            // Do not assert how many rows this call sent: the app's own background ClaimIndexer runs on real timers (the test clock freezes
+            // only "now") and may have indexed the change first. The outcome is what counts: the hit below shows the new status.
+            await IndexAsync(_factory);
 
             HttpResponseMessage hits = await staff.GetAsync("/api/v1/claims/search?q=" + claim.Number);
             JsonElement hit = (await hits.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("hits").EnumerateArray().First();
