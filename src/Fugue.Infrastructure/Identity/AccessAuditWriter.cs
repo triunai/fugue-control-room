@@ -50,6 +50,7 @@ internal sealed class AccessAuditWriter(
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            AuditMetrics.RecordWriteFailure(AuditMetrics.AccessAuditTable, ex.GetType().Name);
             WriteFailed(logger, entry.Event, ex);
         }
     }

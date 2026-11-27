@@ -105,3 +105,10 @@ On code: `[AuditMask]` on an entity property masks it, `[NoAudit]` on a property
 ## What is and is not audited
 
 Audited: every EF `SaveChanges` on a non-excluded entity (so users, roles, groups, overrides, modules, customers), the Dapper customer insert, the seeders (one row per customer created or overwritten, nothing on a re-run), forced "last writer wins" writes (flagged `unconditionalWrite` in `metadata`), and every failed mutating command. Not audited: reads, refresh-token rows (their record is `access_audit`), and the audit tables themselves. Audit rows are not sampled and there is no retention yet (`docs/archive/deferred.md`).
+
+## When an audit row could not be written
+
+A failing failure-row write never changes the command's result, so it would otherwise be silent. Two signals say it happened:
+
+- A counter `fugue.audit.write_failures` on the meter `Fugue.Audit` (no extra package; watch it with `dotnet-counters monitor --counters Fugue.Audit` or any OpenTelemetry meter subscription). Tags: `table` (`audit_log` or `access_audit`) and `reason` (the exception type name; `suppressed` for a 401 row dropped by the per-IP cap).
+- A Warning log "Lost a failure audit row" carrying the action, entity type, entity id, error code and correlation id of the lost row (never its changes or metadata), so the row can be rebuilt from the logs.

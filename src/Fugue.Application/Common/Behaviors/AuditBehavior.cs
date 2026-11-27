@@ -38,6 +38,7 @@ public sealed partial class AuditBehavior<TMessage, TResponse>(IServiceProvider 
         var scope = services.GetRequiredService<IAuditScope>();
         var trail = services.GetRequiredService<IAuditTrail>();
         var logger = services.GetRequiredService<ILogger<AuditBehavior<TMessage, TResponse>>>();
+        string? correlationId = services.GetService<ICorrelationContext>()?.CorrelationId;
         string? display = await TryDisplayNameAsync(logger, cancellationToken);
         scope.Begin(
             AuditNaming<TMessage>.Action,
@@ -52,7 +53,7 @@ public sealed partial class AuditBehavior<TMessage, TResponse>(IServiceProvider 
                 FailureDetail detail = response.Errors is [FugueError fugue, ..]
                     ? new(fugue.Code, fugue.Type.ToString(), Clip(fugue.Message), ElapsedMs(started))
                     : new("unexpected", nameof(ErrorType.Failure), null, ElapsedMs(started));
-                await TryRecordFailureAsync(trail, scope, logger, message, detail, cancellationToken);
+                await TryRecordFailureAsync(trail, scope, logger, correlationId, message, detail, cancellationToken);
             }
 
             return response;
@@ -61,7 +62,7 @@ public sealed partial class AuditBehavior<TMessage, TResponse>(IServiceProvider 
         {
             // The type name only: Exception.Message can carry SQL values or personal data and must never reach an audit row.
             await TryRecordFailureAsync(
-                trail, scope, logger, message, new("unhandled", UnhandledType, ex.GetType().FullName, ElapsedMs(started)), cancellationToken);
+                trail, scope, logger, correlationId, message, new("unhandled", UnhandledType, ex.GetType().FullName, ElapsedMs(started)), cancellationToken);
             throw;
         }
         finally
@@ -98,7 +99,7 @@ public sealed partial class AuditBehavior<TMessage, TResponse>(IServiceProvider 
     private static int ElapsedMs(long started) => (int)Math.Min(int.MaxValue, (long)Stopwatch.GetElapsedTime(started).TotalMilliseconds);
 
     private static async Task TryRecordFailureAsync(
-        IAuditTrail trail, IAuditScope scope, ILogger logger, TMessage message, FailureDetail detail, CancellationToken ct)
+        IAuditTrail trail, IAuditScope scope, ILogger logger, string? correlationId, TMessage message, FailureDetail detail, CancellationToken ct)
     {
         try
         {
@@ -110,13 +111,20 @@ public sealed partial class AuditBehavior<TMessage, TResponse>(IServiceProvider 
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            LogRecordFailed(logger, typeof(TMessage).Name, ex);
+            // The row is lost, so say which one (identifying fields only, never changes or metadata) and count it.
+            AuditMetrics.RecordWriteFailure(AuditMetrics.AuditLogTable, ex.GetType().Name);
+            LogRecordFailed(
+                logger, AuditNaming<TMessage>.Action, AuditNaming<TMessage>.EntityType, AuditNaming<TMessage>.EntityId(message), detail.Code, correlationId, ex);
         }
     }
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Could not resolve the actor display name for an audit row")]
     private static partial void LogDisplayFailed(ILogger logger, Exception exception);
 
-    [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Could not write the failure audit row for {MessageName}")]
-    private static partial void LogRecordFailed(ILogger logger, string messageName, Exception exception);
+    [LoggerMessage(
+        EventId = 2,
+        Level = LogLevel.Warning,
+        Message = "Lost a failure audit row: action {AuditAction}, entity type {AuditEntityType}, entity id {AuditEntityId}, error code {AuditErrorCode}, correlation id {CorrelationId}")]
+    private static partial void LogRecordFailed(
+        ILogger logger, string auditAction, string? auditEntityType, string? auditEntityId, string auditErrorCode, string? correlationId, Exception exception);
 }
