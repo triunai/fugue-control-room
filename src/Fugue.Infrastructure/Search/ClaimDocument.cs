@@ -12,6 +12,10 @@ namespace Fugue.Infrastructure.Search;
 /// </summary>
 internal sealed class ClaimDocument
 {
+    /// <summary>The document shape version. Bump it when a field is added or changed: a checkpoint of another version restarts the indexer from the
+    /// beginning once, so every claim is re-sent in the new shape (no migration, no manual reindex).</summary>
+    public const int Shape = 2;
+
     [JsonPropertyName("id")]
     public string Id { get; set; } = string.Empty;
 
@@ -20,6 +24,10 @@ internal sealed class ClaimDocument
 
     [JsonPropertyName("market")]
     public string Market { get; set; } = string.Empty;
+
+    /// <summary>The market's name ("Singapore"), so an officer can type the place as well as the code.</summary>
+    [JsonPropertyName("marketName")]
+    public string MarketName { get; set; } = string.Empty;
 
     [JsonPropertyName("line")]
     public string Line { get; set; } = string.Empty;
@@ -60,6 +68,7 @@ internal sealed class ClaimDocument
         Id = row.Claim.Id.Value.ToString(),
         Number = row.Claim.Number,
         Market = row.Claim.Market.ToString(),
+        MarketName = ClaimIndexSettings.NameOf(row.Claim.Market),
         Line = row.Claim.Line.ToString(),
         Status = row.Claim.Status.ToString(),
         Currency = row.Claim.Currency,
@@ -94,4 +103,8 @@ internal sealed class ClaimCheckpoint
 
     [JsonPropertyName("claimId")]
     public string ClaimId { get; set; } = string.Empty;
+
+    /// <summary>The <see cref="ClaimDocument.Shape"/> the indexed documents have. Absent (0) on a checkpoint written before shapes existed.</summary>
+    [JsonPropertyName("shape")]
+    public int Shape { get; set; }
 }

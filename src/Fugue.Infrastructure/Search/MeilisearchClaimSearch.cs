@@ -10,7 +10,8 @@ using ClaimSearchOutcome = FluentResults.Result<Fugue.Application.Features.Claim
 namespace Fugue.Infrastructure.Search;
 
 /// <summary>
-/// The Meilisearch adapter for claims (D-063): owns the <c>claims</c> and <c>claims_checkpoint</c> indexes, applies their settings once per process,
+/// The Meilisearch adapter for claims (D-063): owns the <c>claims</c> and <c>claims_checkpoint</c> indexes, applies their settings once per process
+/// and only when the engine's differ (<see cref="ClaimIndexSettings"/>),
 /// serves <see cref="IClaimSearch"/> and gives the indexer its upsert and checkpoint calls. The caller's scope is enforced here, in the engine query
 /// (<see cref="BuildFilter"/>), never after the fact. Any engine failure surfaces as <c>search.unavailable</c>.
 /// </summary>
@@ -18,8 +19,6 @@ internal sealed partial class MeilisearchClaimSearch(IOptions<MeilisearchOptions
 {
     internal const string ClaimsIndex = "claims";
     internal const string CheckpointIndex = "claims_checkpoint";
-
-    private static readonly string[] Searchable = ["number", "policyNumber", "incidentLocation", "incidentDescription", "claimantName"];
 
     private readonly MeilisearchClient _client = new(options.Value.Url, options.Value.ApiKey);
     private readonly SemaphoreSlim _ensureLock = new(1, 1);
@@ -48,14 +47,17 @@ internal sealed partial class MeilisearchClaimSearch(IOptions<MeilisearchOptions
 
     private static string Quote(string value) => "\"" + value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
 
-    /// <summary>The checkpoint last stored, or null on a fresh engine (the indexer then starts from the beginning).</summary>
+    /// <summary>
+    /// The checkpoint last stored, or null on a fresh engine or when the indexed documents have an older <see cref="ClaimDocument.Shape"/> (the indexer then
+    /// starts from the beginning and re-sends every claim).
+    /// </summary>
     internal async Task<(DateTimeOffset UpdatedAt, Guid Id)?> ReadCheckpointAsync(CancellationToken ct)
     {
         await EnsureIndexesAsync(ct);
         try
         {
             ClaimCheckpoint doc = await _client.Index(CheckpointIndex).GetDocumentAsync<ClaimCheckpoint>(ClaimCheckpoint.DocumentId, cancellationToken: ct);
-            return (DateTimeOffset.Parse(doc.UpdatedAt, CultureInfo.InvariantCulture), Guid.Parse(doc.ClaimId));
+            return doc.Shape == ClaimDocument.Shape ? (DateTimeOffset.Parse(doc.UpdatedAt, CultureInfo.InvariantCulture), Guid.Parse(doc.ClaimId)) : null;
         }
         catch (MeilisearchApiError ex) when (ex.Code == "document_not_found")
         {
@@ -72,6 +74,7 @@ internal sealed partial class MeilisearchClaimSearch(IOptions<MeilisearchOptions
         {
             UpdatedAt = checkpoint.UpdatedAt.ToString("O", CultureInfo.InvariantCulture),
             ClaimId = checkpoint.Id.ToString(),
+            Shape = ClaimDocument.Shape,
         };
         await WaitAsync(await _client.Index(CheckpointIndex).AddDocumentsAsync([state], "id", ct), ct);
     }
@@ -93,13 +96,19 @@ internal sealed partial class MeilisearchClaimSearch(IOptions<MeilisearchOptions
 
             await WaitAsync(await _client.CreateIndexAsync(ClaimsIndex, "id", ct), ct, tolerateExisting: true);
             await WaitAsync(await _client.CreateIndexAsync(CheckpointIndex, "id", ct), ct, tolerateExisting: true);
-            var settings = new Settings
+            Meilisearch.Index index = _client.Index(ClaimsIndex);
+            Settings desired = ClaimIndexSettings.Desired();
+            if (ClaimIndexSettings.Matches(await index.GetSettingsAsync(ct), desired))
             {
-                SearchableAttributes = Searchable,
-                FilterableAttributes = ["claimantUserId", "assignedOfficerId", "market", "line", "status"],
-                SortableAttributes = ["submittedAtMs"],
-            };
-            await WaitAsync(await _client.Index(ClaimsIndex).UpdateSettingsAsync(settings, ct), ct);
+                LogSettingsUnchanged();
+            }
+            else
+            {
+                // A settings update re-indexes every document, so it is sent only when something this app owns differs.
+                await WaitAsync(await index.UpdateSettingsAsync(desired, ct), ct);
+                LogSettingsApplied();
+            }
+
             _ready = true;
         }
         finally
@@ -118,6 +127,12 @@ internal sealed partial class MeilisearchClaimSearch(IOptions<MeilisearchOptions
             throw new InvalidOperationException($"Meilisearch task {done.Uid} failed: {done.Error?["code"] ?? "unknown"}.");
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Claim index settings differed from the engine's and were updated")]
+    private partial void LogSettingsApplied();
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Claim index settings already match; no update sent")]
+    private partial void LogSettingsUnchanged();
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Claim search failed")]
     private partial void LogSearchFailed(Exception exception);
