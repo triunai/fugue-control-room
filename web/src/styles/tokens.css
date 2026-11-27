@@ -10,6 +10,8 @@
 
   --bg: #f3eee3;
   --surface: #fbf8f1;
+  /* Shell frame: the sidebar's brand row and the top bar share this height, so they read as one L-shaped frame. */
+  --shell-top: 3.6rem;
   --surface2: #ffffff;
   --line: #ddd4c2;
   --control: #9c8f78;

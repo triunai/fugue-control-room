@@ -33,10 +33,10 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  height: 3.6rem;
+  height: var(--shell-top);
   padding: 0 2rem;
-  background: color-mix(in oklab, var(--bg) 88%, transparent);
-  backdrop-filter: blur(6px);
+  /* Same surface as the sidebar: the top bar and the sidebar are one frame around the page. */
+  background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
 .crumbs ol {
