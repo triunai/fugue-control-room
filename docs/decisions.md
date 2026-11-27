@@ -79,7 +79,7 @@ The ADR files stay the home of architecture reasoning; a D entry below is the sh
 
 ## D-071 — The global ErrorHandler drops exactly one benign browser notice, ResizeObserver loop — 2026-11-28
 WS: WS-30
-Context: /claims/calendar logged "ResizeObserver loop completed with undelivered notifications." as a console error with the hood sidebar open (the default), which fails the zero-console-errors gate (17b). The load case was fixed at the source (the calendar is built once its CSS has loaded and the claims query has settled); the window-resize case comes from FullCalendar 7's internal global ResizeObserver, which has no option to control it.
+Context: /claims/calendar logged "ResizeObserver loop completed with undelivered notifications." as a console error with the hood sidebar open (the default), which fails the zero-console-errors gate (17b). The load case was fixed at the source (the calendar is built once its CSS has loaded and the claims query has settled); the window-resize case comes from FullCalendar 7.1.5's internal global ResizeObserver on window resize, and no option exists to defer its updateSize.
 Decision: `FugueErrorHandler` (`web/src/app/core/error-handler.ts`, provided in `app.config.ts`) drops that one message by exact match (or the same text on `cause` in dev builds) and passes every other error, including other ResizeObserver texts, to Angular's default handler. A spec proves both sides; a mutation check turned it red. Merged in 3de8f49 (W-030, lane nth-calfix).
 Why: the notice is the browser reporting a deferred layout, not a failure; a broad filter would hide real errors.
 Consequences: revisit if FullCalendar exposes its resize observer.
