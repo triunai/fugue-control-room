@@ -20,8 +20,11 @@ Merged lanes nth-search, nth-api, nth-quality, nth-api2, nth-shell, nth-claimui 
 ## In flight (open W ids)
 W-022 nice-to-haves (lanes nth-kafka, nth-polish) · W-024, W-019, W-021 done in code, to close · W-023 versioning/cache/OTel · W-010 Codex push gate (a remote now exists).
 
+## Owner decisions 19:27 (record as D-062 at wrap)
+- FEATURE FREEZE: polish only from here. Kafka: keep it (optional profile) but keep it out of the demo and README highlights.
+- Version: web shows v0.0.2 (nth-polish); at wrap add a `## v0.0.2 — 2026-11-27` release entry to CHANGELOG.md and tag `v0.0.2`.
+
 ## Pending owner questions
-- Keep Kafka in the repo? (optional profile; default off)
 - The owner's own words for trimming Univer and the calendar on memory-capped deploys (still not invented).
 
 ## Demo notes
