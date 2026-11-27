@@ -1,6 +1,33 @@
+using System.Globalization;
 using System.Text.Json.Serialization;
 
 namespace Fugue.Domain.Claims;
+
+/// <summary>Where a claim is in its life. Rejected and Settled are terminal.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum ClaimStatus
+{
+    Submitted,
+    UnderReview,
+    InfoRequested,
+    Approved,
+    Rejected,
+    Settled,
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum LineOfBusiness
+{
+    Motor,
+    Property,
+}
+
+/// <summary>The claim number the claimant quotes: <c>CLM-&lt;market&gt;-&lt;yyyy&gt;-&lt;sequence&gt;</c>. The sequence is one Postgres sequence, so numbers never collide.</summary>
+public static class ClaimNumber
+{
+    public static string Format(Market market, int year, long sequence) =>
+        string.Create(CultureInfo.InvariantCulture, $"CLM-{market}-{year:D4}-{sequence:D6}");
+}
 
 /// <summary>The six APAC markets. The code is the ISO 3166 alpha-2 country; a market has exactly one currency (<see cref="Markets.CurrencyOf"/>).</summary>
 [JsonConverter(typeof(JsonStringEnumConverter))]

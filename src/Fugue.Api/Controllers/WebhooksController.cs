@@ -75,9 +75,8 @@ public sealed class WebhooksController : ApiControllerBase
     [HttpGet("deliveries")]
     [HasPermission(Permissions.WebhooksManage)]
     [ProducesResponseType(typeof(IReadOnlyList<WebhookDeliveryDto>), StatusCodes.Status200OK)]
-    public Task<ActionResult<IReadOnlyList<WebhookDeliveryDto>>> ListDeliveries(
-        [FromQuery] string? status, [FromQuery] Guid? subscriptionId, [FromQuery] string? eventType, [FromQuery] int? limit, [FromQuery] string? cursor, CancellationToken ct) =>
-        SendPaged(new ListWebhookDeliveriesQuery(status, subscriptionId, eventType, limit, cursor), ct);
+    public Task<ActionResult<IReadOnlyList<WebhookDeliveryDto>>> ListDeliveries([FromQuery] WebhookDeliveryListFilter filter, CancellationToken ct) =>
+        SendPaged(filter.ToQuery(), ct);
 
     /// <summary>Send a dead-lettered delivery again with a fresh attempt budget.</summary>
     [HttpPost("deliveries/{id}/redeliver")]

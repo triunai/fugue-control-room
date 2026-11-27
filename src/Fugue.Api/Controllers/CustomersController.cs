@@ -38,9 +38,8 @@ public sealed class CustomersController : ApiControllerBase
     [HttpGet]
     [HasPermission(Permissions.CustomersView)]
     [ProducesResponseType(typeof(IReadOnlyList<CustomerDto>), StatusCodes.Status200OK)]
-    public Task<ActionResult<IReadOnlyList<CustomerDto>>> List(
-        [FromQuery] int? limit, [FromQuery] string? status, [FromQuery] string? search, [FromQuery] string? cursor, CancellationToken ct) =>
-        SendPaged(new ListCustomersQuery(limit, status, search, cursor), ct);
+    public Task<ActionResult<IReadOnlyList<CustomerDto>>> List([FromQuery] CustomerListFilter filter, CancellationToken ct) =>
+        SendPaged(filter.ToQuery(), ct);
 
     /// <summary>Replace a customer's name, email and phone. Changing the email needs staff access (403 `customer.email_change_forbidden` otherwise).</summary>
     [HttpPut("{id}")]

@@ -1,8 +1,8 @@
 using Fugue.Api.Auth;
+using Fugue.Api.Contracts;
 using Fugue.Api.Modules;
 using Fugue.Api.OpenApi;
 using Fugue.Application.Features.Audit;
-using Fugue.Application.Features.Audit.Queries;
 using Fugue.Domain.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,16 +19,6 @@ public sealed class AuditController : ApiControllerBase
     [HttpGet]
     [HasPermission(Permissions.AuditRead)]
     [ProducesResponseType(typeof(IReadOnlyList<AuditLogDto>), StatusCodes.Status200OK)]
-    public Task<ActionResult<IReadOnlyList<AuditLogDto>>> List(
-        [FromQuery] string? entityType,
-        [FromQuery] string? entityId,
-        [FromQuery] Guid? actorUserId,
-        [FromQuery] string? action,
-        [FromQuery] string? correlationId,
-        [FromQuery] DateTimeOffset? from,
-        [FromQuery] DateTimeOffset? to,
-        [FromQuery] int? limit,
-        [FromQuery] string? cursor,
-        CancellationToken ct) =>
-        SendPaged(new ListAuditLogQuery(entityType, entityId, actorUserId, action, correlationId, from, to, limit, cursor), ct);
+    public Task<ActionResult<IReadOnlyList<AuditLogDto>>> List([FromQuery] AuditListFilter filter, CancellationToken ct) =>
+        SendPaged(filter.ToQuery(), ct);
 }
