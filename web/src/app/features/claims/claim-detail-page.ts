@@ -14,6 +14,7 @@ import { Overlays } from '../../ui/overlays';
 import { RefChip } from '../../ui/ref-chip';
 import { ErrorState } from '../../ui/states';
 import { ClaimStatusPill, MoneyPipe } from './claim-bits';
+import { livePoll } from './live-poll';
 import { ClaimNextStep } from './claim-next-step';
 import { ClaimRecordBanner } from './claim-record-banner';
 import { ClaimActionDialog, ClaimDialogData, ClaimDialogMode, ClaimDialogResult } from './claim-action-dialog';
@@ -246,6 +247,7 @@ export class ClaimDetailPage {
   private readonly overlays = inject(Overlays);
   protected readonly access = inject(AccessService);
 
+  private readonly live = livePoll(() => this.answerForm.dirty);
   protected readonly conflict = signal<{ ref: string | null } | null>(null);
   protected readonly market = marketName;
 
@@ -254,13 +256,14 @@ export class ClaimDetailPage {
     queryKey: claimKeys.one(this.id()),
     queryFn: () => this.api.get(this.id()),
     staleTime: 0,
-    refetchOnWindowFocus: false,
+    ...this.live,
   }));
   protected readonly claim = computed(() => this.claimQuery.data());
 
   protected readonly timelineQuery = injectQuery(() => ({
     queryKey: claimKeys.timeline(this.id()),
     queryFn: () => this.api.timeline(this.id()),
+    ...this.live,
     // Always re-read on open: the claim moves on elsewhere (an officer acts), and a cached timeline would lag the status.
     staleTime: 0,
   }));

@@ -5,6 +5,7 @@ import { ClaimsApi, ClaimFilter, claimKeys } from '../../api/claims.api';
 import { ClaimDto, ClaimStatus } from '../../api/models';
 import { StampPipe } from '../../ui/format';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
+import { livePoll } from './live-poll';
 import { ClaimStatusPill, MoneyPipe } from './claim-bits';
 import { ClaimsFilterStore } from './claims-filter.store';
 import { filterToParams, hasFilterParams, paramsToFilter } from './claims-query-params';
@@ -211,12 +212,14 @@ export class ClaimsQueuePage {
     maxAgeDays: this.filters.maxAgeDays(),
   }));
 
+  private readonly live = livePoll();
   protected readonly query = injectInfiniteQuery(() => ({
     queryKey: claimKeys.list(this.filter()),
     queryFn: ({ pageParam }) => this.api.list(this.filter(), pageParam),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     placeholderData: keepPreviousData,
+    ...this.live,
   }));
   protected readonly rows = computed(() => this.query.data()?.pages.flatMap((p) => p.items) ?? []);
 
@@ -228,6 +231,7 @@ export class ClaimsQueuePage {
       queryKey: claimKeys.counts(rest),
       queryFn: () => this.api.counts(rest),
       placeholderData: keepPreviousData,
+      ...this.live,
     };
   });
 
