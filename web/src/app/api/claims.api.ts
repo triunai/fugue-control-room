@@ -122,6 +122,11 @@ export class ClaimsApi {
     return firstValueFrom(this.http.get<ClaimTimelineEntryDto[]>(`${this.url(id)}/timeline`));
   }
 
+  /** The sample letter of a decided claim as a PDF (`GET /claims/{id}/letter`); 409 `claim.letter_not_available` before a decision. */
+  letter(id: string): Promise<Blob> {
+    return firstValueFrom(this.http.get(`${this.url(id)}/letter`, { responseType: 'blob' }));
+  }
+
   /** Every question asked on the claim, newest first. */
   questions(id: string): Promise<ClaimQuestionEntry[]> {
     return firstValueFrom(this.http.get<ClaimQuestionEntry[]>(`${this.url(id)}/info-requests`));

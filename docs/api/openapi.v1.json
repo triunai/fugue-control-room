@@ -3558,6 +3558,91 @@
         ]
       }
     },
+    "/api/v1/claims/{id}/letter": {
+      "get": {
+        "operationId": "Claims_Letter",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found. Codes: `claim.not_found`, `module.disabled`.",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict. Codes: `claim.letter_not_available`.",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "The sample letter of a decided claim as a PDF download: a settlement letter for Approved and Settled claims, a decision letter for Rejected ones. Same visibility as the claim (a claimant's copy never shows the reserve or staff names). Made per request, never stored; labelled a sample, not a legal letter.",
+        "tags": [
+          "Claims"
+        ]
+      }
+    },
     "/api/v1/claims/{id}/pickup": {
       "post": {
         "operationId": "Claims_Pickup",

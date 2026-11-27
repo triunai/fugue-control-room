@@ -9,6 +9,5 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
 | `nth-import` | `.worktrees/nth-import` | dacfb06 | nth-import (Opus), relay-dispatched | D-064 | 11a: intake import module (spreadsheet, inbox, WhatsApp file imports) |
 | `nth-searchx` | `.worktrees/nth-searchx` | dacfb06 | nth-searchx (Opus), relay-dispatched | D-064 | 10: Meilisearch hardening |
-| `nth-pdf` | `.worktrees/nth-pdf` | dacfb06 | nth-pdf (Opus), relay-dispatched | D-064 | 11b: settlement and decision letters as PDF |
 | `nth-paid` | `.worktrees/nth-paid` | f3d7637 | nth-paid (Opus), relay-dispatched | W-037 | 11c: paid/settled figure on Team and exposure |
 | `nth-formsfix` | `.worktrees/nth-formsfix` | 1e3d63d | nth-formsfix (Sonnet), relay-dispatched | W-030 | item 5 follow-up: queue filters + calendar day jump to fg-select/fg-date, e2e claims.spec.ts:30 locator |

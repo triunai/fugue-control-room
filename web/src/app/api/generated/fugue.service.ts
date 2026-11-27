@@ -825,6 +825,40 @@ export class FugueAPIService {
   }
 
 /**
+ * @summary The sample letter of a decided claim as a PDF download: a settlement letter for Approved and Settled claims, a decision letter for Rejected ones. Same visibility as the claim (a claimant's copy never shows the reserve or staff names). Made per request, never stored; labelled a sample, not a legal letter.
+ */
+ claimsLetter(id: string, options?: HttpClientBodyOptions): Observable<Blob>;
+ claimsLetter(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<Blob>>;
+ claimsLetter(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<Blob>>;
+  claimsLetter(
+    id: string, options?: HttpClientObserveOptions): Observable<Blob | HttpEvent<Blob> | AngularHttpResponse<Blob>> {
+    if (options?.observe === 'events') {
+      return this.http.get(
+      `/api/v1/claims/${id}/letter`,{
+        responseType: 'blob',
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',}
+    ) as Observable<HttpEvent<Blob>>;
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get(
+      `/api/v1/claims/${id}/letter`,{
+        responseType: 'blob',
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',}
+    ) as Observable<AngularHttpResponse<Blob>>;
+    }
+
+    return this.http.get(
+      `/api/v1/claims/${id}/letter`,{
+        responseType: 'blob',
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',}
+    ) as Observable<Blob>;
+  }
+
+/**
  * @summary Pick up a Submitted claim: it becomes UnderReview and you become its assigned officer.
  */
  claimsPickup<TData = ClaimDto>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
@@ -2205,6 +2239,7 @@ export type ClaimsDecideClientResult = NonNullable<ClaimDto>
 export type ClaimsInfoRequestsClientResult = NonNullable<ClaimInfoRequestEntryDto[]>
 export type ClaimsRequestInfoClientResult = NonNullable<ClaimDto>
 export type ClaimsRespondClientResult = NonNullable<ClaimDto>
+export type ClaimsLetterClientResult = NonNullable<Blob>
 export type ClaimsPickupClientResult = NonNullable<ClaimDto>
 export type ClaimsSetReserveClientResult = NonNullable<ClaimDto>
 export type ClaimsSettleClientResult = NonNullable<ClaimDto>

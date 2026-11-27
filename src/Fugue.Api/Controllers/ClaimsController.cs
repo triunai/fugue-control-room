@@ -6,6 +6,7 @@ using Fugue.Api.OpenApi;
 using Fugue.Application.Features.Claims;
 using Fugue.Application.Features.Claims.Commands;
 using Fugue.Application.Features.Claims.Queries;
+using Fugue.Application.Features.Letters.Queries;
 using Fugue.Domain.Identity;
 using Fugue.Domain.Ids;
 using Microsoft.AspNetCore.Mvc;
@@ -98,6 +99,22 @@ public sealed class ClaimsController : ApiControllerBase
     [ProblemResponse(StatusCodes.Status404NotFound, "claim.not_found")]
     public Task<ActionResult<IReadOnlyList<ClaimInfoRequestEntryDto>>> InfoRequests(ClaimId id, CancellationToken ct) =>
         Send(new GetClaimInfoRequestsQuery(id), ct);
+
+    /// <summary>
+    /// The sample letter of a decided claim as a PDF download: a settlement letter for Approved and Settled claims, a decision letter for Rejected ones.
+    /// Same visibility as the claim (a claimant's copy never shows the reserve or staff names). Made per request, never stored; labelled a sample, not a legal letter.
+    /// </summary>
+    [HttpGet("{id}/letter")]
+    [HasPermission(Permissions.ClaimsRead)]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK, ClaimLetterFile.ContentType)]
+    [ProblemResponse(StatusCodes.Status404NotFound, "claim.not_found")]
+    [ProblemResponse(StatusCodes.Status409Conflict, "claim.letter_not_available")]
+    public async Task<IActionResult> Letter(ClaimId id, CancellationToken ct) =>
+        await Sender.Send(new GetClaimLetterQuery(id), ct) switch
+        {
+            { IsFailed: true } failed => Problem(failed.Errors[0]),
+            var letter => File(letter.Value.Content, ClaimLetterFile.ContentType, letter.Value.FileName),
+        };
 
     /// <summary>Pick up a Submitted claim: it becomes UnderReview and you become its assigned officer.</summary>
     [HttpPost("{id}/pickup")]

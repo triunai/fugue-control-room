@@ -1,0 +1,26 @@
+meta {
+  name: Claimant downloads the letter of their own claim (200, no reserve)
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/letter
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{claimantToken}}
+}
+
+tests {
+  test("200 PDF with the amount, never the reserve or the officer's name", function () {
+    const body = String(res.body);
+    expect(res.status).to.equal(200);
+    expect(res.headers["content-type"]).to.equal("application/pdf");
+    expect(body).to.include("SGD 800.00");
+    expect(body).to.not.include("SGD 1,000.00");
+    expect(body).to.not.include("Dev Staff");
+  });
+}
