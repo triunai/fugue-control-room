@@ -94,8 +94,8 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
 
 ## P2 — after the lanes merge (backlog #010)
 P2 ORDER (relay 05:13, all features in by about 05:30, so 12-13 GO): (1) nth-refactor (Opus) item 12, ALONE on src/ and tests/
-(no other .NET lane while live); (2) in parallel, web-only: 11g chip tooltips (only if the catalog has descriptions); (3) after 12
-merges, nth-options (Sonnet) item 13; (4) item 14 GO only if 12 and 13 merged by 10:00, else DEFER with a D-row; (5) item 15 after
+(nothing runs in parallel: 11g needs an src/ change because no DTO exposes permissions.description); (2) after 12 merges,
+nth-options (Sonnet) item 13; (3) 11g after 13, optional, behind the same 12:00 gate as item 15; (4) item 14 GO only if 12 and 13 merged by 10:00, else DEFER with a D-row; (5) item 15 after
 13 only if time allows before 12:00, else defer; (6) about 12:00 nth-readme (Sonnet) item 11 from the final main, plus the
 one-line ClaimSearchHitDto comment fix. Then the integrator's 13:00-14:00 fixes window and the 14:00 wrap (16, 17).
 Run 12 + 13 only if every feature lane has merged by ~10:30, else defer with a D-row. 14 (Worker host) is a deferral candidate.
