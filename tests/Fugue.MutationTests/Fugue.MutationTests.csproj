@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Mutation-testing harness (Stryker.NET). NOT in Fugue.sln on purpose: it compiles the pure unit-test files below a second time, and adding it to the
+    solution would run them twice in `dotnet test`. It exists because Stryker needs direct references to the mutated projects and the mutation loop must
+    not start Testcontainers (the full Fugue.Tests run does). Run it with docs/quality/README.md.
+    AssemblyName is Fugue.Tests so the InternalsVisibleTo("Fugue.Tests") on Fugue.Infrastructure covers AuditRedactor (internal).
+  -->
+  <PropertyGroup>
+    <AssemblyName>Fugue.Tests</AssemblyName>
+    <RootNamespace>Fugue.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Fugue.Api\Fugue.Api.csproj" />
+    <ProjectReference Include="..\..\src\Fugue.Application\Fugue.Application.csproj" />
+    <ProjectReference Include="..\..\src\Fugue.Domain\Fugue.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Fugue.Infrastructure\Fugue.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Fugue.Tests\Domain\ClaimTests.cs" Link="Domain\ClaimTests.cs" />
+    <Compile Include="..\Fugue.Tests\Domain\ClaimNarrativeTests.cs" Link="Domain\ClaimNarrativeTests.cs" />
+    <Compile Include="..\Fugue.Tests\Audit\AuditRedactorTests.cs" Link="Audit\AuditRedactorTests.cs" />
+    <Compile Include="..\Fugue.Tests\Audit\AuditRedactorBoundaryTests.cs" Link="Audit\AuditRedactorBoundaryTests.cs" />
+    <Compile Include="..\Fugue.Tests\Idempotency\IdempotencyKeyHeaderTests.cs" Link="Idempotency\IdempotencyKeyHeaderTests.cs" />
+    <Compile Include="..\Fugue.Tests\Idempotency\IdempotencyKeyHeaderBoundaryTests.cs" Link="Idempotency\IdempotencyKeyHeaderBoundaryTests.cs" />
+  </ItemGroup>
+</Project>

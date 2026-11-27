@@ -1,0 +1,20 @@
+# Pairwise model for the claim actions (Microsoft PICT). Every pair of values of any two factors appears in at least one generated case.
+# Regenerate:  pict tests/pict/claims-actions.pict > tests/pict/claims-actions.cases.tsv
+# The cases are executed by tests/Fugue.Tests/Claims/ClaimActionPairwiseTests.cs (oracle documented there).
+
+# Who is calling. Claimant: CLAIMS_SUBMIT, READ, RESPOND and owns the claim. Officer: READ, ALL, HANDLE, WORKLOAD. Manager: officer plus SETTLE, EXPOSURE.
+Role:       Claimant, Officer, Manager
+# The status the claim is in when the action arrives.
+Status:     Submitted, UnderReview, InfoRequested, Approved, Rejected, Settled
+# One endpoint each: pickup, PUT reserve, info-requests, decision (approve), decision (reject), settle, info-request response.
+Action:     Pickup, Reserve, RequestInfo, Approve, Reject, Settle, Respond
+# The claim's assigned officer relative to the caller: nobody (only before pickup), the caller, or another officer.
+Assignment: None, Me, Other
+# The If-Match header: the claim's current version, an old version, or absent.
+IfMatch:    Current, Stale, Missing
+
+# A claim has an officer exactly once it has been picked up.
+IF [Status] = "Submitted" THEN [Assignment] = "None";
+IF [Status] <> "Submitted" THEN [Assignment] <> "None";
+# The claimant is not a claims officer, so the claim cannot be assigned to them.
+IF [Role] = "Claimant" THEN [Assignment] <> "Me";
