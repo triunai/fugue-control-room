@@ -80,6 +80,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/claims/claims-calendar-page').then((m) => m.ClaimsCalendarPage),
       },
       {
+        path: 'claims/:id/assessment',
+        canActivate: [permissionGuard],
+        data: { permission: 'CLAIMS_HANDLE', section: 'Claims', breadcrumb: 'Assessment' },
+        title: 'Assessment · Fugue Console',
+        loadComponent: () => import('./features/claims/claim-assessment-page').then((m) => m.ClaimAssessmentPage),
+      },
+      {
         path: 'claims/:id',
         canActivate: [permissionGuard],
         data: { permission: 'CLAIMS_READ', section: 'Claims', breadcrumb: 'Claim' },

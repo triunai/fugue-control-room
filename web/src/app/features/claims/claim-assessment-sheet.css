@@ -1,0 +1,25 @@
+.assess-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 0.75rem;
+}
+.assess-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+.assess-host {
+  height: 18rem;
+  max-width: 30rem;
+  overflow: hidden;
+  padding: 0;
+}
+.assess-net {
+  margin: 0.6rem 0 0;
+  min-height: 1.4rem;
+}
+.assess-err {
+  color: var(--err-ink);
+}
