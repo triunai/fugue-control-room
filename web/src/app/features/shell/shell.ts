@@ -13,13 +13,14 @@ import { searchVisible } from './global-search-logic';
 import { HelpButton } from './help-button';
 import { tourKeyFor } from './tour-steps';
 import { NavProgress } from './nav-progress';
+import { WelcomeDialog } from './welcome-dialog';
 import { Sidebar } from './sidebar';
 import { TourService } from './tour.service';
 
 @Component({
   selector: 'fg-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, Sidebar, NavProgress, HelpButton, GlobalSearch, HoodSidebar],
+  imports: [RouterOutlet, RouterLink, Sidebar, NavProgress, HelpButton, GlobalSearch, HoodSidebar, WelcomeDialog],
   templateUrl: './shell.html',
   styleUrl: './shell.css',
 })

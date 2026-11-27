@@ -1,4 +1,4 @@
-import { PAGE_TOURS, personaOf, stepsFor, suppressTourFromUrl, tourKeyFor, tourSuppressed } from './tour-steps';
+import { PAGE_TOURS, personaOf, stepsFor, shouldAutoplay, suppressTourFromUrl, tourKeyFor, tourSuppressed } from './tour-steps';
 
 const grant =
   (...codes: string[]) =>
@@ -67,5 +67,13 @@ describe('page tours', () => {
     history.replaceState(null, '', '/');
     expect(tourSuppressed()).toBe(true);
     sessionStorage.clear();
+  });
+
+  it('autoplays only on the first, unsuppressed visit of a signed-in user', () => {
+    const base = { suppressed: false, seen: false, signedIn: true };
+    expect(shouldAutoplay(base)).toBe(true);
+    expect(shouldAutoplay({ ...base, seen: true })).toBe(false);
+    expect(shouldAutoplay({ ...base, suppressed: true })).toBe(false);
+    expect(shouldAutoplay({ ...base, signedIn: false })).toBe(false);
   });
 });

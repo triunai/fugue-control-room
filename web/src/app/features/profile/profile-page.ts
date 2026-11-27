@@ -14,92 +14,68 @@ import { EmptyState, ErrorState } from '../../ui/states';
   imports: [RefChip, RelativeTimePipe, EmptyState, ErrorState, RouterLink],
   template: `
     <div class="page">
-      <header class="page-head">
-        <div>
-          <h1 class="page-title">{{ me()?.displayName ?? 'My profile' }}</h1>
-          <p class="page-lede">
-            What the API knows about you right now. Permissions are read on every request, so a change by an
-            administrator shows here on your next visit.
-          </p>
-        </div>
-      </header>
-
       @if (access.query.isError()) {
-        <div class="panel"><fg-error-state [error]="access.query.error()" (retry)="access.query.refetch()" /></div>
+        <fg-error-state [error]="access.query.error()" (retry)="access.query.refetch()" />
       } @else if (me(); as me) {
-        <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-          <section class="panel panel-pad flex flex-col gap-4" aria-labelledby="who">
-            <h2 id="who" class="section-title">Who you are</h2>
-            <dl class="facts">
-              <div>
-                <dt>Email</dt>
-                <dd class="mono">{{ me.email }}</dd>
-              </div>
-              <div>
-                <dt>User id</dt>
-                <dd><fg-ref-chip [value]="me.userId" maxWidth="38ch" /></dd>
-              </div>
-              <div>
-                <dt>Tenant</dt>
-                <dd>{{ me.tenantId ?? 'none (single-tenant)' }}</dd>
-              </div>
-              <div>
-                <dt>Roles</dt>
-                <dd class="flex flex-wrap gap-1">
-                  @for (r of me.roles; track r) {
-                    <span class="pill pill-acc pill-plain">{{ r }}</span>
-                  } @empty {
-                    <span class="text-muted">none directly</span>
-                  }
-                </dd>
-              </div>
-              <div>
-                <dt>Groups</dt>
-                <dd class="flex flex-wrap gap-1">
-                  @for (g of me.groups; track g) {
-                    <span class="pill pill-muted pill-plain">{{ g }}</span>
-                  } @empty {
-                    <span class="text-muted">none</span>
-                  }
-                </dd>
-              </div>
-              <div>
-                <dt>Modules on</dt>
-                <dd class="flex flex-wrap gap-1">
-                  @for (m of me.modules; track m.code) {
-                    <span class="pill pill-ok pill-plain">{{ m.name }}</span>
-                  }
-                </dd>
-              </div>
-            </dl>
-          </section>
-
-          <section class="panel panel-pad" aria-labelledby="perms">
-            <h2 id="perms" class="section-title">What you can do</h2>
-            <p class="mt-1 mb-4 text-sm text-muted">
-              {{ me.permissions.length }} permission codes in effect: roles, plus allow overrides, minus deny overrides,
-              minus switched-off modules.
-            </p>
-            <div class="flex flex-col gap-3">
-              @for (g of grouped(); track g.resource) {
-                <div class="perm-row">
-                  <span class="perm-res">{{ g.resource }}</span>
-                  <div class="flex flex-wrap gap-1">
-                    @for (a of g.actions; track a) {
-                      <span class="pill pill-plain pill-acc mono">{{ a }}</span>
-                    }
-                  </div>
-                </div>
-              } @empty {
-                <p class="m-0 text-muted">No permissions. An administrator can grant a role or an override.</p>
+        <header class="page-head who">
+          <span class="avatar" aria-hidden="true">{{ initials() }}</span>
+          <div class="who-main">
+            <h1 class="page-title">{{ me.displayName }}</h1>
+            <p class="who-email mono">{{ me.email }}</p>
+            <div class="flex flex-wrap items-center gap-1">
+              @for (r of me.roles; track r) {
+                <span class="pill pill-acc pill-plain">{{ r }}</span>
+              }
+              @for (g of me.groups; track g) {
+                <span class="pill pill-muted pill-plain">{{ g }}</span>
               }
             </div>
-          </section>
-        </div>
+          </div>
+          <div class="who-id">
+            <span class="text-muted text-sm">User id</span>
+            <fg-ref-chip [value]="me.userId" maxWidth="26ch" />
+          </div>
+        </header>
+
+        <section class="block" aria-labelledby="perms">
+          <div class="block-head">
+            <h2 id="perms" class="section-title">What you can do</h2>
+            <p class="m-0 text-sm text-muted">
+              {{ me.permissions.length }} permissions in effect: roles, plus allow overrides, minus deny overrides,
+              minus switched-off modules. Read on every request.
+            </p>
+          </div>
+          <div class="matrix">
+            @for (g of grouped(); track g.resource) {
+              <div class="perm-row">
+                <span class="perm-res">{{ g.resource }} <span class="perm-count">{{ g.actions.length }}</span></span>
+                <div class="flex flex-wrap gap-1">
+                  @for (a of g.actions; track a) {
+                    <span class="pill pill-plain pill-muted mono">{{ a }}</span>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <p class="m-0 text-muted">No permissions. An administrator can grant a role or an override.</p>
+            }
+          </div>
+        </section>
+
+        <section class="block" aria-labelledby="mods">
+          <h2 id="mods" class="section-title">Modules on</h2>
+          <div class="flex flex-wrap gap-1">
+            @for (m of me.modules; track m.code) {
+              <span class="pill pill-ok pill-plain">{{ m.name }}</span>
+            } @empty {
+              <span class="text-muted">none</span>
+            }
+          </div>
+          <p class="m-0 text-sm text-muted">Tenant: {{ me.tenantId ?? 'none (single-tenant)' }}</p>
+        </section>
 
         @if (access.has('CUSTOMERS_VIEW')) {
-          <section class="table-wrap" aria-labelledby="mine">
-            <div class="flex items-center justify-between px-4 pt-4 pb-2">
+          <section class="block" aria-labelledby="mine">
+            <div class="flex items-center justify-between">
               <h2 id="mine" class="section-title">Customers you own</h2>
               <a routerLink="/customers" class="btn btn-sm btn-quiet">Open Customers</a>
             </div>
@@ -140,38 +116,82 @@ import { EmptyState, ErrorState } from '../../ui/states';
     </div>
   `,
   styles: `
-    .facts {
-      display: grid;
-      gap: 0.7rem;
-      margin: 0;
-    }
-    .facts div {
-      display: grid;
-      grid-template-columns: 7rem minmax(0, 1fr);
+    .who {
+      display: flex;
       align-items: center;
+      gap: 1.1rem;
     }
-    .facts dt {
-      color: var(--muted);
-      font-size: 0.9333rem;
+    .who-main {
+      display: grid;
+      gap: 0.35rem;
+      flex: 1;
+      min-width: 0;
     }
-    .facts dd {
+    .who-email {
       margin: 0;
+      color: var(--muted);
       overflow-wrap: anywhere;
+    }
+    .who-id {
+      display: grid;
+      gap: 0.2rem;
+      justify-items: start;
+    }
+    .avatar {
+      display: grid;
+      place-items: center;
+      flex: none;
+      width: 4rem;
+      height: 4rem;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--on-accent);
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 600;
+    }
+    .block {
+      display: grid;
+      gap: 0.8rem;
+      padding: 1.25rem 0;
+      border-bottom: 1px solid var(--line-soft);
+    }
+    .block:last-child {
+      border-bottom: 0;
+    }
+    .block-head {
+      display: grid;
+      gap: 0.25rem;
     }
     .perm-row {
       display: grid;
-      grid-template-columns: 8rem minmax(0, 1fr);
+      grid-template-columns: 9rem minmax(0, 1fr);
       gap: 0.75rem;
-      align-items: center;
-      padding-bottom: 0.6rem;
-      border-bottom: 1px dashed var(--line);
+      align-items: baseline;
+      padding: 0.45rem 0;
+      border-top: 1px solid var(--line-soft);
     }
-    .perm-row:last-child {
-      border-bottom: 0;
+    .perm-row:first-child {
+      border-top: 0;
     }
     .perm-res {
       font-weight: 600;
       font-size: 0.9333rem;
+    }
+    .perm-count {
+      margin-left: 0.3rem;
+      color: var(--muted);
+      font-weight: 400;
+      font-size: 0.8rem;
+    }
+    @media (max-width: 40rem) {
+      .who {
+        flex-wrap: wrap;
+      }
+      .perm-row {
+        grid-template-columns: 1fr;
+        gap: 0.3rem;
+      }
     }
   `,
 })
@@ -179,6 +199,14 @@ export class ProfilePage {
   protected readonly access = inject(AccessService);
   private readonly api = inject(CustomersApi);
   protected readonly me = this.access.me;
+  protected readonly initials = computed(() =>
+    (this.me()?.displayName ?? '?')
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0].toUpperCase())
+      .join(''),
+  );
 
   protected readonly customers = injectQuery(() => ({
     queryKey: ['customers', 'mine'],

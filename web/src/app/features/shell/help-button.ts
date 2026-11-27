@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, output } from '@angular/core';
   selector: 'fg-help-button',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <button type="button" class="help-pill" data-testid="help" title="Explain this page" (click)="pressed.emit()">
+    <button type="button" class="help-pill" data-testid="help" data-tour="help" title="Explain this page" (click)="pressed.emit()">
       <svg viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true">
         <circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.4" />
         <path
