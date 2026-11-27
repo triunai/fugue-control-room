@@ -5,6 +5,7 @@
 @import './styles/tokens.css';
 @import 'tailwindcss';
 @import '@angular/cdk/overlay-prebuilt.css';
+@import 'driver.js/dist/driver.css';
 @import './styles/components.css';
 
 @theme inline {

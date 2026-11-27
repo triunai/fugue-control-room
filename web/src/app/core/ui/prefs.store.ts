@@ -12,7 +12,7 @@ interface Prefs {
 }
 
 function load(): Prefs {
-  const defaults: Prefs = { sidebarCollapsed: false, collapsedGroups: [], maskEmails: true };
+  const defaults: Prefs = { sidebarCollapsed: false, collapsedGroups: ['Starter example'], maskEmails: true };
   try {
     return { ...defaults, ...JSON.parse(localStorage.getItem(KEY) ?? '{}') };
   } catch {
@@ -29,6 +29,12 @@ export const PrefsStore = signalStore(
     toggleGroup: (label: string) => {
       const open = store.collapsedGroups();
       patchState(store, { collapsedGroups: open.includes(label) ? open.filter((g) => g !== label) : [...open, label] });
+    },
+    /** Open a group (the one holding the route on screen), never closing anything. */
+    openGroup: (label: string) => {
+      if (store.collapsedGroups().includes(label)) {
+        patchState(store, { collapsedGroups: store.collapsedGroups().filter((g) => g !== label) });
+      }
     },
     setMaskEmails: (maskEmails: boolean) => patchState(store, { maskEmails }),
   })),

@@ -11,10 +11,10 @@ describe('PrefsStore sidebar state', () => {
     TestBed.tick();
     expect(JSON.parse(localStorage.getItem('fugue.console.prefs') ?? '{}')).toMatchObject({
       sidebarCollapsed: true,
-      collapsedGroups: ['Data'],
+      collapsedGroups: ['Starter example', 'Data'],
     });
 
     prefs.toggleGroup('Data');
-    expect(prefs.collapsedGroups()).toEqual([]);
+    expect(prefs.collapsedGroups()).toEqual(['Starter example']);
   });
 });

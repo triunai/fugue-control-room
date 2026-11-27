@@ -11,6 +11,9 @@ export interface NavGroup {
   items: NavItem[];
 }
 
+/** The starter's sample aggregate lives in its own group at the bottom, folded by default (see PrefsStore). */
+export const STARTER_GROUP = 'Starter example';
+
 /** Grouped Data / Access / Platform. Items are filtered by permission code; a switched-off module drops its codes, so its items vanish. */
 export const NAV: NavGroup[] = [
   {
@@ -51,12 +54,6 @@ export const NAV: NavGroup[] = [
   {
     label: 'Data',
     items: [
-      {
-        label: 'Customers',
-        path: '/customers',
-        permission: 'CUSTOMERS_VIEW',
-        icon: 'M3 13c0-2.2 2.2-3.5 5-3.5s5 1.3 5 3.5M8 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5',
-      },
       { label: 'Audit log', path: '/audit', permission: 'AUDIT_READ', icon: 'M4 2.5h8v11H4zM6 5.5h4M6 8h4M6 10.5h2.5' },
     ],
   },
@@ -90,6 +87,17 @@ export const NAV: NavGroup[] = [
         path: '/webhooks',
         permission: 'WEBHOOKS_MANAGE',
         icon: 'M5.5 10.5a2.5 2.5 0 1 1-2.2-3.7L6 2.5M10.5 5.5a2.5 2.5 0 1 1 1.3 4.6H6.5M8 13.5a2.5 2.5 0 1 1 3.6-2.2L9 7',
+      },
+    ],
+  },
+  {
+    label: STARTER_GROUP,
+    items: [
+      {
+        label: 'Customers',
+        path: '/customers',
+        permission: 'CUSTOMERS_VIEW',
+        icon: 'M3 13c0-2.2 2.2-3.5 5-3.5s5 1.3 5 3.5M8 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5',
       },
     ],
   },

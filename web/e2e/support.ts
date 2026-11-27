@@ -4,7 +4,16 @@ import { APIRequestContext, Page, expect } from '@playwright/test';
 export const PASSWORD = process.env['E2E_PASSWORD'] ?? 'Fugue-Dev-Passw0rd!'; // secrets-scan:ignore (seeded dev-only password)
 export const SHOTS = 'docs/screenshots';
 
-export async function signIn(page: Page, email = 'admin@fugue.test'): Promise<void> {
+/** The reviewer tour starts itself once per persona on first sign-in; tests that are not about it mark it seen. */
+export async function skipTour(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    for (const p of ['claimant', 'officer', 'manager', 'admin', 'member'])
+      localStorage.setItem(`fugue.tour.seen.${p}`, '1');
+  });
+}
+
+export async function signIn(page: Page, email = 'admin@fugue.test', opts: { tour?: boolean } = {}): Promise<void> {
+  if (!opts.tour) await skipTour(page);
   await page.goto('/sign-in');
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password').fill(PASSWORD);
