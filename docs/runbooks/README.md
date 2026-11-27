@@ -4,6 +4,7 @@ Step-by-step guides for someone who has never seen this repo. Every step is copy
 
 | Runbook | Use it to |
 |---|---|
+| [00-for-reviewers.md](00-for-reviewers.md) | Start here if you are reviewing: run the stack, sign in, run the tests and the API suite |
 | [01-local-setup.md](01-local-setup.md) | Install tools, build, test |
 | [02-tracing-a-request.md](02-tracing-a-request.md) | Send a request, find it in logs, read a ProblemDetails |
 | [03-local-database.md](03-local-database.md) | Start Postgres, migrate, seed, connect a GUI, Docker env vars |

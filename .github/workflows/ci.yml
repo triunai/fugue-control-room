@@ -1,0 +1,104 @@
+# CI mirrors the local gates (lefthook.yml) and adds the API contract run against the real compose stack.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet restore
+      - run: dotnet build --no-restore -warnaserror
+      # Testcontainers uses the runner's default Docker; no OrbStack settings here.
+      - run: dotnet test --no-build
+      - run: dotnet format --verify-no-changes
+
+  scripts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      # --ignore-scripts: skip the `prepare` script (lefthook install), there are no hooks to install in CI.
+      - run: npm ci --ignore-scripts
+      - run: npm run test:scripts
+      - run: bash scripts/spine/ledger-check.sh
+      - run: node scripts/spine/adr-check.mjs
+
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run lint
+      - run: npm run build
+
+  api-contract:
+    needs: backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Create .env with generated secrets
+        run: |
+          cp .env.example .env
+          # Letters and digits only: the password is embedded in a connection string.
+          pw=$(openssl rand -hex 16)
+          key=$(openssl rand -base64 32)
+          sed -i "s|REPLACE_ME|${pw}|g" .env
+          sed -i "s|GENERATE_WITH_openssl_rand_base64_32|${key}|g" .env
+      - name: Start the stack
+        run: docker compose up -d --build
+      - name: Wait for the API
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS -o /dev/null http://localhost:5081/api/v1/diagnostics/ping; then echo "API up after ${i} tries"; exit 0; fi
+            sleep 5
+          done
+          echo "API did not become ready" >&2
+          exit 1
+      # The compose API listens on 5081; the Bruno `local` environment points at 5080 (dotnet run), so override the base URL.
+      - name: Run the Bruno suite
+        working-directory: bruno/fugue
+        run: npx bru run --env local --env-var baseUrl=http://localhost:5081
+      - name: API logs on failure
+        if: failure()
+        run: docker compose logs api
+      - name: Tear down
+        if: always()
+        # `-v` is fine here only because the runner is throwaway; locally it would delete the dev database volume.
+        run: docker compose down -v
