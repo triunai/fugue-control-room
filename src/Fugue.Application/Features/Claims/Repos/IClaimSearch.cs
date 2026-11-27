@@ -3,7 +3,7 @@ using Fugue.Domain.Claims;
 using Fugue.Domain.Ids;
 using Fugue.Domain.Results;
 
-namespace Fugue.Application.Features.Claims;
+namespace Fugue.Application.Features.Claims.Repos;
 
 /// <summary>
 /// Full-text search over claims (D-063). The index is a rebuildable copy of <c>claims</c>, so it is eventually consistent. The caller's scope is

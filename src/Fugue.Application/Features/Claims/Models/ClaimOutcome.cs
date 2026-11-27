@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Fugue.Application.Features.Claims;
+namespace Fugue.Application.Features.Claims.Models;
 
 /// <summary>The two ways a claim under review can be decided. Read case-insensitively, so <c>approve</c> and <c>reject</c> are accepted.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter))]

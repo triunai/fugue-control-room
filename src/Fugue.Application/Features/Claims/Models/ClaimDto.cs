@@ -2,7 +2,7 @@ using Fugue.Domain.Claims;
 using Fugue.Domain.Ids;
 using Fugue.Domain.Results;
 
-namespace Fugue.Application.Features.Claims;
+namespace Fugue.Application.Features.Claims.Models;
 
 /// <summary>
 /// The claim as returned to clients; <see cref="Version"/> is also sent as the <c>ETag</c>. Money is bigint minor units in <see cref="Currency"/>.

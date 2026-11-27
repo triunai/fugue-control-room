@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace Fugue.Application.Features.Claims.Queries;
+namespace Fugue.Application.Features.Claims.Helpers;
 
 /// <summary>
 /// The age filters shared by the claim list and counts. Age is the whole number of elapsed days since submission (UTC instants, no market calendar),

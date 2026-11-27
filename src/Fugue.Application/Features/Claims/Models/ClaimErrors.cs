@@ -1,7 +1,7 @@
 using Fugue.Domain.Ids;
 using Fugue.Domain.Results;
 
-namespace Fugue.Application.Features.Claims;
+namespace Fugue.Application.Features.Claims.Models;
 
 /// <summary>The stable error codes of the Claims slice. The transition codes (<c>claim.invalid_transition</c>, <c>claim.reserve_required</c>, <c>claim.amount_invalid</c>, <c>claim.info_request_not_found</c>) come from the aggregate.</summary>
 public static class ClaimErrors

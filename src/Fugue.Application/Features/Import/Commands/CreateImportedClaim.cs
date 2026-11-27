@@ -1,8 +1,10 @@
 using FluentResults;
 using FluentValidation;
 using Fugue.Application.Abstractions;
-using Fugue.Application.Features.Claims;
 using Fugue.Application.Features.Claims.Commands;
+using Fugue.Application.Features.Claims.Helpers;
+using Fugue.Application.Features.Claims.Models;
+using Fugue.Application.Features.Claims.Repos;
 using Fugue.Application.Features.Import.Parsing;
 using Fugue.Application.Features.Import.Queries;
 using Fugue.Domain.Abstractions;

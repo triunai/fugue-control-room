@@ -1,11 +1,13 @@
 using FluentResults;
 using Fugue.Application.Abstractions;
+using Fugue.Application.Features.Claims.Models;
+using Fugue.Application.Features.Claims.Repos;
 using Fugue.Domain.Abstractions;
 using Fugue.Domain.Claims;
 using Fugue.Domain.Identity;
 using Fugue.Domain.Ids;
 
-namespace Fugue.Application.Features.Claims;
+namespace Fugue.Application.Features.Claims.Helpers;
 
 /// <summary>
 /// The shape every state-changing claim command shares: require If-Match (428), load within the caller's scope (404), check the version (412), run the

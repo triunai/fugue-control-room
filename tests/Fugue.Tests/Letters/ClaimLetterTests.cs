@@ -1,6 +1,6 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using Fugue.Application.Features.Claims;
+using Fugue.Application.Features.Claims.Models;
 using Fugue.Application.Features.Letters;
 using Fugue.Domain.Claims;
 using Fugue.Domain.Ids;

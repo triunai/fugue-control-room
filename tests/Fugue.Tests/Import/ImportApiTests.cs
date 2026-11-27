@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using Fugue.Application.Features.Claims;
+using Fugue.Application.Features.Claims.Models;
 using Fugue.Application.Features.Import;
 using Fugue.Domain.Claims;
 using Fugue.Domain.Identity;

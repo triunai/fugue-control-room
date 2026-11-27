@@ -1,12 +1,12 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 using FluentResults;
-using Fugue.Application.Features.Claims;
+using Fugue.Application.Features.Claims.Repos;
 using Fugue.Domain.Results;
 using Meilisearch;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ClaimSearchOutcome = FluentResults.Result<Fugue.Application.Features.Claims.ClaimSearchResultDto>;
+using ClaimSearchOutcome = FluentResults.Result<Fugue.Application.Features.Claims.Repos.ClaimSearchResultDto>;
 
 namespace Fugue.Infrastructure.Search;
 

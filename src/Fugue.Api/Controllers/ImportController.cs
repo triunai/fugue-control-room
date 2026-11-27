@@ -2,7 +2,7 @@ using Fugue.Api.Auth;
 using Fugue.Api.Contracts;
 using Fugue.Api.Modules;
 using Fugue.Api.OpenApi;
-using Fugue.Application.Features.Claims;
+using Fugue.Application.Features.Claims.Models;
 using Fugue.Application.Features.Import;
 using Fugue.Application.Features.Import.Commands;
 using Fugue.Application.Features.Import.Queries;

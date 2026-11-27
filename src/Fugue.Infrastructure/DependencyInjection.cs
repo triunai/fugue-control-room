@@ -1,5 +1,5 @@
 using Fugue.Application.Abstractions;
-using Fugue.Application.Features.Claims;
+using Fugue.Application.Features.Claims.Repos;
 using Fugue.Application.Features.Customers;
 using Fugue.Domain.Abstractions;
 using Fugue.Infrastructure.Audit;
@@ -58,7 +58,7 @@ public static class DependencyInjection
 
             // Claim search (D-063): same engine and options, its own indexes and indexer.
             services.AddSingleton<MeilisearchClaimSearch>();
-            services.AddSingleton<Fugue.Application.Features.Claims.IClaimSearch>(sp => sp.GetRequiredService<MeilisearchClaimSearch>());
+            services.AddSingleton<Fugue.Application.Features.Claims.Repos.IClaimSearch>(sp => sp.GetRequiredService<MeilisearchClaimSearch>());
             services.AddScoped<ClaimIndexSource>();
             services.AddSingleton<ClaimIndexer>();
             services.AddHostedService(sp => sp.GetRequiredService<ClaimIndexer>());
@@ -66,7 +66,7 @@ public static class DependencyInjection
         else
         {
             services.AddSingleton<Fugue.Application.Features.Audit.IAuditSearch, DisabledAuditSearch>();
-            services.AddSingleton<Fugue.Application.Features.Claims.IClaimSearch, DisabledClaimSearch>();
+            services.AddSingleton<Fugue.Application.Features.Claims.Repos.IClaimSearch, DisabledClaimSearch>();
         }
 
         // Outbox (ADR-011): events raised by aggregates become outbox rows in the same SaveChanges (EF path) or through IOutbox (Dapper path).

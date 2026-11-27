@@ -1,4 +1,6 @@
-namespace Fugue.Application.Features.Claims;
+using Fugue.Application.Features.Claims.Models;
+
+namespace Fugue.Application.Features.Claims.Repos;
 
 /// <summary>Read-only roll-ups over the live claim rows (EF, never Dapper): the workload board and the exposure table.</summary>
 public interface IClaimReports

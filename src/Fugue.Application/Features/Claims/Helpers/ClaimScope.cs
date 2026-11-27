@@ -2,7 +2,7 @@ using Fugue.Domain.Abstractions;
 using Fugue.Domain.Identity;
 using Fugue.Domain.Ids;
 
-namespace Fugue.Application.Features.Claims;
+namespace Fugue.Application.Features.Claims.Helpers;
 
 /// <summary>
 /// Which claims the caller may touch. <see cref="All"/> (effective <c>CLAIMS_ALL</c>) means every claim; otherwise only the claims the caller submitted

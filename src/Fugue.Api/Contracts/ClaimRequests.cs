@@ -1,4 +1,4 @@
-using Fugue.Application.Features.Claims;
+using Fugue.Application.Features.Claims.Models;
 using Fugue.Domain.Claims;
 using Microsoft.AspNetCore.Mvc;
 

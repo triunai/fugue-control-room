@@ -1,5 +1,5 @@
 using System.Globalization;
-using Fugue.Application.Features.Claims;
+using Fugue.Application.Features.Claims.Models;
 using Fugue.Domain.Claims;
 
 namespace Fugue.Application.Features.Letters;

@@ -1,5 +1,8 @@
 using FluentResults;
 using FluentValidation;
+using Fugue.Application.Features.Claims.Helpers;
+using Fugue.Application.Features.Claims.Models;
+using Fugue.Application.Features.Claims.Repos;
 using Fugue.Domain.Abstractions;
 using Fugue.Domain.Claims;
 using Mediator;

@@ -1,7 +1,7 @@
 using Fugue.Domain.Claims;
 using Fugue.Domain.Ids;
 
-namespace Fugue.Application.Features.Claims;
+namespace Fugue.Application.Features.Claims.Models;
 
 /// <summary>
 /// Who is working what, as of <see cref="AsOf"/> (live rows, as fresh as the last committed transaction). "Open" means still to be decided:

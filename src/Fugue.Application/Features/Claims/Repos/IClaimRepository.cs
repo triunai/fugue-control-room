@@ -1,9 +1,11 @@
 using FluentResults;
 using Fugue.Application.Common;
+using Fugue.Application.Features.Claims.Helpers;
+using Fugue.Application.Features.Claims.Models;
 using Fugue.Domain.Claims;
 using Fugue.Domain.Ids;
 
-namespace Fugue.Application.Features.Claims;
+namespace Fugue.Application.Features.Claims.Repos;
 
 /// <summary>Which claims a list returns, besides the caller's scope.</summary>
 public sealed record ClaimFilter(
