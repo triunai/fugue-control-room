@@ -6,13 +6,23 @@
   ],
   "counts": {
     "adrs": 14,
-    "decisions": 65
+    "decisions": 66
   },
   "groups": [
     {
       "version": "Unreleased",
       "date": null,
       "entries": [
+        {
+          "kind": "D",
+          "id": "D-066",
+          "title": "Dispatcher, integrator and contract-bound builder lanes replace the single overnight lead",
+          "date": "2026-11-28",
+          "summary": "The session with the smallest context becomes the DISPATCHER and writes agent task contracts with hard file boundaries (.worktrees/_briefs/OWNERS.md); one INTEGRATOR owns main (serial --no-ff merges, gates re-run on the…",
+          "status": "accepted",
+          "adr": "ADR-014",
+          "path": "docs/decisions.md#d-066--dispatcher-integrator-and-contract-bound-builder-lanes-replace-the-single-overnight-lead--2026-11-28"
+        },
         {
           "kind": "D",
           "id": "D-065",
