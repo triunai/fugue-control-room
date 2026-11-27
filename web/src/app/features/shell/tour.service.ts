@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AccessService } from '../../core/auth/access.service';
 import {
@@ -7,23 +7,18 @@ import {
   TourPage,
   TourStep,
   personaOf,
+  shouldAutoplay,
+  tourKeyFor,
   stepsFor,
   tourSeenKey,
   tourSuppressed,
+  welcomeSeenKey,
 } from './tour-steps';
 
 /** The key of the persona tour (the default of `start`). */
 export const PERSONA_TOUR = 'persona';
 
 const CLAIM_URL = /^\/claims\/[0-9a-f]{8}-[0-9a-f-]{27}$/i;
-
-function seen(persona: Persona): boolean {
-  try {
-    return localStorage.getItem(tourSeenKey(persona)) === '1';
-  } catch {
-    return true;
-  }
-}
 
 function markSeen(persona: Persona): void {
   try {
@@ -63,12 +58,38 @@ export class TourService {
     return personaOf((code) => this.access.has(code));
   }
 
-  /** First sign-in: start the persona's tour once. Personas without a tour of their own (member) are not nagged. */
+  /** True while the first-visit welcome is on screen. */
+  readonly welcomeOpen = signal(false);
+
+  /** First visit of this user: open the welcome (once per user, silenced by `?tour=off`). */
   maybeAutoStart(): void {
-    const persona = this.persona();
-    if (persona === 'member' || seen(persona) || this.running || tourSuppressed()) return;
-    markSeen(persona);
-    setTimeout(() => void this.start(PERSONA_TOUR), 800);
+    const userId = this.access.me()?.userId;
+    if (!userId || this.running || this.welcomeOpen()) return;
+    let seenBefore = true;
+    try {
+      seenBefore = localStorage.getItem(welcomeSeenKey(userId)) === '1';
+    } catch {
+      /* storage blocked: never nag */
+    }
+    if (!shouldAutoplay({ suppressed: tourSuppressed(), seen: seenBefore, signedIn: true })) return;
+    this.markWelcomeSeen();
+    this.welcomeOpen.set(true);
+  }
+
+  /** The welcome was taken (start the landing tour) or skipped; either way it never shows again for this user. */
+  closeWelcome(takeTour: boolean): void {
+    this.welcomeOpen.set(false);
+    if (takeTour) setTimeout(() => void this.start(tourKeyFor(this.router.url)), 150);
+  }
+
+  private markWelcomeSeen(): void {
+    const userId = this.access.me()?.userId;
+    if (!userId) return;
+    try {
+      localStorage.setItem(welcomeSeenKey(userId), '1');
+    } catch {
+      /* best effort */
+    }
   }
 
   /**
@@ -101,6 +122,7 @@ export class TourService {
       if (key === PERSONA_TOUR) await this.goTo(steps[0]);
       const d = driver({
         showProgress: true,
+        animate: !matchMedia('(prefers-reduced-motion: reduce)').matches,
         allowClose: true,
         overlayOpacity: 0.45,
         popoverClass: 'fg-tour',

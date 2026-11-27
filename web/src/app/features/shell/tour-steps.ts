@@ -151,7 +151,14 @@ const hook = (name: string, testId?: string): string =>
  * on screen (no navigation). A step whose target is not on the page is skipped, never an error.
  */
 export const PAGE_TOURS: Record<string, TourStep[]> = {
-  landing: [NAV_STEP],
+  landing: [
+    NAV_STEP,
+    {
+      selector: '[data-tour="help"]',
+      title: 'Help is always here',
+      description: 'Press Help on any page for a short tour of what is on screen. The account menu replays the full tour.',
+    },
+  ],
   queue: [
     {
       selector: hook('queue-kpis', 'kpis'),
@@ -226,4 +233,12 @@ export function tourSuppressed(): boolean {
   } catch {
     return false;
   }
+}
+
+/** Per-user "welcome handled" flag (shown, then skipped, taken or finished). */
+export const welcomeSeenKey = (userId: string): string => `fugue.welcome.seen.${userId}`;
+
+/** First visit of this user, and nobody asked for quiet (`?tour=off`): show the welcome and autoplay the tour. */
+export function shouldAutoplay(state: { suppressed: boolean; seen: boolean; signedIn: boolean }): boolean {
+  return state.signedIn && !state.suppressed && !state.seen;
 }
