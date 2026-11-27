@@ -16,5 +16,6 @@ Step-by-step guides for someone who has never seen this repo. Every step is copy
 | [09-console.md](09-console.md) | Install and run the Angular console, regenerate the API client, demo accounts, the 6-minute demo path, run the e2e smoke |
 | [10-docker-compose.md](10-docker-compose.md) | One command: Postgres, migrations, a seeded Development API and the console in containers; ports, accounts, stop, throwaway reset |
 | [11-claims.md](11-claims.md) | The claims platform: accounts, the state machine, a curl walk-through of the happy path, the 404/409/412/428 demos, workload and exposure |
+| [12-kafka.md](12-kafka.md) | Run the optional Kafka broker and watch claim events on the topic |
 
 Conventions: commands run from the repo root unless stated; "Expect" lines show the output that means the step worked.
