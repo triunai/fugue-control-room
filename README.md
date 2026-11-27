@@ -51,6 +51,16 @@ cd web && npm ci && npm test      # console unit tests (Vitest)
 npm ci && (cd bruno/fugue && npx bru run --env compose)   # the API regression suite against the stack (runbook 00, step 5)
 ```
 
+| Suite | Size (2026-11-27, v0.0.2) | Runs against |
+|---|---|---|
+| `Fugue.Tests` (xUnit) | 740 cases from 489 methods: 374 methods against a real Postgres 17 (Testcontainers) or the full HTTP host, 115 in-process (state machine, validators, mapping) | `dotnet test`; the pre-push hook runs it |
+| `Fugue.ArchTests` (NetArchTest) | 37 fitness functions: layering, one-line controllers, every action declares a permission; baselines may only shrink | `dotnet test` |
+| Bruno | 101 requests, 123 tests: every guard (404, 409, 412, 428, 422, the required Idempotency-Key) over HTTP | `npx bru run --env compose` against the Docker stack |
+| Console (Vitest) | 208 tests | `cd web && npm test` |
+| Console e2e (Playwright) | 20 flows in a browser, claimant to settlement | `web/e2e/`, runbook 09 |
+
+**Why this many, and why these.** The code was written mostly by AI agents, so the tests are the specification they cannot argue with: each pins an invariant of the domain ("a stale ETag is 412 and nothing is written", "outside your scope is 404, never 403", "exposure is never summed across currencies", "the audit log cannot be written through the API"). They are deterministic on purpose (a real database instead of mocks of it; time-dependent rules on a fake clock, `FakeTimeProvider`; waits are bounded polls or timeouts, never a sleep-then-assert), so a red test means the code drifted, not that the test flaked; the hooks run them before every push, so drift does not reach the remote. Each page of the console names its own tests in the "Under the hood" panel.
+
 ## Documents
 
 | Read | For |
