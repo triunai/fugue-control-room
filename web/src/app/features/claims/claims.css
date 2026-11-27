@@ -317,3 +317,25 @@ textarea.input {
   flex-direction: column;
   gap: 1rem;
 }
+
+/* the Activity disclosure: a quiet summary row, collapsed until asked for */
+.activity > summary {
+  cursor: pointer;
+  list-style: none;
+}
+.activity > summary::-webkit-details-marker {
+  display: none;
+}
+.activity > summary::before {
+  content: '\25B8';
+  display: inline-block;
+  margin-right: 0.4rem;
+  font-size: 0.8em;
+  transition: transform 0.15s;
+}
+.activity[open] > summary::before {
+  transform: rotate(90deg);
+}
+.activity[open] > summary {
+  margin-bottom: 0.6rem;
+}
