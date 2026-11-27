@@ -160,6 +160,67 @@ public sealed class ClaimReportsTests(ClaimReportsFixture fx) : IClassFixture<Cl
         Assert.DoesNotContain(board.Officers, o => o.OfficerName == "Ada Claimant"); // a claimant cannot handle claims, so is not an officer
     }
 
+    private static async Task<ClaimDto[]> ListedAsync(HttpClient client, string query) =>
+        (await client.GetFromJsonAsync<ClaimDto[]>($"/api/v1/claims?limit=100&{query}"))!;
+
+    [Fact]
+    public async Task Officer_and_age_filters_apply_to_the_list_and_the_counts()
+    {
+        using HttpClient staff = fx.Db.ClientAs(DevUsers.Staff);
+        Assert.Equal(11, (await ListedAsync(staff, "")).Length);
+
+        Assert.Equal(5, (await ListedAsync(staff, $"officerId={fx.OfficerA}")).Length); // claims 2, 3, 5, 6, 8
+        Assert.Equal(4, (await ListedAsync(staff, $"officerId={fx.OfficerB}")).Length); // 4, 7, 9, 11
+        Assert.Equal(4, (await ListedAsync(staff, "minAgeDays=15")).Length); // 4 (20d), 6, 8, and 11 at exactly 15d
+        Assert.Equal(2, (await ListedAsync(staff, "maxAgeDays=2")).Length); // 1 (1d) and 10 (2d23h)
+        Assert.Equal(3, (await ListedAsync(staff, "minAgeDays=3&maxAgeDays=7")).Length); // 2 (5d), 7 and 9 (exactly 3d)
+        Assert.Single(await ListedAsync(staff, $"officerId={fx.OfficerB}&minAgeDays=20")); // claim 4
+
+        ClaimCountsDto counts = (await staff.GetFromJsonAsync<ClaimCountsDto>($"/api/v1/claims/counts?officerId={fx.OfficerA}&minAgeDays=9"))!;
+        Assert.Equal(4, counts.Total); // A's claims 3 (10d), 5 (9d), 6, 8
+        Assert.Equal(1, counts.ByStatus.Single(c => c.Status == ClaimStatus.InfoRequested).Count);
+        Assert.Equal(2, counts.ByStatus.Single(c => c.Status == ClaimStatus.Rejected).Count);
+        Assert.Equal(2, (await staff.GetFromJsonAsync<ClaimCountsDto>("/api/v1/claims/counts?maxAgeDays=2"))!.Total);
+    }
+
+    [Fact]
+    public async Task A_claimant_cannot_use_the_officer_filter_to_find_who_handles_their_claims()
+    {
+        using HttpClient self = fx.Db.ClientAs(DevUsers.Self);
+
+        Assert.Empty(await ListedAsync(self, $"officerId={fx.OfficerA}"));
+        Assert.Equal(0, (await self.GetFromJsonAsync<ClaimCountsDto>($"/api/v1/claims/counts?officerId={fx.OfficerA}"))!.Total);
+    }
+
+    [Theory]
+    [InlineData("minAgeDays=-1")]
+    [InlineData("maxAgeDays=-1")]
+    [InlineData("minAgeDays=5&maxAgeDays=4")]
+    [InlineData("minAgeDays=99999")]
+    [InlineData("officerId=00000000-0000-0000-0000-000000000000")]
+    [InlineData("officerId=not-a-guid")]
+    [InlineData("minAgeDays=abc")]
+    public async Task Bad_officer_or_age_filters_are_a_400_on_the_list_and_the_counts(string query)
+    {
+        using HttpClient staff = fx.Db.ClientAs(DevUsers.Staff);
+
+        Assert.Equal(HttpStatusCode.BadRequest, (await staff.GetAsync($"/api/v1/claims?{query}")).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await staff.GetAsync($"/api/v1/claims/counts?{query}")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Exposure_counts_open_claims_without_a_reserve_so_unknown_does_not_read_as_zero()
+    {
+        using HttpClient manager = fx.Db.ClientAs(DevUsers.Admin);
+
+        ClaimExposureDto exposure = (await manager.GetFromJsonAsync<ClaimExposureDto>("/api/v1/claims/exposure"))!;
+
+        Assert.Equal(
+            [("SGD", Market.SG, LineOfBusiness.Motor, 1), ("SGD", Market.SG, LineOfBusiness.Property, 1), ("THB", Market.TH, LineOfBusiness.Motor, 0), ("THB", Market.TH, LineOfBusiness.Property, 1), ("HKD", Market.HK, LineOfBusiness.Motor, 1)],
+            exposure.Rows.OrderBy(r => r.Currency == "SGD" ? 0 : r.Currency == "THB" ? 1 : 2).ThenBy(r => r.Line).Select(r => (r.Currency, r.Market, r.Line, r.UnreservedOpenCount)));
+        Assert.Equal([("HKD", 1), ("SGD", 2), ("THB", 1)], exposure.Totals.Select(t => (t.Currency, t.UnreservedOpenCount)));
+    }
+
     [Fact]
     public async Task Workload_needs_the_workload_permission_and_a_claimant_is_refused()
     {

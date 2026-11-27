@@ -32,7 +32,7 @@ public sealed class ClaimsController : ApiControllerBase
 
     /// <summary>
     /// List claims, keyset paged. A claimant sees their own, newest first; staff with CLAIMS_ALL see every claim, oldest first (the work queue).
-    /// Filter by `status` (repeat it or comma separate), `assigned` (me, none, any), `market`, `line` and `q` (claim number or policy number).
+    /// Filter by `status` (repeat it or comma separate), `assigned` (me, none, any), `officerId` (staff), `minAgeDays` / `maxAgeDays` (whole days since submission, UTC, inclusive), `market`, `line` and `q` (claim number or policy number).
     /// </summary>
     [HttpGet]
     [HasPermission(Permissions.ClaimsRead)]
@@ -42,7 +42,7 @@ public sealed class ClaimsController : ApiControllerBase
 
     /// <summary>
     /// Claim counts per status for the tabs: every status is present (zero included) plus a total. Same scope as the list (a claimant counts their own, staff all)
-    /// and the same `assigned`, `market`, `line` and `q` filters; `status` is not a filter here.
+    /// and the same `assigned`, `officerId`, `minAgeDays`, `maxAgeDays`, `market`, `line` and `q` filters; `status` is not a filter here.
     /// </summary>
     [HttpGet("counts")]
     [HasPermission(Permissions.ClaimsRead)]

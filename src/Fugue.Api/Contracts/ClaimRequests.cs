@@ -44,7 +44,19 @@ public sealed record ClaimListFilter
     [FromQuery(Name = "cursor")]
     public string? Cursor { get; init; }
 
-    public Fugue.Application.Features.Claims.Queries.ListClaimsQuery ToQuery() => new(Limit, Status, Assigned, Market, Line, Q, Cursor);
+    /// <summary>The assigned officer's user id (staff only).</summary>
+    [FromQuery(Name = "officerId")]
+    public Guid? OfficerId { get; init; }
+
+    /// <summary>At least this many whole days since submission (UTC), inclusive.</summary>
+    [FromQuery(Name = "minAgeDays")]
+    public int? MinAgeDays { get; init; }
+
+    /// <summary>At most this many whole days since submission (UTC), inclusive.</summary>
+    [FromQuery(Name = "maxAgeDays")]
+    public int? MaxAgeDays { get; init; }
+
+    public Fugue.Application.Features.Claims.Queries.ListClaimsQuery ToQuery() => new(Limit, Status, Assigned, Market, Line, Q, Cursor, OfficerId, MinAgeDays, MaxAgeDays);
 }
 
 /// <summary>Query parameters of the claim counts: the list's filters without <c>status</c> and paging.</summary>
@@ -62,5 +74,17 @@ public sealed record ClaimCountsFilter
     [FromQuery(Name = "q")]
     public string? Q { get; init; }
 
-    public Fugue.Application.Features.Claims.Queries.GetClaimCountsQuery ToQuery() => new(Assigned, Market, Line, Q);
+    /// <summary>The assigned officer's user id (staff only).</summary>
+    [FromQuery(Name = "officerId")]
+    public Guid? OfficerId { get; init; }
+
+    /// <summary>At least this many whole days since submission (UTC), inclusive.</summary>
+    [FromQuery(Name = "minAgeDays")]
+    public int? MinAgeDays { get; init; }
+
+    /// <summary>At most this many whole days since submission (UTC), inclusive.</summary>
+    [FromQuery(Name = "maxAgeDays")]
+    public int? MaxAgeDays { get; init; }
+
+    public Fugue.Application.Features.Claims.Queries.GetClaimCountsQuery ToQuery() => new(Assigned, Market, Line, Q, OfficerId, MinAgeDays, MaxAgeDays);
 }

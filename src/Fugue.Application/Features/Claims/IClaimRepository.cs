@@ -7,7 +7,14 @@ namespace Fugue.Application.Features.Claims;
 
 /// <summary>Which claims a list returns, besides the caller's scope.</summary>
 public sealed record ClaimFilter(
-    IReadOnlyList<ClaimStatus> Statuses, ClaimAssignment Assigned, Market? Market, LineOfBusiness? Line, string? Search);
+    IReadOnlyList<ClaimStatus> Statuses,
+    ClaimAssignment Assigned,
+    Market? Market,
+    LineOfBusiness? Line,
+    string? Search,
+    Guid? OfficerId = null,
+    DateTimeOffset? SubmittedAtOrBefore = null,
+    DateTimeOffset? SubmittedAfter = null);
 
 /// <summary><c>me</c>: assigned to the caller; <c>none</c>: unassigned; <c>any</c>: no filter.</summary>
 public enum ClaimAssignment

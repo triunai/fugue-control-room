@@ -14,4 +14,10 @@ export type ClaimsListParams = {
   line?: string;
   q?: string;
   cursor?: string;
+  /** The assigned officer's user id (staff only). */
+  officerId?: string;
+  /** At least this many whole days since submission (UTC), inclusive. */
+  minAgeDays?: number;
+  /** At most this many whole days since submission (UTC), inclusive. */
+  maxAgeDays?: number;
 };

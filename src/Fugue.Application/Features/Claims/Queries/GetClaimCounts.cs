@@ -9,8 +9,11 @@ namespace Fugue.Application.Features.Claims.Queries;
 /// <summary>
 /// Contract. How many claims sit in each status, under the caller's scope (a claimant counts their own, staff count all) and the same filters as the list
 /// except <c>status</c>: <paramref name="Assigned"/> (<c>me</c>, <c>none</c>, <c>any</c>), <paramref name="Market"/>, <paramref name="Line"/> and <paramref name="Search"/>.
+/// Also <paramref name="OfficerId"/>, <paramref name="MinAgeDays"/> and <paramref name="MaxAgeDays"/> exactly as on the list.
 /// </summary>
-public sealed record GetClaimCountsQuery(string? Assigned, string? Market, string? Line, string? Search) : IQuery<Result<ClaimCountsDto>>;
+public sealed record GetClaimCountsQuery(
+    string? Assigned, string? Market, string? Line, string? Search, Guid? OfficerId = null, int? MinAgeDays = null, int? MaxAgeDays = null)
+    : IQuery<Result<ClaimCountsDto>>;
 
 public sealed class GetClaimCountsValidator : AbstractValidator<GetClaimCountsQuery>
 {
@@ -29,10 +32,12 @@ public sealed class GetClaimCountsValidator : AbstractValidator<GetClaimCountsQu
             .When(x => !string.IsNullOrEmpty(x.Line))
             .WithMessage("Line must be 'Motor' or 'Property'.");
         RuleFor(x => x.Search).MaximumLength(100);
+        RuleFor(x => x.OfficerId).NotEqual(Guid.Empty).When(x => x.OfficerId is not null);
+        ClaimAgeFilter.Rules(this, x => x.MinAgeDays, x => x.MaxAgeDays);
     }
 }
 
-public sealed class GetClaimCountsHandler(IClaimRepository claims, ICurrentUser currentUser) : IQueryHandler<GetClaimCountsQuery, Result<ClaimCountsDto>>
+public sealed class GetClaimCountsHandler(IClaimRepository claims, ICurrentUser currentUser, IAuditStamp stamp) : IQueryHandler<GetClaimCountsQuery, Result<ClaimCountsDto>>
 {
     public async ValueTask<Result<ClaimCountsDto>> Handle(GetClaimCountsQuery query, CancellationToken cancellationToken)
     {
@@ -41,7 +46,10 @@ public sealed class GetClaimCountsHandler(IClaimRepository claims, ICurrentUser 
             Enum.TryParse(query.Assigned, ignoreCase: true, out ClaimAssignment assigned) ? assigned : ClaimAssignment.Any,
             Enum.TryParse(query.Market, ignoreCase: true, out Market market) ? market : null,
             Enum.TryParse(query.Line, ignoreCase: true, out LineOfBusiness line) ? line : null,
-            string.IsNullOrWhiteSpace(query.Search) ? null : query.Search.Trim());
+            string.IsNullOrWhiteSpace(query.Search) ? null : query.Search.Trim(),
+            query.OfficerId,
+            ClaimAgeFilter.OlderThanOrAt(stamp.Capture().Now, query.MinAgeDays),
+            ClaimAgeFilter.NewerThan(stamp.Capture().Now, query.MaxAgeDays));
 
         IReadOnlyDictionary<ClaimStatus, int> counts = await claims.CountByStatusAsync(filter, ClaimScope.From(currentUser), cancellationToken);
         ClaimStatusCountDto[] byStatus = [.. Enum.GetValues<ClaimStatus>().Select(s => new ClaimStatusCountDto(s, counts.GetValueOrDefault(s)))];

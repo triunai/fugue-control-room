@@ -12,4 +12,5 @@ export interface ExposureTotalDto {
   currency: string;
   openCount: number;
   outstandingReserveMinor: number;
+  unreservedOpenCount: number;
 }

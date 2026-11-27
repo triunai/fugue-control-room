@@ -12,10 +12,12 @@ namespace Fugue.Application.Features.Claims.Queries;
 /// Contract. Keyset paging only: <paramref name="Cursor"/> is the opaque token from the previous page. Order is <c>(submitted_at, id)</c>: ASCENDING (oldest
 /// first, the work queue) for a caller with <c>CLAIMS_ALL</c>, DESCENDING (newest first) for a claimant, who only ever sees their own claims.
 /// <paramref name="Status"/> repeats (<c>?status=Submitted&amp;status=UnderReview</c>) or is comma separated; <paramref name="Assigned"/> is <c>me</c>, <c>none</c> or <c>any</c>;
-/// <paramref name="Search"/> matches the claim number or the policy number.
+/// <paramref name="Search"/> matches the claim number or the policy number. <paramref name="OfficerId"/> is the assigned officer (staff only: a claimant gets no
+/// match); <paramref name="MinAgeDays"/> and <paramref name="MaxAgeDays"/> bound the claim's age in whole elapsed days since submission, inclusive, in UTC.
 /// </summary>
 public sealed record ListClaimsQuery(
-    int? Limit, IReadOnlyList<string>? Status, string? Assigned, string? Market, string? Line, string? Search, string? Cursor)
+    int? Limit, IReadOnlyList<string>? Status, string? Assigned, string? Market, string? Line, string? Search, string? Cursor,
+    Guid? OfficerId = null, int? MinAgeDays = null, int? MaxAgeDays = null)
     : IQuery<Result<PagedResult<ClaimDto>>>;
 
 public sealed class ListClaimsValidator : AbstractValidator<ListClaimsQuery>
@@ -43,6 +45,8 @@ public sealed class ListClaimsValidator : AbstractValidator<ListClaimsQuery>
             .When(x => !string.IsNullOrEmpty(x.Line))
             .WithMessage("Line must be 'Motor' or 'Property'.");
         RuleFor(x => x.Search).MaximumLength(100);
+        RuleFor(x => x.OfficerId).NotEqual(Guid.Empty).When(x => x.OfficerId is not null);
+        ClaimAgeFilter.Rules(this, x => x.MinAgeDays, x => x.MaxAgeDays);
         RuleFor(x => x.Cursor)
             .Must(c => KeysetCursor.TryDecode(c, out _))
             .When(x => !string.IsNullOrEmpty(x.Cursor))
@@ -50,7 +54,7 @@ public sealed class ListClaimsValidator : AbstractValidator<ListClaimsQuery>
     }
 }
 
-public sealed class ListClaimsHandler(IClaimRepository claims, ICurrentUser currentUser)
+public sealed class ListClaimsHandler(IClaimRepository claims, ICurrentUser currentUser, IAuditStamp stamp)
     : IQueryHandler<ListClaimsQuery, Result<PagedResult<ClaimDto>>>
 {
     internal static IEnumerable<string> SplitStatuses(IReadOnlyList<string>? raw) =>
@@ -65,7 +69,10 @@ public sealed class ListClaimsHandler(IClaimRepository claims, ICurrentUser curr
             Enum.TryParse(query.Assigned, ignoreCase: true, out ClaimAssignment assigned) ? assigned : ClaimAssignment.Any,
             Enum.TryParse(query.Market, ignoreCase: true, out Market market) ? market : null,
             Enum.TryParse(query.Line, ignoreCase: true, out LineOfBusiness line) ? line : null,
-            string.IsNullOrWhiteSpace(query.Search) ? null : query.Search.Trim());
+            string.IsNullOrWhiteSpace(query.Search) ? null : query.Search.Trim(),
+            query.OfficerId,
+            ClaimAgeFilter.OlderThanOrAt(stamp.Capture().Now, query.MinAgeDays),
+            ClaimAgeFilter.NewerThan(stamp.Capture().Now, query.MaxAgeDays));
 
         IReadOnlyList<ClaimDto> rows = await claims.ListAsync(filter, after, limit + 1, ClaimScope.From(currentUser), cancellationToken);
 

@@ -7,7 +7,7 @@
  */
 
 /**
- * One officer's queue. `MedianDaysToDecision` is over the claims decided in the last 30 days (null when there were none); `OldestOpenAgeDays` is null when the officer holds no open claim.
+ * One officer's queue. `MedianDaysToDecision` is over the claims decided in the last 30 days (null when there were none); `OldestOpenAgeDays` and `OldestOpenClaimId` are null when the officer holds no open claim. An officer who can handle claims but holds none is listed with zeros.
  */
 export interface OfficerWorkloadDto {
   decidedLast30Days: number;
@@ -19,5 +19,7 @@ export interface OfficerWorkloadDto {
   officerName: string;
   /** @nullable */
   oldestOpenAgeDays?: number | null;
+  /** @nullable */
+  oldestOpenClaimId?: string | null;
   underReview: number;
 }

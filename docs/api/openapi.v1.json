@@ -567,7 +567,7 @@
       },
       "ClaimExposureDto": {
         "additionalProperties": false,
-        "description": "The company's exposure per market and line, in the market's own currency. Amounts are bigint minor units and are NEVER added across currencies: `Totals` are per currency. `OutstandingReserveMinor` sums the reserves of open claims only; an approved claim leaves it and shows as `ApprovedNotSettled` until it is settled; rejected and settled claims are not exposure.",
+        "description": "The company's exposure per market and line, in the market's own currency. Amounts are bigint minor units and are NEVER added across currencies: `Totals` are per currency. `OutstandingReserveMinor` sums the reserves of open claims only; an approved claim leaves it and shows as `ApprovedNotSettled` until it is settled; rejected and settled claims are not exposure. `UnreservedOpenCount` is the open claims with no reserve yet: their exposure is unknown, so it must not be read as zero.",
         "properties": {
           "asOf": {
             "format": "date-time",
@@ -937,6 +937,10 @@
           "outstandingReserveMinor": {
             "format": "int64",
             "type": "integer"
+          },
+          "unreservedOpenCount": {
+            "format": "int32",
+            "type": "integer"
           }
         },
         "required": [
@@ -946,7 +950,8 @@
           "line",
           "market",
           "openCount",
-          "outstandingReserveMinor"
+          "outstandingReserveMinor",
+          "unreservedOpenCount"
         ],
         "type": "object"
       },
@@ -971,6 +976,10 @@
           "outstandingReserveMinor": {
             "format": "int64",
             "type": "integer"
+          },
+          "unreservedOpenCount": {
+            "format": "int32",
+            "type": "integer"
           }
         },
         "required": [
@@ -978,7 +987,8 @@
           "approvedNotSettledMinor",
           "currency",
           "openCount",
-          "outstandingReserveMinor"
+          "outstandingReserveMinor",
+          "unreservedOpenCount"
         ],
         "type": "object"
       },
@@ -1179,7 +1189,7 @@
       },
       "OfficerWorkloadDto": {
         "additionalProperties": false,
-        "description": "One officer's queue. `MedianDaysToDecision` is over the claims decided in the last 30 days (null when there were none); `OldestOpenAgeDays` is null when the officer holds no open claim.",
+        "description": "One officer's queue. `MedianDaysToDecision` is over the claims decided in the last 30 days (null when there were none); `OldestOpenAgeDays` and `OldestOpenClaimId` are null when the officer holds no open claim. An officer who can handle claims but holds none is listed with zeros.",
         "properties": {
           "decidedLast30Days": {
             "format": "int32",
@@ -1209,6 +1219,11 @@
             "format": "double",
             "nullable": true,
             "type": "number"
+          },
+          "oldestOpenClaimId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
           },
           "underReview": {
             "format": "int32",
@@ -2351,6 +2366,33 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "description": "The assigned officer's user id (staff only).",
+            "in": "query",
+            "name": "officerId",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "At least this many whole days since submission (UTC), inclusive.",
+            "in": "query",
+            "name": "minAgeDays",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "At most this many whole days since submission (UTC), inclusive.",
+            "in": "query",
+            "name": "maxAgeDays",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -2399,7 +2441,7 @@
             "Bearer": []
           }
         ],
-        "summary": "List claims, keyset paged. A claimant sees their own, newest first; staff with CLAIMS_ALL see every claim, oldest first (the work queue). Filter by `status` (repeat it or comma separate), `assigned` (me, none, any), `market`, `line` and `q` (claim number or policy number).",
+        "summary": "List claims, keyset paged. A claimant sees their own, newest first; staff with CLAIMS_ALL see every claim, oldest first (the work queue). Filter by `status` (repeat it or comma separate), `assigned` (me, none, any), `officerId` (staff), `minAgeDays` / `maxAgeDays` (whole days since submission, UTC, inclusive), `market`, `line` and `q` (claim number or policy number).",
         "tags": [
           "Claims"
         ]
@@ -2533,6 +2575,33 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "description": "The assigned officer's user id (staff only).",
+            "in": "query",
+            "name": "officerId",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "At least this many whole days since submission (UTC), inclusive.",
+            "in": "query",
+            "name": "minAgeDays",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "At most this many whole days since submission (UTC), inclusive.",
+            "in": "query",
+            "name": "maxAgeDays",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -2572,7 +2641,7 @@
             "Bearer": []
           }
         ],
-        "summary": "Claim counts per status for the tabs: every status is present (zero included) plus a total. Same scope as the list (a claimant counts their own, staff all) and the same `assigned`, `market`, `line` and `q` filters; `status` is not a filter here.",
+        "summary": "Claim counts per status for the tabs: every status is present (zero included) plus a total. Same scope as the list (a claimant counts their own, staff all) and the same `assigned`, `officerId`, `minAgeDays`, `maxAgeDays`, `market`, `line` and `q` filters; `status` is not a filter here.",
         "tags": [
           "Claims"
         ]
