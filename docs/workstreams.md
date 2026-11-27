@@ -71,7 +71,7 @@ Refs: D-064, D-066; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/
 
 ### WS-34 — Settlement and decision letters as PDF (item 11b) — 🟢 ACTIVE (2026-11-28)
 ID: W-034
-Status: lane nth-pdf live.
+Status: merged 59e1ad6 (nth-pdf), D-070; closes at the wrap.
 Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
 Refs: D-064, D-066; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
 

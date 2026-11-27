@@ -6,13 +6,23 @@
   ],
   "counts": {
     "adrs": 14,
-    "decisions": 69
+    "decisions": 70
   },
   "groups": [
     {
       "version": "Unreleased",
       "date": null,
       "entries": [
+        {
+          "kind": "D",
+          "id": "D-070",
+          "title": "Sample claim letters come from a hand-written PDF writer, no PDF dependency",
+          "date": "2026-11-28",
+          "summary": "Features/Letters writes PDF 1.4 by hand with the standard Type 1 fonts (Times-Bold, Helvetica; nothing embedded), served by GET /api/v1/claims/{id}/letter. QuestPDF rejected (Community licence v3.0 limits free…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-070--sample-claim-letters-come-from-a-hand-written-pdf-writer-no-pdf-dependency--2026-11-28"
+        },
         {
           "kind": "D",
           "id": "D-069",

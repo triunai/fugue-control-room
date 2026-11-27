@@ -74,7 +74,7 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
       draft; (c) WhatsApp, upload a chat export .txt, parse messages into a draft with the transcript attached as a note.
       Honest labels: these are FILE IMPORTS that stand in for live connectors (no Graph/Gmail/WhatsApp Business API calls);
       say so on the page and in a D-row. Audited, idempotent (same file twice does not duplicate), tests per parser.
-- [ ] 11b. PDF export with a fixed template: a "Settlement letter" (approved/settled claims: claimant, policy, incident,
+- [x] 11b. (merge 59e1ad6, nth-pdf, W-034, D-070: hand-written PDF 1.4, no dependency; lane full suite 780/780 + Arch 37; on merged main: build 0 warnings, OpenApi + ClaimLetterTests 31/31, Arch 37/37, web 351 tests; api+web rebuilt; `bru run letters --env compose` 10/10; headless as manager: settled CLM-PH-2026-900011 -> "Settlement letter" downloads a 5.3 KB %PDF-1.4, rejected CLM-MY-2026-900014 -> "Decision letter" 5.0 KB, 0 errors; the PDF reads correctly, marked sample) PDF export with a fixed template: a "Settlement letter" (approved/settled claims: claimant, policy, incident,
       approved amount in the claim currency, decision reason, officer, dates, claim number, correlation id) and a decision
       letter for rejections. One fixed, branded template (QuestPDF on the API or a client-side generator; pick the one that
       keeps the bundle and licences clean, record it). Download from the claim page for staff and for the claimant on their

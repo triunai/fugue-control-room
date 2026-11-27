@@ -77,6 +77,16 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-070 — Sample claim letters come from a hand-written PDF writer, no PDF dependency — 2026-11-28
+WS: WS-34
+Context: overnight item 11b asks for a fixed, branded settlement letter (approved or settled claims) and a decision letter (rejections), downloadable by staff and by the claimant on their own claim, with the library choice recorded.
+Decision: `Features/Letters` writes PDF 1.4 by hand with the standard Type 1 fonts (Times-Bold, Helvetica; nothing embedded), served by `GET /api/v1/claims/{id}/letter`. QuestPDF rejected (Community licence v3.0 limits free commercial use to organisations under USD 1M revenue, so a reviewing insurer would need a paid licence); PDFsharp rejected (AGPL-3.0-only from 6.5.0, licence drift); client-side jsPDF/pdfmake rejected (a new npm package and bundle weight). A letter is composed only from what the caller may read (the claim and its timeline under `ClaimScope`, 404 outside scope), made per request and never stored; 409 `claim.letter_not_available` before a decision. Every page says "Sample document, not a legal letter". Merged in 59e1ad6 (W-034, lane nth-pdf).
+Why: licence-clean with zero dependencies; the scope rules the rest of the claims API already proves apply unchanged.
+Consequences: characters outside Windows-1252 (e.g. Thai script) print as "?" (pinned by a test). Follow-up candidate: `ApiControllerBase.SendFile(...)` so file actions are one-liners.
+Who: owner (asked), AI (writer over a library, licence check)
+Status: accepted
+Promote: no
+
 ## D-069 — Backlog #009 split: paid figure built, outside notification cut, the rest answered — 2026-11-28
 WS: WS-37
 Context: panel-review leftovers (#009): no paid or settled figure on Team and exposure; no notification outside the app; claimants see the SLA calendar; "Send question" during an API restart closed its dialog with no POST (unverified).
