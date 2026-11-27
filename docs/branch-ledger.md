@@ -10,3 +10,4 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | `nth-shell` | `.worktrees/nth-shell` | b875f49 | nth-shell (Sonnet) | W-022 | nice-to-haves wave, `docs/ai/briefs/nice-to-haves.md` |
 | `nth-grid` | `.worktrees/nth-grid` | b875f49 | nth-grid (Sonnet) | W-022 | nice-to-haves wave, `docs/ai/briefs/nice-to-haves.md` |
 | `nth-quality` | `.worktrees/nth-quality` | b875f49 | nth-quality (Sonnet) | W-022 | nice-to-haves wave, `docs/ai/briefs/nice-to-haves.md` |
+| `nth-claimui` | `.worktrees/nth-claimui` | afc0dae | nth-claimui (Sonnet) | W-022 | claim record banner, next step, team and exposure, landing |
