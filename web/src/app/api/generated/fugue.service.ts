@@ -27,6 +27,8 @@ import type {
   AnswerClaimInfoRequest,
   AuditListParams,
   AuditLogDto,
+  AuditSearchParams,
+  AuditSearchResultDto,
   ClaimDto,
   ClaimExposureDto,
   ClaimTimelineEntryDto,
@@ -217,6 +219,42 @@ export class FugueAPIService {
 
     return this.http.get<TData>(
       `/api/v1/audit`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+        params: filteredParams,}
+    );
+  }
+
+/**
+ * @summary Full-text search over the audit trail (D-058): typo tolerant, newest first, with highlight snippets. Eventually consistent with the log (an indexer copies rows). 503 `search.unavailable` when the search engine is not configured or unreachable.
+ */
+ auditSearch<TData = AuditSearchResultDto>(params?: AuditSearchParams, options?: HttpClientBodyOptions): Observable<TData>;
+ auditSearch<TData = AuditSearchResultDto>(params?: AuditSearchParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ auditSearch<TData = AuditSearchResultDto>(params?: AuditSearchParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  auditSearch<TData = AuditSearchResultDto>(
+    params?: AuditSearchParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(
+      `/api/v1/audit/search`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,}
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(
+      `/api/v1/audit/search`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,}
+    );
+    }
+
+    return this.http.get<TData>(
+      `/api/v1/audit/search`,{
     ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
         params: filteredParams,}
@@ -1860,6 +1898,7 @@ export class FugueAPIService {
 };
 
 export type AuditListClientResult = NonNullable<AuditLogDto[]>
+export type AuditSearchClientResult = NonNullable<AuditSearchResultDto>
 export type AuthLogoutClientResult = NonNullable<void>
 export type AuthRefreshClientResult = NonNullable<TokenDto>
 export type AuthTokenClientResult = NonNullable<TokenDto>

@@ -11,6 +11,7 @@ using Fugue.Infrastructure.Persistence.Claims;
 using Fugue.Infrastructure.Persistence.Customers;
 using Fugue.Infrastructure.Persistence.Ids;
 using Fugue.Infrastructure.Persistence.Seeding;
+using Fugue.Infrastructure.Search;
 using Fugue.Infrastructure.Webhooks;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +43,21 @@ public static class DependencyInjection
         services.AddScoped<Fugue.Application.Features.Audit.IAuditLogReader, AuditLogReader>();
         services.AddScoped<IActorDirectory, ActorDirectory>();
         services.TryAddScoped<IAuditRequestInfo, NullAuditRequestInfo>();
+
+        // Audit search (D-058): optional. With no Search:Meilisearch:Url the port answers search.unavailable and no indexer runs.
+        services.AddOptions<MeilisearchOptions>().Bind(configuration.GetSection(MeilisearchOptions.Section));
+        if (configuration.GetSection(MeilisearchOptions.Section).Get<MeilisearchOptions>()?.Enabled == true)
+        {
+            services.AddSingleton<MeilisearchAuditSearch>();
+            services.AddSingleton<Fugue.Application.Features.Audit.IAuditSearch>(sp => sp.GetRequiredService<MeilisearchAuditSearch>());
+            services.AddScoped<AuditIndexSource>();
+            services.AddSingleton<AuditIndexer>();
+            services.AddHostedService(sp => sp.GetRequiredService<AuditIndexer>());
+        }
+        else
+        {
+            services.AddSingleton<Fugue.Application.Features.Audit.IAuditSearch, DisabledAuditSearch>();
+        }
 
         // Outbox (ADR-011): events raised by aggregates become outbox rows in the same SaveChanges (EF path) or through IOutbox (Dapper path).
         services.AddScoped<OutboxPayloadFactory>();

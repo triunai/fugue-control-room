@@ -23,6 +23,25 @@ services:
       timeout: 3s
       retries: 10
 
+  # Audit search (D-058, runbook 06): a rebuildable index of audit_log, fed by the API's indexer. The API runs without it when its URL is unset.
+  # Keep the image tag in step with the Testcontainers image in tests/Fugue.Tests/Audit/AuditSearchTests.cs.
+  meilisearch:
+    image: getmeili/meilisearch:v1.12.8
+    container_name: fugue-meilisearch
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:?set it in .env (16+ bytes)} # secrets-scan:ignore (reference, not a value)
+      MEILI_NO_ANALYTICS: "true"
+    ports:
+      - "${MEILI_PORT:-7700}:7700"
+    volumes:
+      - fugue-meili:/meili_data
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:7700/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   # One-shot: applies the EF migrations bundle, then exits 0. The API does not migrate on startup.
   migrate:
     build:
@@ -49,11 +68,15 @@ services:
       # Empty when unset: compose interpolates the whole file, so a hard requirement here would also break `up -d postgres`.
       # The API itself refuses to start with a missing, short or placeholder key (runbook 10, troubleshooting).
       Auth__SigningKey: ${AUTH_SIGNING_KEY:-} # secrets-scan:ignore (reference, not a value)
+      Search__Meilisearch__Url: http://meilisearch:7700
+      Search__Meilisearch__ApiKey: ${MEILI_MASTER_KEY:?set it in .env (16+ bytes)} # secrets-scan:ignore (reference, not a value)
     ports:
       - "${API_PORT:-5081}:8080"
     depends_on:
       migrate:
         condition: service_completed_successfully
+      meilisearch:
+        condition: service_healthy
     healthcheck:
       # The runtime image has no curl; speak HTTP to the anonymous ping over bash's /dev/tcp (sh has no /dev/tcp).
       test:
@@ -86,3 +109,4 @@ services:
 
 volumes:
   fugue-pgdata:
+  fugue-meili:

@@ -35,3 +35,30 @@ public sealed record AuditListFilter
 
     public ListAuditLogQuery ToQuery() => new(EntityType, EntityId, ActorUserId, Action, CorrelationId, From, To, Limit, Cursor);
 }
+
+/// <summary>Query parameters of the audit search. Every filter is optional and combines with <c>q</c>.</summary>
+public sealed record AuditSearchRequest
+{
+    [FromQuery(Name = "q")]
+    public string? Q { get; init; }
+
+    [FromQuery(Name = "entityType")]
+    public string? EntityType { get; init; }
+
+    [FromQuery(Name = "action")]
+    public string? Action { get; init; }
+
+    [FromQuery(Name = "outcome")]
+    public string? Outcome { get; init; }
+
+    [FromQuery(Name = "from")]
+    public DateTimeOffset? From { get; init; }
+
+    [FromQuery(Name = "to")]
+    public DateTimeOffset? To { get; init; }
+
+    [FromQuery(Name = "limit")]
+    public int? Limit { get; init; }
+
+    public SearchAuditLogQuery ToQuery() => new(Q, EntityType, Action, Outcome, From, To, Limit);
+}
