@@ -8,4 +8,5 @@ public static class DevUsers
     public const string Support = "support@fugue.test";
     public const string Self = "self@fugue.test";
     public const string Self2 = "self2@fugue.test";
+    public const string Manager = "manager@fugue.test";
 }
