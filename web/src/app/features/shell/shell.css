@@ -1,0 +1,100 @@
+.shell {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  min-height: 100vh;
+  transition: grid-template-columns 0.2s ease-out;
+}
+.shell.rail {
+  grid-template-columns: 68px minmax(0, 1fr);
+}
+.skip {
+  position: absolute;
+  left: -999px;
+  top: 0.5rem;
+  z-index: 50;
+  padding: 0.5rem 0.75rem;
+  background: var(--surface2);
+  border: 1.5px solid var(--focus);
+  border-radius: var(--radius-control);
+}
+.skip:focus {
+  left: 0.5rem;
+}
+.main-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* Header zone after the admin-console design: the section as a small letterspaced eyebrow, the page in the display face. */
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  height: 3.6rem;
+  padding: 0 2rem;
+  background: color-mix(in oklab, var(--bg) 88%, transparent);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+}
+.crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.crumbs li + li::before {
+  content: '\203A';
+  margin: 0 0.5rem;
+}
+.crumbs a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.crumbs a:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+.crumbs li.section {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--accent-text);
+}
+.crumbs li:last-child span {
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.env {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+}
+@media (max-width: 860px) {
+  .shell,
+  .shell.rail {
+    grid-template-columns: 1fr;
+  }
+  .top {
+    padding: 0 1rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell {
+    transition: none;
+  }
+}

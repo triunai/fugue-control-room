@@ -7,6 +7,7 @@ import { QueryClient, provideTanStackQuery } from '@tanstack/angular-query';
 import { MeDto } from '../../api/models';
 import { AccessService } from '../../core/auth/access.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { PrefsStore } from '../../core/ui/prefs.store';
 import { Shell } from './shell';
 
 const ADMIN = ['CLAIMS_ALL', 'CUSTOMERS_VIEW', 'AUDIT_READ', 'GROUPS_VIEW', 'MODULES_VIEW', 'WEBHOOKS_MANAGE'];
@@ -66,5 +67,11 @@ describe('Shell sidebar', () => {
     fixture.detectChanges();
     const items = [...root.querySelectorAll('[role="menuitem"]')].map((e) => (e as HTMLElement).textContent?.trim());
     expect(items).toEqual(['My profile', 'Audit log', 'Sign out']);
+  });
+
+  it('opens the group that holds the open route even if the user had folded it', () => {
+    localStorage.setItem('fugue.console.prefs', JSON.stringify({ collapsedGroups: ['Claims'] }));
+    TestBed.inject(PrefsStore).openGroup('Claims');
+    expect(TestBed.inject(PrefsStore).collapsedGroups()).toEqual([]);
   });
 });

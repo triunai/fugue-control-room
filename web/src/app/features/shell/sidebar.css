@@ -1,0 +1,293 @@
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 30;
+}
+.side {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  padding: 1.1rem 0.85rem 1rem;
+}
+.nav-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  /* Scroll cue: a soft shadow shows on whichever edge still has items beyond it. */
+  background:
+    linear-gradient(var(--surface) 30%, transparent) 0 0 / 100% 1.6rem local no-repeat,
+    linear-gradient(transparent, var(--surface) 70%) 0 100% / 100% 1.6rem local no-repeat,
+    linear-gradient(rgb(var(--shadow-color) / 0.16), transparent) 0 0 / 100% 0.5rem scroll no-repeat,
+    linear-gradient(to top, rgb(var(--shadow-color) / 0.16), transparent) 0 100% / 100% 0.5rem scroll no-repeat;
+}
+.side-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding-bottom: 0.6rem;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.2rem 0.3rem;
+  color: var(--text);
+  text-decoration: none;
+}
+.brand-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.5rem;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+.brand-sub {
+  color: var(--muted);
+  font-weight: 500;
+}
+.rail-toggle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: var(--radius-control);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+.rail-toggle:hover {
+  border-color: var(--control);
+  color: var(--text);
+}
+.group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  margin: 0.9rem 0 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: left;
+}
+.group:hover,
+.group.holds-active {
+  color: var(--text);
+}
+.group.holds-active {
+  color: var(--accent-text);
+}
+.group .fold {
+  margin-left: auto;
+  font-size: 1rem;
+  line-height: 1;
+}
+.badge {
+  margin-left: auto;
+  min-width: 1.3rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0;
+}
+.group .badge {
+  margin-left: 0.2rem;
+}
+/* A folding group animates its height (grid rows 1fr to 0fr); a folded list is visibility:hidden, so it is out of the tab order. */
+.fold-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.2s ease-out;
+}
+.fold-body.closed {
+  grid-template-rows: 0fr;
+}
+.fold-body.closed > ul {
+  visibility: hidden;
+  transition: visibility 0s 0.2s;
+}
+.fold-body > ul {
+  overflow: hidden;
+  min-height: 0;
+}
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.52rem 0.65rem;
+  border-radius: var(--radius-control);
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+  transition:
+    background-color 0.15s ease-out,
+    color 0.15s ease-out;
+}
+.item svg {
+  color: var(--muted);
+  flex: none;
+}
+.item:hover {
+  background: color-mix(in oklab, var(--accent) 6%, var(--surface));
+}
+.item.on {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.item.on svg {
+  color: var(--accent);
+}
+.side-foot {
+  flex: none;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line);
+}
+.status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.6rem 0.2rem 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.dot {
+  flex: none;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.dot.up {
+  background: var(--ok);
+}
+.dot.down {
+  background: var(--err);
+}
+/* Icon rail: labels hide, a tooltip names each control on hover or keyboard focus. */
+:host(.rail) .side {
+  padding-inline: 0.5rem;
+  overflow: visible;
+}
+:host(.rail) .nav-scroll {
+  overflow: visible;
+}
+:host(.rail) .side-head {
+  flex-direction: column;
+  gap: 0.6rem;
+}
+:host(.rail) .brand-name,
+:host(.rail) .label,
+:host(.rail) .group span,
+:host(.rail) .item .badge {
+  display: none;
+}
+:host(.rail) .group {
+  padding: 0;
+  margin: 0.4rem 0;
+  border-top: 1px solid var(--line);
+  pointer-events: none;
+}
+:host(.rail) .fold-body,
+:host(.rail) .fold-body.closed {
+  grid-template-rows: 1fr;
+}
+:host(.rail) .fold-body.closed > ul {
+  visibility: visible;
+}
+:host(.rail) .item {
+  justify-content: center;
+}
+:host(.rail) .status {
+  justify-content: center;
+}
+[data-tip] {
+  position: relative;
+}
+:host(.rail) [data-tip]:hover::after,
+:host(.rail) [data-tip]:focus-visible::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: calc(100% + 0.6rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 60;
+  white-space: nowrap;
+  padding: 0.25rem 0.55rem;
+  border-radius: var(--radius-control);
+  background: var(--text);
+  color: var(--bg);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+@media (max-width: 860px) {
+  :host {
+    position: static;
+    height: auto;
+  }
+  .side {
+    height: auto;
+    overflow: visible;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  .group,
+  .rail-toggle {
+    display: none;
+  }
+  .fold-body,
+  .fold-body.closed {
+    grid-template-rows: 1fr;
+  }
+  .fold-body.closed > ul {
+    visibility: visible;
+  }
+  .side-foot {
+    width: 100%;
+    border-top: 0;
+  }
+  .nav-scroll {
+    overflow: visible;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fold-body,
+  .item {
+    transition: none;
+  }
+}

@@ -1,0 +1,29 @@
+<fg-nav-progress />
+<div class="shell" [class.rail]="collapsed()">
+  <a class="skip" href="#main">Skip to content</a>
+  <fg-sidebar />
+  <div class="main-col">
+    <header class="top">
+      <nav class="crumbs" aria-label="Breadcrumb" data-tour="crumbs">
+        <ol>
+          @for (c of crumbs(); track $index; let last = $last) {
+            <li [class.section]="!c.link && !last">
+              @if (c.link && !last) {
+                <a [routerLink]="c.link">{{ c.label }}</a>
+              } @else {
+                <span [attr.aria-current]="last ? 'page' : null">{{ c.label }}</span>
+              }
+            </li>
+          }
+        </ol>
+      </nav>
+      <div class="flex-1"></div>
+      <span class="env" title="Environment, API runtime and version">dev &middot; net8 &middot; v1</span>
+    </header>
+    <main id="main" tabindex="-1" class="outline-none">
+      <div #page class="page">
+        <router-outlet (activate)="enter(page)" />
+      </div>
+    </main>
+  </div>
+</div>

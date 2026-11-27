@@ -30,6 +30,12 @@ export const PrefsStore = signalStore(
       const open = store.collapsedGroups();
       patchState(store, { collapsedGroups: open.includes(label) ? open.filter((g) => g !== label) : [...open, label] });
     },
+    /** Open a group (the one holding the route on screen), never closing anything. */
+    openGroup: (label: string) => {
+      if (store.collapsedGroups().includes(label)) {
+        patchState(store, { collapsedGroups: store.collapsedGroups().filter((g) => g !== label) });
+      }
+    },
     setMaskEmails: (maskEmails: boolean) => patchState(store, { maskEmails }),
   })),
   withHooks({
