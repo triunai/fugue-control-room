@@ -1,15 +1,19 @@
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuditApi, EMPTY_AUDIT_FILTER } from '../../api/audit.api';
+import { ClaimsApi } from '../../api/claims.api';
+import { AccessService } from '../../core/auth/access.service';
 import { AuditFilterStore } from '../audit/audit-filter.store';
-import { DROPDOWN_HITS, SearchRow, isSearchOff, toRows } from './global-search-logic';
+import { ClaimStatusPill } from '../claims/claim-bits';
+import { ClaimRow, DROPDOWN_HITS, SearchRow, isSearchOff, toClaimRows, toRows } from './global-search-logic';
 
 type State = 'idle' | 'loading' | 'ok' | 'off' | 'error';
 
-/** The header search over the audit trail (the audit search API). Typing (debounced) or Enter opens the dropdown. */
+/** The header search: a Claims group for anyone with CLAIMS_READ (scoped server-side) and an Audit group for AUDIT_READ. Typing (debounced) or Enter opens the dropdown. */
 @Component({
   selector: 'fg-global-search',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [ClaimStatusPill],
   host: { '(document:click)': 'outside($event)', '(keydown.escape)': 'close()' },
   styleUrl: './global-search.css',
   template: `
@@ -17,8 +21,8 @@ type State = 'idle' | 'loading' | 'ok' | 'off' | 'error';
       <input
         type="search"
         class="gs-input"
-        placeholder="Search the audit trail"
-        aria-label="Search the audit trail"
+        [placeholder]="placeholder()"
+        [attr.aria-label]="placeholder()"
         autocomplete="off"
         data-testid="global-search"
         [value]="q()"
@@ -27,39 +31,68 @@ type State = 'idle' | 'loading' | 'ok' | 'off' | 'error';
       />
       <span class="gs-badge" title="Meilisearch-powered search">Meilisearch</span>
       @if (open()) {
-        <div class="gs-menu" role="group" aria-label="Audit search results" data-testid="global-search-menu">
-          @switch (state()) {
-            @case ('loading') {
-              <p class="gs-note">Searching</p>
-            }
-            @case ('off') {
-              <p class="gs-note" data-testid="search-off">Search is off</p>
-            }
-            @case ('error') {
-              <p class="gs-note">Search failed. Try again.</p>
-            }
-            @case ('ok') {
-              @if (rows().length === 0) {
-                <p class="gs-note">No matches</p>
-              } @else {
-                @for (r of rows(); track r.id) {
-                  <button type="button" class="gs-row" (click)="openRow(r)">
-                    <span class="gs-action">
-                      @for (s of r.action; track $index) {
-                        @if (s.em) {
-                          <em>{{ s.text }}</em>
-                        } @else {
-                          {{ s.text }}
-                        }
-                      }
-                    </span>
-                    <span class="gs-meta"
-                      >{{ r.actor }} · {{ r.outcome }}{{ r.entityType ? ' · ' + r.entityType : '' }}</span
-                    >
+        <div class="gs-menu" role="group" aria-label="Search results" data-testid="global-search-menu">
+          @if (canClaims) {
+            <p class="gs-head">Claims</p>
+            @switch (claimState()) {
+              @case ('loading') {
+                <p class="gs-note">Searching</p>
+              }
+              @case ('off') {
+                <p class="gs-note" data-testid="claims-search-off">Search is unavailable</p>
+              }
+              @case ('error') {
+                <p class="gs-note">Search failed. Try again.</p>
+              }
+              @case ('ok') {
+                @if (claimRows().length === 0) {
+                  <p class="gs-note">No matching claims</p>
+                }
+                @for (c of claimRows(); track c.id) {
+                  <button type="button" class="gs-row" data-testid="claim-hit" (click)="openClaim(c)">
+                    <span class="gs-action">{{ c.number }} <fg-claim-status [status]="c.status" /></span>
+                    <span class="gs-meta">{{ c.meta }}</span>
+                    <span class="gs-meta gs-line">{{ c.description }}</span>
                   </button>
                 }
               }
-              <button type="button" class="gs-all" (click)="seeAll()">See all results</button>
+            }
+          }
+          @if (canAudit) {
+            <p class="gs-head">Audit</p>
+            @switch (state()) {
+              @case ('loading') {
+                <p class="gs-note">Searching</p>
+              }
+              @case ('off') {
+                <p class="gs-note" data-testid="search-off">Search is unavailable</p>
+              }
+              @case ('error') {
+                <p class="gs-note">Search failed. Try again.</p>
+              }
+              @case ('ok') {
+                @if (rows().length === 0) {
+                  <p class="gs-note">No matches</p>
+                } @else {
+                  @for (r of rows(); track r.id) {
+                    <button type="button" class="gs-row" (click)="openRow(r)">
+                      <span class="gs-action">
+                        @for (s of r.action; track $index) {
+                          @if (s.em) {
+                            <em>{{ s.text }}</em>
+                          } @else {
+                            {{ s.text }}
+                          }
+                        }
+                      </span>
+                      <span class="gs-meta"
+                        >{{ r.actor }} · {{ r.outcome }}{{ r.entityType ? ' · ' + r.entityType : '' }}</span
+                      >
+                    </button>
+                  }
+                }
+                <button type="button" class="gs-all" (click)="seeAll()">See all audit results</button>
+              }
             }
           }
         </div>
@@ -69,6 +102,8 @@ type State = 'idle' | 'loading' | 'ok' | 'off' | 'error';
 })
 export class GlobalSearch implements OnDestroy {
   private readonly api = inject(AuditApi);
+  private readonly claimsApi = inject(ClaimsApi);
+  private readonly access = inject(AccessService);
   private readonly store = inject(AuditFilterStore);
   private readonly router = inject(Router);
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -79,6 +114,15 @@ export class GlobalSearch implements OnDestroy {
   protected readonly open = signal(false);
   protected readonly state = signal<State>('idle');
   protected readonly rows = signal<SearchRow[]>([]);
+  protected readonly claimState = signal<State>('idle');
+  protected readonly claimRows = signal<ClaimRow[]>([]);
+  protected get canClaims(): boolean {
+    return this.access.has('CLAIMS_READ');
+  }
+  protected get canAudit(): boolean {
+    return this.access.has('AUDIT_READ');
+  }
+  protected readonly placeholder = () => (this.canClaims ? 'Search claims: number, policy, place' : 'Search the audit trail');
 
   ngOnDestroy(): void {
     clearTimeout(this.timer);
@@ -97,16 +141,38 @@ export class GlobalSearch implements OnDestroy {
     if (now) clearTimeout(this.timer);
     const mine = ++this.seq;
     this.open.set(true);
-    this.state.set('loading');
-    try {
-      const result = await this.api.search({ ...EMPTY_AUDIT_FILTER, q }, DROPDOWN_HITS);
-      if (mine !== this.seq) return;
-      this.rows.set(toRows(result));
-      this.state.set('ok');
-    } catch (e) {
-      if (mine !== this.seq) return;
-      this.state.set(isSearchOff(e) ? 'off' : 'error');
-    }
+    this.state.set(this.canAudit ? 'loading' : 'idle');
+    this.claimState.set(this.canClaims ? 'loading' : 'idle');
+    const claims = this.canClaims
+      ? this.claimsApi.search(q, DROPDOWN_HITS).then(
+          (result) => {
+            if (mine !== this.seq) return;
+            this.claimRows.set(toClaimRows(result));
+            this.claimState.set('ok');
+          },
+          (e) => {
+            if (mine === this.seq) this.claimState.set(isSearchOff(e) ? 'off' : 'error');
+          },
+        )
+      : Promise.resolve();
+    const audit = this.canAudit
+      ? this.api.search({ ...EMPTY_AUDIT_FILTER, q }, DROPDOWN_HITS).then(
+          (result) => {
+            if (mine !== this.seq) return;
+            this.rows.set(toRows(result));
+            this.state.set('ok');
+          },
+          (e) => {
+            if (mine === this.seq) this.state.set(isSearchOff(e) ? 'off' : 'error');
+          },
+        )
+      : Promise.resolve();
+    await Promise.all([claims, audit]);
+  }
+
+  protected openClaim(c: ClaimRow): void {
+    this.close();
+    void this.router.navigate(['/claims', c.id]);
   }
 
   protected openRow(r: SearchRow): void {

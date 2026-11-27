@@ -8,6 +8,7 @@ export const CLAIMS_QUEUE_HOOD: HoodNote = {
   how: [
     'Calls GET /claims (keyset paged, filters in the query) and GET /claims/counts for the tabs; both need CLAIMS_READ.',
     'Staff with CLAIMS_ALL see every claim, oldest first; everyone else is scoped to their own claims by the same query.',
+    'The search box calls GET /claims/search (Meilisearch) with the scope filter applied server-side; if the engine is off (503) this list is the fallback.',
     'Money is a bigint in minor units plus a currency code, shown as the claim’s own currency.',
   ],
   adrs: [
@@ -41,6 +42,14 @@ export const CLAIMS_QUEUE_HOOD: HoodNote = {
 : scope.ClaimantId is { } owner ? query.Where(c => c.ClaimantUserId == owner)
 : query.Where(_ => false);`,
       note: 'The same scope filter applies to the list; a claim outside it is simply absent (404 on its own page).',
+    },
+    {
+      status: '200',
+      name: 'search scope',
+      path: 'src/Fugue.Infrastructure/Search/MeilisearchClaimSearch.cs',
+      code: `internal static string? BuildFilter(ClaimSearchFilter f) =>
+f.ClaimantUserId is { } claimant ? $"claimantUserId = {Quote(claimant.ToString())}" : null;`,
+      note: 'Search carries this filter to the engine for anyone without CLAIMS_ALL, so another claimant\u2019s claim never comes back (no error, it is just not a hit).',
     },
   ],
 };

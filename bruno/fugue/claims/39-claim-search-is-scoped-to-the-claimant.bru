@@ -1,0 +1,26 @@
+meta {
+  name: Claim search is scoped: another claimant never finds the claim (503 when search is off)
+  type: http
+  seq: 39
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/search?q={{claimNumber}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{otherClaimantToken}}
+}
+
+tests {
+  test("200 without the claim, or 503 search.unavailable when the engine is off", function () {
+    expect([200, 503]).to.include(res.status);
+    if (res.status === 200) {
+      expect(res.body.hits.map(function (h) { return h.id; })).to.not.include(bru.getVar("claimId"));
+    } else {
+      expect(res.body.code).to.equal("search.unavailable");
+    }
+  });
+}

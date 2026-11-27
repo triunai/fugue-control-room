@@ -5,6 +5,7 @@ import { CONSOLE_CONFIG } from '../core/config';
 import { SEND_IF_MATCH } from '../core/http/context';
 import { EtagStore } from '../core/http/etag.store';
 import { idempotencyHeaders } from '../core/http/idempotency';
+import { ClaimSearchResultDto } from './generated/model';
 import { getPage, params } from './http-page';
 import {
   ClaimDto,
@@ -51,6 +52,7 @@ export const claimKeys = {
   all: ['claims'] as const,
   list: (f: ClaimFilter) => ['claims', 'list', f] as const,
   counts: (f: Omit<ClaimFilter, 'status'>) => ['claims', 'counts', f] as const,
+  search: (q: string) => ['claims', 'search', q] as const,
   one: (id: string) => ['claims', 'one', id] as const,
   questions: (id: string) => ['claims', 'questions', id] as const,
   timeline: (id: string) => ['claims', 'timeline', id] as const,
@@ -105,6 +107,11 @@ export class ClaimsApi {
     const out = {} as Record<ClaimStatus, StatusCount>;
     statuses.forEach((s, i) => (out[s] = { n: pages[i].items.length, more: pages[i].nextCursor !== null }));
     return out;
+  }
+
+  /** Typo-tolerant full-text search (D-063); the server scopes it to the caller's own claims unless they hold CLAIMS_ALL. 503 `search.unavailable` when the engine is off. */
+  search(q: string, limit = 20): Promise<ClaimSearchResultDto> {
+    return firstValueFrom(this.http.get<ClaimSearchResultDto>(`${this.base}/search`, { params: params({ q: q.trim(), limit }) }));
   }
 
   get(id: string): Promise<ClaimDto> {

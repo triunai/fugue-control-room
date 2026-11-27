@@ -660,6 +660,82 @@
         ],
         "type": "string"
       },
+      "ClaimSearchHitDto": {
+        "additionalProperties": false,
+        "description": "One hit, shaped like a queue row. ClaimantName is staff-only (null for a claimant, who only ever finds their own claims).",
+        "properties": {
+          "claimantName": {
+            "nullable": true,
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "incidentDescription": {
+            "type": "string"
+          },
+          "incidentLocation": {
+            "nullable": true,
+            "type": "string"
+          },
+          "line": {
+            "$ref": "#/components/schemas/LineOfBusiness"
+          },
+          "market": {
+            "$ref": "#/components/schemas/Market"
+          },
+          "number": {
+            "type": "string"
+          },
+          "policyNumber": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ClaimStatus"
+          },
+          "submittedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "currency",
+          "id",
+          "incidentDescription",
+          "line",
+          "market",
+          "number",
+          "policyNumber",
+          "status",
+          "submittedAt"
+        ],
+        "type": "object"
+      },
+      "ClaimSearchResultDto": {
+        "additionalProperties": false,
+        "description": "EstimatedTotalHits is the engine's estimate of all matches, not the page size.",
+        "properties": {
+          "estimatedTotalHits": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "hits": {
+            "items": {
+              "$ref": "#/components/schemas/ClaimSearchHitDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "estimatedTotalHits",
+          "hits"
+        ],
+        "type": "object"
+      },
       "ClaimStatus": {
         "enum": [
           "Submitted",
@@ -2685,6 +2761,69 @@
           }
         ],
         "summary": "Exposure: per market, line and currency the open count, the outstanding reserve of open claims and the approved-not-settled amount. Totals are per currency; amounts are never added across currencies.",
+        "tags": [
+          "Claims"
+        ]
+      }
+    },
+    "/api/v1/claims/search": {
+      "get": {
+        "operationId": "Claims_Search",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimSearchResultDto"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Full-text search over claims (D-063): claim number, policy number, place, description and claimant name, typo tolerant. The scope is applied by the search filter itself: a claimant only ever finds their own claims, staff with CLAIMS_ALL find every claim. `q` is required. Eventually consistent (an indexer copies rows). 503 `search.unavailable` when the search engine is not configured or unreachable.",
         "tags": [
           "Claims"
         ]

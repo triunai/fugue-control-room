@@ -33,10 +33,12 @@ import type {
   ClaimDto,
   ClaimExposureDto,
   ClaimInfoRequestEntryDto,
+  ClaimSearchResultDto,
   ClaimTimelineEntryDto,
   ClaimWorkloadDto,
   ClaimsCountsParams,
   ClaimsListParams,
+  ClaimsSearchParams,
   CreateCustomerRequest,
   CreateWebhookSubscriptionRequest,
   CustomerDto,
@@ -518,6 +520,42 @@ export class FugueAPIService {
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
+    );
+  }
+
+/**
+ * @summary Full-text search over claims (D-063): claim number, policy number, place, description and claimant name, typo tolerant. The scope is applied by the search filter itself: a claimant only ever finds their own claims, staff with CLAIMS_ALL find every claim. `q` is required. Eventually consistent (an indexer copies rows). 503 `search.unavailable` when the search engine is not configured or unreachable.
+ */
+ claimsSearch<TData = ClaimSearchResultDto>(params?: ClaimsSearchParams, options?: HttpClientBodyOptions): Observable<TData>;
+ claimsSearch<TData = ClaimSearchResultDto>(params?: ClaimsSearchParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ claimsSearch<TData = ClaimSearchResultDto>(params?: ClaimsSearchParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  claimsSearch<TData = ClaimSearchResultDto>(
+    params?: ClaimsSearchParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(
+      `/api/v1/claims/search`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,}
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(
+      `/api/v1/claims/search`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,}
+    );
+    }
+
+    return this.http.get<TData>(
+      `/api/v1/claims/search`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+        params: filteredParams,}
     );
   }
 
@@ -2052,6 +2090,7 @@ export type ClaimsListClientResult = NonNullable<ClaimDto[]>
 export type ClaimsSubmitClientResult = NonNullable<ClaimDto>
 export type ClaimsCountsClientResult = NonNullable<ClaimCountsDto>
 export type ClaimsExposureClientResult = NonNullable<ClaimExposureDto>
+export type ClaimsSearchClientResult = NonNullable<ClaimSearchResultDto>
 export type ClaimsWorkloadClientResult = NonNullable<ClaimWorkloadDto>
 export type ClaimsGetClientResult = NonNullable<ClaimDto>
 export type ClaimsDecideClientResult = NonNullable<ClaimDto>

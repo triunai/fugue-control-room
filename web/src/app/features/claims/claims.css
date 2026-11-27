@@ -339,3 +339,12 @@ textarea.input {
 .activity[open] > summary {
   margin-bottom: 0.6rem;
 }
+.note {
+  margin: 0;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
