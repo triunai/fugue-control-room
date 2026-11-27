@@ -26,3 +26,6 @@ An opt-in `[Idempotent]` resource filter on the two create POSTs (it runs after 
 
 ## Supersedes
 none.
+
+## Amendment 2026-11-27 (D-056): claim submit requires the key
+`POST /api/v1/claims` opts into a required key: without `Idempotency-Key` it answers 400 `idempotency.key_required`. A duplicate claim is real harm (two officers, a double payment risk), so the server stops treating the key as a client courtesy on that one route. Customer and webhook-subscription creates keep the optional key described above. Source: Codex claims seam review finding 5.
