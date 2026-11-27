@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 19 workstreams, 12 ADRs, 48 decisions, 71 commits (6 unlinked). Newest commit indexed: `3a559aa`.
+Counts: 22 workstreams, 13 ADRs, 55 decisions, 112 commits (6 unlinked). Newest commit indexed: `7b9605b`.
 
 ## Workstreams
 
@@ -80,11 +80,33 @@ Counts: 19 workstreams, 12 ADRs, 48 decisions, 71 commits (6 unlinked). Newest c
 
 ### W-007
 
-**S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry** — PARKED
+**S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry** — ACTIVE
 - Where: [board](workstreams.md)
-- Decisions and ADRs: none
-- Commits (0):
-  - none yet
+- Decisions and ADRs: [ADR-013](#adr-013), [D-049](#d-049), [D-050](#d-050), [D-051](#d-051)
+- Commits (23):
+  - `451022d` docs(plans): idempotency-key plan and ADR-013; keep the Angular console (D-049) (2026-11-27)
+  - `bd5de50` build(docker): API image with an EF migrations bundle (2026-11-27)
+  - `731751d` build(web): console image served by nginx with /api proxied (2026-11-27)
+  - `38602b0` build(compose): one-command stack (postgres, migrate, api, web) (2026-11-27)
+  - `1d3cde3` docs(runbooks): runbook 10 for the one-command stack (2026-11-27)
+  - `1ca01f9` fix(infra): compose no longer requires the signing key to start postgres alone (2026-11-27)
+  - `a2a9746` docs(plans): idempotency plan revision 2 after the Codex review; D-051 audit import (2026-11-27)
+  - `793f6f8` feat(web): modules page as a feature-switch table with a toggle and last-changed (2026-11-27)
+  - `7c8d082` docs(spine): KIV backlog items for the guided tour and the console shell (2026-11-27)
+  - `785124a` feat(web): shell with breadcrumbs, collapsible groups and a bottom user card (2026-11-27)
+  - `f83e5c3` build(compose): Postgres writes file logs for pgAdmin and slow-query tracing (2026-11-27)
+  - `5302c46` fix(web): keep the shell user card and footer pinned in the viewport (2026-11-27)
+  - `bc0eac7` docs(spine): KIV backlog item for a role x permission matrix (2026-11-27)
+  - `1d92c88` feat(persistence): idempotency_keys table (2026-11-27)
+  - `ce0305b` feat(api): Idempotency-Key filter with stored-response replay (2026-11-27)
+  - `0fe9814` feat(api): document Idempotency-Key in the contract (2026-11-27)
+  - `5104945` feat(web): send an Idempotency-Key on create (2026-11-27)
+  - `dde6eb6` fix(api): idempotency review fixes (no-store, blank key, fitness rule, contract) (2026-11-27)
+  - `d9b67fb` fix(web): fix the Idempotency-Key and body per create submission (2026-11-27)
+  - `d0eee32` docs(reviews): file the Codex diff review of the idempotency store (2026-11-27)
+  - `c0e19c4` chore(ci): allow the scopes this repo already uses in commitlint (2026-11-27)
+  - `8c6d5eb` refactor(identity): name the JWT claim types once and rename the current-user adapter (2026-11-27)
+  - `a277d4a` docs(spine): backlog the list-filter binding cleanup from the owner's review (2026-11-27)
 
 ### W-008
 
@@ -203,11 +225,22 @@ Counts: 19 workstreams, 12 ADRs, 48 decisions, 71 commits (6 unlinked). Newest c
 
 ### W-018
 
-**Import the owner's earlier audit-logging design and harden audit** — PARKED
-- Where: [board](workstreams.md)
-- Decisions and ADRs: [D-045](#d-045), [D-046](#d-046), [D-047](#d-047), [D-048](#d-048)
-- Commits (1):
+**Import the owner's earlier audit-logging design and harden audit** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-27--closed-w-018-import-the-owners-earlier-audit-logging-design-and-harden-audit)
+- Decisions and ADRs: [ADR-013](#adr-013), [D-045](#d-045), [D-046](#d-046), [D-047](#d-047), [D-048](#d-048), [D-050](#d-050), [D-051](#d-051)
+- Commits (12):
   - `3a559aa` docs(spine): wrap 2026-11-27, decisions D-045..D-048, handoff and seed prompt (2026-11-27)
+  - `b16305e` feat(persistence): failure detail columns on audit_log (2026-11-27)
+  - `0f42b77` feat(application): failure rows carry error type, message and duration (2026-11-27)
+  - `1beae91` feat(observability): audit write-failure meter and structured fallback log (2026-11-27)
+  - `def832a` feat(identity): record 401 challenges in access_audit with a per-IP cap (2026-11-27)
+  - `d3083b0` test(arch): every audited command has a named action (2026-11-27)
+  - `a2a9746` docs(plans): idempotency plan revision 2 after the Codex review; D-051 audit import (2026-11-27)
+  - `0cb8623` fix(application): audit failure rows never store handler message text (2026-11-27)
+  - `9267ef7` fix(api): bound the 401 audit limiter to a fixed bucket array (2026-11-27)
+  - `0da2242` fix(api): an audit-side cancellation keeps the 401 (2026-11-27)
+  - `e2bd64b` docs(api): refresh the audit error message description in the OpenAPI snapshot (2026-11-27)
+  - `7b9605b` docs(spine): wrap mid-window; close W-018; seed the headless continuation (2026-11-27)
 
 ### W-019
 
@@ -216,6 +249,38 @@ Counts: 19 workstreams, 12 ADRs, 48 decisions, 71 commits (6 unlinked). Newest c
 - Decisions and ADRs: [D-045](#d-045), [D-046](#d-046), [D-047](#d-047), [D-048](#d-048)
 - Commits (1):
   - `3a559aa` docs(spine): wrap 2026-11-27, decisions D-045..D-048, handoff and seed prompt (2026-11-27)
+
+### W-020
+
+**Claims platform: the timed build window** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-052](#d-052), [D-053](#d-053), [D-054](#d-054), [D-055](#d-055)
+- Commits (9):
+  - `dd46eca` chore(spine): open the claims build window (plan, W-020, D-052, D-053) (2026-11-27)
+  - `a4ac736` docs(spine): hot-state resume point during the claims window (2026-11-27)
+  - `c054c63` docs(docs): architecture guide and how-we-work guide for the core doc pack (2026-11-27)
+  - `40ee1a3` docs(spine): decisions on SQL files, a read-only DB MCP and file consolidation (2026-11-27)
+  - `1fdc33b` docs(docs): point architecture guide at D-054 and D-055 for SQL and file layout (2026-11-27)
+  - `c2154d1` docs(identity): say PBKDF2, which is what the code uses, not Argon2id (2026-11-27)
+  - `3b4dcc5` ci: GitHub Actions pipeline and a reviewer start-here runbook (2026-11-27)
+  - `8d77574` fix(tests): Bruno compose environment so the webhook sink is reachable from the API container (2026-11-27)
+  - `7b9605b` docs(spine): wrap mid-window; close W-018; seed the headless continuation (2026-11-27)
+
+### W-021
+
+**Audit full-text search** — PARKED
+- Where: [board](workstreams.md)
+- Decisions and ADRs: none
+- Commits (1):
+  - `7b9605b` docs(spine): wrap mid-window; close W-018; seed the headless continuation (2026-11-27)
+
+### W-022
+
+**Post-core quality wave and nice-to-haves (lands together after the claims build)** — PARKED
+- Where: [board](workstreams.md)
+- Decisions and ADRs: none
+- Commits (1):
+  - `7b9605b` docs(spine): wrap mid-window; close W-018; seed the headless continuation (2026-11-27)
 
 ## ADRs
 
@@ -322,7 +387,7 @@ Counts: 19 workstreams, 12 ADRs, 48 decisions, 71 commits (6 unlinked). Newest c
   - `6126ab1` docs(spine): close W-012 into the project log, hot-state to W-013 (2026-11-26)
   - `242b5a8` feat(web): audit log with filters, day timeline and a field-level diff panel (2026-11-26)
 - Workstreams: [W-012](#w-012), [W-017](#w-017)
-- Decisions: [D-027](#d-027), [D-028](#d-028), [D-029](#d-029), [D-030](#d-030), [D-031](#d-031), [D-032](#d-032)
+- Decisions: [D-027](#d-027), [D-028](#d-028), [D-029](#d-029), [D-030](#d-030), [D-031](#d-031), [D-032](#d-032), [D-051](#d-051)
 
 ### ADR-011
 
@@ -351,6 +416,25 @@ Counts: 19 workstreams, 12 ADRs, 48 decisions, 71 commits (6 unlinked). Newest c
   - `b3d6c65` docs(spine): close W-016 and overwrite hot-state (2026-11-26)
 - Workstreams: [W-016](#w-016)
 - Decisions: [D-042](#d-042), [D-043](#d-043), [D-044](#d-044)
+
+### ADR-013
+
+**Idempotency keys with stored-response replay** — accepted — [`ADR-013-idempotency-keys.md`](adr/ADR-013-idempotency-keys.md)
+- Introduced by: `451022d` docs(plans): idempotency-key plan and ADR-013; keep the Angular console (D-049) (2026-11-27)
+- Amended by:
+  - `a2a9746` docs(plans): idempotency plan revision 2 after the Codex review; D-051 audit import (2026-11-27)
+- Cited in commit Refs:
+  - `451022d` docs(plans): idempotency-key plan and ADR-013; keep the Angular console (D-049) (2026-11-27)
+  - `a2a9746` docs(plans): idempotency plan revision 2 after the Codex review; D-051 audit import (2026-11-27)
+  - `1d92c88` feat(persistence): idempotency_keys table (2026-11-27)
+  - `ce0305b` feat(api): Idempotency-Key filter with stored-response replay (2026-11-27)
+  - `0fe9814` feat(api): document Idempotency-Key in the contract (2026-11-27)
+  - `5104945` feat(web): send an Idempotency-Key on create (2026-11-27)
+  - `dde6eb6` fix(api): idempotency review fixes (no-store, blank key, fitness rule, contract) (2026-11-27)
+  - `d9b67fb` fix(web): fix the Idempotency-Key and body per create submission (2026-11-27)
+  - `d0eee32` docs(reviews): file the Codex diff review of the idempotency store (2026-11-27)
+- Workstreams: [W-007](#w-007), [W-018](#w-018)
+- Decisions: [D-050](#d-050)
 
 ## Decisions
 
@@ -724,10 +808,114 @@ Counts: 19 workstreams, 12 ADRs, 48 decisions, 71 commits (6 unlinked). Newest c
 - Cited in commit Refs:
   - `3a559aa` docs(spine): wrap 2026-11-27, decisions D-045..D-048, handoff and seed prompt (2026-11-27)
 
+### D-049
+
+**Keep the W-017 Angular console; no template import** — accepted — [decisions.md](decisions.md#d-049--keep-the-w-017-angular-console-no-template-import--2026-11-27)
+- ADR: none
+- Workstreams: [W-007](#w-007)
+- Cited in commit Refs:
+  - `451022d` docs(plans): idempotency-key plan and ADR-013; keep the Angular console (D-049) (2026-11-27)
+
+### D-050
+
+**Idempotency keys with stored-response replay on the two create POSTs** — accepted — [decisions.md](decisions.md#d-050--idempotency-keys-with-stored-response-replay-on-the-two-create-posts--2026-11-27)
+- ADR: [ADR-013](adr/ADR-013-idempotency-keys.md)
+- Workstreams: [W-007](#w-007), [W-018](#w-018)
+- Cited in commit Refs:
+  - `451022d` docs(plans): idempotency-key plan and ADR-013; keep the Angular console (D-049) (2026-11-27)
+  - `a2a9746` docs(plans): idempotency plan revision 2 after the Codex review; D-051 audit import (2026-11-27)
+
+### D-051
+
+**W-018 audit import: four ideas ported, nine rejected** — accepted — [decisions.md](decisions.md#d-051--w-018-audit-import-four-ideas-ported-nine-rejected--2026-11-27)
+- ADR: [ADR-010](adr/ADR-010-audit-log.md)
+- Workstreams: [W-007](#w-007), [W-018](#w-018)
+- Cited in commit Refs:
+  - `a2a9746` docs(plans): idempotency plan revision 2 after the Codex review; D-051 audit import (2026-11-27)
+  - `0cb8623` fix(application): audit failure rows never store handler message text (2026-11-27)
+  - `9267ef7` fix(api): bound the 401 audit limiter to a fixed bucket array (2026-11-27)
+  - `0da2242` fix(api): an audit-side cancellation keeps the 401 (2026-11-27)
+  - `e2bd64b` docs(api): refresh the audit error message description in the OpenAPI snapshot (2026-11-27)
+
+### D-052
+
+**The claims window runs in this repo, opened by a tag** — accepted — [decisions.md](decisions.md#d-052--the-claims-window-runs-in-this-repo-opened-by-a-tag--2026-11-27)
+- ADR: none
+- Workstreams: [W-020](#w-020)
+- Cited in commit Refs:
+  - `dd46eca` chore(spine): open the claims build window (plan, W-020, D-052, D-053) (2026-11-27)
+
+### D-053
+
+**Claims platform shape for the window** — accepted — [decisions.md](decisions.md#d-053--claims-platform-shape-for-the-window--2026-11-27)
+- ADR: none
+- Workstreams: [W-020](#w-020)
+- Cited in commit Refs:
+  - `dd46eca` chore(spine): open the claims build window (plan, W-020, D-052, D-053) (2026-11-27)
+
+### D-054
+
+**Raw SQL lives in .sql files; a read-only Postgres MCP for agents** — accepted — [decisions.md](decisions.md#d-054--raw-sql-lives-in-sql-files-a-read-only-postgres-mcp-for-agents--2026-11-27)
+- ADR: none
+- Workstreams: [W-020](#w-020)
+- Cited in commit Refs:
+  - `40ee1a3` docs(spine): decisions on SQL files, a read-only DB MCP and file consolidation (2026-11-27)
+  - `1fdc33b` docs(docs): point architecture guide at D-054 and D-055 for SQL and file layout (2026-11-27)
+
+### D-055
+
+**One file per concept, not per type** — accepted — [decisions.md](decisions.md#d-055--one-file-per-concept-not-per-type--2026-11-27)
+- ADR: none
+- Workstreams: [W-020](#w-020)
+- Cited in commit Refs:
+  - `40ee1a3` docs(spine): decisions on SQL files, a read-only DB MCP and file consolidation (2026-11-27)
+  - `1fdc33b` docs(docs): point architecture guide at D-054 and D-055 for SQL and file layout (2026-11-27)
+
 ## Commit to ids
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `7b9605b` | docs(spine): wrap mid-window; close W-018; seed the headless continuation | 2026-11-27 | [W-020](#w-020), [W-018](#w-018), [W-021](#w-021), [W-022](#w-022) |
+| `8d77574` | fix(tests): Bruno compose environment so the webhook sink is reachable from the API container | 2026-11-27 | [W-020](#w-020) |
+| `3b4dcc5` | ci: GitHub Actions pipeline and a reviewer start-here runbook | 2026-11-27 | [W-020](#w-020) |
+| `c2154d1` | docs(identity): say PBKDF2, which is what the code uses, not Argon2id | 2026-11-27 | [W-020](#w-020) |
+| `1fdc33b` | docs(docs): point architecture guide at D-054 and D-055 for SQL and file layout | 2026-11-27 | [W-020](#w-020), [D-054](#d-054), [D-055](#d-055) |
+| `40ee1a3` | docs(spine): decisions on SQL files, a read-only DB MCP and file consolidation | 2026-11-27 | [W-020](#w-020), [D-054](#d-054), [D-055](#d-055) |
+| `c054c63` | docs(docs): architecture guide and how-we-work guide for the core doc pack | 2026-11-27 | [W-020](#w-020) |
+| `a277d4a` | docs(spine): backlog the list-filter binding cleanup from the owner's review | 2026-11-27 | [W-007](#w-007) |
+| `a4ac736` | docs(spine): hot-state resume point during the claims window | 2026-11-27 | [W-020](#w-020) |
+| `8c6d5eb` | refactor(identity): name the JWT claim types once and rename the current-user adapter | 2026-11-27 | [W-007](#w-007) |
+| `c0e19c4` | chore(ci): allow the scopes this repo already uses in commitlint | 2026-11-27 | [W-007](#w-007) |
+| `d0eee32` | docs(reviews): file the Codex diff review of the idempotency store | 2026-11-27 | [W-007](#w-007), [ADR-013](#adr-013) |
+| `d9b67fb` | fix(web): fix the Idempotency-Key and body per create submission | 2026-11-27 | [W-007](#w-007), [ADR-013](#adr-013) |
+| `dde6eb6` | fix(api): idempotency review fixes (no-store, blank key, fitness rule, contract) | 2026-11-27 | [W-007](#w-007), [ADR-013](#adr-013) |
+| `5104945` | feat(web): send an Idempotency-Key on create | 2026-11-27 | [W-007](#w-007), [ADR-013](#adr-013) |
+| `0fe9814` | feat(api): document Idempotency-Key in the contract | 2026-11-27 | [W-007](#w-007), [ADR-013](#adr-013) |
+| `ce0305b` | feat(api): Idempotency-Key filter with stored-response replay | 2026-11-27 | [W-007](#w-007), [ADR-013](#adr-013) |
+| `1d92c88` | feat(persistence): idempotency_keys table | 2026-11-27 | [W-007](#w-007), [ADR-013](#adr-013) |
+| `bc0eac7` | docs(spine): KIV backlog item for a role x permission matrix | 2026-11-27 | [W-007](#w-007) |
+| `5302c46` | fix(web): keep the shell user card and footer pinned in the viewport | 2026-11-27 | [W-007](#w-007) |
+| `dd46eca` | chore(spine): open the claims build window (plan, W-020, D-052, D-053) | 2026-11-27 | [W-020](#w-020), [D-052](#d-052), [D-053](#d-053) |
+| `f83e5c3` | build(compose): Postgres writes file logs for pgAdmin and slow-query tracing | 2026-11-27 | [W-007](#w-007) |
+| `785124a` | feat(web): shell with breadcrumbs, collapsible groups and a bottom user card | 2026-11-27 | [W-007](#w-007) |
+| `7c8d082` | docs(spine): KIV backlog items for the guided tour and the console shell | 2026-11-27 | [W-007](#w-007) |
+| `793f6f8` | feat(web): modules page as a feature-switch table with a toggle and last-changed | 2026-11-27 | [W-007](#w-007) |
+| `e2bd64b` | docs(api): refresh the audit error message description in the OpenAPI snapshot | 2026-11-27 | [W-018](#w-018), [D-051](#d-051) |
+| `0da2242` | fix(api): an audit-side cancellation keeps the 401 | 2026-11-27 | [W-018](#w-018), [D-051](#d-051) |
+| `9267ef7` | fix(api): bound the 401 audit limiter to a fixed bucket array | 2026-11-27 | [W-018](#w-018), [D-051](#d-051) |
+| `0cb8623` | fix(application): audit failure rows never store handler message text | 2026-11-27 | [W-018](#w-018), [D-051](#d-051) |
+| `a2a9746` | docs(plans): idempotency plan revision 2 after the Codex review; D-051 audit import | 2026-11-27 | [W-007](#w-007), [W-018](#w-018), [D-050](#d-050), [D-051](#d-051), [ADR-013](#adr-013) |
+| `d3083b0` | test(arch): every audited command has a named action | 2026-11-27 | [W-018](#w-018) |
+| `def832a` | feat(identity): record 401 challenges in access_audit with a per-IP cap | 2026-11-27 | [W-018](#w-018) |
+| `1beae91` | feat(observability): audit write-failure meter and structured fallback log | 2026-11-27 | [W-018](#w-018) |
+| `0f42b77` | feat(application): failure rows carry error type, message and duration | 2026-11-27 | [W-018](#w-018) |
+| `b16305e` | feat(persistence): failure detail columns on audit_log | 2026-11-27 | [W-018](#w-018) |
+| `1ca01f9` | fix(infra): compose no longer requires the signing key to start postgres alone | 2026-11-27 | [W-007](#w-007) |
+| `1d3cde3` | docs(runbooks): runbook 10 for the one-command stack | 2026-11-27 | [W-007](#w-007) |
+| `38602b0` | build(compose): one-command stack (postgres, migrate, api, web) | 2026-11-27 | [W-007](#w-007) |
+| `731751d` | build(web): console image served by nginx with /api proxied | 2026-11-27 | [W-007](#w-007) |
+| `bd5de50` | build(docker): API image with an EF migrations bundle | 2026-11-27 | [W-007](#w-007) |
+| `451022d` | docs(plans): idempotency-key plan and ADR-013; keep the Angular console (D-049) | 2026-11-27 | [W-007](#w-007), [D-049](#d-049), [D-050](#d-050), [ADR-013](#adr-013) |
 | `3a559aa` | docs(spine): wrap 2026-11-27, decisions D-045..D-048, handoff and seed prompt | 2026-11-27 | [W-018](#w-018), [W-019](#w-019), [D-045](#d-045), [D-046](#d-046), [D-047](#d-047), [D-048](#d-048) |
 | `5358c8e` | docs(runbooks): index the console runbook | 2026-11-26 | [W-017](#w-017) |
 | `357c527` | docs(spine): close W-017 (Fugue Console) into the project log | 2026-11-26 | [W-017](#w-017) |
