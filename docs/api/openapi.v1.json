@@ -344,6 +344,90 @@
         ],
         "type": "object"
       },
+      "AuditSearchHitDto": {
+        "additionalProperties": false,
+        "description": "One search hit. Highlights maps a field name to its text with matches wrapped in `<em>`; the rest of the text is NOT HTML-escaped, so a console must escape everything except the `em` tags before rendering. Null when the query was empty.",
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "actorDisplay": {
+            "nullable": true,
+            "type": "string"
+          },
+          "actorUserId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "entityId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "entityType": {
+            "nullable": true,
+            "type": "string"
+          },
+          "errorCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "errorMessage": {
+            "nullable": true,
+            "type": "string"
+          },
+          "highlights": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "occurredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "routeTemplate": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "id",
+          "occurredAt",
+          "outcome"
+        ],
+        "type": "object"
+      },
+      "AuditSearchResultDto": {
+        "additionalProperties": false,
+        "description": "EstimatedTotalHits is the engine's estimate of all matches, not the page size.",
+        "properties": {
+          "estimatedTotalHits": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "hits": {
+            "items": {
+              "$ref": "#/components/schemas/AuditSearchHitDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "estimatedTotalHits",
+          "hits"
+        ],
+        "type": "object"
+      },
       "ClaimDto": {
         "additionalProperties": false,
         "description": "The claim as returned to clients; `Version` is also sent as the `ETag`. Money is bigint minor units in `Currency`. The last group is staff-only (a caller without `CLAIMS_ALL` gets nulls): the internal reserve in particular is never shown to a claimant. `OpenInfoRequest` is filled when one claim is read, not in list rows.",
@@ -1786,6 +1870,106 @@
           }
         ],
         "summary": "List audit rows, newest first, keyset paged. Every filter is optional and they combine.",
+        "tags": [
+          "Audit"
+        ]
+      }
+    },
+    "/api/v1/audit/search": {
+      "get": {
+        "operationId": "Audit_Search",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "entityType",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "action",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "outcome",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditSearchResultDto"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "Full-text search over the audit trail (D-058): typo tolerant, newest first, with highlight snippets. Eventually consistent with the log (an indexer copies rows). 503 `search.unavailable` when the search engine is not configured or unreachable.",
         "tags": [
           "Audit"
         ]

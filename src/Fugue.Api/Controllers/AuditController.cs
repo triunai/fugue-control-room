@@ -21,4 +21,14 @@ public sealed class AuditController : ApiControllerBase
     [ProducesResponseType(typeof(IReadOnlyList<AuditLogDto>), StatusCodes.Status200OK)]
     public Task<ActionResult<IReadOnlyList<AuditLogDto>>> List([FromQuery] AuditListFilter filter, CancellationToken ct) =>
         SendPaged(filter.ToQuery(), ct);
+
+    /// <summary>
+    /// Full-text search over the audit trail (D-058): typo tolerant, newest first, with highlight snippets. Eventually consistent with the log
+    /// (an indexer copies rows). 503 <c>search.unavailable</c> when the search engine is not configured or unreachable.
+    /// </summary>
+    [HttpGet("search")]
+    [HasPermission(Permissions.AuditRead)]
+    [ProducesResponseType(typeof(AuditSearchResultDto), StatusCodes.Status200OK)]
+    public Task<ActionResult<AuditSearchResultDto>> Search([FromQuery] AuditSearchRequest filter, CancellationToken ct) =>
+        Send(filter.ToQuery(), ct);
 }
