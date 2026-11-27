@@ -5,8 +5,8 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | Branch | Worktree path | Base sha | Owner (lane) | W id | Status |
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
-| `nth-api` | `.worktrees/nth-api` | (see commit) | nth-api (Sonnet) | W-024 | nice-to-haves wave, `docs/ai/briefs/nice-to-haves.md` |
-| `nth-search` | `.worktrees/nth-search` | (see commit) | nth-search (Sonnet) | W-021 | nice-to-haves wave, `docs/ai/briefs/nice-to-haves.md` |
-| `nth-shell` | `.worktrees/nth-shell` | (see commit) | nth-shell (Sonnet) | W-022 | nice-to-haves wave, `docs/ai/briefs/nice-to-haves.md` |
-| `nth-grid` | `.worktrees/nth-grid` | (see commit) | nth-grid (Sonnet) | W-022 | nice-to-haves wave, `docs/ai/briefs/nice-to-haves.md` |
-| `nth-quality` | `.worktrees/nth-quality` | (see commit) | nth-quality (Sonnet) | W-022 | nice-to-haves wave, `docs/ai/briefs/nice-to-haves.md` |
+| `nth-api` | `.worktrees/nth-api` | b875f49 | nth-api (Sonnet) | W-024 | nice-to-haves wave, `docs/ai/briefs/nice-to-haves.md` |
+| `nth-search` | `.worktrees/nth-search` | b875f49 | nth-search (Sonnet) | W-021 | nice-to-haves wave, `docs/ai/briefs/nice-to-haves.md` |
+| `nth-shell` | `.worktrees/nth-shell` | b875f49 | nth-shell (Sonnet) | W-022 | nice-to-haves wave, `docs/ai/briefs/nice-to-haves.md` |
+| `nth-grid` | `.worktrees/nth-grid` | b875f49 | nth-grid (Sonnet) | W-022 | nice-to-haves wave, `docs/ai/briefs/nice-to-haves.md` |
+| `nth-quality` | `.worktrees/nth-quality` | b875f49 | nth-quality (Sonnet) | W-022 | nice-to-haves wave, `docs/ai/briefs/nice-to-haves.md` |
