@@ -94,7 +94,7 @@ public sealed class AuditApiTests(PostgresFixture db)
         Assert.Equal(JsonValueKind.Null, success.GetProperty("errorMessage").ValueKind);
         Assert.Equal(JsonValueKind.Null, success.GetProperty("durationMs").ValueKind);
         Assert.Equal("Conflict", failure.GetProperty("errorType").GetString());
-        Assert.Equal("A customer with this email already exists.", failure.GetProperty("errorMessage").GetString());
+        Assert.Equal(JsonValueKind.Null, failure.GetProperty("errorMessage").ValueKind); // a business error stores no message text
         Assert.True(failure.GetProperty("durationMs").GetInt32() >= 0);
     }
 

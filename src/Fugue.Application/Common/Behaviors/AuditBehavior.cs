@@ -15,7 +15,7 @@ namespace Fugue.Application.Common.Behaviors;
 /// the SaveChanges interceptor reads, so SUCCESSES are written by the interceptor in the same transaction as the change and this
 /// behavior never writes one (no double rows). When the command FAILS (a business error or an unhandled exception) nothing was
 /// changed, so it writes ONE <c>outcome = failure</c> row with the error code in its own short transaction. A failing audit write is
-/// logged and never changes the command's result. The failure row also carries the error type, the handler's message (never an exception's) and the duration. Queries pass through; a command marked <see cref="NoAuditAttribute"/> is skipped
+/// logged and never changes the command's result. The failure row also carries the error type, an audit-safe summary and the duration (never a handler's or exception's message text, which can interpolate request values: a validation failure stores the field NAMES only, an unhandled exception its type name, anything else null). Queries pass through; a command marked <see cref="NoAuditAttribute"/> is skipped
 /// (authentication commands are recorded in <c>access_audit</c>).
 /// Order: Logging, Audit, Validation, so validation failures are audited too.
 /// </summary>
@@ -51,7 +51,7 @@ public sealed partial class AuditBehavior<TMessage, TResponse>(IServiceProvider 
             if (response.IsFailed)
             {
                 FailureDetail detail = response.Errors is [FugueError fugue, ..]
-                    ? new(fugue.Code, fugue.Type.ToString(), Clip(fugue.Message), ElapsedMs(started))
+                    ? new(fugue.Code, fugue.Type.ToString(), SafeSummary(fugue), ElapsedMs(started))
                     : new("unexpected", nameof(ErrorType.Failure), null, ElapsedMs(started));
                 await TryRecordFailureAsync(trail, scope, logger, correlationId, message, detail, cancellationToken);
             }
@@ -93,6 +93,12 @@ public sealed partial class AuditBehavior<TMessage, TResponse>(IServiceProvider 
     private const int MaxMessageLength = 2000;
 
     private readonly record struct FailureDetail(string Code, string Type, string? Message, int DurationMs);
+
+    /// <summary>Built from data we control, never from the error's Message text: only validation field names (no values) qualify.</summary>
+    private static string? SafeSummary(FugueError error) =>
+        error.Type == ErrorType.Validation && error.Fields is { Count: > 0 } fields
+            ? Clip("invalid: " + string.Join(',', fields.Keys.Order(StringComparer.Ordinal)))
+            : null;
 
     private static string? Clip(string? value) => value is { Length: > MaxMessageLength } ? value[..MaxMessageLength] : value;
 

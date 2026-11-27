@@ -85,6 +85,8 @@ public sealed class AuditBehaviorTests
     private static MessageHandlerDelegate<TMessage, TResponse> Returns<TMessage, TResponse>(TResponse response) where TMessage : IMessage =>
         (_, _) => new ValueTask<TResponse>(response);
 
+    private static readonly string[] OneMessage = ["m"];
+
     private static readonly UpdateCustomerCommand Update = new(Fugue.Domain.Ids.CustomerId.New(), "n", "e@example.test", null, 1);
 
     [Fact]
@@ -100,7 +102,7 @@ public sealed class AuditBehaviorTests
         AuditFailure failure = Assert.Single(trail.Failures);
         Assert.Equal(("customers.update", "Customer", Update.Id.ToString(), "customer.version_mismatch"), (failure.Action, failure.EntityType, failure.EntityId, failure.ErrorCode));
         Assert.Equal("UpdateCustomerCommand", failure.Metadata!["command"]);
-        Assert.Equal(("PreconditionFailed", CustomerErrors.VersionMismatch().Message), (failure.ErrorType, failure.ErrorMessage)); // the handler's own error type and message
+        Assert.Equal(("PreconditionFailed", null), (failure.ErrorType, failure.ErrorMessage)); // the handler's error type; its message text is never stored
         Assert.True(failure.DurationMs >= 0);
         Assert.Equal("customers.update", trail.ActionSeenInScope); // the ambient scope was open while the row was written
         Assert.Null(services.GetRequiredService<IAuditScope>().Action); // and is closed afterwards
@@ -133,18 +135,45 @@ public sealed class AuditBehaviorTests
     }
 
     [Fact]
-    public async Task A_long_handler_message_is_capped_at_2000_characters_and_a_non_fugue_error_stores_no_message()
+    public async Task A_business_error_message_is_never_stored_even_when_it_interpolates_a_request_value()
     {
         (IServiceProvider services, RecordingTrail trail) = Build();
         var behavior = new AuditBehavior<UpdateCustomerCommand, Result<CustomerDto>>(services);
-        string longMessage = new('x', 3000);
+        const string Sentinel = "ali.sentinel@example.com";
 
         await behavior.Handle(
-            Update, Returns<UpdateCustomerCommand, Result<CustomerDto>>(Result.Fail<CustomerDto>(FugueErrors.Conflict("customer.long", longMessage))), default);
+            Update, Returns<UpdateCustomerCommand, Result<CustomerDto>>(Result.Fail<CustomerDto>(Fugue.Application.Features.Groups.GroupErrors.NotFound(Sentinel))), default);
         await behavior.Handle(Update, Returns<UpdateCustomerCommand, Result<CustomerDto>>(Result.Fail<CustomerDto>("plain failure")), default);
 
-        Assert.Equal(2000, trail.Failures[0].ErrorMessage!.Length);
-        Assert.Equal(("unexpected", "Failure", null), (trail.Failures[1].ErrorCode, trail.Failures[1].ErrorType, trail.Failures[1].ErrorMessage));
+        Assert.All(trail.Failures, f => Assert.Null(f.ErrorMessage));
+        Assert.Equal("group.not_found", trail.Failures[0].ErrorCode);
+        Assert.Equal(("unexpected", "Failure"), (trail.Failures[1].ErrorCode, trail.Failures[1].ErrorType));
+    }
+
+    [Fact]
+    public async Task A_validation_failure_stores_the_sorted_field_names_only_and_never_the_messages()
+    {
+        (IServiceProvider services, RecordingTrail trail) = Build();
+        var behavior = new AuditBehavior<UpdateCustomerCommand, Result<CustomerDto>>(services);
+        var fields = new Dictionary<string, string[]> { ["Name"] = ["bad value ali.sentinel@example.com"], ["Email"] = ["x"] };
+
+        await behavior.Handle(
+            Update, Returns<UpdateCustomerCommand, Result<CustomerDto>>(Result.Fail<CustomerDto>(FugueErrors.Validation(fields))), default);
+
+        Assert.Equal("invalid: Email,Name", Assert.Single(trail.Failures).ErrorMessage);
+    }
+
+    [Fact]
+    public async Task A_validation_summary_is_capped_at_2000_characters()
+    {
+        (IServiceProvider services, RecordingTrail trail) = Build();
+        var behavior = new AuditBehavior<UpdateCustomerCommand, Result<CustomerDto>>(services);
+        Dictionary<string, string[]> fields = Enumerable.Range(0, 400).ToDictionary(i => "Field" + i.ToString("D4", System.Globalization.CultureInfo.InvariantCulture), _ => OneMessage);
+
+        await behavior.Handle(
+            Update, Returns<UpdateCustomerCommand, Result<CustomerDto>>(Result.Fail<CustomerDto>(FugueErrors.Validation(fields))), default);
+
+        Assert.Equal(2000, Assert.Single(trail.Failures).ErrorMessage!.Length);
     }
 
     [Fact]

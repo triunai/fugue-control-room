@@ -124,7 +124,7 @@ public sealed class AuditCaptureTests(PostgresFixture db)
         Assert.Equal("CUSTOMERS_INSERT", row.PermissionUsed);
         Assert.Equal("Dev Admin", row.ActorDisplay);
         Assert.Equal("Conflict", row.ErrorType);
-        Assert.Equal("A customer with this email already exists.", row.ErrorMessage); // the handler's own message
+        Assert.Null(row.ErrorMessage); // handler message text is never stored; the error code identifies the failure
         Assert.True(row.DurationMs >= 0);
     }
 
@@ -176,8 +176,49 @@ public sealed class AuditCaptureTests(PostgresFixture db)
         AuditRow validation = Assert.Single(await AuditProbe.ByCorrelationAsync(db, invalid));
         Assert.Equal(("failure", customer.Id.ToString()), (validation.Outcome, validation.EntityId));
         Assert.NotNull(validation.ErrorCode);
+        Assert.Equal("invalid: name", validation.ErrorMessage); // field names only
         AuditRow version = Assert.Single(await AuditProbe.ByCorrelationAsync(db, stale));
         Assert.Equal(("failure", "customer.version_mismatch", "customers.update"), (version.Outcome, version.ErrorCode, version.Action));
+    }
+
+    private const string PiiSentinel = "ali.sentinel@example.com";
+
+    private async Task<long> RowsContainingAsync(string fragment)
+    {
+        await using NpgsqlConnection connection = new(db.ConnectionString);
+        await connection.OpenAsync();
+        await using NpgsqlCommand command = new("SELECT count(*) FROM audit_log a WHERE a::text ILIKE @f", connection);
+        command.Parameters.AddWithValue("f", "%" + fragment + "%");
+        return (long)(await command.ExecuteScalarAsync())!;
+    }
+
+    [Fact]
+    public async Task A_group_not_found_failure_leaves_no_row_containing_the_route_value()
+    {
+        HttpClient admin = db.ClientAs(DevUsers.Admin);
+        string correlation = NewCorrelation();
+
+        HttpResponseMessage response = await admin.SendAsync(
+            Request(HttpMethod.Put, $"/api/v1/groups/{PiiSentinel}/members/{Guid.NewGuid()}", correlation));
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal(0L, await RowsContainingAsync(PiiSentinel));
+    }
+
+    [Fact]
+    public async Task A_validation_failure_stores_field_names_and_not_the_submitted_values()
+    {
+        HttpClient admin = db.ClientAs(DevUsers.Admin);
+        string correlation = NewCorrelation();
+
+        HttpResponseMessage response = await admin.SendAsync(
+            Request(HttpMethod.Post, "/api/v1/customers", correlation, new { name = "", email = PiiSentinel + " not an email", phone = (string?)null }));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        AuditRow row = Assert.Single(await AuditProbe.ByCorrelationAsync(db, correlation));
+        Assert.StartsWith("invalid: ", row.ErrorMessage);
+        Assert.Contains("name", row.ErrorMessage);
+        Assert.Equal(0L, await RowsContainingAsync("sentinel"));
     }
 
     [Fact]
