@@ -10,7 +10,7 @@ Goal: `docker compose up -d --build` brings up a migrated, seeded Development AP
   cp .env.example .env            # skip if you already have one
   ```
   - `POSTGRES_PASSWORD`: letters and digits only (it is embedded in a connection string).
-  - `AUTH_SIGNING_KEY`: `openssl rand -base64 32`. Required: compose refuses to run any command until it is set (it checks the whole file, so an older `.env` without the line also breaks `docker compose up -d postgres`; add the line).
+  - `AUTH_SIGNING_KEY`: `openssl rand -base64 32`. Required by the API container: without it `api` exits at startup with a signing-key error and stays unhealthy. The DB-only `docker compose up -d postgres` does not need it.
 
 ## 2. Start
 
@@ -55,8 +55,7 @@ docker compose -p fugue-scratch down -v           # safe: removes only fugue-scr
 |---|---|---|
 | `Cannot connect to the Docker daemon`, `docker ps` hangs | OrbStack/Docker is not running (failure mode 26) | `orb start` (or open Docker), wait for `docker ps`, retry |
 | `port is already allocated` / `address already in use` | Something listens on 5081 or 8080 (a host `dotnet run`, `ng serve` on 4200 is fine) | Stop it, or set `API_PORT` / `WEB_PORT` in `.env` |
-| `required variable AUTH_SIGNING_KEY is missing` | `.env` lacks the key | Add `AUTH_SIGNING_KEY=<openssl rand -base64 32>` |
-| `api` unhealthy, logs say the signing key is invalid | Placeholder or too-short key | Generate a real one, `docker compose up -d` |
+| `api` unhealthy, logs say the signing key is invalid | Missing, placeholder or too-short `AUTH_SIGNING_KEY` | Generate a real one, `docker compose up -d` |
 | `migrate` exits non-zero | Wrong `POSTGRES_PASSWORD` for the existing volume | The password was fixed when the volume was created; restore the old value in `.env` |
 | Console shows an empty login list | A `production` build (no demo accounts) was served | `docker compose build web --no-cache`; the compose build uses `--configuration docker` |
 | Code changed but the container did not | Images are not rebuilt by `up -d` | `docker compose up -d --build` |

@@ -43,7 +43,9 @@ services:
       Seed__Enabled: "true"
       Webhooks__AllowInsecureLocal: "true"
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=fugue;Username=fugue;Password=${POSTGRES_PASSWORD:?set it in .env}" # secrets-scan:ignore (reference, not a value)
-      Auth__SigningKey: ${AUTH_SIGNING_KEY:?set AUTH_SIGNING_KEY in .env (openssl rand -base64 32)} # secrets-scan:ignore (reference, not a value)
+      # Empty when unset: compose interpolates the whole file, so a hard requirement here would also break `up -d postgres`.
+      # The API itself refuses to start with a missing, short or placeholder key (runbook 10, troubleshooting).
+      Auth__SigningKey: ${AUTH_SIGNING_KEY:-} # secrets-scan:ignore (reference, not a value)
     ports:
       - "${API_PORT:-5081}:8080"
     depends_on:
