@@ -56,4 +56,4 @@ Premises that held: permission codes, endpoint shapes, `SubmissionKey` reuse, `X
 
 - A `git commit --amend --no-edit` run by mistake after a failed commit (commitlint line length) folded my staged files into 506fc47 (the backend status commit). I undid it at once with `git reset --soft 506fc47` (verified: HEAD back at 506fc47, working tree untouched, my files re-staged) and committed again. No other commit was touched.
 - `pkill -f Fugue.Api` once, to restart my API: it matches any host `Fugue.Api` process, so another lane's host API could have been stopped. Later stops used the listening port.
-- Left running: `fugue-claims-pg` (:5441). Stopped: my API (:5091) and `ng serve` (:4200). Nothing of mine touches the compose stack or `tpms-local-pg`.
+- Left running: `fugue-claims-pg` (:5441). Stopped: my API (:5091) and `ng serve` (:4200). Nothing of mine touches the compose stack or another project's database container.

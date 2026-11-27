@@ -68,8 +68,40 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-055 | One file per concept, not per type | - |
 | D-056 | Codex claims seam review: 3 accepted (reserve race, required submit key, event names), 2 declined | [review](reviews/codex/2026-11-27-claims-seam.md) |
 | D-057 | Console money: ISO code plus two decimals for every market currency | - |
+| D-058 | Audit search on Meilisearch, fed by an indexer from audit_log (owner reversed the earlier AI-only rejection) | - |
+| D-059 | Nice-to-have UI on Univer (reserve sheet) and FullCalendar (SLA calendar), lazy-loaded | - |
+| D-060 | Console shell ported from the owner's reference app and admin-console design | - |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-060 — Console shell ported from the owner's reference app and admin-console design — 2026-11-27
+WS: WS-22
+Context: the owner could not see the shell they asked for: the sidebar's pinned account card hid the last nav group, and the reference shell (collapsible groups, rail mode, progress bar, account menu) was never ported (backlog #003).
+Decision: lane nth-shell ports the reference shell into Angular, colours through tokens only, light theme; the nav scroll defect is fixed first as its own commit. The reference apps are not named in this public repo.
+Why: the owner's design reference is the bar; one shell for every persona.
+Who: owner (asked), AI (scope)
+Status: accepted
+Promote: no
+
+## D-059 — Nice-to-have UI on Univer and FullCalendar, lazy-loaded — 2026-11-27
+WS: WS-22
+Context: the owner asked to see the nice-to-haves: a spreadsheet surface and a calendar. The owner's own note on trimming them for memory-capped deploys is still owed.
+Decision: a staff reserve-review sheet on Univer (`@univerjs/presets`; only the reserve column editable; save sends one If-Match reserve command per changed row and shows per-row results) and an SLA calendar on FullCalendar (MIT core; one event per open claim on its computed due date). Both are lazy routes so the initial bundle does not grow; the lane records the measured chunk sizes.
+Why: both earn their weight on screens where a grid or a calendar is the natural view; lazy loading keeps the rest of the console light.
+Consequences: the sheet saves row by row through the existing guarded command (no bulk endpoint); a bulk reserve command with partial-failure semantics is a "more time" item.
+Who: owner (asked), AI (libraries and shape)
+Status: accepted
+Promote: no
+
+## D-058 — Audit search on Meilisearch, fed by an indexer — 2026-11-27
+WS: WS-21
+Context: W-021 had planned Postgres full-text search and marked Meilisearch rejected; that rejection was an AI call never put to the owner. The owner asked where Meilisearch is.
+Decision: Meilisearch as an optional compose service; an `IAuditSearch` port with a Meilisearch adapter; a background indexer copies `audit_log` rows (already masked) in keyset batches, idempotent by id, checkpoint kept in the index (no migration); `GET /api/v1/audit/search` behind `AUDIT_READ`. With no URL configured search answers 503 `search.unavailable`, so the host-run API and tests need no search engine.
+Why: typo-tolerant, ranked, highlighted search over the audit trail is what operators expect; the append-only table stays the source of truth and the index is rebuildable from it.
+Consequences: search is eventually consistent (indexer lag); one more container in the stack.
+Who: owner (asked), AI (shape)
+Status: accepted
+Promote: no
 
 ## D-057 — Console money: ISO code plus two decimals for every market currency — 2026-11-27
 WS: WS-20

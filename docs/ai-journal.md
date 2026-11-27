@@ -194,7 +194,7 @@ Entry format: date, **Asked**, **AI proposed**, **Decision** (accepted | challen
 ## 2026-11-27 17:00 - Opening the claims window
 - **Asked:** after reading the actual brief (motor and property claims, six APAC markets, one Angular app, 5 h cap), whether to spend the evening polishing the scaffold or to build the claims platform now with a team of agents.
 - **AI proposed:** freeze the scaffold, open the window in this repo with a tag (`claims-window-start`) so the window is one `git diff`, and build: Claim aggregate with a guarded state machine, append-only claimant timeline, info requests, claimant-only visibility, REST for commands and queries with an outbox event per transition, workload and exposure as plain SQL, then the Angular claimant/staff/manager screens. Earlier the same session it had argued against building claims before the window, to keep the time cap honest.
-- **Decision:** accepted, with the owner's timing (now, not tomorrow) and the owner's confirmation that the panel accepts a disclosed starter. Challenged the AI's scope: a Lovable/TPMS-style claims UI was tempting; the backend stays first, per the brief.
+- **Decision:** accepted, with the owner's timing (now, not tomorrow) and the owner's confirmation that the panel accepts a disclosed starter. Challenged the AI's scope: a Lovable-style claims UI was tempting; the backend stays first, per the brief.
 - **Why:** the brief says a strong backend with a partial frontend beats a rushed pair, and the scaffold already carries the plumbing, so the window goes to the domain decisions the panel will probe.
 
 ## 2026-11-27 17:12 - Owner code review mid-window
