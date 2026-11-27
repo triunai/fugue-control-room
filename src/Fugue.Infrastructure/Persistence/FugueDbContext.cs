@@ -1,4 +1,5 @@
 using Fugue.Domain.Audit;
+using Fugue.Domain.Claims;
 using Fugue.Domain.Customers;
 using Fugue.Domain.Idempotency;
 using Fugue.Domain.Identity;
@@ -11,6 +12,12 @@ namespace Fugue.Infrastructure.Persistence;
 public sealed class FugueDbContext(DbContextOptions<FugueDbContext> options) : DbContext(options)
 {
     public DbSet<Customer> Customers => Set<Customer>();
+
+    public DbSet<Claim> Claims => Set<Claim>();
+
+    public DbSet<ClaimTimelineEntry> ClaimTimeline => Set<ClaimTimelineEntry>();
+
+    public DbSet<ClaimInfoRequest> ClaimInfoRequests => Set<ClaimInfoRequest>();
 
     public DbSet<Tenant> Tenants => Set<Tenant>();
 
