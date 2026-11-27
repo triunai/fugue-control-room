@@ -21,11 +21,29 @@ public static class Permissions
     public const string AuditRead = "AUDIT_READ";
     public const string WebhooksManage = "WEBHOOKS_MANAGE";
 
+    // Claims (W-020, D-053). Claimant: submit, read own, respond. Staff: all, handle, workload. Manager: settle, exposure.
+    public const string ClaimsSubmit = "CLAIMS_SUBMIT";
+    public const string ClaimsRead = "CLAIMS_READ";
+    public const string ClaimsRespond = "CLAIMS_RESPOND";
+
+    /// <summary>Widens reading claims from "my own" to "every claim".</summary>
+    public const string ClaimsAll = "CLAIMS_ALL";
+
+    /// <summary>Pick up, request information, set the reserve, approve or reject.</summary>
+    public const string ClaimsHandle = "CLAIMS_HANDLE";
+
+    /// <summary>Settle an approved claim; also the manager override on who may act on an assigned claim.</summary>
+    public const string ClaimsSettle = "CLAIMS_SETTLE";
+    public const string ClaimsWorkload = "CLAIMS_WORKLOAD";
+    public const string ClaimsExposure = "CLAIMS_EXPOSURE";
+
+    // New permissions are appended: a permission's seeded id is its position in this list, so inserting earlier would renumber existing rows.
     public static readonly IReadOnlyList<string> All =
     [
         CustomersView, CustomersInsert, CustomersEdit, CustomersDelete, CustomersSuspend, CustomersAll,
         GroupsView, GroupsManage, OverridesView, OverridesManage, ModulesView, ModulesManage,
         AuditRead, WebhooksManage,
+        ClaimsSubmit, ClaimsRead, ClaimsRespond, ClaimsAll, ClaimsHandle, ClaimsSettle, ClaimsWorkload, ClaimsExposure,
     ];
 }
 
@@ -37,6 +55,7 @@ public static class ModuleCodes
     public const string Identity = "IDENTITY";
     public const string Audit = "AUDIT";
     public const string Webhooks = "WEBHOOKS";
+    public const string Claims = "CLAIMS";
 }
 
 /// <summary>Role codes of the seeded roles.</summary>
@@ -45,4 +64,5 @@ public static class RoleCodes
     public const string Admin = "ADMIN";
     public const string Staff = "STAFF";
     public const string SelfService = "SELF_SERVICE";
+    public const string Manager = "MANAGER";
 }

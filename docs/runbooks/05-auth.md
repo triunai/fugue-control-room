@@ -16,15 +16,16 @@ Expect: the API starts. A missing, non-base64, short (< 32 bytes), repetitive or
 set -a; source .env; set +a
 ASPNETCORE_URLS=http://localhost:5080 dotnet run --project src/Fugue.Api -- --seed
 ```
-The seed (Development only) creates 25 customers and five users, all with the same **development-only password**: `Fugue-Dev-Passw0rd!` (override with `Seed:DevPassword`). It exists only in Development and only in this runbook, the Bruno `local` environment and the seeder; never reuse it.
+The seed (Development only) creates 25 customers, 20 claims (runbook 11) and six users, all with the same **development-only password**: `Fugue-Dev-Passw0rd!` (override with `Seed:DevPassword`). It exists only in Development and only in this runbook, the Bruno `local` environment and the seeder; never reuse it.
 
 | User | Role | What it demonstrates |
 |---|---|---|
 | `admin@fugue.test` | `ADMIN` | everything, including `CUSTOMERS_ALL` (all rows) and module management |
-| `staff@fugue.test` | `STAFF` | all `CUSTOMERS_*`, all rows |
+| `staff@fugue.test` | `STAFF` | all `CUSTOMERS_*`, all rows; claims: `CLAIMS_READ`, `CLAIMS_ALL`, `CLAIMS_HANDLE`, `CLAIMS_WORKLOAD` (the claims queue and workload) |
+| `manager@fugue.test` | `MANAGER` | `STAFF` plus `CLAIMS_SETTLE` (settle approved claims, work any officer's claim) and `CLAIMS_EXPOSURE` (the exposure table) |
 | `support@fugue.test` | none directly; member of group `SUPPORT` (role `STAFF`) | permissions arriving through a group |
-| `self@fugue.test` | `SELF_SERVICE` | `CUSTOMERS_VIEW` + `CUSTOMERS_EDIT` on their OWN customer only (seeded customer 01) |
-| `self2@fugue.test` | `SELF_SERVICE` | owns seeded customer 02 |
+| `self@fugue.test` | `SELF_SERVICE` | `CUSTOMERS_VIEW` + `CUSTOMERS_EDIT` on their OWN customer only (seeded customer 01); claims: `CLAIMS_SUBMIT`, `CLAIMS_READ`, `CLAIMS_RESPOND` on their OWN claims (three seeded, one waiting for an answer) |
+| `self2@fugue.test` | `SELF_SERVICE` | owns seeded customer 02 and most of the seeded claims |
 
 ```bash
 PW='Fugue-Dev-Passw0rd!'  # secrets-scan:ignore

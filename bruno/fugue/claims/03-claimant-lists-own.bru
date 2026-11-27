@@ -1,0 +1,22 @@
+meta {
+  name: Claimant lists their own claims (found by policy number)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims?q={{claimPolicy}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{claimantToken}}
+}
+
+tests {
+  test("200 and the new claim is in the list", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.map(function (c) { return c.id; })).to.include(bru.getVar("claimId"));
+  });
+}

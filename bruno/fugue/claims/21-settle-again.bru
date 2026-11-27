@@ -1,0 +1,26 @@
+meta {
+  name: Settling a Settled claim is 409 (terminal)
+  type: http
+  seq: 21
+}
+
+post {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/settle
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{managerToken}}
+}
+
+headers {
+  If-Match: {{claimEtag}}
+}
+
+tests {
+  test("409 claim.invalid_transition", function () {
+    expect(res.status).to.equal(409);
+    expect(res.body.code).to.equal("claim.invalid_transition");
+  });
+}

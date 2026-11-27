@@ -1,0 +1,26 @@
+meta {
+  name: A second officer with the fresh ETag gets 409
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}/pickup
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{secondOfficerToken}}
+}
+
+headers {
+  If-Match: {{claimEtag}}
+}
+
+tests {
+  test("409 claim.invalid_transition", function () {
+    expect(res.status).to.equal(409);
+    expect(res.body.code).to.equal("claim.invalid_transition");
+  });
+}

@@ -39,7 +39,7 @@ public sealed class ModuleManagementTests(PostgresFixture db)
 
         ModuleDto[] modules = (await admin.GetFromJsonAsync<ModuleDto[]>("/api/v1/modules"))!;
 
-        Assert.Equal(["AUDIT", "CUSTOMERS", "IDENTITY", "SYSTEM", "WEBHOOKS"], modules.Select(m => m.Code));
+        Assert.Equal(["AUDIT", "CLAIMS", "CUSTOMERS", "IDENTITY", "SYSTEM", "WEBHOOKS"], modules.Select(m => m.Code));
         Assert.All(modules, m => Assert.True(m.ConfigEnabled && m.DbActive && m.Effective));
     }
 

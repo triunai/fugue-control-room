@@ -1,4 +1,5 @@
 using Fugue.Application.Abstractions;
+using Fugue.Application.Features.Claims;
 using Fugue.Application.Features.Customers;
 using Fugue.Domain.Abstractions;
 using Fugue.Infrastructure.Audit;
@@ -6,6 +7,7 @@ using Fugue.Infrastructure.Idempotency;
 using Fugue.Infrastructure.Identity;
 using Fugue.Infrastructure.Outbox;
 using Fugue.Infrastructure.Persistence;
+using Fugue.Infrastructure.Persistence.Claims;
 using Fugue.Infrastructure.Persistence.Customers;
 using Fugue.Infrastructure.Persistence.Ids;
 using Fugue.Infrastructure.Persistence.Seeding;
@@ -115,6 +117,9 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<ICustomerSeeder, CustomerSeeder>();
+        services.AddScoped<IClaimRepository, ClaimRepository>();
+        services.AddScoped<IClaimReports, ClaimReports>();
+        services.AddScoped<IClaimSeeder, ClaimSeeder>();
 
         services.Configure<PasswordOptions>(o =>
         {

@@ -12,7 +12,7 @@ namespace Fugue.Infrastructure.Identity;
 public interface IIdentitySeeder
 {
     /// <summary>
-    /// Idempotently creates the development users (admin, staff, support, two self-service) with <paramref name="password"/>,
+    /// Idempotently creates the development users (admin, staff, manager, support, two self-service) with <paramref name="password"/>,
     /// and gives the two self-service users one seeded customer each. Development only; never run in other environments.
     /// </summary>
     Task SeedDevelopmentUsersAsync(string password, CancellationToken ct);
@@ -25,6 +25,7 @@ internal sealed class IdentitySeeder(FugueDbContext db, PasswordVerifier hasher,
     {
         await EnsureAsync(DevUsers.Admin, "Dev Admin", RoleCodes.Admin, null, ct);
         await EnsureAsync(DevUsers.Staff, "Dev Staff", RoleCodes.Staff, null, ct);
+        await EnsureAsync(DevUsers.Manager, "Dev Manager", RoleCodes.Manager, null, ct);
         await EnsureAsync(DevUsers.Support, "Dev Support (group only)", null, IdentityCatalog.SupportGroup, ct);
         UserId self = await EnsureAsync(DevUsers.Self, "Dev Self-Service One", RoleCodes.SelfService, null, ct);
         UserId self2 = await EnsureAsync(DevUsers.Self2, "Dev Self-Service Two", RoleCodes.SelfService, null, ct);

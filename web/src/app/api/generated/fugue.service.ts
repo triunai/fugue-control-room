@@ -24,12 +24,19 @@ import type {
 } from 'rxjs';
 
 import type {
+  AnswerClaimInfoRequest,
   AuditListParams,
   AuditLogDto,
+  ClaimDto,
+  ClaimExposureDto,
+  ClaimTimelineEntryDto,
+  ClaimWorkloadDto,
+  ClaimsListParams,
   CreateCustomerRequest,
   CreateWebhookSubscriptionRequest,
   CustomerDto,
   CustomersListParams,
+  DecideClaimRequest,
   DevWebhookReceiptDto,
   DevWebhookSinkListParams,
   DiagnosticsPingParams,
@@ -42,9 +49,12 @@ import type {
   PingResponse,
   ReceivedWebhookDto,
   RefreshRequest,
+  RequestClaimInfoRequest,
+  SetClaimReserveRequest,
   SetModuleActiveRequest,
   SetOverrideRequest,
   SetSinkSecretRequest,
+  SubmitClaimRequest,
   TokenDto,
   UpdateCustomerRequest,
   UpdateWebhookSubscriptionRequest,
@@ -318,6 +328,457 @@ export class FugueAPIService {
     return this.http.post<TData>(
       `/api/v1/auth/token`,
       loginRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary List claims, keyset paged. A claimant sees their own, newest first; staff with CLAIMS_ALL see every claim, oldest first (the work queue). Filter by `status` (repeat it or comma separate), `assigned` (me, none, any), `market`, `line` and `q` (claim number or policy number).
+ */
+ claimsList<TData = ClaimDto[]>(params?: ClaimsListParams, options?: HttpClientBodyOptions): Observable<TData>;
+ claimsList<TData = ClaimDto[]>(params?: ClaimsListParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ claimsList<TData = ClaimDto[]>(params?: ClaimsListParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  claimsList<TData = ClaimDto[]>(
+    params?: ClaimsListParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(
+      `/api/v1/claims`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,}
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(
+      `/api/v1/claims`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,}
+    );
+    }
+
+    return this.http.get<TData>(
+      `/api/v1/claims`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+        params: filteredParams,}
+    );
+  }
+
+/**
+ * @summary Submit a claim. The caller is the claimant; the claim starts Submitted. The incident date may not be in the future or more than a year back.
+ */
+ claimsSubmit<TData = ClaimDto>(submitClaimRequest?: SubmitClaimRequest, options?: HttpClientBodyOptions): Observable<TData>;
+ claimsSubmit<TData = ClaimDto>(submitClaimRequest?: SubmitClaimRequest, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ claimsSubmit<TData = ClaimDto>(submitClaimRequest?: SubmitClaimRequest, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  claimsSubmit<TData = ClaimDto>(
+    submitClaimRequest?: SubmitClaimRequest, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+      `/api/v1/claims`,
+      submitClaimRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+      `/api/v1/claims`,
+      submitClaimRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.post<TData>(
+      `/api/v1/claims`,
+      submitClaimRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary Exposure: per market, line and currency the open count, the outstanding reserve of open claims and the approved-not-settled amount. Totals are per currency; amounts are never added across currencies.
+ */
+ claimsExposure<TData = ClaimExposureDto>( options?: HttpClientBodyOptions): Observable<TData>;
+ claimsExposure<TData = ClaimExposureDto>( options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ claimsExposure<TData = ClaimExposureDto>( options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  claimsExposure<TData = ClaimExposureDto>(
+     options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(
+      `/api/v1/claims/exposure`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(
+      `/api/v1/claims/exposure`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.get<TData>(
+      `/api/v1/claims/exposure`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary Workload board: per officer the open claims by status, the oldest open age, decisions in the last 7 and 30 days and the median days to decide; the unassigned count; ageing bands 0-2, 3-7, 8-14, 15+ days.
+ */
+ claimsWorkload<TData = ClaimWorkloadDto>( options?: HttpClientBodyOptions): Observable<TData>;
+ claimsWorkload<TData = ClaimWorkloadDto>( options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ claimsWorkload<TData = ClaimWorkloadDto>( options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  claimsWorkload<TData = ClaimWorkloadDto>(
+     options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(
+      `/api/v1/claims/workload`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(
+      `/api/v1/claims/workload`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.get<TData>(
+      `/api/v1/claims/workload`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary Get one claim with its open question, if any. Your own claim, or any claim with CLAIMS_ALL; anything else is 404.
+ */
+ claimsGet<TData = ClaimDto>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+ claimsGet<TData = ClaimDto>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ claimsGet<TData = ClaimDto>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  claimsGet<TData = ClaimDto>(
+    id: string, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(
+      `/api/v1/claims/${id}`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(
+      `/api/v1/claims/${id}`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.get<TData>(
+      `/api/v1/claims/${id}`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary Approve or reject a claim under review. Approving needs a reserve (409 `claim.reserve_required`) and an amount with 0 < amount <= reserve (400 `claim.amount_invalid`); the reason is shown to the claimant. Assigned officer or manager only.
+ */
+ claimsDecide<TData = ClaimDto>(id: string,
+    decideClaimRequest?: DecideClaimRequest, options?: HttpClientBodyOptions): Observable<TData>;
+ claimsDecide<TData = ClaimDto>(id: string,
+    decideClaimRequest?: DecideClaimRequest, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ claimsDecide<TData = ClaimDto>(id: string,
+    decideClaimRequest?: DecideClaimRequest, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  claimsDecide<TData = ClaimDto>(
+    id: string,
+    decideClaimRequest?: DecideClaimRequest, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+      `/api/v1/claims/${id}/decision`,
+      decideClaimRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+      `/api/v1/claims/${id}/decision`,
+      decideClaimRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.post<TData>(
+      `/api/v1/claims/${id}/decision`,
+      decideClaimRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary Ask the claimant a question: UnderReview becomes InfoRequested. One open question at a time. Assigned officer or manager only.
+ */
+ claimsRequestInfo<TData = ClaimDto>(id: string,
+    requestClaimInfoRequest?: RequestClaimInfoRequest, options?: HttpClientBodyOptions): Observable<TData>;
+ claimsRequestInfo<TData = ClaimDto>(id: string,
+    requestClaimInfoRequest?: RequestClaimInfoRequest, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ claimsRequestInfo<TData = ClaimDto>(id: string,
+    requestClaimInfoRequest?: RequestClaimInfoRequest, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  claimsRequestInfo<TData = ClaimDto>(
+    id: string,
+    requestClaimInfoRequest?: RequestClaimInfoRequest, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+      `/api/v1/claims/${id}/info-requests`,
+      requestClaimInfoRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+      `/api/v1/claims/${id}/info-requests`,
+      requestClaimInfoRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.post<TData>(
+      `/api/v1/claims/${id}/info-requests`,
+      requestClaimInfoRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary Answer the open question on your own claim: InfoRequested becomes UnderReview.
+ */
+ claimsRespond<TData = ClaimDto>(id: string,
+    requestId: string,
+    answerClaimInfoRequest?: AnswerClaimInfoRequest, options?: HttpClientBodyOptions): Observable<TData>;
+ claimsRespond<TData = ClaimDto>(id: string,
+    requestId: string,
+    answerClaimInfoRequest?: AnswerClaimInfoRequest, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ claimsRespond<TData = ClaimDto>(id: string,
+    requestId: string,
+    answerClaimInfoRequest?: AnswerClaimInfoRequest, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  claimsRespond<TData = ClaimDto>(
+    id: string,
+    requestId: string,
+    answerClaimInfoRequest?: AnswerClaimInfoRequest, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+      `/api/v1/claims/${id}/info-requests/${requestId}/response`,
+      answerClaimInfoRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+      `/api/v1/claims/${id}/info-requests/${requestId}/response`,
+      answerClaimInfoRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.post<TData>(
+      `/api/v1/claims/${id}/info-requests/${requestId}/response`,
+      answerClaimInfoRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary Pick up a Submitted claim: it becomes UnderReview and you become its assigned officer.
+ */
+ claimsPickup<TData = ClaimDto>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+ claimsPickup<TData = ClaimDto>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ claimsPickup<TData = ClaimDto>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  claimsPickup<TData = ClaimDto>(
+    id: string, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+      `/api/v1/claims/${id}/pickup`,
+      undefined,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+      `/api/v1/claims/${id}/pickup`,
+      undefined,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.post<TData>(
+      `/api/v1/claims/${id}/pickup`,
+      undefined,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary Set the internal reserve (minor units) while the claim is UnderReview or InfoRequested. Never shown to the claimant. Assigned officer or manager only.
+ */
+ claimsSetReserve<TData = ClaimDto>(id: string,
+    setClaimReserveRequest?: SetClaimReserveRequest, options?: HttpClientBodyOptions): Observable<TData>;
+ claimsSetReserve<TData = ClaimDto>(id: string,
+    setClaimReserveRequest?: SetClaimReserveRequest, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ claimsSetReserve<TData = ClaimDto>(id: string,
+    setClaimReserveRequest?: SetClaimReserveRequest, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  claimsSetReserve<TData = ClaimDto>(
+    id: string,
+    setClaimReserveRequest?: SetClaimReserveRequest, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.put<TData>(
+      `/api/v1/claims/${id}/reserve`,
+      setClaimReserveRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.put<TData>(
+      `/api/v1/claims/${id}/reserve`,
+      setClaimReserveRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.put<TData>(
+      `/api/v1/claims/${id}/reserve`,
+      setClaimReserveRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary Settle an Approved claim. Needs CLAIMS_SETTLE (managers).
+ */
+ claimsSettle<TData = ClaimDto>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+ claimsSettle<TData = ClaimDto>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ claimsSettle<TData = ClaimDto>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  claimsSettle<TData = ClaimDto>(
+    id: string, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+      `/api/v1/claims/${id}/settle`,
+      undefined,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+      `/api/v1/claims/${id}/settle`,
+      undefined,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.post<TData>(
+      `/api/v1/claims/${id}/settle`,
+      undefined,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary The claim's history, oldest first, with claimant-safe notes. Same visibility as the claim.
+ */
+ claimsTimeline<TData = ClaimTimelineEntryDto[]>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+ claimsTimeline<TData = ClaimTimelineEntryDto[]>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ claimsTimeline<TData = ClaimTimelineEntryDto[]>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  claimsTimeline<TData = ClaimTimelineEntryDto[]>(
+    id: string, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(
+      `/api/v1/claims/${id}/timeline`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(
+      `/api/v1/claims/${id}/timeline`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.get<TData>(
+      `/api/v1/claims/${id}/timeline`,{
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
@@ -1402,6 +1863,18 @@ export type AuditListClientResult = NonNullable<AuditLogDto[]>
 export type AuthLogoutClientResult = NonNullable<void>
 export type AuthRefreshClientResult = NonNullable<TokenDto>
 export type AuthTokenClientResult = NonNullable<TokenDto>
+export type ClaimsListClientResult = NonNullable<ClaimDto[]>
+export type ClaimsSubmitClientResult = NonNullable<ClaimDto>
+export type ClaimsExposureClientResult = NonNullable<ClaimExposureDto>
+export type ClaimsWorkloadClientResult = NonNullable<ClaimWorkloadDto>
+export type ClaimsGetClientResult = NonNullable<ClaimDto>
+export type ClaimsDecideClientResult = NonNullable<ClaimDto>
+export type ClaimsRequestInfoClientResult = NonNullable<ClaimDto>
+export type ClaimsRespondClientResult = NonNullable<ClaimDto>
+export type ClaimsPickupClientResult = NonNullable<ClaimDto>
+export type ClaimsSetReserveClientResult = NonNullable<ClaimDto>
+export type ClaimsSettleClientResult = NonNullable<ClaimDto>
+export type ClaimsTimelineClientResult = NonNullable<ClaimTimelineEntryDto[]>
 export type CustomersListClientResult = NonNullable<CustomerDto[]>
 export type CustomersCreateClientResult = NonNullable<CustomerDto>
 export type CustomersDeleteClientResult = NonNullable<void>

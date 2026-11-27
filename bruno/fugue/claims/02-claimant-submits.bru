@@ -1,0 +1,57 @@
+meta {
+  name: Claimant submits a claim (201, Location, ETag, Submitted)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/claims
+  body: json
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: "{{claimKey}}"
+}
+
+auth:bearer {
+  token: {{claimantToken}}
+}
+
+body:json {
+  {
+    "market": "SG",
+    "line": "Motor",
+    "policyNumber": "{{claimPolicy}}",
+    "incidentDate": "{{incidentDate}}",
+    "incidentDescription": "Rear-ended at the traffic lights.",
+    "incidentLocation": "Orchard Road"
+  }
+}
+
+script:pre-request {
+  bru.setVar("claimKey", "bruno-claim-" + Date.now());
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("claimId", res.body.id);
+    bru.setVar("claimEtag", res.headers["etag"]);
+    bru.setVar("submitEtag", res.headers["etag"]);
+    bru.setVar("claimNumber", res.body.number);
+  }
+}
+
+tests {
+  test("201 with Location, ETag, status Submitted and the market's currency", function () {
+    expect(res.status).to.equal(201);
+    expect(res.headers["location"]).to.include("/api/v1/claims/" + res.body.id);
+    expect(res.headers["etag"]).to.equal('"' + res.body.version + '"');
+    expect(res.body.status).to.equal("Submitted");
+    expect(res.body.currency).to.equal("SGD");
+    expect(res.body.number).to.match(/^CLM-SG-\d{4}-\d{6}$/);
+  });
+  test("the claimant does not receive the reserve", function () {
+    expect(res.body.reserveMinor).to.equal(null);
+  });
+}

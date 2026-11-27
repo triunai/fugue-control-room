@@ -21,7 +21,7 @@ import { ToastStore } from '../../core/ui/toast.store';
 import { BrandMark } from './brand-mark';
 import { deriveCrumbs } from './breadcrumbs';
 import { healthOf } from './health';
-import { NAV } from './nav';
+import { visibleGroups } from './nav';
 
 @Component({
   selector: 'fg-shell',
@@ -577,10 +577,10 @@ export class Shell {
   protected readonly groups = computed(() => {
     this.access.permissions();
     const badges = this.badges();
-    return NAV.map((g) => {
-      const items = g.items.filter((i) => !i.permission || this.access.has(i.permission));
-      return { ...g, items, badge: items.reduce((sum, i) => sum + (badges[i.path] ?? 0), 0) };
-    }).filter((g) => g.items.length > 0);
+    return visibleGroups((code) => this.access.has(code)).map((g) => ({
+      ...g,
+      badge: g.items.reduce((sum, i) => sum + (badges[i.path] ?? 0), 0),
+    }));
   });
   protected readonly crumbs = toSignal(
     this.router.events.pipe(

@@ -18,9 +18,9 @@ script:post-response {
 }
 
 tests {
-  test("200 with AUDIT, CUSTOMERS, IDENTITY, SYSTEM and WEBHOOKS, all effective", function () {
+  test("200 with AUDIT, CLAIMS, CUSTOMERS, IDENTITY, SYSTEM and WEBHOOKS, all effective", function () {
     expect(res.status).to.equal(200);
-    expect(res.body.map(function (m) { return m.code; })).to.eql(["AUDIT", "CUSTOMERS", "IDENTITY", "SYSTEM", "WEBHOOKS"]);
+    expect(res.body.map(function (m) { return m.code; })).to.eql(["AUDIT", "CLAIMS", "CUSTOMERS", "IDENTITY", "SYSTEM", "WEBHOOKS"]);
     res.body.forEach(function (m) { expect(m.effective).to.equal(m.configEnabled && m.dbActive); });
   });
 }

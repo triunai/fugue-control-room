@@ -1,0 +1,33 @@
+meta {
+  name: Submit without an Idempotency-Key is 400 (idempotency.key_required)
+  type: http
+  seq: 26
+}
+
+post {
+  url: {{baseUrl}}/api/v1/claims
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{claimantToken}}
+}
+
+body:json {
+  {
+    "market": "SG",
+    "line": "Motor",
+    "policyNumber": "{{claimPolicy}}-NOKEY",
+    "incidentDate": "{{incidentDate}}",
+    "incidentDescription": "Sent without a key on purpose."
+  }
+}
+
+tests {
+  test("400 problem with the stable code, and nothing was created", function () {
+    expect(res.status).to.equal(400);
+    expect(res.headers["content-type"]).to.include("application/problem+json");
+    expect(res.body.code).to.equal("idempotency.key_required");
+  });
+}

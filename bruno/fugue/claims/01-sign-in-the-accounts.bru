@@ -1,0 +1,36 @@
+meta {
+  name: Sign in the claimant, staff, second officer and manager
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/v1/me
+  body: none
+  auth: inherit
+}
+
+script:pre-request {
+  async function login(email) {
+    const res = await bru.sendRequest({
+      method: "POST",
+      url: bru.getEnvVar("baseUrl") + "/api/v1/auth/token",
+      headers: { "Content-Type": "application/json" },
+      data: { email: email, password: bru.getEnvVar("devPw") }, // secrets-scan:ignore
+    });
+    return res.data.accessToken;
+  }
+  bru.setVar("claimantToken", await login(bru.getEnvVar("selfEmail")));
+  bru.setVar("otherClaimantToken", await login(bru.getEnvVar("self2Email")));
+  bru.setVar("officerToken", await login("staff@fugue.test"));
+  bru.setVar("secondOfficerToken", await login("support@fugue.test"));
+  bru.setVar("managerToken", await login("manager@fugue.test"));
+  bru.setVar("claimPolicy", "BRU-" + Date.now());
+  bru.setVar("incidentDate", new Date(Date.now() - 86400000).toISOString().slice(0, 10));
+}
+
+tests {
+  test("signed in (the collection admin token answers /me)", function () {
+    expect(res.status).to.equal(200);
+  });
+}

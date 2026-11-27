@@ -1,0 +1,28 @@
+meta {
+  name: Exposure (manager): totals per currency, never mixed
+  type: http
+  seq: 24
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/exposure
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{managerToken}}
+}
+
+tests {
+  test("200, one total per currency", function () {
+    expect(res.status).to.equal(200);
+    const currencies = res.body.totals.map(function (t) { return t.currency; });
+    expect(new Set(currencies).size).to.equal(currencies.length);
+    expect(currencies).to.include("SGD");
+  });
+  test("every row's currency is the market's", function () {
+    const expected = { SG: "SGD", MY: "MYR", TH: "THB", HK: "HKD", ID: "IDR", PH: "PHP" };
+    res.body.rows.forEach(function (r) { expect(r.currency).to.equal(expected[r.market]); });
+  });
+}

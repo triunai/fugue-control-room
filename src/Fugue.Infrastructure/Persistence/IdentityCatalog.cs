@@ -21,10 +21,12 @@ public static class IdentityCatalog
     public static readonly ModuleId IdentityModule = ModuleId.From(Seed(1, 3));
     public static readonly ModuleId AuditModule = ModuleId.From(Seed(1, 4));
     public static readonly ModuleId WebhooksModule = ModuleId.From(Seed(1, 5));
+    public static readonly ModuleId ClaimsModule = ModuleId.From(Seed(1, 6));
 
     public static readonly RoleId AdminRole = RoleId.From(Seed(5, 1));
     public static readonly RoleId StaffRole = RoleId.From(Seed(5, 2));
     public static readonly RoleId SelfServiceRole = RoleId.From(Seed(5, 3));
+    public static readonly RoleId ManagerRole = RoleId.From(Seed(5, 4));
 
     public static readonly GroupId SupportGroup = GroupId.From(Seed(7, 1));
 
@@ -36,9 +38,10 @@ public static class IdentityCatalog
         ("OVERRIDES", "PermissionDefinition overrides", IdentityModule),
         ("AUDIT", "Audit log", AuditModule),
         ("WEBHOOKS", "Webhooks", WebhooksModule),
+        ("CLAIMS", "Claims", ClaimsModule),
     ];
 
-    private static readonly string[] ActionCodes = ["VIEW", "INSERT", "EDIT", "DELETE", "SUSPEND", "ALL", "MANAGE", "READ"];
+    private static readonly string[] ActionCodes = ["VIEW", "INSERT", "EDIT", "DELETE", "SUSPEND", "ALL", "MANAGE", "READ", "SUBMIT", "RESPOND", "HANDLE", "SETTLE", "WORKLOAD", "EXPOSURE"];
 
     public static ResourceId ResourceIdFor(string code) =>
         ResourceId.From(Seed(2, Array.FindIndex(ResourceDefs, r => r.Code == code) + 1));
@@ -53,15 +56,22 @@ public static class IdentityCatalog
         RoleCodes.Admin => AdminRole,
         RoleCodes.Staff => StaffRole,
         RoleCodes.SelfService => SelfServiceRole,
+        RoleCodes.Manager => ManagerRole,
         _ => throw new ArgumentOutOfRangeException(nameof(roleCode)),
     };
 
     private static string[] RolePermissionCodes(string role) => role switch
     {
         RoleCodes.Admin => [.. Permissions.All],
-        RoleCodes.Staff => [.. Permissions.All.Where(p => p.StartsWith("CUSTOMERS_", StringComparison.Ordinal))],
-        _ => [Permissions.CustomersView, Permissions.CustomersEdit],
+        RoleCodes.Staff => [.. StaffPermissions],
+        RoleCodes.Manager => [.. StaffPermissions, Permissions.ClaimsSettle, Permissions.ClaimsExposure],
+        _ => [Permissions.CustomersView, Permissions.CustomersEdit, Permissions.ClaimsSubmit, Permissions.ClaimsRead, Permissions.ClaimsRespond],
     };
+
+    /// <summary>Customers (every action) plus the claims staff set (decision G of the claims window): read, all, handle, workload.</summary>
+    private static IEnumerable<string> StaffPermissions =>
+        Permissions.All.Where(p => p.StartsWith("CUSTOMERS_", StringComparison.Ordinal))
+            .Concat([Permissions.ClaimsRead, Permissions.ClaimsAll, Permissions.ClaimsHandle, Permissions.ClaimsWorkload]);
 
     public static void HasData(ModelBuilder mb)
     {
@@ -70,7 +80,8 @@ public static class IdentityCatalog
             Module(CustomersModule, ModuleCodes.Customers, "Customers"),
             Module(IdentityModule, ModuleCodes.Identity, "Identity"),
             Module(AuditModule, ModuleCodes.Audit, "Audit"),
-            Module(WebhooksModule, ModuleCodes.Webhooks, "Webhooks"));
+            Module(WebhooksModule, ModuleCodes.Webhooks, "Webhooks"),
+            Module(ClaimsModule, ModuleCodes.Claims, "Claims"));
 
         mb.Entity<Resource>().HasData(ResourceDefs.Select(r => new Resource
         {
@@ -114,9 +125,10 @@ public static class IdentityCatalog
         mb.Entity<Role>().HasData(
             Role(AdminRole, RoleCodes.Admin, "Administrator"),
             Role(StaffRole, RoleCodes.Staff, "Staff"),
-            Role(SelfServiceRole, RoleCodes.SelfService, "Self service"));
+            Role(SelfServiceRole, RoleCodes.SelfService, "Self service"),
+            Role(ManagerRole, RoleCodes.Manager, "Manager"));
 
-        mb.Entity<RoleGrant>().HasData(new[] { RoleCodes.Admin, RoleCodes.Staff, RoleCodes.SelfService }
+        mb.Entity<RoleGrant>().HasData(new[] { RoleCodes.Admin, RoleCodes.Staff, RoleCodes.SelfService, RoleCodes.Manager }
             .SelectMany(role => RolePermissionCodes(role).Select(code => new RoleGrant
             {
                 RoleId = RoleIdFor(role),

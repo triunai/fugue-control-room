@@ -40,6 +40,14 @@ describe('resourceKey', () => {
     expect(resourceKey(`${C}/suspend`)).toBe(C);
     expect(resourceKey('/api/v1/webhooks/subscriptions/s1/rotate-secret')).toBe('/api/v1/webhooks/subscriptions/s1');
   });
+
+  it('maps every claim command back to the claim', () => {
+    const claim = '/api/v1/claims/k1';
+    for (const action of ['pickup', 'reserve', 'decision', 'settle', 'info-requests', 'info-requests/r1/response']) {
+      expect(resourceKey(`${claim}/${action}`)).toBe(claim);
+    }
+    expect(resourceKey(`${claim}/timeline`)).toBe(`${claim}/timeline`);
+  });
 });
 
 describe('ETag interceptor', () => {
@@ -82,6 +90,30 @@ describe('ETag interceptor', () => {
     expect(req.request.headers.get('If-Match')).toBe('"1"');
     req.flush(null, { status: 204, statusText: 'No Content' });
     await suspend;
+  });
+
+  it('sends the claim tag on every claim command and stores the new tag against the claim', async () => {
+    const { http, ctl, etags } = setup();
+    const K = '/api/v1/claims/k1';
+    etags.set(K, '"5"');
+    const sent: string[] = [];
+    const commands: [string, 'POST' | 'PUT'][] = [
+      ['pickup', 'POST'],
+      ['reserve', 'PUT'],
+      ['info-requests', 'POST'],
+      ['info-requests/r1/response', 'POST'],
+      ['decision', 'POST'],
+      ['settle', 'POST'],
+    ];
+    for (const [action, method] of commands) {
+      const call = firstValueFrom(http.request(method, `${K}/${action}`, { body: {} }));
+      const req = ctl.expectOne(`${K}/${action}`);
+      sent.push(req.request.headers.get('If-Match') ?? 'MISSING');
+      req.flush({}, { headers: { ETag: `"${6 + sent.length}"` } });
+      await call;
+    }
+    expect(sent).toEqual(['"5"', '"7"', '"8"', '"9"', '"10"', '"11"']);
+    expect(etags.get(K)).toBe('"12"');
   });
 
   it('does not record a peek (TRACK_ETAG=false), so a stale edit still fails with 412', async () => {

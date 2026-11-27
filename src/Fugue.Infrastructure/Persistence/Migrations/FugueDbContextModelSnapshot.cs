@@ -168,6 +168,297 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Fugue.Domain.Claims.Claim", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<long?>("ApprovedAmountMinor")
+                        .HasColumnType("bigint")
+                        .HasColumnName("approved_amount_minor");
+
+                    b.Property<DateTimeOffset?>("AssignedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("assigned_at");
+
+                    b.Property<Guid?>("AssignedOfficerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_officer_id");
+
+                    b.Property<Guid>("ClaimantUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("claimant_user_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<DateTimeOffset?>("DecidedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("decided_at");
+
+                    b.Property<string>("DecisionReason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("decision_reason");
+
+                    b.Property<DateOnly>("IncidentDate")
+                        .HasColumnType("date")
+                        .HasColumnName("incident_date");
+
+                    b.Property<string>("IncidentDescription")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("incident_description");
+
+                    b.Property<string>("IncidentLocation")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("incident_location");
+
+                    b.Property<string>("Line")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("line");
+
+                    b.Property<string>("Market")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasColumnName("market");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("number");
+
+                    b.Property<string>("PolicyNumber")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("policy_number");
+
+                    b.Property<long?>("ReserveMinor")
+                        .HasColumnType("bigint")
+                        .HasColumnName("reserve_minor");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<DateTimeOffset?>("SettledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("settled_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_claims");
+
+                    b.HasIndex("AssignedOfficerId")
+                        .HasDatabaseName("ix_claims_assigned_officer_id");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ux_claims_number");
+
+                    b.HasIndex("ClaimantUserId", "SubmittedAt", "Id")
+                        .IsDescending(false, true, true)
+                        .HasDatabaseName("ix_claims_claimant");
+
+                    b.HasIndex("Status", "Market", "Line")
+                        .HasDatabaseName("ix_claims_exposure");
+
+                    b.HasIndex("Status", "AssignedOfficerId", "SubmittedAt", "Id")
+                        .HasDatabaseName("ix_claims_queue");
+
+                    b.ToTable("claims", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_claims_approved_positive", "approved_amount_minor IS NULL OR approved_amount_minor > 0");
+
+                            t.HasCheckConstraint("ck_claims_reserve_positive", "reserve_minor IS NULL OR reserve_minor > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Claims.ClaimInfoRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ClaimId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("claim_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("question");
+
+                    b.Property<DateTimeOffset>("RequestedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("requested_at");
+
+                    b.Property<Guid>("RequestedByUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("requested_by_user_id");
+
+                    b.Property<DateTimeOffset?>("RespondedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("responded_at");
+
+                    b.Property<string>("Response")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("response");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_claim_info_requests");
+
+                    b.HasIndex("ClaimId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_claim_info_requests_open")
+                        .HasFilter("responded_at IS NULL");
+
+                    b.HasIndex("RequestedByUserId")
+                        .HasDatabaseName("ix_claim_info_requests_requested_by_user_id");
+
+                    b.HasIndex("ClaimId", "RequestedAt")
+                        .HasDatabaseName("ix_claim_info_requests_claim");
+
+                    b.ToTable("claim_info_requests", (string)null);
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Claims.ClaimTimelineEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ActorDisplay")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("actor_display");
+
+                    b.Property<Guid>("ActorUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_user_id");
+
+                    b.Property<Guid>("ClaimId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("claim_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("FromStatus")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("from_status");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(4100)
+                        .HasColumnType("character varying(4100)")
+                        .HasColumnName("note");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("ToStatus")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("to_status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_claim_timeline");
+
+                    b.HasIndex("ActorUserId")
+                        .HasDatabaseName("ix_claim_timeline_actor_user_id");
+
+                    b.HasIndex("ClaimId", "OccurredAt", "Id")
+                        .HasDatabaseName("ix_claim_timeline_claim");
+
+                    b.ToTable("claim_timeline", (string)null);
+                });
+
             modelBuilder.Entity("Fugue.Domain.Customers.Customer", b =>
                 {
                     b.Property<Guid>("Id")
@@ -765,6 +1056,19 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                             RowVersion = 0u,
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8001-000000000006"),
+                            Code = "CLAIMS",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "Claims",
+                            RowVersion = 0u,
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
                         });
                 });
 
@@ -914,6 +1218,72 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                             CreatedBy = "migration",
                             IsDeleted = false,
                             Name = "Read",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8003-000000000009"),
+                            Code = "SUBMIT",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            Name = "Submit",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8003-000000000010"),
+                            Code = "RESPOND",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            Name = "Respond",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8003-000000000011"),
+                            Code = "HANDLE",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            Name = "Handle",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8003-000000000012"),
+                            Code = "SETTLE",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            Name = "Settle",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8003-000000000013"),
+                            Code = "WORKLOAD",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            Name = "Workload",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8003-000000000014"),
+                            Code = "EXPOSURE",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            Name = "Exposure",
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = "migration"
                         });
@@ -1134,6 +1504,94 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                             ResourceId = new Guid("01900000-0000-7000-8002-000000000006"),
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000015"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000009"),
+                            Code = "CLAIMS_SUBMIT",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000007"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000016"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000008"),
+                            Code = "CLAIMS_READ",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000007"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000017"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000010"),
+                            Code = "CLAIMS_RESPOND",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000007"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000018"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000006"),
+                            Code = "CLAIMS_ALL",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000007"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000019"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000011"),
+                            Code = "CLAIMS_HANDLE",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000007"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000020"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000012"),
+                            Code = "CLAIMS_SETTLE",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000007"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000021"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000013"),
+                            Code = "CLAIMS_WORKLOAD",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000007"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8004-000000000022"),
+                            ActionId = new Guid("01900000-0000-7000-8003-000000000014"),
+                            Code = "CLAIMS_EXPOSURE",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            ResourceId = new Guid("01900000-0000-7000-8002-000000000007"),
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
                         });
                 });
 
@@ -1351,6 +1809,18 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                             Name = "Webhooks",
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8002-000000000007"),
+                            Code = "CLAIMS",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsDeleted = false,
+                            ModuleId = new Guid("01900000-0000-7000-8001-000000000006"),
+                            Name = "Claims",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
                         });
                 });
 
@@ -1448,6 +1918,18 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                             IsActive = true,
                             IsSystem = true,
                             Name = "Self service",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            Id = new Guid("01900000-0000-7000-8005-000000000004"),
+                            Code = "MANAGER",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            IsActive = true,
+                            IsSystem = true,
+                            Name = "Manager",
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = "migration"
                         });
@@ -1620,6 +2102,78 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000015"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000016"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000017"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000018"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000019"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000020"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000021"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000001"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000022"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
                             RoleId = new Guid("01900000-0000-7000-8005-000000000002"),
                             PermissionId = new Guid("01900000-0000-7000-8004-000000000001"),
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
@@ -1674,6 +2228,42 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000002"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000016"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000002"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000018"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000002"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000019"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000002"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000021"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
                             RoleId = new Guid("01900000-0000-7000-8005-000000000003"),
                             PermissionId = new Guid("01900000-0000-7000-8004-000000000001"),
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
@@ -1685,6 +2275,141 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                         {
                             RoleId = new Guid("01900000-0000-7000-8005-000000000003"),
                             PermissionId = new Guid("01900000-0000-7000-8004-000000000003"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000003"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000015"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000003"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000016"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000003"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000017"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000004"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000001"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000004"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000002"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000004"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000003"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000004"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000004"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000004"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000005"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000004"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000006"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000004"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000016"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000004"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000018"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000004"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000019"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000004"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000021"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000004"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000020"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "migration",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = "migration"
+                        },
+                        new
+                        {
+                            RoleId = new Guid("01900000-0000-7000-8005-000000000004"),
+                            PermissionId = new Guid("01900000-0000-7000-8004-000000000022"),
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "migration",
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
@@ -2246,6 +2971,56 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                     b.ToTable("webhook_subscriptions", (string)null);
                 });
 
+            modelBuilder.Entity("Fugue.Domain.Claims.Claim", b =>
+                {
+                    b.HasOne("Fugue.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedOfficerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_claims_users_assigned_officer_id");
+
+                    b.HasOne("Fugue.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("ClaimantUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_claims_users_claimant_user_id");
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Claims.ClaimInfoRequest", b =>
+                {
+                    b.HasOne("Fugue.Domain.Claims.Claim", null)
+                        .WithMany("InfoRequests")
+                        .HasForeignKey("ClaimId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_claim_info_requests_claims_claim_id");
+
+                    b.HasOne("Fugue.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("RequestedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_claim_info_requests_users_requested_by_user_id");
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Claims.ClaimTimelineEntry", b =>
+                {
+                    b.HasOne("Fugue.Domain.Identity.User", null)
+                        .WithMany()
+                        .HasForeignKey("ActorUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_claim_timeline_users_actor_user_id");
+
+                    b.HasOne("Fugue.Domain.Claims.Claim", null)
+                        .WithMany("Timeline")
+                        .HasForeignKey("ClaimId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_claim_timeline_claims_claim_id");
+                });
+
             modelBuilder.Entity("Fugue.Domain.Customers.Customer", b =>
                 {
                     b.HasOne("Fugue.Domain.Identity.User", null)
@@ -2401,6 +3176,13 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_webhook_deliveries_webhook_subscriptions_subscription_id");
+                });
+
+            modelBuilder.Entity("Fugue.Domain.Claims.Claim", b =>
+                {
+                    b.Navigation("InfoRequests");
+
+                    b.Navigation("Timeline");
                 });
 #pragma warning restore 612, 618
         }

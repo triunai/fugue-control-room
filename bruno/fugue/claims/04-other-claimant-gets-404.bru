@@ -1,0 +1,22 @@
+meta {
+  name: Another claimant gets 404 on the claim (never 403)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{otherClaimantToken}}
+}
+
+tests {
+  test("404 claim.not_found", function () {
+    expect(res.status).to.equal(404);
+    expect(res.body.code).to.equal("claim.not_found");
+  });
+}

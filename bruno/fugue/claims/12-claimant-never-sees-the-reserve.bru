@@ -1,0 +1,27 @@
+meta {
+  name: The claimant reads the claim: no reserve, no officer
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/api/v1/claims/{{claimId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{claimantToken}}
+}
+
+tests {
+  test("200, UnderReview, reserve and officer hidden", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.status).to.equal("UnderReview");
+    expect(res.body.reserveMinor).to.equal(null);
+    expect(res.body.assignedOfficerId).to.equal(null);
+  });
+  test("the reserve is nowhere in the body", function () {
+    expect(JSON.stringify(res.body)).to.not.include("100000");
+  });
+}

@@ -6,15 +6,29 @@
 import type { AuditLogDto as GeneratedAuditLogDto } from './generated/model';
 
 export type {
+  AgeingBucketDto,
+  AnswerClaimInfoRequest,
+  ClaimDto,
+  ClaimExposureDto,
+  ClaimInfoRequestDto,
+  ClaimTimelineEntryDto,
+  ClaimWorkloadDto,
   CreateCustomerRequest,
   CreateWebhookSubscriptionRequest,
   CustomerDto,
+  DecideClaimRequest,
+  ExposureRowDto,
+  ExposureTotalDto,
   GroupDto,
   MeDto,
   MeModuleDto,
   ModuleDto,
+  OfficerWorkloadDto,
   OverrideDto,
   ReceivedWebhookDto,
+  RequestClaimInfoRequest,
+  SetClaimReserveRequest,
+  SubmitClaimRequest,
   TokenDto,
   UpdateCustomerRequest,
   UpdateWebhookSubscriptionRequest,
@@ -22,7 +36,7 @@ export type {
   WebhookSubscriptionDto,
   WebhookSubscriptionSecretDto,
 } from './generated/model';
-export { CustomerStatus } from './generated/model';
+export { ClaimOutcome, ClaimStatus, CustomerStatus, LineOfBusiness, Market } from './generated/model';
 
 /** `{ "field": { "old": ..., "new": ... } }`, plus `_truncated: true` when the API clipped the row (ADR-010). */
 export type AuditChanges = Record<string, { old?: unknown; new?: unknown }>;

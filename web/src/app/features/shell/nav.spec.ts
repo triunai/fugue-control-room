@@ -1,0 +1,37 @@
+import { visibleGroups } from './nav';
+
+const CLAIMANT = ['CLAIMS_SUBMIT', 'CLAIMS_READ', 'CLAIMS_RESPOND'];
+const STAFF = ['CLAIMS_READ', 'CLAIMS_ALL', 'CLAIMS_HANDLE', 'CLAIMS_WORKLOAD'];
+const MANAGER = [...STAFF, 'CLAIMS_SETTLE', 'CLAIMS_EXPOSURE'];
+
+/** What the sidebar shows for a permission set, as "Group > Item" labels. */
+function navFor(permissions: string[]): string[] {
+  const set = new Set(permissions);
+  const has = (code: string | string[]) => (typeof code === 'string' ? set.has(code) : code.some((c) => set.has(c)));
+  return visibleGroups(has)
+    .filter((g) => g.label === 'Claims')
+    .flatMap((g) => g.items.map((i) => `${g.label} > ${i.label}`));
+}
+
+describe('permission-driven navigation: Claims', () => {
+  it('a claimant sees My claims and Report an incident, and nothing staff-only', () => {
+    const nav = navFor(CLAIMANT);
+    expect(nav).toEqual(['Claims > My claims', 'Claims > Report an incident']);
+  });
+
+  it('staff see the queue and workload, not the claimant screens and not exposure', () => {
+    const nav = navFor(STAFF);
+    expect(nav).toContain('Claims > Claims queue');
+    expect(nav).toContain('Claims > Workload');
+    expect(nav).not.toContain('Claims > My claims');
+    expect(nav).not.toContain('Claims > Exposure');
+  });
+
+  it('a manager (CLAIMS_EXPOSURE) also sees Exposure', () => {
+    expect(navFor(MANAGER)).toContain('Claims > Exposure');
+  });
+
+  it('a user with no claims permission has no Claims group at all', () => {
+    expect(navFor(['CUSTOMERS_VIEW'])).toEqual([]);
+  });
+});

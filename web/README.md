@@ -67,6 +67,10 @@ Opening a customer GETs it, so the ETag the form saves against is the version on
 - **Sign out** calls `/auth/logout` with the refresh token (always 204), clears the query cache and the ETag store.
 - **No proactive refresh timer**: the first 401 after expiry triggers the refresh. It keeps the code small and is exactly the path the tests pin.
 
+## Claims
+
+One app, three audiences, all driven by `/me` permission codes (`src/app/features/claims/`): a claimant (`CLAIMS_SUBMIT`) reports an incident and tracks it (My claims, Report an incident, the claim with a plain-language next step, the timeline and an answer box); staff (`CLAIMS_ALL`, `CLAIMS_HANDLE`) work the queue (KPI strip and status tabs with counts, filters, keyset Load more) and act on a claim with the actions THIS status and role allow (`availableActions` mirrors the API's guards; the API still enforces them); `CLAIMS_WORKLOAD` adds Workload and `CLAIMS_EXPOSURE` adds Exposure. Claim commands carry `If-Match` through the same ETag interceptor (the command URLs map back to the claim); 412 shows the "changed since you opened it" banner with a reload, 409 shows the API's guard message. Money is bigint minor units shown with two digits and the currency code for all six currencies (not `Intl`'s own digits: it would drop IDR's decimals) and is never summed across currencies. Status counts come from the list endpoint (one page of up to 100 per status; "100+" when more remain) because the contract has no count endpoint.
+
 ## Design
 
 Vellum: aged paper with Prussian-blue ink. Tokens in `src/styles/tokens.css` (a dark theme is a token swap); red, amber and green are status only, never brand; tints come from `color-mix()`. Text contrast is AA or better (body 14.8:1, muted 4.8:1, accent 9:1; status inks at least 5.6:1 on their tints); control borders meet 3:1. Body text is 15px with visible boundaries on every control, for a projector. The display serif carries page titles; ids, refs and diffs are mono. The one decorative idea is the fugue itself: voices entering one after another (the mark, the sign-in score, events arriving at the sink).

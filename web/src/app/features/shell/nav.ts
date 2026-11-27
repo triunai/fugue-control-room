@@ -14,6 +14,41 @@ export interface NavGroup {
 /** Grouped Data / Access / Platform. Items are filtered by permission code; a switched-off module drops its codes, so its items vanish. */
 export const NAV: NavGroup[] = [
   {
+    label: 'Claims',
+    items: [
+      {
+        label: 'My claims',
+        path: '/claims/mine',
+        permission: 'CLAIMS_SUBMIT',
+        icon: 'M4 2.5h8v11H4zM6 5.5h4M6 8h4M6 10.5h2.5',
+      },
+      {
+        label: 'Report an incident',
+        path: '/claims/new',
+        permission: 'CLAIMS_SUBMIT',
+        icon: 'M8 3v10M3 8h10',
+      },
+      {
+        label: 'Claims queue',
+        path: '/claims/queue',
+        permission: 'CLAIMS_ALL',
+        icon: 'M2.5 3.5h11M2.5 8h11M2.5 12.5h7',
+      },
+      {
+        label: 'Workload',
+        path: '/claims/workload',
+        permission: 'CLAIMS_WORKLOAD',
+        icon: 'M3 13V8M8 13V3M13 13V6',
+      },
+      {
+        label: 'Exposure',
+        path: '/claims/exposure',
+        permission: 'CLAIMS_EXPOSURE',
+        icon: 'M2.5 13.5h11M4 11V7M8 11V4M12 11V9',
+      },
+    ],
+  },
+  {
     label: 'Data',
     items: [
       {
@@ -59,3 +94,10 @@ export const NAV: NavGroup[] = [
     ],
   },
 ];
+
+/** The items a user may see, per group, dropping empty groups: the one rule the shell and its tests share. */
+export function visibleGroups(has: (code: string | string[]) => boolean): NavGroup[] {
+  return NAV.map((g) => ({ ...g, items: g.items.filter((i) => !i.permission || has(i.permission)) })).filter(
+    (g) => g.items.length > 0,
+  );
+}
