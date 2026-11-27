@@ -15,6 +15,90 @@ Glyph legend:
 - `⛔ BLOCKED` — waiting on something outside the thread; `Status:` names it
 - `✅ DONE` — finished and verified
 
+### WS-25 — Admin creates users (overnight item 3) — 🟢 ACTIVE (2026-11-28)
+ID: W-025
+Status: merged e182dbb (nth-uam); closes at the wrap.
+Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
+Refs: D-064; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
+### WS-26 — The Score, one correlation id as a timeline (item 4) — 🟢 ACTIVE (2026-11-28)
+ID: W-026
+Status: merged dacfb06 (nth-score); closes at the wrap.
+Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
+Refs: D-064; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
+### WS-27 — Claim page workbook, Save to Excel, next-step copy, track explainers (items 6, 7) — 🟢 ACTIVE (2026-11-28)
+ID: W-027
+Status: merged 0439df5 (nth-claimpage); closes at the wrap.
+Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
+Refs: D-064; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
+### WS-28 — Stack dialog and the SLA calendar styling (items 8, 9) — 🟢 ACTIVE (2026-11-28)
+ID: W-028
+Status: merged 00e5c76 (nth-stack); closes at the wrap.
+Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
+Refs: D-064; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
+### WS-29 — Agent tooling: read-only role in the stack, pinned MCP, runbook (item 17a) — 🟢 ACTIVE (2026-11-28)
+ID: W-029
+Status: merged 66604db (nth-tooling); verify on the recreated stack, then close.
+Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
+Refs: D-064, D-066, D-068; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
+### WS-30 — Console forms: select, date picker, Fill with an example (item 5) — 🟢 ACTIVE (2026-11-28)
+ID: W-030
+Status: lane nth-forms live.
+Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
+Refs: D-064, D-066; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
+### WS-31 — Intake import: spreadsheet, inbox and WhatsApp file imports to drafts (item 11a) — 🟢 ACTIVE (2026-11-28)
+ID: W-031
+Status: lane nth-import live.
+Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
+Refs: D-064, D-066; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
+### WS-32 — Search hardening on Meilisearch (item 10) — 🟢 ACTIVE (2026-11-28)
+ID: W-032
+Status: lane nth-searchx live.
+Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
+Refs: D-063, D-064, D-066; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
+### WS-33 — Demo fixes: matrix checks, track line, claimant wording, /modules glitches (items 3a, 7a, 7b, 11f) — 🟢 ACTIVE (2026-11-28)
+ID: W-033
+Status: lane nth-fixes live.
+Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
+Refs: D-064, D-066; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
+### WS-34 — Settlement and decision letters as PDF (item 11b) — 🟢 ACTIVE (2026-11-28)
+ID: W-034
+Status: lane nth-pdf live.
+Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
+Refs: D-064, D-066; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
+### WS-35 — Under-the-hood coverage on every page (item 11e) — 🟢 ACTIVE (2026-11-28)
+ID: W-035
+Status: lanes nth-hooda then nth-hoodb live.
+Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
+Refs: D-064, D-066; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
+### WS-36 — Decision timeline generated from the docs (item 11d) — 🟢 ACTIVE (2026-11-28)
+ID: W-036
+Status: merged 2e0ecbf (nth-decisions); closes at the wrap.
+Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
+Refs: D-066, D-067; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
+### WS-37 — Paid and settled figure on Team and exposure (item 11c, backlog #009) — 🟢 ACTIVE (2026-11-28)
+ID: W-037
+Status: lane nth-paid live.
+Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
+Refs: D-064, D-066, D-069; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
+### WS-38 — Submission-morning polish lanes before the overnight list (money, prelude, onboard, readme, claimsearch, shellfix) — 🟢 ACTIVE (2026-11-28)
+ID: W-038
+Status: merged before 03:09; closes at the wrap.
+Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
+Refs: D-063, D-064; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
 ### WS-23 — API versioning with Sunset, HybridCache, OpenTelemetry — ⏸ PARKED (2026-11-27)
 ID: W-023
 Status: follow-up of W-007 (closed). Not built: a v2 example with `Deprecation`/`Sunset` on v1, HybridCache on the `/me` permission lookup, OpenTelemetry traces.

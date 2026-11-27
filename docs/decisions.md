@@ -77,6 +77,25 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-069 — Backlog #009 split: paid figure built, outside notification cut, the rest answered — 2026-11-28
+WS: WS-37
+Context: panel-review leftovers (#009): no paid or settled figure on Team and exposure; no notification outside the app; claimants see the SLA calendar; "Send question" during an API restart closed its dialog with no POST (unverified).
+Decision: build the paid/settled figure (W-037, lane nth-paid). CUT an outside-notification consumer: signed webhooks are the integration point, so email or SMS is a subscriber's job, and building one on submission day adds risk with no demo value; the interview answer is the webhook story plus The Score. Claimants seeing the SLA calendar stays by design (only their own claims). The "Send question during a restart" case is recorded as a known limit in hot-state, not fixed today.
+Why: submission-day risk; each answer is backed by code that already exists.
+Who: owner (asked), dispatcher (split), integrator (recorded)
+Status: accepted
+Promote: no
+
+## D-068 — The compose Postgres creates the read-only role; the MCP server is pinned — 2026-11-28
+WS: WS-29
+Context: owner hard gate 17a: drive the demo with the read-only Postgres MCP and the CLIs. The role did not exist on the demo stack, and the unpinned `uvx postgres-mcp` in `.mcp.json` resolved 0.1.0 with mcp 2.x and crashed.
+Decision: a fresh compose volume runs `scripts/db/docker-initdb-readonly.sh` from `/docker-entrypoint-initdb.d`, creating `fugue_readonly` before the migrations; its default privileges make every later table readable and nothing writable. `.mcp.json` pins postgres-mcp 0.3.0 with uv overrides (`scripts/db/postgres-mcp-overrides.txt`: pglast 7.25, mcp below 2) and runs `--access-mode=restricted` as the second layer. Runbook `docs/runbooks/agent-tooling.md`. Merged in 66604db (W-029, lane nth-tooling).
+Why: the role survives `down -v`; the write refusal is the database's, not only the tool's.
+Consequences: revisit the pin when upstream fixes it; uv needs PyPI on the first run, so warm the uvx cache before the demo.
+Who: owner (asked), AI (role via initdb, pin)
+Status: accepted
+Promote: no
+
 ## D-067 — The decision timeline page is generated from the docs, never hand-copied — 2026-11-28
 WS: WS-22
 Context: the owner asked (03:15) for the decision trail itself in the console: every ADR and D-row, dated, linked, grouped by the release it landed in (overnight item 11d, lane nth-decisions).
@@ -92,7 +111,7 @@ WS: WS-22
 Context: at 03:09 one Opus lead ran a `/loop` over about 15 items, building and merging serially with two to four lanes (D-065). Asked to "split it" at 03:22, the AI's answer was to tell that same lead to go wider. The owner rejected that at 03:23 ("this is dumb and waiting to fail"): one agent that builds, merges and verifies is a single point of failure and a throughput bottleneck, and its long context is expensive.
 Decision: the session with the smallest context becomes the DISPATCHER and writes agent task contracts with hard file boundaries (`.worktrees/_briefs/OWNERS.md`); one INTEGRATOR owns `main` (serial `--no-ff` merges, gates re-run on the merged tree, headless check on the rebuilt stack, push, ticks, spine); nine builder lanes work in parallel worktrees. Each contract has ten parts: objective, current state, desired state, allowed files, architecture rules, binary acceptance, literal validation commands, non-goals, stop conditions, commit slices; lanes verify the premises they are handed and report what they could not verify; a file lock serializes the 10-minute .NET suite; ports are assigned per lane; lanes never touch the spine (proposed D-rows and doc text go in their reports).
 Why: parallelism without merge chaos; machine gates, not an agent's say-so, decide a merge; one integration point; the human sets the topology.
-Consequences: refines ADR-014 / D-065 (roles split three ways). The outcome (merge count, times, reds caught at integration) is recorded at the wrap.
+Consequences: refines ADR-014 / D-065 (roles split three ways). The contracts are kept verbatim in `docs/ai/briefs/fleet-2026-11-28/`. The outcome (merge count, times, reds caught at integration) is recorded at the wrap.
 Who: owner (overrode the AI's "go wider" proposal; set the topology), AI (contracts, gates)
 Status: accepted
 Promote: no

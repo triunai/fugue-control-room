@@ -14,6 +14,7 @@ Rules:
 | Folder | Thread | What it holds |
 |---|---|---|
 | `reviews/` | review-fix loop | One file per review round: `<YYYY-MM-DD>-<WS>-r<N>.md` |
+| `briefs/fleet-2026-11-28/` | D-066 overnight fleet | The dispatcher's verbatim lane contracts: `HEADER.md` (shared rules, gates, suite lock), `OWNERS.md` (file ownership, ports), one ten-part contract per lane |
 | (add a row per new folder) | | |
 
 Deferred debt is tracked in `docs/ai/tax-ledger.md`.

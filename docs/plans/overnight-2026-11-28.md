@@ -8,16 +8,17 @@ Tick `[x]` with the merge sha. Never: force push, `--no-verify`, drop a non-thro
 Order inside P1: demo-visible first (5 to 9), then 11a and 11b, then 10, 11c. Feature cut-off 13:00. 13:00-14:00 only fixes. 14:00: recreate the clean demo stack, final push, hot-state.
 
 ## Fleet (03:27, relay-dispatched, base dacfb06; contracts in `.worktrees/_briefs/`)
-Item -> lane: 17a nth-tooling · 5 nth-forms · 11a nth-import · 10 nth-searchx · 3a/7a/7b/11f nth-fixes · 11b nth-pdf ·
+Item -> lane: 17a nth-tooling · 5 nth-forms · 11a nth-import · 10 nth-searchx · 3a/7a/7b/11f nth-fixes · 11b nth-pdf · 11c nth-paid (+ D-069) ·
 11e nth-hooda (part A: hood model, tooltip, audit log, platform pages) then nth-hoodb (part B: claims area) · 11d nth-decisions.
 Integrator (overnight lead) per READY: head sha from git, diff inside OWNERS.md, gates on the merged tree, headless on rebuilt
-:8080, merge --no-ff, tick, retire. Merge nth-hooda before nth-hoodb. Not assigned yet: 3b, 4a (integrator), 11, 11c, 11g, 12-17.
+:8080, merge --no-ff, tick, retire. Merge nth-hooda before nth-hoodb. Not assigned yet: 3b, 4a (integrator), 11, 11g, 12-17. W rows W-025..W-038 map items to lanes (docs/workstreams.md);
+every integrator merge commit carries `Refs: W-0NN, D-064` (+ the D-rows it records). Ledger conflicts on merge: keep main's.
 
 ## P0 — demo breakers
 - [x] 1. (03:08, on rebuilt :8080: welcome centred 465,251 510x397; outside click closed it; nav spam then /audit navigated; 0 errors) Browser re-check of 2ba4e19 (welcome can never freeze the page): fresh context, sign in WITHOUT `?tour=off`, welcome
       centred; click outside closes it; then spam the nav (scratch `check/spam2.mjs` pattern) and every link navigates. Note:
       dev-server sign-in timed out at 03:03 (proxy ECONNREFUSED to :5081, then unexplained); check on the rebuilt :8080 instead.
-- [ ] 2. Push main (keepalive; origin was fb10684 at 03:02).
+- [x] 2. (03:37: origin = add9f6f = local at push time; pre-push suite Fugue.Tests 760/760, ArchTests 37/37) Push main (keepalive; origin was fb10684 at 03:02).
 
 - [x] 1b. (stale tab, no code change: 03:27 fresh headless staff context, signed in + reloaded on :8080 at dacfb06+, Open claim -> /claims/01a21cfb-37b2-..., Pick up -> /claims/01a21cfb-37af-..., 0 console errors) Open claim (Closest to its SLA card) and Pick up (Pick up next) on Home as staff must land on /claims/<id>. Owner saw both
       dead at 03:12; the relay found a stale pre-redeploy tab (incognito works). CHECK in a fresh, signed-in, reloaded headless
@@ -74,11 +75,11 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
       letter for rejections. One fixed, branded template (QuestPDF on the API or a client-side generator; pick the one that
       keeps the bundle and licences clean, record it). Download from the claim page for staff and for the claimant on their
       own claim (scope rules apply: 404 outside scope). Label it a sample document, not a legal letter.
-- [ ] 11c. Backlog items still open in `docs/state-backlog.md`: #003 (retired in the 03:30 backlog prune), #006 (queue counts in one call), #007 (past info requests list), #009 (panel leftovers: a paid or
+- [ ] 11c. (mapped 03:40: #006/#007 already done in W-024 e3885f2; #009 split by D-069: paid figure = lane nth-paid W-037, outside notification cut, claimant calendar by design, Send-question-during-restart a known limit) Backlog items still open in `docs/state-backlog.md`: #003 (retired in the 03:30 backlog prune), #006 (queue counts in one call), #007 (past info requests list), #009 (panel leftovers: a paid or
       settled figure on Team and exposure, a notification consumer for events, the Send question during an API restart).
 
 ## P1 (moved up 03:19) — agent tooling, part of the demo
-- [ ] 17a. HARD GATE (owner 03:18/03:19): the read-only role `fugue_readonly` is created by the stack itself (initdb mount of
+- [ ] 17a. (merged 66604db, nth-tooling, W-029, D-068; verify on the recreated stack before ticking) HARD GATE (owner 03:18/03:19): the read-only role `fugue_readonly` is created by the stack itself (initdb mount of
       `scripts/db/fugue-readonly-role.sql` or idempotent startup, whichever fits runbook 03) so it survives `down -v`;
       FUGUE_READONLY_DATABASE_URI in .env.example and runbook 00; the `.mcp.json` postgres-readonly server starts and answers a
       list-tables query; SELECT works and INSERT/UPDATE/DDL are refused by the ROLE (restricted mode is the second layer).
@@ -99,5 +100,10 @@ Run 12 + 13 only if every feature lane has merged by ~10:30, else defer with a D
 - [ ] 16. CHANGELOG v0.0.3 + tag covering ALL of 11-28 (D-063..D-065+, ADR-014, every merged nth lane), a docs/project-log.md entry
       for 11-28 (newest is 11-27 W-022), journal, hot-state, failure modes (add: the commit hook toolchain leaves stray root
       pnpm-lock.yaml/pnpm-workspace.yaml in worktrees; delete, never commit; consider a .gitignore line), push with tags.
+      WRAP ORDER (owner 03:35): close each finished W with `scripts/spine/close-workstream.mjs` (project-log entry + CHANGELOG
+      v0.0.3 line with merge shas); retire ledger rows, `git worktree remove` (after `git log main..<b>` is empty), delete merged
+      branches; keep `docs/ai/lanes/<lane>-status.md` and `docs/ai/briefs/fleet-2026-11-28/` (re-copy HEADER.md if it gained
+      addenda); regenerate `npm run gen:decisions` (web) and `npm run trace`, each its own commit; check docs/traceability.md
+      shows every tonight W with its D/ADR and commits and count unlinked commits (target: none new); fill D-066's outcome line.
 - [ ] 17. Recreate the clean demo stack (`docker compose -p fugue-demo down -v && docker compose -p fugue-demo up -d --build`),
       headless smoke as all four personas, zero console errors.

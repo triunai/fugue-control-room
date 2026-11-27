@@ -12,18 +12,6 @@ Code smells that do not block the work in hand go here, not into the current cha
 WS: WS-06
 `outbox_messages` rows (dispatched or dead) and their `webhook_deliveries` are never pruned, and events with no subscriber still accumulate. Size M. Close with a retention job that deletes dispatched messages older than N days (deliveries cascade) and a setting; the trigger already allows DELETE. Found by the Codex S4 review (LOW), deliberately out of S4 (plan non-goals).
 
-### #006 — Claims queue counts cost one list call per status
-WS: WS-20
-The KPI strip and tab counts read one 100-row page per status (six calls, "100+" when a cursor remains), because the API has no count endpoint and workload is per officer. Fix: `GET /api/v1/claims/counts` (one grouped query under the caller's scope and filters), then one call in the console. Also: the queue's default "All" tab sorts settled and rejected claims among open ones; default to open statuses. Size S. Found by the claims-web lane (2026-11-27).
-
-### #007 — Past info requests only appear as timeline notes
-WS: WS-20
-The claim DTO carries only the OPEN info request; earlier questions and answers are visible only as timeline notes. Fix: `GET /claims/{id}/info-requests` (scoped like the timeline) and a Q&A list on the detail page. Size S.
-
-### #009 — Panel review leftovers (2026-11-27, docs/reviews/fable/2026-11-27-panel-stress-test.md)
-WS: WS-22
-Not fixed under the freeze, answers prepared instead: no paid/settled figure on Team and exposure; no notification outside the app (events exist, no consumer); claimants see the SLA calendar by design (their own claims; reviewer flagged it); officers see all six markets (one predicate in `ClaimScope`). To check: a "Send question" during an API restart closed its dialog with no POST reaching the API (UNVERIFIED; rehearse with the API stopped). Size S each.
-
 ### #010 — Structure refactor after the D-064 lanes (owner, 2026-11-28 02:45; scheduled "after lanes merge, today")
 WS: WS-22
 Three owner suggestions, planned together and NOT started:
@@ -43,3 +31,6 @@ WS: WS-22
 - #004 role x permission matrix on Access: DONE, delivered by nth-shell (714ebdd, merge ec7bf0c); the check-icon polish is overnight item 3a.
 - #005 controllers stack `[FromQuery]`: DONE, merge of rd-files (60ea816).
 - #008 Under the hood panel: DONE, delivered by nth-hood (merge 80a1fbe) and nth-hood2 (6bec535, f7c6dcc); per-page coverage gaps are overnight item 11e.
+- #006 queue counts in one call: DONE in W-024 (e3885f2, `GET /claims/counts`); the backlog row was stale.
+- #007 past info requests list: DONE in W-024 (e3885f2, `GET /claims/{id}/info-requests` and the Q&A list on the claim page); stale row.
+- #009 panel leftovers: split by D-069. Paid/settled figure -> W-037 (nth-paid); outside notification CUT; claimant SLA calendar by design; Send question during an API restart -> known limit in hot-state.

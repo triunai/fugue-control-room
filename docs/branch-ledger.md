@@ -14,3 +14,4 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | `nth-pdf` | `.worktrees/nth-pdf` | dacfb06 | nth-pdf (Opus), relay-dispatched | D-064 | 11b: settlement and decision letters as PDF |
 | `nth-hooda` | `.worktrees/nth-hooda` | dacfb06 | nth-hooda (Opus), relay-dispatched | D-064 | 11e part A: hood model, tooltip bug, audit log standard, platform pages |
 | `nth-hoodb` | `.worktrees/nth-hoodb` | dacfb06 | nth-hoodb (Sonnet), relay-dispatched | D-064 | 11e part B: claims-area hood notes |
+| `nth-paid` | `.worktrees/nth-paid` | f3d7637 | nth-paid (Opus), relay-dispatched | W-037 | 11c: paid/settled figure on Team and exposure |

@@ -6,13 +6,33 @@
   ],
   "counts": {
     "adrs": 14,
-    "decisions": 67
+    "decisions": 69
   },
   "groups": [
     {
       "version": "Unreleased",
       "date": null,
       "entries": [
+        {
+          "kind": "D",
+          "id": "D-069",
+          "title": "Backlog #009 split: paid figure built, outside notification cut, the rest answered",
+          "date": "2026-11-28",
+          "summary": "Build the paid/settled figure (W-037, lane nth-paid). CUT an outside-notification consumer: signed webhooks are the integration point, so email or SMS is a subscriber's job, and building one on submission day adds risk…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-069--backlog-009-split-paid-figure-built-outside-notification-cut-the-rest-answered--2026-11-28"
+        },
+        {
+          "kind": "D",
+          "id": "D-068",
+          "title": "The compose Postgres creates the read-only role; the MCP server is pinned",
+          "date": "2026-11-28",
+          "summary": "A fresh compose volume runs scripts/db/docker-initdb-readonly.sh from /docker-entrypoint-initdb.d, creating fugue_readonly before the migrations; its default privileges make every later table readable and nothing…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-068--the-compose-postgres-creates-the-read-only-role-the-mcp-server-is-pinned--2026-11-28"
+        },
         {
           "kind": "D",
           "id": "D-067",
