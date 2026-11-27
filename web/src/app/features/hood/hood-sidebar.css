@@ -34,8 +34,27 @@
   height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0 1rem 1.5rem;
+  /* A visible thin scrollbar (macOS hides overlay ones) so the panel never looks cut off at the window edge. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+  scrollbar-gutter: stable;
+  padding: 0 0.6rem 4rem 1rem;
   font-size: 0.85rem;
+}
+/* Bottom fade while more content is below; it sits over the panel's bottom edge and never takes clicks. */
+.fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  background: linear-gradient(to bottom, transparent, var(--surface));
+}
+.fade.on {
+  opacity: 1;
 }
 .head {
   display: flex;
@@ -192,17 +211,67 @@
 .links a {
   color: var(--accent-text);
 }
-.chips {
+.how {
+  margin: 0;
+  padding-left: 1.1rem;
+  line-height: 1.45;
+}
+.how li {
+  margin: 0 0 0.35rem;
+}
+.guards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.guard {
+  min-width: 0;
 }
 .chip {
+  display: inline-block;
+  max-width: 100%;
   font-size: 0.75rem;
   border: 1px solid var(--line);
   background: var(--surface2);
   border-radius: 999px;
   padding: 0.1rem 0.55rem;
+  cursor: pointer;
+}
+.chip:hover,
+.guard[open] > .chip {
+  border-color: var(--control);
+}
+.gs {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--warn-ink);
+}
+.src {
+  margin: 0.4rem 0 0.3rem;
+  padding: 0.5rem 0.6rem;
+  overflow-x: auto;
+  background: var(--surface2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1.45;
+  white-space: pre;
+}
+.gnote {
+  margin: 0 0 0.3rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.gpath {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--accent-text);
+  overflow-wrap: anywhere;
 }
 @media (max-width: 860px) {
   :host {

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { afterEveryRender, ChangeDetectionStrategy, Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
@@ -25,7 +25,7 @@ const statusClass = (s: number) => (s >= 500 || s === 0 ? 's5' : s >= 400 ? 's4'
     <aside class="hood" aria-label="Under the hood" data-testid="hood">
       <div class="bg"></div>
       @if (state.open()) {
-        <div class="panel">
+        <div class="panel" #panel (scroll)="measure()">
           <header class="head">
             <h2 class="title"><span class="glyph" aria-hidden="true">&lt;/&gt;</span> Under the hood</h2>
             <button
@@ -81,6 +81,33 @@ const statusClass = (s: number) => (s >= 500 || s === 0 ? 's5' : s >= 400 ? 's4'
                 <p class="why">{{ line }}</p>
               }
             </section>
+            <section aria-labelledby="hood-how">
+              <h3 id="hood-how" class="sec">How the API does it</h3>
+              <ul class="how" data-testid="hood-how">
+                @for (line of n.how; track $index) {
+                  <li>{{ line }}</li>
+                }
+              </ul>
+            </section>
+            <section aria-labelledby="hood-guards">
+              <h3 id="hood-guards" class="sec">Guards</h3>
+              <ul class="guards" data-testid="hood-guards">
+                @for (g of n.guards; track g.status + g.name) {
+                  <li>
+                    <details class="guard" (toggle)="measure()">
+                      <summary class="chip">
+                        <span class="gs">{{ g.status }}</span> {{ g.name }}
+                      </summary>
+                      <pre class="src"><code>{{ g.code }}</code></pre>
+                      @if (g.note) {
+                        <p class="gnote">{{ g.note }}</p>
+                      }
+                      <a class="gpath" [href]="url(g.path)" target="_blank" rel="noopener noreferrer">{{ g.path }}</a>
+                    </details>
+                  </li>
+                }
+              </ul>
+            </section>
             <section aria-labelledby="hood-dec">
               <h3 id="hood-dec" class="sec">Decisions</h3>
               <ul class="links">
@@ -91,16 +118,9 @@ const statusClass = (s: number) => (s >= 500 || s === 0 ? 's5' : s >= 400 ? 's4'
                 }
               </ul>
             </section>
-            <section aria-labelledby="hood-guards">
-              <h3 id="hood-guards" class="sec">Guards</h3>
-              <ul class="chips">
-                @for (g of n.guards; track g) {
-                  <li class="chip">{{ g }}</li>
-                }
-              </ul>
-            </section>
           }
         </div>
+        <div class="fade" [class.on]="more()" aria-hidden="true" data-testid="hood-fade"></div>
       } @else {
         <button
           type="button"
@@ -131,9 +151,14 @@ export class HoodSidebar {
     { initialValue: null },
   );
 
+  private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
+  /** True while the panel has more content below the visible edge (drives the bottom fade). */
+  protected readonly more = signal(false);
+
   private page = pagePath(this.router.url);
 
   constructor() {
+    afterEveryRender(() => this.measure());
     // "Requests made by THIS page since it opened": a new path starts a new log (a filter change in the URL does not).
     this.router.events.pipe(filter((e): e is NavigationStart => e instanceof NavigationStart)).subscribe((e) => {
       const next = pagePath(e.url);
@@ -142,6 +167,11 @@ export class HoodSidebar {
         this.log.clear();
       }
     });
+  }
+
+  protected measure(): void {
+    const el = this.panel()?.nativeElement;
+    this.more.set(!!el && el.scrollHeight - el.scrollTop - el.clientHeight > 4);
   }
 
   protected cls(c: ApiCall): string {
