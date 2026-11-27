@@ -12,23 +12,6 @@ Code smells that do not block the work in hand go here, not into the current cha
 WS: WS-06
 `outbox_messages` rows (dispatched or dead) and their `webhook_deliveries` are never pruned, and events with no subscriber still accumulate. Size M. Close with a retention job that deletes dispatched messages older than N days (deliveries cascade) and a setting; the trigger already allows DELETE. Found by the Codex S4 review (LOW), deliberately out of S4 (plan non-goals).
 
-### #002 — KIV: guided product tour (driver.js) on selected console screens
-WS: WS-07
-The owner wants a driver.js walkthrough as the LAST console touch, only on certain screens (candidates: Customers 412 flow, Audit diff, Modules switch, Webhooks secret-once). Not before submission. Where: `web/` (a tour service + per-screen step lists, opt-in, dismissible, remembered per user in localStorage). Size M. Close when the owner picks the screens and the steps.
-
-### #003 — KIV: console shell closer to the reference design (collapsible nav groups, user card, breadcrumbs)
-WS: WS-07
-Owner likes a reference shell: grouped sidebar with collapsible sections and count badges, the signed-in user card at the bottom with sign-out, a version footer, breadcrumbs in the top bar, a command search. Where: `web/src/app/features/shell/`. Size M (search palette L). Close with a scoped pass: breadcrumbs + bottom user card + collapsible groups first; search later.
-Reopened 2026-11-27 19:56 (owner): nth-shell delivered an adaptation, not the reference shell; only the breadcrumbs read as ported. Still owed after submission: the reference tree line and sliding active card, count badges, theme switch, inbox bell, rail click-to-expand (D-060 correction).
-
-### #004 — KIV: role × permission matrix on the Access screen
-WS: WS-07
-The owner likes a reference "who can do what" grid: one column per role (with member counts and an Edit action), one row per permission grouped by area, ticks where the role grants it, system roles adjustable but not deletable. Fugue has the data (roles, role_permissions, permissions with modules) but no list endpoint for roles with their grants. Where: a `GET /api/v1/roles` read + `web/src/app/features/access/`. Size M. Close after the claims window.
-
-### #005 — Controllers stack `[FromQuery]` on every list filter parameter (DONE 2026-11-27, merge of `rd-files`)
-WS: WS-07
-`AuditController.List` (9 filters), `CustomersController.List` and the webhook deliveries list repeat `[FromQuery]` per parameter; with `[ApiController]` they are redundant and the actions stop reading as one-liners. Owner review 2026-11-27. Fix: one `[FromQuery] <X>Filter filter` record per list in `src/Fugue.Api/Contracts/` with `ToQuery()`; proof of safety = the OpenAPI snapshot is byte-identical. Size S. After the claims merge (the claims controller already follows the new style).
-
 ### #006 — Claims queue counts cost one list call per status
 WS: WS-20
 The KPI strip and tab counts read one 100-row page per status (six calls, "100+" when a cursor remains), because the API has no count endpoint and workload is per officer. Fix: `GET /api/v1/claims/counts` (one grouped query under the caller's scope and filters), then one call in the console. Also: the queue's default "All" tab sorts settled and rejected claims among open ones; default to open statuses. Size S. Found by the claims-web lane (2026-11-27).
@@ -37,14 +20,9 @@ The KPI strip and tab counts read one 100-row page per status (six calls, "100+"
 WS: WS-20
 The claim DTO carries only the OPEN info request; earlier questions and answers are visible only as timeline notes. Fix: `GET /claims/{id}/info-requests` (scoped like the timeline) and a Q&A list on the detail page. Size S.
 
-### #008 — "Under the hood" panel: technical decisions and live API calls per page (owner approved 19:40: layout A docked sidebar, live API calls first; lane nth-hood)
-WS: WS-22
-A header toggle (`</>` or the `.` key) opens a right slide-over per page with four parts: why this page (2 lines), API calls recorded live by the HTTP interceptors (method, path, status, ms, ETag/If-Match; 409/412 appear as they happen), decisions linking to D-rows and CLAIMS.md sections on GitHub, and the guards that apply on that screen. Plus at most two inline "why" markers per page (dotted underline + hover card), e.g. "No grand total" -> D-057, "Not yours" -> assigned-officer guard. First pages: claim record, queue, team and exposure, claimant landing, report an incident, audit log. Owner refinement 19:30: a PERSISTENT right sidebar the viewer can minimise; minimised it shrinks to a near-transparent edge strip where only its tab (`</>` Under the hood) stays fully opaque; state remembered per browser; it never covers content (the page reflows when open). Open by default for a panellist exploring alone, minimised while presenting (`?hood=off`). Size M (one lane: a shared component, an interceptor log, per-page note objects co-located with the pages). Waiting for the owner's go.
-
 ### #009 — Panel review leftovers (2026-11-27, docs/reviews/fable/2026-11-27-panel-stress-test.md)
 WS: WS-22
 Not fixed under the freeze, answers prepared instead: no paid/settled figure on Team and exposure; no notification outside the app (events exist, no consumer); claimants see the SLA calendar by design (their own claims; reviewer flagged it); officers see all six markets (one predicate in `ClaimScope`). To check: a "Send question" during an API restart closed its dialog with no POST reaching the API (UNVERIFIED; rehearse with the API stopped). Size S each.
-
 
 ### #010 — Structure refactor after the D-064 lanes (owner, 2026-11-28 02:45; scheduled "after lanes merge, today")
 WS: WS-22
@@ -53,3 +31,11 @@ Three owner suggestions, planned together and NOT started:
 2. IOptions for what is still hardcoded. Already options-bound (12 classes, 22 files): CORS, audit, auth, rate limits, dispatcher, publisher, idempotency, Kafka, Meilisearch, password, persistence, webhooks. Still constants: list page sizes (`DefaultLimit`/`MaxLimit` in 8 queries; part of the API contract, so options must keep the validator in step), the webhook replay window (5 min), the dev sink body cap, SLA day counts (pickup 2, decision 14, answer 7, settle 7; mirrored in the web `sla.ts`).
 3. Runners and cross-cutting code as their own projects: the four `BackgroundService`s (`OutboxDispatcherService`, `ClaimIndexer`, `AuditIndexer`, `IdempotencyPurgeService`) into a `Fugue.Worker` host (the API stops hosting them; compose gets a `worker` service), and the Mediator pipeline behaviours and shared primitives (`Application/Common`) into a building-blocks project. ArchTests gain the new layer rules.
 One mechanical commit per item, each behind the full suite; Size M each.
+
+## Done or retired (kept for history; 2026-11-28 03:30 prune, overnight lead)
+
+- #002 guided product tour: DONE, delivered by nth-onboard (e4e750f, merge 4345366): first-visit welcome and autoplayed landing tour per user.
+- #003 console shell closer to the reference design: RETIRED, superseded by the shell work (nth-shell merge ec7bf0c, nth-shellfix, the 11-28 welcome/nav fixes). The reference-only extras (tree line, count badges, theme switch, inbox bell) are not owed for submission.
+- #004 role x permission matrix on Access: DONE, delivered by nth-shell (714ebdd, merge ec7bf0c); the check-icon polish is overnight item 3a.
+- #005 controllers stack `[FromQuery]`: DONE, merge of rd-files (60ea816).
+- #008 Under the hood panel: DONE, delivered by nth-hood (merge 80a1fbe) and nth-hood2 (6bec535, f7c6dcc); per-page coverage gaps are overnight item 11e.
