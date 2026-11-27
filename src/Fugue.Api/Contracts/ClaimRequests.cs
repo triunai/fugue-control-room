@@ -46,3 +46,21 @@ public sealed record ClaimListFilter
 
     public Fugue.Application.Features.Claims.Queries.ListClaimsQuery ToQuery() => new(Limit, Status, Assigned, Market, Line, Q, Cursor);
 }
+
+/// <summary>Query parameters of the claim counts: the list's filters without <c>status</c> and paging.</summary>
+public sealed record ClaimCountsFilter
+{
+    [FromQuery(Name = "assigned")]
+    public string? Assigned { get; init; }
+
+    [FromQuery(Name = "market")]
+    public string? Market { get; init; }
+
+    [FromQuery(Name = "line")]
+    public string? Line { get; init; }
+
+    [FromQuery(Name = "q")]
+    public string? Q { get; init; }
+
+    public Fugue.Application.Features.Claims.Queries.GetClaimCountsQuery ToQuery() => new(Assigned, Market, Line, Q);
+}

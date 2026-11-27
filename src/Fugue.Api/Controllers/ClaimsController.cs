@@ -40,6 +40,16 @@ public sealed class ClaimsController : ApiControllerBase
     public Task<ActionResult<IReadOnlyList<ClaimDto>>> List([FromQuery] ClaimListFilter filter, CancellationToken ct) =>
         SendPaged(filter.ToQuery(), ct);
 
+    /// <summary>
+    /// Claim counts per status for the tabs: every status is present (zero included) plus a total. Same scope as the list (a claimant counts their own, staff all)
+    /// and the same `assigned`, `market`, `line` and `q` filters; `status` is not a filter here.
+    /// </summary>
+    [HttpGet("counts")]
+    [HasPermission(Permissions.ClaimsRead)]
+    [ProducesResponseType(typeof(ClaimCountsDto), StatusCodes.Status200OK)]
+    public Task<ActionResult<ClaimCountsDto>> Counts([FromQuery] ClaimCountsFilter filter, CancellationToken ct) =>
+        Send(filter.ToQuery(), ct);
+
     /// <summary>Workload board: per officer the open claims by status, the oldest open age, decisions in the last 7 and 30 days and the median days to decide; the unassigned count; ageing bands 0-2, 3-7, 8-14, 15+ days.</summary>
     [HttpGet("workload")]
     [HasPermission(Permissions.ClaimsWorkload)]
@@ -69,6 +79,14 @@ public sealed class ClaimsController : ApiControllerBase
     [ProblemResponse(StatusCodes.Status404NotFound, "claim.not_found")]
     public Task<ActionResult<IReadOnlyList<ClaimTimelineEntryDto>>> Timeline(ClaimId id, CancellationToken ct) =>
         Send(new GetClaimTimelineQuery(id), ct);
+
+    /// <summary>Every question asked on the claim, newest first, with who asked, when, the answer and when it was answered. A claimant sees staff as "Claims team". Same visibility as the claim.</summary>
+    [HttpGet("{id}/info-requests")]
+    [HasPermission(Permissions.ClaimsRead)]
+    [ProducesResponseType(typeof(IReadOnlyList<ClaimInfoRequestEntryDto>), StatusCodes.Status200OK)]
+    [ProblemResponse(StatusCodes.Status404NotFound, "claim.not_found")]
+    public Task<ActionResult<IReadOnlyList<ClaimInfoRequestEntryDto>>> InfoRequests(ClaimId id, CancellationToken ct) =>
+        Send(new GetClaimInfoRequestsQuery(id), ct);
 
     /// <summary>Pick up a Submitted claim: it becomes UnderReview and you become its assigned officer.</summary>
     [HttpPost("{id}/pickup")]

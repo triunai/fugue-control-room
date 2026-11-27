@@ -40,6 +40,12 @@ public interface IClaimRepository
     /// <summary>The claim's history, oldest first; null when the claim is outside <paramref name="scope"/>.</summary>
     Task<IReadOnlyList<ClaimTimelineEntryDto>?> GetTimelineAsync(ClaimId id, ClaimScope scope, CancellationToken ct);
 
+    /// <summary>The claim's questions, newest first; null when the claim is outside <paramref name="scope"/>. A claimant reads staff askers as "Claims team".</summary>
+    Task<IReadOnlyList<ClaimInfoRequestEntryDto>?> GetInfoRequestsAsync(ClaimId id, ClaimScope scope, CancellationToken ct);
+
+    /// <summary>Claims per status under <paramref name="scope"/> and the filter (its <c>Statuses</c> are ignored); one grouped query. Statuses with no claim are absent.</summary>
+    Task<IReadOnlyDictionary<ClaimStatus, int>> CountByStatusAsync(ClaimFilter filter, ClaimScope scope, CancellationToken ct);
+
     /// <summary>Loads a tracked aggregate (with its open info request) for a following <see cref="SaveAsync"/>.</summary>
     Task<Claim?> FindForUpdateAsync(ClaimId id, ClaimScope scope, CancellationToken ct);
 

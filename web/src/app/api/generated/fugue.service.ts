@@ -27,10 +27,13 @@ import type {
   AnswerClaimInfoRequest,
   AuditListParams,
   AuditLogDto,
+  ClaimCountsDto,
   ClaimDto,
   ClaimExposureDto,
+  ClaimInfoRequestEntryDto,
   ClaimTimelineEntryDto,
   ClaimWorkloadDto,
+  ClaimsCountsParams,
   ClaimsListParams,
   CreateCustomerRequest,
   CreateWebhookSubscriptionRequest,
@@ -408,6 +411,42 @@ export class FugueAPIService {
   }
 
 /**
+ * @summary Claim counts per status for the tabs: every status is present (zero included) plus a total. Same scope as the list (a claimant counts their own, staff all) and the same `assigned`, `market`, `line` and `q` filters; `status` is not a filter here.
+ */
+ claimsCounts<TData = ClaimCountsDto>(params?: ClaimsCountsParams, options?: HttpClientBodyOptions): Observable<TData>;
+ claimsCounts<TData = ClaimCountsDto>(params?: ClaimsCountsParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ claimsCounts<TData = ClaimCountsDto>(params?: ClaimsCountsParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  claimsCounts<TData = ClaimCountsDto>(
+    params?: ClaimsCountsParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(
+      `/api/v1/claims/counts`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,}
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(
+      `/api/v1/claims/counts`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,}
+    );
+    }
+
+    return this.http.get<TData>(
+      `/api/v1/claims/counts`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+        params: filteredParams,}
+    );
+  }
+
+/**
  * @summary Exposure: per market, line and currency the open count, the outstanding reserve of open claims and the approved-not-settled amount. Totals are per currency; amounts are never added across currencies.
  */
  claimsExposure<TData = ClaimExposureDto>( options?: HttpClientBodyOptions): Observable<TData>;
@@ -544,6 +583,40 @@ export class FugueAPIService {
     return this.http.post<TData>(
       `/api/v1/claims/${id}/decision`,
       decideClaimRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary Every question asked on the claim, newest first, with who asked, when, the answer and when it was answered. A claimant sees staff as "Claims team". Same visibility as the claim.
+ */
+ claimsInfoRequests<TData = ClaimInfoRequestEntryDto[]>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
+ claimsInfoRequests<TData = ClaimInfoRequestEntryDto[]>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ claimsInfoRequests<TData = ClaimInfoRequestEntryDto[]>(id: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  claimsInfoRequests<TData = ClaimInfoRequestEntryDto[]>(
+    id: string, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(
+      `/api/v1/claims/${id}/info-requests`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(
+      `/api/v1/claims/${id}/info-requests`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.get<TData>(
+      `/api/v1/claims/${id}/info-requests`,{
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
@@ -1865,10 +1938,12 @@ export type AuthRefreshClientResult = NonNullable<TokenDto>
 export type AuthTokenClientResult = NonNullable<TokenDto>
 export type ClaimsListClientResult = NonNullable<ClaimDto[]>
 export type ClaimsSubmitClientResult = NonNullable<ClaimDto>
+export type ClaimsCountsClientResult = NonNullable<ClaimCountsDto>
 export type ClaimsExposureClientResult = NonNullable<ClaimExposureDto>
 export type ClaimsWorkloadClientResult = NonNullable<ClaimWorkloadDto>
 export type ClaimsGetClientResult = NonNullable<ClaimDto>
 export type ClaimsDecideClientResult = NonNullable<ClaimDto>
+export type ClaimsInfoRequestsClientResult = NonNullable<ClaimInfoRequestEntryDto[]>
 export type ClaimsRequestInfoClientResult = NonNullable<ClaimDto>
 export type ClaimsRespondClientResult = NonNullable<ClaimDto>
 export type ClaimsPickupClientResult = NonNullable<ClaimDto>
