@@ -2,14 +2,16 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router, Routes } from '@angular/router';
 import { AccessService } from './core/auth/access.service';
 import { authGuard, guestGuard, permissionGuard } from './core/auth/guards';
+import { landingKind } from './features/home/home-logic';
 import { NAV } from './features/shell/nav';
 
-/** "/" goes to the first area the user may open (a self-service user lands on Customers or their profile). */
+/** "/" is the persona landing (claimant, officer, manager, admin); anyone else goes to the first area they may open. */
 const landing: CanActivateFn = async () => {
   const access = inject(AccessService);
   const router = inject(Router);
   try {
     const me = await access.ensure();
+    if (landingKind((c) => access.hasIn(me, c)) !== 'other') return true;
     const first = NAV.flatMap((g) => g.items).find((i) => !i.permission || access.hasIn(me, i.permission));
     return router.createUrlTree([first?.path ?? '/me']);
   } catch {
@@ -29,7 +31,13 @@ export const routes: Routes = [
     canMatch: [authGuard],
     loadComponent: () => import('./features/shell/shell').then((m) => m.Shell),
     children: [
-      { path: '', pathMatch: 'full', canActivate: [landing], children: [] },
+      {
+        path: '',
+        pathMatch: 'full',
+        canActivate: [landing],
+        title: 'Home · Fugue Console',
+        loadComponent: () => import('./features/home/home-page').then((m) => m.HomePage),
+      },
       {
         path: 'claims/mine',
         canActivate: [permissionGuard],
@@ -52,19 +60,18 @@ export const routes: Routes = [
         loadComponent: () => import('./features/claims/claims-queue-page').then((m) => m.ClaimsQueuePage),
       },
       {
-        path: 'claims/workload',
+        path: 'claims/team',
         canActivate: [permissionGuard],
-        data: { permission: 'CLAIMS_WORKLOAD', section: 'Claims', breadcrumb: 'Workload' },
-        title: 'Workload · Fugue Console',
-        loadComponent: () => import('./features/claims/workload-page').then((m) => m.WorkloadPage),
+        data: {
+          permission: ['CLAIMS_WORKLOAD', 'CLAIMS_EXPOSURE'],
+          section: 'Claims',
+          breadcrumb: 'Team and exposure',
+        },
+        title: 'Team and exposure · Fugue Console',
+        loadComponent: () => import('./features/claims/team-page').then((m) => m.TeamPage),
       },
-      {
-        path: 'claims/exposure',
-        canActivate: [permissionGuard],
-        data: { permission: 'CLAIMS_EXPOSURE', section: 'Claims', breadcrumb: 'Exposure' },
-        title: 'Exposure · Fugue Console',
-        loadComponent: () => import('./features/claims/exposure-page').then((m) => m.ExposurePage),
-      },
+      { path: 'claims/workload', redirectTo: 'claims/team', pathMatch: 'full' },
+      { path: 'claims/exposure', redirectTo: 'claims/team', pathMatch: 'full' },
       {
         path: 'claims/:id',
         canActivate: [permissionGuard],
