@@ -78,7 +78,7 @@ A review catch you do not pin is a bug you rent. No High/Medium finding closes w
 - Layering: Domain (FluentResults only) <- Application (no ASP.NET Core) <- Infrastructure / Api. Arch tests enforce it.
 - Handlers return FluentResults with `FugueError` (ADR-004). Slice shape is in `src/Fugue.Application/Features/README.md`.
 - `ApiControllerBase.MapStatus` is implemented (D-009); a new `ErrorType` must be mapped there.
-- Keyset pagination. Passwords via `PasswordHasher<T>` / Argon2id only.
+- Keyset pagination. Passwords via `PasswordHasher<T>` only (PBKDF2-HMAC-SHA512, v3 format; Argon2id is a "more time" upgrade, ADR-008).
 - Any migration updates `docs/migrations/migration-catalog.md` in the same commit.
 - No secrets in the repo; no commit or push unless the owner asks.
 - AI decisions are logged in `docs/ai-journal.md`. A decision is captured as a `D-NNN` the turn it is made; architecture-level ones are promoted to an ADR (`docs/adr/_template.md`).

@@ -57,7 +57,7 @@ That is all: EF value conversion and Dapper type handlers are registered by scan
 - **Fallback authorization policy = authenticated.** Anonymous endpoints are explicit `[AllowAnonymous]` exceptions (token, refresh, logout, ping). Every action carries `[HasPermission(Permissions.X)]`; effective permissions are read per request (no cache, ADR-008); customer rows are scoped by owner unless `CUSTOMERS_ALL`; feature controllers carry `[Module(...)]` (ADR-009).
 - Money (if a domain needs it) is `bigint` minor units + an ISO currency code. Never `float`/`double`/`decimal` on the wire.
 - **Keyset pagination** only (no offset).
-- Credentials are hashed with `PasswordHasher<T>` / Argon2id only. Never roll your own hashing; never log secrets, tokens or request payloads.
+- Credentials are hashed with `PasswordHasher<T>` only (PBKDF2-HMAC-SHA512, v3 format, behind `IPasswordVerifier`; Argon2id is a "more time" upgrade, ADR-008). Never roll your own hashing; never log secrets, tokens or request payloads.
 - Secrets live in env vars / `dotnet user-secrets` / untracked `.env`. `.env.example` holds placeholders only.
 - Authorization, migrations and `ApiControllerBase` are **critical seams** (see `AGENTS.md` review gate matrix).
 
