@@ -45,3 +45,11 @@ A header toggle (`</>` or the `.` key) opens a right slide-over per page with fo
 WS: WS-22
 Not fixed under the freeze, answers prepared instead: no paid/settled figure on Team and exposure; no notification outside the app (events exist, no consumer); claimants see the SLA calendar by design (their own claims; reviewer flagged it); officers see all six markets (one predicate in `ClaimScope`). To check: a "Send question" during an API restart closed its dialog with no POST reaching the API (UNVERIFIED; rehearse with the API stopped). Size S each.
 
+
+### #010 — Structure refactor after the D-064 lanes (owner, 2026-11-28 02:45; scheduled "after lanes merge, today")
+WS: WS-22
+Three owner suggestions, planned together and NOT started:
+1. One layout inside every vertical slice (`Features/<Feature>/`): `Commands/`, `Queries/`, `Models/` (DTOs, outcomes, errors), `Repos/` (the slice's ports, whatever their current name: `I*Repository`, `I*Store`, `I*Reader`, `I*Admin`, `I*Writer`; today auth ports sit in `Abstractions/IAuthPorts.cs`), `Helpers/` (pure rules such as `ClaimFlow`, `ClaimScope`), and a per-slice DI extension where there is something to register (most wiring is Infrastructure's; Mediator handlers are source-generated). Namespaces follow folders; FitnessTests derive audit names from `Features.<Feature>`, which survives.
+2. IOptions for what is still hardcoded. Already options-bound (12 classes, 22 files): CORS, audit, auth, rate limits, dispatcher, publisher, idempotency, Kafka, Meilisearch, password, persistence, webhooks. Still constants: list page sizes (`DefaultLimit`/`MaxLimit` in 8 queries; part of the API contract, so options must keep the validator in step), the webhook replay window (5 min), the dev sink body cap, SLA day counts (pickup 2, decision 14, answer 7, settle 7; mirrored in the web `sla.ts`).
+3. Runners and cross-cutting code as their own projects: the four `BackgroundService`s (`OutboxDispatcherService`, `ClaimIndexer`, `AuditIndexer`, `IdempotencyPurgeService`) into a `Fugue.Worker` host (the API stops hosting them; compose gets a `worker` service), and the Mediator pipeline behaviours and shared primitives (`Application/Common`) into a building-blocks project. ArchTests gain the new layer rules.
+One mechanical commit per item, each behind the full suite; Size M each.

@@ -194,6 +194,16 @@
   .panel-pad {
     padding: 1.1rem 1.2rem;
   }
+  /* The shell already draws the page as a rounded card, so a section panel inside it is flat: no second box. Clickable
+     tiles (.card-link) keep their card; tables keep their own single frame (.table-wrap). */
+  main .panel:not(.card-link) {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+  }
+  main .panel-pad:not(.card-link) {
+    padding-inline: 0;
+  }
 
   /* ---------- table ---------- */
   .table-wrap {
