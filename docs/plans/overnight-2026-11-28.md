@@ -57,7 +57,7 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
 - [x] 11d. (merge 2e0ecbf, nth-decisions; D-067; on :8080 admin sees 80 of 80 with D-066, claimant -> /unavailable, 0 errors; web 270 tests, scripts 88) Decisions timeline in the console (owner 03:15): one read-only page or help-panel tab, ADR-001..014 and D-001..065 with
       id, title, date, one line, link to the ADR file or decisions.md anchor, grouped by the CHANGELOG version it landed in;
       generated JSON from the repo docs at build time, no API. Weigh scope first; a cut needs a D-row. Pairs with 11e (help panel).
-- [ ] 11e. Under-the-hood coverage, EVERY page (owner 03:20): Audit log first (and link it to The Score), then Modules, Webhooks,
+- [ ] 11e. (A merged 60e978c nth-hooda, B merged a4df949 nth-hoodb, W-035; on :8080 03:52 admin: flow renders on /audit 9, /modules 7, /webhooks 7, /customers 7, /me 6, /access 6; call-row tip shows inside the row, nothing floats; 0 console errors; web 309 tests. OPEN: claims-area pages have notes but no `flow` steps yet -> relay's follow-up lane nth-hoodflow) Under-the-hood coverage, EVERY page (owner 03:20): Audit log first (and link it to The Score), then Modules, Webhooks,
       Users & access / groups / overrides, Customers, Claims queue, claim page, Team and exposure, Reserve sheet, SLA calendar,
       My profile, Home, search. Each: the flow end to end (request -> handler -> DB/outbox/audit -> events), ADR/D links, live
       calls. Real code and decisions only. Two lanes by page group if it does not fit one before 13:00 (record the split here).
