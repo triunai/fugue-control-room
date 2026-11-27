@@ -107,12 +107,15 @@ public sealed class ClaimSearchTests(PostgresFixture db) : IAsyncLifetime
         {
             HttpClient self = await ClientAsync(_factory, DevUsers.Self);
             HttpClient staff = await ClientAsync(_factory, DevUsers.Staff);
-            ClaimDto claim = await SubmitAsync(self, "Hailstorm dented the bonnet");
+            // A policy or a place alone matches every other claim on it in the shared database (more than one page), so each query pairs the
+            // field under test with a word only this claim carries; the engine ranks documents matching every word first.
+            string rare = "Hailzorb" + Guid.NewGuid().ToString("N")[..6];
+            ClaimDto claim = await SubmitAsync(self, rare + " dented the bonnet");
             await IndexAsync(_factory);
 
-            Assert.Contains(claim.Number, await NumbersAsync(self, claim.PolicyNumber));
-            Assert.Contains(claim.Number, await NumbersAsync(staff, "Hailstorm"));
-            Assert.Contains(claim.Number, await NumbersAsync(staff, "Orchard"));
+            Assert.Equal(claim.Number, (await NumbersAsync(self, claim.PolicyNumber + " " + rare)).FirstOrDefault());
+            Assert.Equal(claim.Number, (await NumbersAsync(staff, rare)).FirstOrDefault());
+            Assert.Equal(claim.Number, (await NumbersAsync(staff, "Orchard " + rare)).FirstOrDefault());
 
             db.Clock.Now = db.Clock.Now.AddMinutes(5); // a real change gets a later updated_at, which is what the cursor follows
             HttpResponseMessage pickup = await ClaimsHarness.SendAsync(staff, HttpMethod.Post, $"/api/v1/claims/{claim.Id}/pickup", claim.Version);
