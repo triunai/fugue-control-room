@@ -1,5 +1,6 @@
 using FluentResults;
 using Fugue.Domain.Abstractions;
+using Fugue.Domain.Audit;
 using Fugue.Domain.Events;
 using Fugue.Domain.Ids;
 using Fugue.Domain.Results;
@@ -91,11 +92,14 @@ public sealed class Claim : IAuditable, IVersioned, IHasDomainEvents
     long IVersioned.Version => RowVersion;
 
     /// <summary>Timeline rows added by this instance (the history of an already stored claim is not loaded); the repository writes them.</summary>
+    [NoAudit]
     public IReadOnlyCollection<ClaimTimelineEntry> Timeline => _timeline;
 
     /// <summary>The open info request when loaded for an update; the repository loads only the open one.</summary>
+    [NoAudit]
     public IReadOnlyCollection<ClaimInfoRequest> InfoRequests => _infoRequests;
 
+    [NoAudit]
     public ClaimInfoRequest? OpenInfoRequest => _infoRequests.FirstOrDefault(r => r.IsOpen);
 
     IReadOnlyCollection<IDomainEvent> IHasDomainEvents.DomainEvents => _events;
