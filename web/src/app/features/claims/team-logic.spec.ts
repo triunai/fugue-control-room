@@ -1,4 +1,12 @@
-import { ExposureRowX, bandWindow, byLoad, exposureMatrix, oldestPerOfficer, summariseOpen } from './team-logic';
+import {
+  ExposureRowX,
+  bandWindow,
+  exposureQueueParams,
+  byLoad,
+  exposureMatrix,
+  oldestPerOfficer,
+  summariseOpen,
+} from './team-logic';
 
 const NOW = Date.parse('2026-11-27T00:00:00Z');
 const day = (n: number) => new Date(NOW - n * 86_400_000).toISOString();
@@ -24,10 +32,11 @@ describe('summariseOpen', () => {
     expect(s.oldest).toEqual({ id: 'c', number: 'N-c', ageDays: 20 });
   });
 
-  it('counts late pickups and worked claims with no reserve', () => {
+  it('counts late pickups, and open claims with no reserve whatever their status (the exposure definition)', () => {
     const s = summariseOpen(
       [
         claim('a', 3, null, 'Submitted'),
+        claim('e', 1, null, 'Submitted', null),
         claim('b', 1, null, 'Submitted'),
         claim('c', 5, 'o1', 'UnderReview', null),
         claim('d', 5, 'o1'),
@@ -35,7 +44,7 @@ describe('summariseOpen', () => {
       NOW,
     );
     expect(s.unassignedLate).toBe(1);
-    expect(s.noReserve).toBe(1);
+    expect(s.noReserve).toBe(2);
   });
 
   it('is empty-safe', () => {
@@ -118,5 +127,14 @@ describe('bandWindow and byLoad', () => {
     ];
     expect(byLoad(input).map((o) => o.officerId)).toEqual(['b', 'a']);
     expect(input[0].officerId).toBe('a');
+  });
+});
+
+describe('exposureQueueParams', () => {
+  it('opens the market and line, defaulting to the queue open view', () => {
+    expect(exposureQueueParams('MY', 'Motor')).toEqual({ market: 'MY', line: 'Motor' });
+  });
+  it('opens approved-not-settled claims for the same cell', () => {
+    expect(exposureQueueParams('SG', 'Property', true)).toEqual({ market: 'SG', line: 'Property', status: 'Approved' });
   });
 });

@@ -17,8 +17,8 @@ type Tab = 'subscriptions' | 'deliveries' | 'sink';
         <div>
           <h1 class="page-title">Webhooks</h1>
           <p class="page-lede">
-            Every customer change is written to an outbox in the same transaction, then sent to each subscriber signed
-            with its own secret. Delivery is at least once; receivers verify and dedupe.
+            Every claim.* and customer.* event is written to an outbox in the same transaction, then sent to each
+            subscriber signed with its own secret. Delivery is at least once; receivers verify and dedupe.
           </p>
         </div>
       </header>
