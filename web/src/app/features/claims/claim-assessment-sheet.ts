@@ -30,6 +30,7 @@ import {
 } from './claim-assessment-logic';
 import { availableActions, formatMoney } from './claims-logic';
 import { loadStylesheet } from './lazy-css';
+import { sheetHostHeight, sheetRowCount } from './sheet-layout';
 import { errorResult } from './reserve-sheet-logic';
 import type { UniverHandle } from './univer-loader';
 import { downloadXlsx } from './xlsx-export';
@@ -52,10 +53,17 @@ const LABELS = [...ASSESSMENT_INPUTS, 'Gross estimate', 'Less: excess', 'Net est
         <div>
           <h2 class="section-title">Assessment worksheet</h2>
           <p class="text-muted text-sm">
-            Estimate this claim in {{ claim().currency }}. Edit the shaded cells; Gross and Net are formulas. This
+            Estimate this claim in {{ claim().currency }}. Edit the tinted cells; Gross and Net are formulas. This
             worksheet is not saved anywhere: it is gone when you leave the page.
           </p>
         </div>
+      </header>
+
+      <div class="assess-frame">
+        <div class="assess-host" [style.height.px]="hostHeight" aria-label="Assessment spreadsheet"></div>
+      </div>
+      <footer class="assess-foot">
+        <p class="text-muted text-sm assess-caption">Tinted cells are editable inputs; everything else is formula.</p>
         <div class="assess-actions">
           <button type="button" class="btn" data-tour="assessment-excel" [disabled]="!ready()" (click)="openInExcel()">
             Open in Excel
@@ -71,9 +79,7 @@ const LABELS = [...ASSESSMENT_INPUTS, 'Gross estimate', 'Less: excess', 'Net est
             Use as reserve
           </button>
         </div>
-      </header>
-
-      <div class="assess-host panel" aria-label="Assessment spreadsheet"></div>
+      </footer>
 
       <p class="assess-net" data-testid="assess-net" aria-live="polite">
         @if (assessment(); as a) {
@@ -100,6 +106,7 @@ export class ClaimAssessmentSheet implements AfterViewInit, OnDestroy {
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   private univer: UniverHandle | null = null;
 
+  protected readonly hostHeight = sheetHostHeight(sheetRowCount(LABELS.length));
   protected readonly ready = signal(false);
   protected readonly assessment = signal<Assessment | null>(null);
   protected readonly message = signal('');

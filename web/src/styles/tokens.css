@@ -20,6 +20,8 @@
   --accent-soft: rgba(34, 64, 107, 0.1);
   --on-accent: #f7f3ea;
   --focus: #3a63a0;
+  /* editable input cells in the Univer sheets: a solid light blue (the canvas cannot blend an alpha tint) */
+  --sheet-input: #e3ecf8;
 
   --ok: #3f7a4e;
   --warn: #9a6b12;
