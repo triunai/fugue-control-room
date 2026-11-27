@@ -16,7 +16,7 @@ module.exports = {
     "scope-enum": [
       1,
       "always",
-      ["api", "application", "domain", "infra", "identity", "observability", "persistence", "messaging", "tests", "arch", "docs", "ci", "spine", "deps"],
+      ["api", "application", "domain", "infra", "identity", "observability", "persistence", "messaging", "tests", "arch", "docs", "ci", "spine", "deps", "web", "build", "reviews", "plans", "runbooks", "trace"],
     ],
     "header-max-length": [2, "always", 110],
     "subject-case": [0, "never"],
