@@ -32,6 +32,10 @@ Three owner suggestions, planned together and NOT started:
 3. Runners and cross-cutting code as their own projects: the four `BackgroundService`s (`OutboxDispatcherService`, `ClaimIndexer`, `AuditIndexer`, `IdempotencyPurgeService`) into a `Fugue.Worker` host (the API stops hosting them; compose gets a `worker` service), and the Mediator pipeline behaviours and shared primitives (`Application/Common`) into a building-blocks project. ArchTests gain the new layer rules.
 One mechanical commit per item, each behind the full suite; Size M each.
 
+### #011 — `outbox_messages.correlation_id` has no index (The Score query scans)
+WS: WS-22
+`GET /audit/trace/{correlationId}` (nth-score, merge dacfb06) reads `Sql/audit/trace.sql`; its outbox leg filters `outbox_messages.correlation_id`, which has no index, so that part scans the table (audit_log's leg is fine). Harmless at demo volume. Size S. Close with a migration adding a btree index on `outbox_messages(correlation_id)` through the migration QA gate and catalog row; not on submission day (migrations are a critical seam).
+
 ## Done or retired (kept for history; 2026-11-28 03:30 prune, overnight lead)
 
 - #002 guided product tour: DONE, delivered by nth-onboard (e4e750f, merge 4345366): first-visit welcome and autoplayed landing tour per user.
