@@ -86,6 +86,8 @@ services:
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Development # the seeder and the webhook dev sink are Development-only
+      # The container listens on 8080 (ASPNETCORE_HTTP_PORTS), not the host-run default 5080, so the seeded claim.* subscription must say so.
+      Seed__DevSinkUrl: http://localhost:8080/api/v1/dev/webhook-sink
       Seed__Enabled: "true"
       Webhooks__AllowInsecureLocal: "true"
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=fugue;Username=fugue;Password=${POSTGRES_PASSWORD:?set it in .env}" # secrets-scan:ignore (reference, not a value)
