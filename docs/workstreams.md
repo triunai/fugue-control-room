@@ -53,7 +53,7 @@ Refs: D-064, D-066; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/
 
 ### WS-31 — Intake import: spreadsheet, inbox and WhatsApp file imports to drafts (item 11a) — 🟢 ACTIVE (2026-11-28)
 ID: W-031
-Status: lane nth-import live.
+Status: merged f967355 (nth-import), D-074, migration 13; closes at the wrap.
 Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
 Refs: D-064, D-066; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
 

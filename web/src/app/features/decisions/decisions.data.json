@@ -6,13 +6,23 @@
   ],
   "counts": {
     "adrs": 14,
-    "decisions": 73
+    "decisions": 74
   },
   "groups": [
     {
       "version": "Unreleased",
       "date": null,
       "entries": [
+        {
+          "kind": "D",
+          "id": "D-074",
+          "title": "Intake import is file imports reviewed into drafts, not live connectors",
+          "date": "2026-11-28",
+          "summary": "Staff (CLAIMS_HANDLE) upload a spreadsheet (.csv/.xlsx), a shared-inbox export (.eml/.mbox) or a WhatsApp chat export (.txt); the server reads it into drafts, a person reviews each draft, and only then is a claim…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-074--intake-import-is-file-imports-reviewed-into-drafts-not-live-connectors--2026-11-28"
+        },
         {
           "kind": "D",
           "id": "D-073",

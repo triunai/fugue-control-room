@@ -77,6 +77,16 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-074 — Intake import is file imports reviewed into drafts, not live connectors — 2026-11-28
+WS: WS-31
+Context: the brief says claimants submit by phone or email and staff work from shared inboxes and spreadsheets (overnight item 11a).
+Decision: staff (CLAIMS_HANDLE) upload a spreadsheet (.csv/.xlsx), a shared-inbox export (.eml/.mbox) or a WhatsApp chat export (.txt); the server reads it into drafts, a person reviews each draft, and only then is a claim created, owned by the claimant's existing account, through the submit path's own validator, factory and repository (timeline, audit, outbox). The uploads stand in for Microsoft Graph / Gmail and WhatsApp Business connectors and the page says so; no external service is called. POST /claims is not reused because staff do not hold CLAIMS_SUBMIT and it makes the caller the claimant. Idempotency is a ledger (`claim_imports`, migration 20261127194749_AddClaimImports) keyed by the server's SHA-256 of each source item, inserted in the claim's transaction (`ON CONFLICT DO NOTHING`), so the same row, email or chat never becomes two claims. For that reason the import create is NOT `[Idempotent]`: the ledger makes a retry a 409, and the pinned list of idempotent creates stays at three (the lane's first full run failed only that pin; it was fixed in code, cc90cc1, not by editing the test). Sender domain to market is configuration (`Import:MarketByDomain`, IOptions, longest suffix). No package: the xlsx and MIME readers are small hand-written readers with tests. Merged in f967355 (W-031, lane nth-import).
+Why: live connectors need tenant consent and secrets we do not have; files prove the same pipeline honestly.
+Consequences: rolling the migration back keeps imported claims but loses the ledger, so a re-import after a rollback would duplicate (catalog row 13).
+Who: owner (asked, item 11a), AI (lane nth-import)
+Status: accepted
+Promote: no
+
 ## D-073 — Header search stays claims and audit; users and customers are not indexed — 2026-11-28
 WS: WS-32
 Context: item 10 asked whether admins should find users and whether customers belong in the header search.
