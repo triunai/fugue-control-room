@@ -17,8 +17,9 @@ export const authGuard: CanMatchFn = async (_route, segments) => {
 /** Already signed in: skip the sign-in page. */
 export const guestGuard: CanActivateFn = async () => {
   const session = inject(SessionStore);
+  const router = inject(Router);
   if (session.isAuthenticated() || (await inject(AuthService).restore())) {
-    return inject(Router).createUrlTree(['/']);
+    return router.createUrlTree(['/']);
   }
   return true;
 };
