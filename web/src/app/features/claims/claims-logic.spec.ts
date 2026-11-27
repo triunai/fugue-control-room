@@ -8,6 +8,7 @@ import {
   currencyOf,
   formatMoney,
   localToday,
+  marketFlag,
   parseMoney,
 } from './claims-logic';
 
@@ -126,5 +127,12 @@ describe('claimant "what happens next"', () => {
 describe('localToday', () => {
   it('is the local calendar day', () => {
     expect(localToday(new Date(2026, 10, 7, 23, 59))).toBe('2026-11-07');
+  });
+});
+
+describe('marketFlag', () => {
+  it('gives each of the six markets its flag and an unknown code nothing', () => {
+    expect(['HK', 'ID', 'MY', 'PH', 'SG', 'TH'].map(marketFlag)).toEqual(['🇭🇰', '🇮🇩', '🇲🇾', '🇵🇭', '🇸🇬', '🇹🇭']);
+    expect(marketFlag('XX')).toBe('');
   });
 });

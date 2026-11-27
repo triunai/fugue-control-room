@@ -19,6 +19,13 @@ export function marketName(market: string): string {
   return MARKETS.find((m) => m.code === market)?.name ?? market;
 }
 
+const FLAGS: Record<string, string> = { HK: '🇭🇰', ID: '🇮🇩', MY: '🇲🇾', PH: '🇵🇭', SG: '🇸🇬', TH: '🇹🇭' };
+
+/** The market's flag emoji; empty for an unknown code. Render it aria-hidden beside the name. */
+export function marketFlag(market: string): string {
+  return FLAGS[market] ?? '';
+}
+
 /**
  * Money on the wire is bigint minor units. All six currencies are treated as having TWO minor digits (ISO 4217),
  * so 250000 is "2,500.00" everywhere. We do NOT use Intl's own default digits: Intl says IDR has 0, which would
