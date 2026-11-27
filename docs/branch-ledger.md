@@ -9,3 +9,4 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
 | `nth-uam` | `.worktrees/nth-uam` | dd2a8d9 | nth-uam (Opus) | D-064 | admin creates users with roles, USERS_MANAGE |
 | `nth-score` | `.worktrees/nth-score` | f5389da | nth-score (Opus) | D-064 | The Score: per-correlation transaction inspector from real rows |
+| `nth-tooling` | `.worktrees/nth-tooling` | dacfb06 | nth-tooling (Sonnet) | D-064 | 17a: 2/2 slices committed (3ab5f5e); READY, report in `_briefs/reports/nth-tooling.md` |
