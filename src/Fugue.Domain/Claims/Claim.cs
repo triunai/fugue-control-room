@@ -275,6 +275,13 @@ public sealed class Claim : IAuditable, IVersioned, IHasDomainEvents
         Record(from, now, actor, actorDisplay, note);
     }
 
+    /// <summary>
+    /// A just-submitted claim that staff keyed in from a file import (item 11a) says so on its timeline: who imported it, from which file, and the
+    /// note the import carries (a chat transcript, an email header). No status change. The claimant reads it with the actor shown as "Claims team".
+    /// </summary>
+    public void RecordImport(UserId staff, string staffDisplay, string note, DateTimeOffset now) =>
+        Record(Status, now, staff, staffDisplay, note);
+
     private void Record(ClaimStatus? from, DateTimeOffset now, UserId actor, string actorDisplay, string note) =>
         _timeline.Add(ClaimTimelineEntry.Record(Id, now, from, Status, actor, actorDisplay, note));
 

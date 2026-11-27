@@ -30,6 +30,7 @@ import type {
   AuditSearchParams,
   AuditSearchResultDto,
   AuditTraceDto,
+  CheckImportDraftsRequest,
   ClaimCountsDto,
   ClaimDto,
   ClaimExposureDto,
@@ -41,6 +42,7 @@ import type {
   ClaimsListParams,
   ClaimsSearchParams,
   CreateCustomerRequest,
+  CreateImportedClaimRequest,
   CreateUserRequest,
   CreateWebhookSubscriptionRequest,
   CustomerDto,
@@ -50,6 +52,12 @@ import type {
   DevWebhookSinkListParams,
   DiagnosticsPingParams,
   GroupDto,
+  ImportCheckDto,
+  ImportFileDto,
+  ImportImportedParams,
+  ImportReadFileBody,
+  ImportReadFileParams,
+  ImportedClaimDto,
   LoginRequest,
   LogoutRequest,
   MeDto,
@@ -1527,6 +1535,166 @@ export class FugueAPIService {
   }
 
 /**
+ * @summary Check drafts against the Report an incident rules (the same validator), the claimant account and the import ledger. Nothing is created; every draft gets a verdict with field errors, the normalised market, line and date, the claimant found and the claim an earlier import became.
+ */
+ importCheck<TData = ImportCheckDto[]>(checkImportDraftsRequest?: CheckImportDraftsRequest, options?: HttpClientBodyOptions): Observable<TData>;
+ importCheck<TData = ImportCheckDto[]>(checkImportDraftsRequest?: CheckImportDraftsRequest, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ importCheck<TData = ImportCheckDto[]>(checkImportDraftsRequest?: CheckImportDraftsRequest, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  importCheck<TData = ImportCheckDto[]>(
+    checkImportDraftsRequest?: CheckImportDraftsRequest, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+      `/api/v1/import/check`,
+      checkImportDraftsRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+      `/api/v1/import/check`,
+      checkImportDraftsRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.post<TData>(
+      `/api/v1/import/check`,
+      checkImportDraftsRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary The most recent imports, newest first (`limit` 1 to 50, default 20): the claim, its status, the file and item, who imported it and when.
+ */
+ importImported<TData = ImportedClaimDto[]>(params?: ImportImportedParams, options?: HttpClientBodyOptions): Observable<TData>;
+ importImported<TData = ImportedClaimDto[]>(params?: ImportImportedParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ importImported<TData = ImportedClaimDto[]>(params?: ImportImportedParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  importImported<TData = ImportedClaimDto[]>(
+    params?: ImportImportedParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(
+      `/api/v1/import/claims`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,}
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(
+      `/api/v1/import/claims`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,}
+    );
+    }
+
+    return this.http.get<TData>(
+      `/api/v1/import/claims`,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+        params: filteredParams,}
+    );
+  }
+
+/**
+ * @summary Create the claim from one reviewed draft, owned by the claimant account named by `claimantEmail` and submitted the normal way (Submitted, timeline, audit, `claim.submitted` event), with an import note on its timeline. 409 `import.already_imported` when the item's key was imported before.
+ */
+ importCreate<TData = ClaimDto>(createImportedClaimRequest?: CreateImportedClaimRequest, options?: HttpClientBodyOptions): Observable<TData>;
+ importCreate<TData = ClaimDto>(createImportedClaimRequest?: CreateImportedClaimRequest, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ importCreate<TData = ClaimDto>(createImportedClaimRequest?: CreateImportedClaimRequest, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  importCreate<TData = ClaimDto>(
+    createImportedClaimRequest?: CreateImportedClaimRequest, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+      `/api/v1/import/claims`,
+      createImportedClaimRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+      `/api/v1/import/claims`,
+      createImportedClaimRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.post<TData>(
+      `/api/v1/import/claims`,
+      createImportedClaimRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary Read an uploaded file (multipart field `file`) as `source`: Spreadsheet (.csv, .xlsx) returns the header and rows for column mapping; Email (.eml, .mbox) and WhatsApp (chat export .txt) return drafts. Nothing is stored. Items imported before carry the claim they became. 400 `import.unreadable` when the file is not what the source expects.
+ */
+ importReadFile<TData = ImportFileDto>(importReadFileBody?: ImportReadFileBody,
+    params?: ImportReadFileParams, options?: HttpClientBodyOptions): Observable<TData>;
+ importReadFile<TData = ImportFileDto>(importReadFileBody?: ImportReadFileBody,
+    params?: ImportReadFileParams, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ importReadFile<TData = ImportFileDto>(importReadFileBody?: ImportReadFileBody,
+    params?: ImportReadFileParams, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  importReadFile<TData = ImportFileDto>(
+    importReadFileBody?: ImportReadFileBody,
+    params?: ImportReadFileParams, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {const formData = importReadFileBody === undefined ? undefined : (() => {
+const formData = new FormData();
+if(importReadFileBody?.file !== undefined) {
+ formData.append(`file`, importReadFileBody.file);
+ }
+return formData;
+})();
+
+    const filteredParams = filterParams({...params, ...options?.params}, new Set<string>([]));
+
+    if (options?.observe === 'events') {
+      return this.http.post<TData>(
+      `/api/v1/import/files`,
+      formData,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+        params: filteredParams,}
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.post<TData>(
+      `/api/v1/import/files`,
+      formData,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+        params: filteredParams,}
+    );
+    }
+
+    return this.http.post<TData>(
+      `/api/v1/import/files`,
+      formData,{
+    ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+        params: filteredParams,}
+    );
+  }
+
+/**
  * Drives the console's navigation and permission checks. The permission list is exactly what the API enforces (deny beats allow beats role; permissions of a disabled module are absent), looked up fresh on every call and never cached by clients or proxies.
  * @summary The caller's identity, roles, groups, effective permission codes and the enabled modules.
  */
@@ -2224,6 +2392,10 @@ export type DiagnosticsPingClientResult = NonNullable<PingResponse>
 export type GroupsListClientResult = NonNullable<GroupDto[]>
 export type GroupsRemoveMemberClientResult = NonNullable<void>
 export type GroupsAddMemberClientResult = NonNullable<void>
+export type ImportCheckClientResult = NonNullable<ImportCheckDto[]>
+export type ImportImportedClientResult = NonNullable<ImportedClaimDto[]>
+export type ImportCreateClientResult = NonNullable<ClaimDto>
+export type ImportReadFileClientResult = NonNullable<ImportFileDto>
 export type MeGetClientResult = NonNullable<MeDto>
 export type ModulesListClientResult = NonNullable<ModuleDto[]>
 export type ModulesSetActiveClientResult = NonNullable<void>
