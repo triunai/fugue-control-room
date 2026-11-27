@@ -30,13 +30,11 @@ test.describe('claims screenshots', () => {
     await page.screenshot({ path: `${SHOTS}/claims-staff-detail.png`, fullPage: true });
   });
 
-  test('manager: workload and exposure', async ({ page }) => {
+  test('manager: team and exposure', async ({ page }) => {
     await signIn(page, 'manager@fugue.test');
-    await page.goto('/claims/workload');
-    await expect(page.getByTestId('workload-table')).toBeVisible();
-    await page.screenshot({ path: `${SHOTS}/claims-workload.png` });
-    await page.goto('/claims/exposure');
+    await page.goto('/claims/team');
+    await expect(page.getByTestId('team-table')).toBeVisible();
     await expect(page.getByTestId('exposure-table')).toBeVisible();
-    await page.screenshot({ path: `${SHOTS}/claims-exposure.png`, fullPage: true });
+    await page.screenshot({ path: `${SHOTS}/team-exposure.png`, fullPage: true });
   });
 });

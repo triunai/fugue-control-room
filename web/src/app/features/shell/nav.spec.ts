@@ -19,16 +19,15 @@ describe('permission-driven navigation: Claims', () => {
     expect(nav).toEqual(['Claims > My claims', 'Claims > Report an incident']);
   });
 
-  it('staff see the queue and workload, not the claimant screens and not exposure', () => {
+  it('staff see the queue and team page, not the claimant screens', () => {
     const nav = navFor(STAFF);
     expect(nav).toContain('Claims > Claims queue');
-    expect(nav).toContain('Claims > Workload');
+    expect(nav).toContain('Claims > Team and exposure');
     expect(nav).not.toContain('Claims > My claims');
-    expect(nav).not.toContain('Claims > Exposure');
   });
 
-  it('a manager (CLAIMS_EXPOSURE) also sees Exposure', () => {
-    expect(navFor(MANAGER)).toContain('Claims > Exposure');
+  it('a manager (CLAIMS_EXPOSURE) sees the team page too', () => {
+    expect(navFor(MANAGER)).toContain('Claims > Team and exposure');
   });
 
   it('a user with no claims permission has no Claims group at all', () => {

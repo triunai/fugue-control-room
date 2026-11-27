@@ -4,6 +4,7 @@ import { injectInfiniteQuery } from '@tanstack/angular-query';
 import { ClaimsApi, EMPTY_CLAIM_FILTER, claimKeys } from '../../api/claims.api';
 import { RelativeTimePipe, StampPipe } from '../../ui/format';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
+import { livePoll } from './live-poll';
 import { ClaimStatusPill } from './claim-bits';
 import { marketName } from './claims-logic';
 
@@ -87,11 +88,13 @@ export class MyClaimsPage {
   private readonly api = inject(ClaimsApi);
   private readonly router = inject(Router);
 
+  private readonly live = livePoll();
   protected readonly query = injectInfiniteQuery(() => ({
     queryKey: claimKeys.list(EMPTY_CLAIM_FILTER),
     queryFn: ({ pageParam }) => this.api.list(EMPTY_CLAIM_FILTER, pageParam),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
+    ...this.live,
   }));
 
   protected readonly rows = computed(() => this.query.data()?.pages.flatMap((p) => p.items) ?? []);

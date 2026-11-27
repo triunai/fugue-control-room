@@ -14,8 +14,11 @@ import { Overlays } from '../../ui/overlays';
 import { RefChip } from '../../ui/ref-chip';
 import { ErrorState } from '../../ui/states';
 import { ClaimStatusPill, MoneyPipe } from './claim-bits';
+import { livePoll } from './live-poll';
+import { ClaimNextStep } from './claim-next-step';
+import { ClaimRecordBanner } from './claim-record-banner';
 import { ClaimActionDialog, ClaimDialogData, ClaimDialogMode, ClaimDialogResult } from './claim-action-dialog';
-import { ActionState, ClaimAction, WHAT_NEXT, availableActions, marketName } from './claims-logic';
+import { ActionState, Actor, ClaimAction, marketName } from './claims-logic';
 
 /** A command the page can run; Reload-and-retry is the user's choice after a 412, never an automatic replay. */
 type Command =
@@ -33,15 +36,6 @@ const DONE: Record<Command['kind'], string> = {
   settle: 'Claim settled',
 };
 
-const LABEL: Record<ClaimAction, string> = {
-  pickup: 'Pick up',
-  reserve: 'Set reserve',
-  requestInfo: 'Request info',
-  approve: 'Approve',
-  reject: 'Reject',
-  settle: 'Settle',
-};
-
 /** One claim, for both audiences: the claimant's view (status in plain words, timeline, answer box) and the staff view (actions, internal facts). */
 @Component({
   selector: 'fg-claim-detail-page',
@@ -50,6 +44,8 @@ const LABEL: Record<ClaimAction, string> = {
     ReactiveFormsModule,
     RouterLink,
     ClaimStatusPill,
+    ClaimRecordBanner,
+    ClaimNextStep,
     MoneyPipe,
     RelativeTimePipe,
     StampPipe,
@@ -70,35 +66,7 @@ const LABEL: Record<ClaimAction, string> = {
       } @else if (claimQuery.isError() && !claim()) {
         <div class="panel"><fg-error-state [error]="claimQuery.error()" (retry)="claimQuery.refetch()" /></div>
       } @else if (claim(); as c) {
-        <header class="page-head">
-          <div>
-            <h1 class="page-title">{{ c.number }}</h1>
-            <div class="lede-row">
-              <fg-claim-status [status]="c.status" />
-              <span>{{ c.line }} · {{ market(c.market) }}</span>
-              <span class="text-muted">Policy {{ c.policyNumber }}</span>
-              <span class="text-muted" [title]="c.updatedAt | stamp">updated {{ c.updatedAt | relative }}</span>
-            </div>
-          </div>
-          @if (actions().length) {
-            <div class="actions" role="group" aria-label="Actions for this claim">
-              @for (a of actions(); track a.action) {
-                <button
-                  type="button"
-                  class="btn"
-                  [class.btn-primary]="a.action === 'pickup' || a.action === 'approve' || a.action === 'settle'"
-                  [class.btn-danger]="a.action === 'reject'"
-                  [disabled]="!a.enabled || command.isPending()"
-                  [title]="a.hint ?? ''"
-                  [attr.data-action]="a.action"
-                  (click)="run(a)"
-                >
-                  {{ label(a) }}
-                </button>
-              }
-            </div>
-          }
-        </header>
+        <fg-claim-record-banner [claim]="c" [actor]="actor()" />
 
         @if (conflict(); as k) {
           <div class="banner conflict" role="alert" data-testid="conflict-banner">
@@ -116,19 +84,29 @@ const LABEL: Record<ClaimAction, string> = {
 
         <div class="detail">
           <div class="stack">
-            <section class="panel panel-pad" aria-labelledby="next-h">
-              <h2 id="next-h" class="section-title">{{ isStaff() ? 'Status' : 'What happens next' }}</h2>
-              <p class="next">{{ isStaff() ? staffLine(c) : whatNext(c) }}</p>
-              @if (c.decisionReason) {
-                <p class="mt-3 mb-0"><span class="label">Decision reason</span><br />{{ c.decisionReason }}</p>
-              }
-              @if (c.approvedAmountMinor !== null && c.approvedAmountMinor !== undefined) {
-                <p class="mt-3 mb-0">
-                  <span class="label">Approved amount</span><br />
-                  <strong class="mono">{{ c.approvedAmountMinor | money: c.currency }}</strong>
-                </p>
-              }
-            </section>
+            <fg-claim-next-step
+              [claim]="c"
+              [actor]="actor()"
+              [busy]="command.isPending()"
+              (act)="onNextAction($event)"
+            />
+
+            <!-- assessment worksheet slot -->
+
+            @if (c.decisionReason || (c.approvedAmountMinor !== null && c.approvedAmountMinor !== undefined)) {
+              <section class="panel panel-pad" aria-labelledby="dec-h">
+                <h2 id="dec-h" class="section-title">Decision</h2>
+                @if (c.decisionReason) {
+                  <p class="mb-0"><span class="label">Reason</span><br />{{ c.decisionReason }}</p>
+                }
+                @if (c.approvedAmountMinor !== null && c.approvedAmountMinor !== undefined) {
+                  <p class="mt-3 mb-0">
+                    <span class="label">Approved amount</span><br />
+                    <strong class="mono">{{ c.approvedAmountMinor | money: c.currency }}</strong>
+                  </p>
+                }
+              </section>
+            }
 
             @if (c.openInfoRequest && isStaff()) {
               <section class="panel panel-pad" aria-labelledby="oq-h">
@@ -168,14 +146,14 @@ const LABEL: Record<ClaimAction, string> = {
             }
 
             <section class="panel panel-pad" aria-labelledby="t-h">
-              <h2 id="t-h" class="section-title">Timeline</h2>
+              <h2 id="t-h" class="section-title">Activity</h2>
               @if (timelineQuery.isPending()) {
                 <span class="skeleton" style="width: 60%"></span>
               } @else if (timelineQuery.isError()) {
                 <fg-error-state [error]="timelineQuery.error()" (retry)="timelineQuery.refetch()" />
               } @else {
                 <ol class="timeline" data-testid="timeline">
-                  @for (t of timelineQuery.data(); track t.id) {
+                  @for (t of activity(); track t.id) {
                     <li>
                       <fg-claim-status [status]="t.toStatus" />
                       <p class="note">{{ t.note }}</p>
@@ -269,6 +247,7 @@ export class ClaimDetailPage {
   private readonly overlays = inject(Overlays);
   protected readonly access = inject(AccessService);
 
+  private readonly live = livePoll(() => this.answerForm.dirty);
   protected readonly conflict = signal<{ ref: string | null } | null>(null);
   protected readonly market = marketName;
 
@@ -277,23 +256,30 @@ export class ClaimDetailPage {
     queryKey: claimKeys.one(this.id()),
     queryFn: () => this.api.get(this.id()),
     staleTime: 0,
-    refetchOnWindowFocus: false,
+    ...this.live,
   }));
   protected readonly claim = computed(() => this.claimQuery.data());
 
   protected readonly timelineQuery = injectQuery(() => ({
     queryKey: claimKeys.timeline(this.id()),
     queryFn: () => this.api.timeline(this.id()),
+    ...this.live,
     // Always re-read on open: the claim moves on elsewhere (an officer acts), and a cached timeline would lag the status.
     staleTime: 0,
   }));
 
   /** Staff work claims; a claimant (no CLAIMS_ALL) sees their own. */
   protected readonly isStaff = computed(() => this.access.has('CLAIMS_ALL'));
-  protected readonly actions = computed<ActionState[]>(() => {
-    const c = this.claim();
-    return c ? availableActions(c, { userId: this.access.me()?.userId, permissions: this.access.permissions() }) : [];
-  });
+
+  protected readonly actor = computed<Actor>(() => ({
+    userId: this.access.me()?.userId,
+    permissions: this.access.permissions(),
+  }));
+
+  /** The activity list, newest first. */
+  protected readonly activity = computed(() =>
+    [...(this.timelineQuery.data() ?? [])].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt)),
+  );
 
   protected readonly canRespond = computed(() => this.access.has('CLAIMS_RESPOND') && !this.access.has('CLAIMS_ALL'));
 
@@ -340,29 +326,15 @@ export class ClaimDetailPage {
     });
   }
 
-  protected whatNext(c: ClaimDto): string {
-    return WHAT_NEXT[c.status];
-  }
-
-  protected label(a: ActionState): string {
-    return LABEL[a.action];
-  }
-
-  protected staffLine(c: ClaimDto): string {
-    switch (c.status) {
-      case 'Submitted':
-        return 'Waiting to be picked up. Nobody is assigned yet.';
-      case 'UnderReview':
-        return `Under review by ${c.assignedOfficerName ?? 'an officer'}.`;
-      case 'InfoRequested':
-        return 'Paused: waiting for the claimant to answer the question below.';
-      case 'Approved':
-        return 'Approved and waiting for a manager to settle it.';
-      case 'Rejected':
-        return 'Rejected. This claim is closed.';
-      default:
-        return 'Settled. This claim is closed.';
+  /** The card's one primary button: the claimant's answer box takes focus; everything else opens its existing dialog. */
+  protected onNextAction(kind: ClaimAction | 'answer'): void {
+    if (kind === 'answer') {
+      const box = document.getElementById('a-text');
+      box?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      box?.focus({ preventScroll: true });
+      return;
     }
+    void this.run({ action: kind, enabled: true });
   }
 
   /** Dialog-backed actions collect their input first; pickup runs at once; settle asks for a confirmation. */

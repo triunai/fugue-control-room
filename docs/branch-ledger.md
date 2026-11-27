@@ -6,6 +6,5 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
 | `nth-grid` | `.worktrees/nth-grid` | b875f49 | nth-grid (Sonnet) | W-022 | nice-to-haves wave, `docs/ai/briefs/nice-to-haves.md` |
-| `nth-claimui` | `.worktrees/nth-claimui` | afc0dae | nth-claimui (Sonnet) | W-022 | claim record banner, next step, team and exposure, landing |
 | `nth-kafka` | `.worktrees/nth-kafka` | a9e1610 | nth-kafka (Sonnet) | W-022 | review follow-ups wave |
 | `nth-wire` | `.worktrees/nth-wire` | 59e7d77 | nth-wire (Sonnet) | W-019 | wire users list, roles, audit search into the console |

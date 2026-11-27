@@ -236,7 +236,7 @@ textarea.input {
 }
 .kpi-n {
   font: 600 2.1rem/1 var(--font-display);
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 .kpi-l {
   font-size: 0.8667rem;
@@ -301,6 +301,7 @@ textarea.input {
   font-weight: 600;
 }
 .totals {
+  margin-top: 0.9rem;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
   gap: 0.9rem;

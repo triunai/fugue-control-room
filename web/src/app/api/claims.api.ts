@@ -21,12 +21,19 @@ export type AssignedFilter = 'any' | 'me' | 'none';
 
 /** Everything the list endpoint filters on. `status` is one status or '' for all. */
 export interface ClaimFilter {
-  status: '' | ClaimStatus;
+  /** One status, '' for all, or 'open' for Submitted + UnderReview + InfoRequested (the API takes comma-separated statuses). */
+  status: '' | 'open' | ClaimStatus;
   assigned: AssignedFilter;
   market: string;
   line: string;
   q: string;
+  /** Optional filters the backend is adding (officerId, age window in days); absent means not filtered. */
+  officerId?: string;
+  minAgeDays?: number;
+  maxAgeDays?: number;
 }
+
+export const OPEN_STATUSES = 'Submitted,UnderReview,InfoRequested';
 
 export const EMPTY_CLAIM_FILTER: ClaimFilter = { status: '', assigned: 'any', market: '', line: '', q: '' };
 
@@ -65,11 +72,14 @@ export class ClaimsApi {
       params({
         limit,
         cursor,
-        status: filter.status,
+        status: filter.status === 'open' ? OPEN_STATUSES : filter.status,
         assigned: filter.assigned === 'any' ? '' : filter.assigned,
         market: filter.market,
         line: filter.line,
         q: filter.q.trim(),
+        officerId: filter.officerId,
+        minAgeDays: filter.minAgeDays,
+        maxAgeDays: filter.maxAgeDays,
       }),
     );
     // Seed If-Match for the detail page's first action from each item's version.

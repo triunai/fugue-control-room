@@ -12,13 +12,28 @@ export async function skipTour(page: Page): Promise<void> {
   });
 }
 
-export async function signIn(page: Page, email = 'admin@fugue.test', opts: { tour?: boolean } = {}): Promise<void> {
+/** "/" is now a persona landing page; these specs start from the working screen each persona used before it. */
+const WORKING_SCREEN: Record<string, string> = {
+  'admin@fugue.test': '/customers',
+  'staff@fugue.test': '/claims/queue',
+  'manager@fugue.test': '/claims/queue',
+  'self@fugue.test': '/claims/mine',
+};
+
+/** Signs in; `tour: true` keeps the reviewer tour and stays on the landing, `to` overrides the start screen. */
+export async function signIn(
+  page: Page,
+  email = 'admin@fugue.test',
+  opts: { tour?: boolean; to?: string } = {},
+): Promise<void> {
   if (!opts.tour) await skipTour(page);
+  const to = opts.to ?? (opts.tour ? undefined : WORKING_SCREEN[email]);
   await page.goto('/sign-in');
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password').fill(PASSWORD);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page).not.toHaveURL(/sign-in/);
+  if (to) await page.goto(to);
 }
 
 /** A second client acting "elsewhere": its own token, straight to the API through the dev proxy. */
