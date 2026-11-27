@@ -24,6 +24,6 @@ Owner likes a reference shell: grouped sidebar with collapsible sections and cou
 WS: WS-07
 The owner likes a reference "who can do what" grid: one column per role (with member counts and an Edit action), one row per permission grouped by area, ticks where the role grants it, system roles adjustable but not deletable. Fugue has the data (roles, role_permissions, permissions with modules) but no list endpoint for roles with their grants. Where: a `GET /api/v1/roles` read + `web/src/app/features/access/`. Size M. Close after the claims window.
 
-### #005 — Controllers stack `[FromQuery]` on every list filter parameter
+### #005 — Controllers stack `[FromQuery]` on every list filter parameter (DONE 2026-11-27, merge of `rd-files`)
 WS: WS-07
 `AuditController.List` (9 filters), `CustomersController.List` and the webhook deliveries list repeat `[FromQuery]` per parameter; with `[ApiController]` they are redundant and the actions stop reading as one-liners. Owner review 2026-11-27. Fix: one `[FromQuery] <X>Filter filter` record per list in `src/Fugue.Api/Contracts/` with `ToQuery()`; proof of safety = the OpenAPI snapshot is byte-identical. Size S. After the claims merge (the claims controller already follows the new style).

@@ -45,7 +45,7 @@ Request flow: controller action (one line) -> `Send(command/query)` via the medi
 
 ### Adding a strongly-typed ID
 
-1. Copy `src/Fugue.Domain/Ids/CustomerId.cs` to `<Aggregate>Id.cs` and rename (`readonly record struct XId(Guid Value) : IStronglyTypedId<XId>, IParsable<XId>` with the same `[JsonConverter]` and `[TypeConverter]` attributes; `New()` uses `Uuid7`).
+1. In `src/Fugue.Domain/Ids/Ids.cs`, copy the `CustomerId` struct below the others and rename it (`readonly record struct XId(Guid Value) : IStronglyTypedId<XId>, IParsable<XId>` with the same `[JsonConverter]` and `[TypeConverter]` attributes; `New()` uses `Uuid7`).
 2. Use `XId` as the entity key and in commands, DTOs and controller route parameters.
 
 That is all: EF value conversion and Dapper type handlers are registered by scanning the Domain assembly for `IStronglyTypedId<>` (`Persistence/Ids/TypedIds.cs`); JSON and MVC route/query binding come from the two attributes. Ids are UUIDv7 (`Uuid7`; .NET 8 has no `Guid.CreateVersion7`). No `Id` on a shared base type.
@@ -76,7 +76,7 @@ That is all: EF value conversion and Dapper type handlers are registered by scan
 
 ### Conventions
 
-File-scoped namespaces · PascalCase types/members, `_camelCase` private fields · one file per concept, not per type (D-055: typed ids in `Ids.cs`, an aggregate with its small enums and value types, ports grouped by concern; a command, its validator and its handler share one slice file) · async methods take `CancellationToken` · Conventional Commits with scopes (see `commitlint.config.cjs`).
+File-scoped namespaces · PascalCase types/members, `_camelCase` private fields · one file per concept, not per type (D-055: typed ids in `Ids.cs`, an aggregate with its small enums and value types, ports grouped by concern; a command, its validator and its handler share one slice file; small types of one aggregate share `<Aggregate>Types.cs`, a lone one keeps its own file) · async methods take `CancellationToken` · Conventional Commits with scopes (see `commitlint.config.cjs`).
 Domain code uses plain names. Theming is brand-only (the name Fugue appears in namespaces and docs, not in domain types).
 
 ### Don't
