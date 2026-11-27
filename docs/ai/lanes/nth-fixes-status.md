@@ -22,3 +22,9 @@
 
 ## Next
 Nothing; lane complete. Report: `.worktrees/_briefs/reports/nth-fixes.md`.
+
+## Follow-up (integrator finding after merge 3149854)
+- Switching AUDIT off fired 6 audit 404s before the list refetched: `invalidateQueries(['modules'])` prefix-matched the still-enabled
+  last-changed queries. Fix: `refetchesAfterToggle` predicate skips them when AUDIT is switched off; spec `refetch-after-toggle.spec.ts`.
+- Live (dev server :4405 on demo API, admin): AUDIT off -> cells all "—", 0 audit 404s; on -> cells refetch, 0 console errors.
+- `npm test`: 278 passed; `npm run lint`: All files pass linting; build clean.
