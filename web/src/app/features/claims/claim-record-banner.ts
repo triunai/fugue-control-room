@@ -11,7 +11,7 @@ import { startTour } from './tour-hook';
   imports: [ClaimStatusPill],
   styleUrl: './claim-record.css',
   template: `
-    <header class="record-banner" data-testid="record-banner">
+    <header class="record-banner" data-testid="record-banner" data-tour="record-banner">
       <div class="rb-top">
         <div class="rb-title">
           <h1 class="page-title">{{ claim().number }}</h1>
