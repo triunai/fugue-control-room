@@ -3,7 +3,8 @@
 ## Commits
 - `1121233` feat(api): file readers for intake imports (spreadsheet, inbox, WhatsApp)
 - `2754f2b` feat(api): import endpoints, claim_imports idempotency ledger, audited creates
-- slice 3/4: web Import page, route, nav entry (this commit)
+- `efd03bd` feat(web): Import page for spreadsheet, inbox and WhatsApp file imports
+- slice 4/4: Bruno `bruno/fugue/import/` (this commit)
 
 ## Gates (copied from output)
 - `dotnet test --filter FullyQualifiedName~Fugue.Tests.Import`: Passed! - Failed: 0, Passed: 40, Skipped: 0, Total: 40
@@ -15,6 +16,9 @@
 
 - slice 3: web lint "All files pass linting."; `npm test` 45 files, 274 tests passed; build Initial total 458.61 kB
   (120.64 kB gzip); headless (dev server 4403 -> API 5203, fresh DB): 23 PASS, 0 FAIL, console errors: 0
+
+- slice 4: `npx bru run import --env local --env-var baseUrl=http://localhost:5203`: Status PASS, Requests 11 (11 Passed),
+  Tests 13/13 (twice in a row: each run uses a fresh key and policy)
 
 ## What changed in shared files (exactly)
 - slice 1: none (new files only); `docs/branch-ledger.md`: the nth-import row only.
@@ -41,4 +45,4 @@
   `ClaimImportsMigrationRollbackTests`. The integrator runs the migration QA gate.
 
 ## Next slice
-- 4/4: Bruno folder `bruno/fugue/import/` (fixtures are the committed `tests/Fugue.Tests/Import/Fixtures/`).
+- none: full .NET suite under the fleet lock, then the report.

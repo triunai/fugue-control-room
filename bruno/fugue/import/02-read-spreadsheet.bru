@@ -1,0 +1,33 @@
+meta {
+  name: Staff reads a CSV (header, rows, a key per row)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/import/files?source=Spreadsheet
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{importStaffToken}}
+}
+
+body:multipart-form {
+  file: @file(../../tests/Fugue.Tests/Import/Fixtures/claims.csv)
+}
+
+tests {
+  test("200 with the header row and four data rows", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.source).to.equal("Spreadsheet");
+    expect(res.body.sheet.headers[0]).to.equal("Claimant email");
+    expect(res.body.sheet.rows.length).to.equal(4);
+    expect(res.body.drafts.length).to.equal(0);
+  });
+  test("every row has a 64-hex content key and the file has its SHA-256", function () {
+    res.body.sheet.rows.forEach((r) => expect(r.key).to.match(/^[0-9a-f]{64}$/));
+    expect(res.body.fileSha256).to.match(/^[0-9a-f]{64}$/);
+  });
+}

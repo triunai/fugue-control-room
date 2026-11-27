@@ -1,0 +1,27 @@
+meta {
+  name: A CSV sent as a WhatsApp export is 400 import.unreadable
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/v1/import/files?source=WhatsApp
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{importStaffToken}}
+}
+
+body:multipart-form {
+  file: @file(../../tests/Fugue.Tests/Import/Fixtures/claims.csv)
+}
+
+tests {
+  test("400 problem with the reason on the file field", function () {
+    expect(res.status).to.equal(400);
+    expect(res.body.code).to.equal("import.unreadable");
+    expect(res.body.errors.file[0]).to.include(".txt");
+  });
+}

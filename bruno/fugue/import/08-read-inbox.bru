@@ -1,0 +1,29 @@
+meta {
+  name: Staff reads an .mbox export (drafts routed by sender domain)
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/v1/import/files?source=Email
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{importStaffToken}}
+}
+
+body:multipart-form {
+  file: @file(../../tests/Fugue.Tests/Import/Fixtures/inbox.mbox)
+}
+
+tests {
+  test("two drafts; the broker email routes to HK through Import:MarketByDomain", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.drafts.length).to.equal(2);
+    expect(res.body.drafts[0].market).to.equal("HK");
+    expect(res.body.drafts[0].claimantEmail).to.equal("self@fugue.test");
+    expect(res.body.drafts[0].hints.join(" ")).to.include("Import:MarketByDomain");
+  });
+}

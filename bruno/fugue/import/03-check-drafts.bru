@@ -1,0 +1,60 @@
+meta {
+  name: Check drafts with the Report an incident rules (200, a verdict per draft)
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/import/check
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{importStaffToken}}
+}
+
+body:json {
+  {
+    "drafts": [
+      {
+        "key": "{{importKey}}",
+        "claimantEmail": "{{selfEmail}}",
+        "market": "Singapore",
+        "line": "motor",
+        "policyNumber": "{{importPolicy}}",
+        "incidentDate": "{{importDate}}",
+        "incidentDescription": "Rear-ended at the lights (Bruno import).",
+        "incidentLocation": "Orchard Road"
+      },
+      {
+        "key": "bad",
+        "claimantEmail": "nobody@example.com",
+        "market": "Atlantis",
+        "line": "Motor",
+        "policyNumber": "",
+        "incidentDate": "2999-01-01",
+        "incidentDescription": "x"
+      }
+    ]
+  }
+}
+
+tests {
+  test("the good draft is ready, normalised to SG and Motor, with the claimant found", function () {
+    expect(res.status).to.equal(200);
+    const ok = res.body[0];
+    expect(ok.ready).to.equal(true);
+    expect(ok.market).to.equal("SG");
+    expect(ok.line).to.equal("Motor");
+    expect(ok.claimant.displayName).to.equal("Dev Self-Service One");
+  });
+  test("the bad draft names each problem on its field", function () {
+    const bad = res.body[1];
+    expect(bad.ready).to.equal(false);
+    expect(bad.errors.market[0]).to.include("Not a market");
+    expect(bad.errors.claimantEmail[0]).to.include("No live account");
+    expect(bad.errors).to.have.property("policyNumber");
+    expect(bad.errors).to.have.property("incidentDate");
+  });
+}

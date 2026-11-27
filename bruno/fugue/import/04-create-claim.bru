@@ -1,0 +1,48 @@
+meta {
+  name: Create the claim from the reviewed draft (201, owned by the claimant)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/v1/import/claims
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{importStaffToken}}
+}
+
+body:json {
+  {
+    "source": "Spreadsheet",
+    "key": "{{importKey}}",
+    "fileName": "bruno.csv",
+    "fileSha256": "{{importKey}}",
+    "item": "Row 2",
+    "market": "SG",
+    "line": "Motor",
+    "policyNumber": "{{importPolicy}}",
+    "incidentDate": "{{importDate}}",
+    "incidentDescription": "Rear-ended at the lights (Bruno import).",
+    "incidentLocation": "Orchard Road",
+    "claimantEmail": "{{selfEmail}}"
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setVar("importClaimId", res.body.id);
+    bru.setVar("importClaimNumber", res.body.number);
+  }
+}
+
+tests {
+  test("201, Location is the claim, status Submitted, the claimant owns it", function () {
+    expect(res.status).to.equal(201);
+    expect(res.headers["location"]).to.include("/api/v1/claims/" + res.body.id);
+    expect(res.body.status).to.equal("Submitted");
+    expect(res.body.claimantName).to.equal("Dev Self-Service One");
+  });
+}

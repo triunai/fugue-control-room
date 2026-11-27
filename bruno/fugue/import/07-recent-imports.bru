@@ -1,0 +1,24 @@
+meta {
+  name: Recently imported lists the claim, newest first
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/v1/import/claims?limit=5
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{importStaffToken}}
+}
+
+tests {
+  test("200 and the newest row is the Bruno import", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body[0].claimId).to.equal(bru.getVar("importClaimId"));
+    expect(res.body[0].source).to.equal("Spreadsheet");
+    expect(res.body[0].importedBy).to.equal("Dev Staff");
+  });
+}
