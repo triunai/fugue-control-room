@@ -49,7 +49,7 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
       idempotently at startup; tests. Decide other global-search candidates (users for admins, customers) with a D-row.
 - [ ] 11. README counts and screenshots refreshed after the merges (verified numbers only).
 
-- [ ] 11d. Decisions timeline in the console (owner 03:15): one read-only page or help-panel tab, ADR-001..014 and D-001..065 with
+- [x] 11d. (merge 2e0ecbf, nth-decisions; D-067; on :8080 admin sees 80 of 80 with D-066, claimant -> /unavailable, 0 errors; web 270 tests, scripts 88) Decisions timeline in the console (owner 03:15): one read-only page or help-panel tab, ADR-001..014 and D-001..065 with
       id, title, date, one line, link to the ADR file or decisions.md anchor, grouped by the CHANGELOG version it landed in;
       generated JSON from the repo docs at build time, no API. Weigh scope first; a cut needs a D-row. Pairs with 11e (help panel).
 - [ ] 11e. Under-the-hood coverage, EVERY page (owner 03:20): Audit log first (and link it to The Score), then Modules, Webhooks,
