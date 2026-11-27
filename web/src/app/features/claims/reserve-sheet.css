@@ -47,3 +47,9 @@
 .res-failed {
   color: var(--err-ink);
 }
+
+.sheet-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}

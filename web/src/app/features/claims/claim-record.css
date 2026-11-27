@@ -331,3 +331,53 @@
   color: var(--err-ink);
   font-weight: 600;
 }
+
+/* hover / focus popover on a track step, and the "How a claim moves" button */
+.step:focus-visible {
+  outline: 2px solid var(--on-band);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.step-tip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  z-index: 20;
+  width: max-content;
+  max-width: 17rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-overlay);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.4;
+  pointer-events: none;
+}
+.step-tip.open {
+  display: block;
+}
+.rb-tracks-bar {
+  display: flex;
+}
+.how-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--on-band);
+  background: transparent;
+  border: 1px solid var(--on-band-line);
+  border-radius: 999px;
+  padding: 0.25rem 0.8rem 0.25rem 0.65rem;
+  cursor: pointer;
+}
+.how-btn:hover,
+.how-btn:focus-visible {
+  background: var(--on-band-line);
+}

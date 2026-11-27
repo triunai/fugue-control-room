@@ -13,7 +13,7 @@ async function enter(page: Page, y: number, text: string) {
   await page.keyboard.press('Enter');
 }
 
-test('assessment worksheet: formulas, use as reserve, open in Excel', async ({ page, request }) => {
+test('assessment worksheet: formulas, use as reserve, save to Excel', async ({ page, request }) => {
   const token = await apiToken(request, 'staff@fugue.test');
   const list = await request.get('/api/v1/claims?limit=100&status=UnderReview', {
     headers: { Authorization: `Bearer ${token}` },
@@ -33,7 +33,7 @@ test('assessment worksheet: formulas, use as reserve, open in Excel', async ({ p
   await page.screenshot({ path: `${SHOTS}/claim-assessment.png` });
 
   const download = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Open in Excel' }).click();
+  await page.getByRole('button', { name: 'Save to Excel' }).click();
   const file = await (await download).path();
   expect(readFileSync(file!).subarray(0, 2).toString()).toBe('PK'); // an .xlsx is a zip
 

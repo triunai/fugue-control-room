@@ -54,12 +54,12 @@ test.describe('reserve sheet and SLA calendar', () => {
     await expect(results.getByText('Saved', { exact: true })).toBeVisible();
   });
 
-  test('Open in Excel downloads the sheet as an .xlsx', async ({ page }) => {
+  test('Save to Excel downloads the sheet as an .xlsx', async ({ page }) => {
     await signIn(page, 'staff@fugue.test');
     await page.goto('/claims/sheet');
-    await expect(page.getByRole('button', { name: 'Open in Excel' })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Save to Excel' })).toBeEnabled();
     const download = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Open in Excel' }).click();
+    await page.getByRole('button', { name: 'Save to Excel' }).click();
     const d = await download;
     expect(d.suggestedFilename()).toBe('reserve-sheet.xlsx');
     expect(

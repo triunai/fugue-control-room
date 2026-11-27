@@ -7,6 +7,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { Icon } from '../../ui/icon';
 import { ClaimsApi } from '../../api/claims.api';
 import { ClaimDto } from '../../api/models';
 import { AccessService } from '../../core/auth/access.service';
@@ -31,6 +32,7 @@ import {
 /** The reserve review sheet (staff). Univer is imported inside `mount()`, so it only ever lives in this route's lazy chunks. */
 @Component({
   selector: 'fg-reserve-sheet-page',
+  imports: [Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './reserve-sheet.css',
   template: `
@@ -80,9 +82,13 @@ import {
           <span class="text-muted text-sm" data-testid="sheet-pending"
             >{{ pending() }} unsaved change{{ pending() === 1 ? '' : 's' }}</span
           >
-          <button type="button" class="btn" [disabled]="saving()" (click)="reload()">Reload</button>
-          <button type="button" class="btn" data-tour="sheet-excel" [disabled]="!ready()" (click)="openInExcel()">
-            Open in Excel
+          <button type="button" class="btn" [disabled]="saving()" (click)="reload()">
+            <fg-icon name="reload" />
+            Reload
+          </button>
+          <button type="button" class="btn" data-tour="sheet-excel" [disabled]="!ready()" (click)="saveToExcel()">
+            <fg-icon name="excel" />
+            Save to Excel
           </button>
           <button
             type="button"
@@ -92,6 +98,7 @@ import {
             [disabled]="saving() || !ready()"
             (click)="save()"
           >
+            <fg-icon name="save" />
             {{ saving() ? 'Saving' : 'Save changes' }}
           </button>
         </div>
@@ -191,7 +198,7 @@ export class ReserveSheetPage implements AfterViewInit, OnDestroy {
   }
 
   /** Downloads the sheet as it is now (including unsaved reserve edits) as a real .xlsx. */
-  async openInExcel(): Promise<void> {
+  async saveToExcel(): Promise<void> {
     const ws = this.univer?.univerAPI.getActiveWorkbook()?.getSheetBySheetId(RESERVES_SHEET);
     if (!ws || !this.rows.length) return;
     const values: unknown[][] = ws.getRange(1, 0, this.rows.length, SHEET_COLUMNS.length).getValues();
