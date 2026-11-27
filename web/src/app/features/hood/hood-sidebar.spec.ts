@@ -8,8 +8,18 @@ import { HoodState, hoodOffFromUrl, isTypingTarget } from './hood-state';
 
 const NOTE: HoodNote = {
   why: ['First line.', 'Second line.'],
+  adrs: [{ label: 'ADR-006 Data access', path: 'docs/adr/ADR-006-ef-core-reads-dapper-writes.md' }],
   decisions: [{ label: 'D-056 Review', path: 'docs/decisions.md' }],
-  guards: ['412 stale'],
+  how: ['Calls GET /claims/{id}.', 'If-Match is checked first.'],
+  guards: [
+    {
+      status: '412',
+      name: 'stale',
+      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+      code: 'if (claim.RowVersion != expected)\n{\n    …\n}',
+      note: 'Reload, then retry.',
+    },
+  ],
 };
 
 @Component({ template: '' })
@@ -106,8 +116,21 @@ describe('Under the hood sidebar', () => {
     await router.navigateByUrl('/a');
     f.detectChanges();
     expect(f.nativeElement.textContent).toContain('First line.');
-    expect(f.nativeElement.textContent).toContain('412 stale');
-    expect(q(f, '.links a')?.getAttribute('href')).toBe(
+    expect(f.nativeElement.textContent).toContain('Calls GET /claims/{id}.');
+    const heads = [...f.nativeElement.querySelectorAll('h3')].map((h) => (h as HTMLElement).textContent?.trim());
+    expect(heads).toEqual(['API calls live', 'Why this page', 'How the API does it', 'Guards', 'Decisions']);
+    const guard = q(f, 'details.guard')!;
+    expect(guard.querySelector('summary')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('412 stale');
+    expect(guard.hasAttribute('open')).toBe(false);
+    expect(guard.querySelector('pre code')?.textContent).toContain('if (claim.RowVersion != expected)');
+    expect(guard.querySelector('a.gpath')?.getAttribute('href')).toBe(
+      'https://github.com/triunai/fugue-control-room/blob/main/src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+    );
+    const links = [...f.nativeElement.querySelectorAll('.links li')] as HTMLElement[];
+    expect(links[0].classList.contains('adr')).toBe(true);
+    expect(links[1].classList.contains('adr')).toBe(false);
+    expect(links[0].querySelector('a')?.getAttribute('href')).toContain('docs/adr/ADR-006');
+    expect(links[1].querySelector('a')?.getAttribute('href')).toBe(
       'https://github.com/triunai/fugue-control-room/blob/main/docs/decisions.md',
     );
     await router.navigateByUrl('/b');

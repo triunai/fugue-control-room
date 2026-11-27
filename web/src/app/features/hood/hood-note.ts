@@ -8,14 +8,32 @@ export interface HoodLink {
   readonly path: string;
 }
 
+/** One guard: the chip (status + name) and the real backend lines that enforce it. */
+export interface HoodGuard {
+  /** HTTP status, or a short tag when the guard is not an HTTP answer, e.g. `409`. */
+  readonly status: string;
+  /** Short name, e.g. `invalid transition`. */
+  readonly name: string;
+  /** Repository path of the file the excerpt is copied from, e.g. `src/Fugue.Api/Controllers/ApiControllerBase.cs`. */
+  readonly path: string;
+  /** 2 to 8 lines copied verbatim from `path` (indentation trimmed, `…` for elided lines). */
+  readonly code: string;
+  /** What the client sees, in one plain line. */
+  readonly note?: string;
+}
+
 /** What the "Under the hood" sidebar says about a page. The live API calls need no note. */
 export interface HoodNote {
   /** Two lines: why the page works the way it does. */
-  readonly why: readonly [string, string];
+  readonly why: readonly string[];
+  /** Two to four short lines on how the API does it: endpoints, concurrency, idempotency, scope. Only what is true of the page. */
+  readonly how: readonly string[];
+  /** ADRs that really govern the page, linked as `docs/adr/ADR-NNN-slug.md`; shown first. */
+  readonly adrs: readonly HoodLink[];
   /** Two to four links to decisions or sections of the claims write-up. */
   readonly decisions: readonly HoodLink[];
-  /** Guards that apply on this screen, as short chips ("409 invalid transition"). */
-  readonly guards: readonly string[];
+  /** Guards that apply on this screen: a chip ("409 invalid transition") that opens onto the backend code enforcing it. */
+  readonly guards: readonly HoodGuard[];
 }
 
 const REPO_BLOB = 'https://github.com/triunai/fugue-control-room/blob/main/';
