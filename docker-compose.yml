@@ -14,10 +14,15 @@ services:
       POSTGRES_DB: fugue
       POSTGRES_USER: fugue
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set it in .env} # secrets-scan:ignore (reference, not a value)
+      # Password of the SELECT-only fugue_readonly role the init script creates on a fresh volume (runbook agent-tooling). Dev default; local only.
+      FUGUE_READONLY_PASSWORD: ${FUGUE_READONLY_PASSWORD:-fugue_readonly_dev} # secrets-scan:ignore (dev default, local only)
     ports:
       - "${POSTGRES_PORT:-5432}:5432" # set POSTGRES_PORT in .env if 5432 is taken by a host Postgres
     volumes:
       - fugue-pgdata:/var/lib/postgresql/data
+      # initdb runs these only when the volume is empty (so `down -v` recreates the role); an existing volume needs the manual step in runbook 03.
+      - ./scripts/db/docker-initdb-readonly.sh:/docker-entrypoint-initdb.d/10-fugue-readonly.sh:ro
+      - ./scripts/db/fugue-readonly-role.sql:/opt/fugue/fugue-readonly-role.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U fugue -d fugue"]
       interval: 5s

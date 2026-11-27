@@ -1,0 +1,4 @@
+# uv overrides for the postgres-mcp MCP server (.mcp.json). postgres-mcp 0.3.0 pins pglast==7.2.0, which PyPI no longer serves,
+# and its code needs the mcp 1.x API (mcp 2.x renamed FastMCP). Drop this file when a postgres-mcp release fixes both.
+pglast==7.25
+mcp[cli]<2
