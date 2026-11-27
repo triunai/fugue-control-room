@@ -8,7 +8,8 @@ namespace Fugue.Infrastructure.Search;
 
 /// <summary>
 /// One <c>claims</c> row as the search index holds it (D-063). <c>claimantUserId</c> and <c>assignedOfficerId</c> are filter-only: the scope filter
-/// needs them and no response ever carries them. The reserve and the decision are deliberately not indexed. <c>_formatted</c> is unused (no highlights).
+/// needs them and no response ever carries them. The reserve and the decision are deliberately not indexed. <c>_formatted</c> is filled by the engine on a
+/// highlighted search (<see cref="ClaimHighlightFields"/>).
 /// </summary>
 internal sealed class ClaimDocument
 {
@@ -63,6 +64,9 @@ internal sealed class ClaimDocument
     [JsonPropertyName("submittedAtMs")]
     public long SubmittedAtMs { get; set; }
 
+    [JsonPropertyName("_formatted")]
+    public ClaimHighlightFields? Formatted { get; set; }
+
     public static ClaimDocument From(ClaimIndexRow row) => new()
     {
         Id = row.Claim.Id.Value.ToString(),
@@ -84,7 +88,62 @@ internal sealed class ClaimDocument
 
     public ClaimSearchHitDto ToHit() => new(
         ClaimId.From(Guid.Parse(Id)), Number, Enum.Parse<Market>(Market), Currency, Enum.Parse<LineOfBusiness>(Line), Enum.Parse<ClaimStatus>(Status),
-        PolicyNumber, IncidentDescription, IncidentLocation, DateTimeOffset.Parse(SubmittedAt, CultureInfo.InvariantCulture), ClaimantName);
+        PolicyNumber, IncidentDescription, IncidentLocation, DateTimeOffset.Parse(SubmittedAt, CultureInfo.InvariantCulture), ClaimantName,
+        Formatted?.Matched());
+}
+
+/// <summary>
+/// The highlighted copy of a hit (<c>_formatted</c>): the searchable text fields only, matches wrapped in <c>&lt;em&gt;</c>, the description cropped
+/// around the match. A separate type because the engine turns every number in <c>_formatted</c> into a string.
+/// </summary>
+internal sealed class ClaimHighlightFields
+{
+    [JsonPropertyName("number")]
+    public string? Number { get; set; }
+
+    [JsonPropertyName("policyNumber")]
+    public string? PolicyNumber { get; set; }
+
+    [JsonPropertyName("claimantName")]
+    public string? ClaimantName { get; set; }
+
+    [JsonPropertyName("marketName")]
+    public string? MarketName { get; set; }
+
+    [JsonPropertyName("market")]
+    public string? Market { get; set; }
+
+    [JsonPropertyName("line")]
+    public string? Line { get; set; }
+
+    [JsonPropertyName("incidentLocation")]
+    public string? IncidentLocation { get; set; }
+
+    [JsonPropertyName("incidentDescription")]
+    public string? IncidentDescription { get; set; }
+
+    /// <summary>Only the fields the query matched, keyed by the hit's field names: this is why the hit is in the list.</summary>
+    public Dictionary<string, string> Matched()
+    {
+        var map = new Dictionary<string, string>(StringComparer.Ordinal);
+        void Add(string name, string? value)
+        {
+            if (value is not null && value.Contains("<em>", StringComparison.Ordinal))
+            {
+                map[name] = value;
+            }
+        }
+
+        Add("number", Number);
+        Add("policyNumber", PolicyNumber);
+        Add("claimantName", ClaimantName);
+        Add("marketName", MarketName);
+        Add("market", Market);
+        Add("line", Line);
+        Add("incidentLocation", IncidentLocation);
+        Add("incidentDescription", IncidentDescription);
+        return map;
+    }
 }
 
 /// <summary>A claim plus its claimant's display name, as the indexer reads it.</summary>

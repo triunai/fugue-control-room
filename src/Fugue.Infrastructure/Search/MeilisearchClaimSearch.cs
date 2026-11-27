@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
 using FluentResults;
 using Fugue.Application.Features.Claims;
 using Fugue.Domain.Results;
@@ -29,10 +30,21 @@ internal sealed partial class MeilisearchClaimSearch(IOptions<MeilisearchOptions
         try
         {
             await EnsureIndexesAsync(ct);
-            var query = new SearchQuery { Limit = filter.Limit, Filter = BuildFilter(filter) };
-            ISearchable<ClaimDocument> result = await _client.Index(ClaimsIndex).SearchAsync<ClaimDocument>(filter.Query, query, ct);
+            var query = new SearchQuery
+            {
+                Limit = filter.Limit,
+                Filter = BuildFilter(filter),
+                MatchingStrategy = "all", // every word must match (through a synonym or a typo): "SG motor" means Singapore AND motor
+                AttributesToHighlight = ClaimIndexSettings.Highlighted,
+                AttributesToCrop = ["incidentDescription"],
+                CropLength = 24,
+                HighlightPreTag = "<em>",
+                HighlightPostTag = "</em>",
+                Facets = ClaimIndexSettings.Facets,
+            };
+            ISearchable<ClaimDocument> result = await _client.Index(ClaimsIndex).SearchAsync<ClaimDocument>(BuildQuery(filter.Query), query, ct);
             int total = result is SearchResult<ClaimDocument> offset ? offset.EstimatedTotalHits : result.Hits.Count;
-            return Result.Ok(new ClaimSearchResultDto([.. result.Hits.Select(d => d.ToHit())], total));
+            return Result.Ok(new ClaimSearchResultDto([.. result.Hits.Select(d => d.ToHit())], total, Facets(result.FacetDistribution)));
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -44,6 +56,31 @@ internal sealed partial class MeilisearchClaimSearch(IOptions<MeilisearchOptions
     /// <summary>The engine filter for a search: a claimant's claims only when a claimant id is set (the scope), nothing for staff.</summary>
     internal static string? BuildFilter(ClaimSearchFilter f) =>
         f.ClaimantUserId is { } claimant ? $"claimantUserId = {Quote(claimant.ToString())}" : null;
+
+    /// <summary>
+    /// The engine query for the typed text. A token that carries a digit and is 5+ characters long (a claim number, a policy number, a sequence) is sent
+    /// as a phrase, which the engine matches exactly: no typo and no prefix, so a mistyped number finds nothing instead of its neighbours. A claim number
+    /// still being typed (<c>CLM-</c> but not yet complete) stays a prefix so the list narrows as you type. Text the caller already quoted is sent as is.
+    /// </summary>
+    internal static string BuildQuery(string q)
+    {
+        if (q.Contains('"', StringComparison.Ordinal))
+        {
+            return q;
+        }
+
+        return string.Join(' ', q.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Select(t => IsIdentifier(t) ? "\"" + t + "\"" : t));
+    }
+
+    private static bool IsIdentifier(string token) =>
+        token.Length >= 5 && token.Any(char.IsAsciiDigit)
+        && !(token.StartsWith("CLM-", StringComparison.OrdinalIgnoreCase) && !CompleteClaimNumber().IsMatch(token));
+
+    [GeneratedRegex(@"^CLM-[A-Z]{2}-\d{4}-\d{6,}$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex CompleteClaimNumber();
+
+    private static Dictionary<string, IReadOnlyDictionary<string, int>>? Facets(IReadOnlyDictionary<string, IReadOnlyDictionary<string, int>>? distribution) =>
+        distribution?.ToDictionary(f => f.Key, f => f.Value, StringComparer.Ordinal);
 
     private static string Quote(string value) => "\"" + value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
 

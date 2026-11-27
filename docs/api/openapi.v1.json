@@ -768,7 +768,7 @@
       },
       "ClaimSearchHitDto": {
         "additionalProperties": false,
-        "description": "One hit, shaped like a queue row. ClaimantName is staff-only (null for a claimant, who only ever finds their own claims).",
+        "description": "One hit, shaped like a queue row. ClaimantName is staff-only (null for a claimant, who only ever finds their own claims). Highlights says why the claim matched: field name (`number`, `policyNumber`, `claimantName`, `marketName`, `market`, `line`, `incidentLocation`, `incidentDescription`) to its text with the matched words wrapped in `<em>` (the description cropped around the match). Only matched fields appear; the rest of the text is NOT HTML-escaped, so render it as text.",
         "properties": {
           "claimantName": {
             "nullable": true,
@@ -776,6 +776,13 @@
           },
           "currency": {
             "type": "string"
+          },
+          "highlights": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "object"
           },
           "id": {
             "format": "uuid",
@@ -823,11 +830,22 @@
       },
       "ClaimSearchResultDto": {
         "additionalProperties": false,
-        "description": "EstimatedTotalHits is the engine's estimate of all matches, not the page size.",
+        "description": "EstimatedTotalHits is the engine's estimate of all matches, not the page size. Facets counts every match (not only this page) by `status`, `market` and `line`, under the same scope as the hits.",
         "properties": {
           "estimatedTotalHits": {
             "format": "int32",
             "type": "integer"
+          },
+          "facets": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "type": "object"
+            },
+            "nullable": true,
+            "type": "object"
           },
           "hits": {
             "items": {
@@ -3025,7 +3043,7 @@
             "Bearer": []
           }
         ],
-        "summary": "Full-text search over claims (D-063): claim number, policy number, place, description and claimant name, typo tolerant. The scope is applied by the search filter itself: a claimant only ever finds their own claims, staff with CLAIMS_ALL find every claim. `q` is required. Eventually consistent (an indexer copies rows). 503 `search.unavailable` when the search engine is not configured or unreachable.",
+        "summary": "Full-text search over claims (D-063): claim number, policy number, claimant name, market code and name, line, place and description. Every word must match; words are typo tolerant and have synonyms (SG/Singapore, car/motor, home/property, ...), but a claim or policy number matches exactly. Each hit carries `highlights` (why it matched) and the result `facets` (counts by status, market, line). The scope is applied by the search filter itself: a claimant only ever finds their own claims, staff with CLAIMS_ALL find every claim. `q` is required. Eventually consistent (an indexer copies rows). 503 `search.unavailable` when the search engine is not configured or unreachable.",
         "tags": [
           "Claims"
         ]

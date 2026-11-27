@@ -5,7 +5,7 @@ using Mediator;
 
 namespace Fugue.Application.Features.Claims.Queries;
 
-/// <summary>Contract. Full-text search over claims (number, policy, place, description, claimant name), under the caller's scope.</summary>
+/// <summary>Contract. Full-text search over claims (number, policy, claimant name, market, line, place, description), under the caller's scope.</summary>
 public sealed record SearchClaimsQuery(string? Q, int? Limit) : IQuery<Result<ClaimSearchResultDto>>;
 
 public sealed class SearchClaimsValidator : AbstractValidator<SearchClaimsQuery>

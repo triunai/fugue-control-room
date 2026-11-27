@@ -16,8 +16,9 @@ namespace Fugue.Tests.Claims;
 /// <summary>
 /// GET /api/v1/claims/search against a real Meilisearch (same pinned image as docker-compose.yml, D-063): a claimant's search never returns another
 /// claimant's claim (the scope is an engine filter), staff see every claim, a changed claim is re-indexed, an empty q is 400 and with no engine
-/// configured (or an unreachable one) the answer is 503. Hardening (D-064 item 10): market names, codes, lines and their synonyms match, and the
-/// index settings are sent only when the engine's differ.
+/// configured (or an unreachable one) the answer is 503. Hardening (D-064 item 10): market names, codes, lines and their synonyms match, exact claim
+/// and policy numbers match exactly (a mistyped one finds nothing), every word must match, hits say why they matched (highlights), facets count the
+/// matches under the caller's scope, and the index settings are sent only when the engine's differ.
 /// </summary>
 [Collection(PostgresCollectionDefinition.Name)]
 public sealed class ClaimSearchTests(PostgresFixture db) : IAsyncLifetime
@@ -244,6 +245,94 @@ public sealed class ClaimSearchTests(PostgresFixture db) : IAsyncLifetime
         await WaitForEngineAsync(engine);
 
         Assert.Null(await search.ReadCheckpointAsync(default));
+    }
+
+    [Fact]
+    public async Task An_exact_claim_or_policy_number_finds_only_that_claim_and_a_mistyped_one_does_not_find_it()
+    {
+        HttpClient self = await ClientAsync(_factory, DevUsers.Self);
+        HttpClient staff = await ClientAsync(_factory, DevUsers.Staff);
+        ClaimDto claim = await SubmitAsync(self, "Rear-ended at the lights");
+        await IndexAsync(_factory);
+
+        Assert.Equal([claim.Number], await NumbersAsync(staff, claim.Number));
+        Assert.Equal([claim.Number], await NumbersAsync(staff, claim.Number.ToLowerInvariant()));
+        Assert.Equal([claim.Number], await NumbersAsync(staff, claim.PolicyNumber));
+
+        // One digit off: another claim may really carry that number (numbers are sequential), but never this one and never a near miss.
+        string typo = claim.Number[..^1] + (claim.Number[^1] == '9' ? '8' : (char)(claim.Number[^1] + 1));
+        string[] found = await NumbersAsync(staff, typo);
+        Assert.DoesNotContain(claim.Number, found);
+        Assert.All(found, n => Assert.Equal(typo, n));
+        string policyTypo = claim.PolicyNumber[..^1] + (claim.PolicyNumber[^1] == 'A' ? 'B' : 'A');
+        Assert.Empty(await NumbersAsync(staff, policyTypo));
+    }
+
+    [Fact]
+    public async Task Every_word_must_match_so_the_exact_description_finds_the_claim_and_a_wrong_market_does_not()
+    {
+        HttpClient self = await ClientAsync(_factory, DevUsers.Self);
+        HttpClient staff = await ClientAsync(_factory, DevUsers.Staff);
+        ClaimDto exact = await SubmitAsync(self, "Fresh stack sink check"); // the owner's report: this description did not find its claim
+        string rare = "Plinkwort" + Guid.NewGuid().ToString("N")[..6];
+        ClaimDto claim = await SubmitAsync(self, rare + " hit a bollard");
+        await IndexAsync(_factory);
+
+        Assert.Contains(exact.Number, await NumbersAsync(staff, "Fresh stack sink check"));
+        Assert.Equal([claim.Number], await NumbersAsync(staff, "Singapore " + rare));
+        Assert.Empty(await NumbersAsync(staff, "Thailand " + rare));
+        Assert.Empty(await NumbersAsync(staff, "home " + rare)); // the claim is Motor, home means Property
+    }
+
+    [Fact]
+    public async Task Hits_say_why_they_matched_and_facets_count_the_matches_under_the_callers_scope()
+    {
+        HttpClient self = await ClientAsync(_factory, DevUsers.Self);
+        HttpClient self2 = await ClientAsync(_factory, DevUsers.Self2);
+        HttpClient staff = await ClientAsync(_factory, DevUsers.Staff);
+        string rare = "Grommelfen" + Guid.NewGuid().ToString("N")[..6];
+        ClaimDto claim = await SubmitAsync(self, "Reversed into a pillar, " + rare + " says the sensor failed");
+        await IndexAsync(_factory);
+
+        JsonElement body = await SearchAsync(staff, "SG car " + rare);
+        JsonElement hit = Assert.Single(body.GetProperty("hits").EnumerateArray());
+        JsonElement highlights = hit.GetProperty("highlights");
+        Assert.Equal("<em>SG</em>", highlights.GetProperty("market").GetString());
+        Assert.Equal("<em>Motor</em>", highlights.GetProperty("line").GetString()); // matched through the synonym car -> motor
+        Assert.Contains("<em>" + rare + "</em>", highlights.GetProperty("incidentDescription").GetString(), StringComparison.Ordinal);
+        Assert.False(highlights.TryGetProperty("policyNumber", out _)); // only matched fields appear
+        Assert.Equal("<em>Singapore</em>", (await SearchAsync(staff, "Singapore " + rare)).GetProperty("hits")[0].GetProperty("highlights").GetProperty("marketName").GetString());
+
+        JsonElement facets = body.GetProperty("facets");
+        Assert.Equal(1, facets.GetProperty("market").GetProperty("SG").GetInt32());
+        Assert.Equal(1, facets.GetProperty("line").GetProperty("Motor").GetInt32());
+        Assert.Equal(1, facets.GetProperty("status").GetProperty("Submitted").GetInt32());
+
+        // Another claimant's search for the same words: no hit and no count leaks through the facets.
+        JsonElement theirs = await SearchAsync(self2, "SG car " + rare);
+        Assert.Empty(theirs.GetProperty("hits").EnumerateArray());
+        Assert.False(theirs.TryGetProperty("facets", out JsonElement f) && f.ValueKind == JsonValueKind.Object
+            && f.EnumerateObject().Any(p => p.Value.EnumerateObject().Any()));
+    }
+
+    [Theory]
+    [InlineData("SG motor", "SG motor")]
+    [InlineData("CLM-SG-2026-900013", "\"CLM-SG-2026-900013\"")]
+    [InlineData("clm-sg-2026-900013 motor", "\"clm-sg-2026-900013\" motor")]
+    [InlineData("CLM-SG-2026-9000", "CLM-SG-2026-9000")] // a claim number still being typed stays a prefix
+    [InlineData("POL-SG-100200", "\"POL-SG-100200\"")]
+    [InlineData("900013", "\"900013\"")]
+    [InlineData("2026 motor", "2026 motor")] // under 5 characters the engine allows no typo anyway
+    [InlineData("  Orchard   Road ", "Orchard Road")]
+    [InlineData("\"Fresh stack\" sink", "\"Fresh stack\" sink")] // the caller's own phrase is sent as typed
+    public void Identifier_tokens_are_sent_as_exact_phrases(string typed, string sent) =>
+        Assert.Equal(sent, MeilisearchClaimSearch.BuildQuery(typed));
+
+    private static async Task<JsonElement> SearchAsync(HttpClient client, string q)
+    {
+        HttpResponseMessage response = await client.GetAsync("/api/v1/claims/search?q=" + Uri.EscapeDataString(q));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        return await response.Content.ReadFromJsonAsync<JsonElement>();
     }
 
     private HttpClient EngineClient()

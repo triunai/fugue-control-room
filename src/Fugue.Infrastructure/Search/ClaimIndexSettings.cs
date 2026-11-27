@@ -9,7 +9,7 @@ namespace Fugue.Infrastructure.Search;
 /// <para>
 /// Typo tolerance is NOT switched off with <c>typoTolerance.disableOnAttributes</c>: on the pinned engine (v1.12.8) a word that only appears in such an
 /// attribute of a document added after the setting is never found, so a new claim could not be looked up by its number at all (reproduced against the
-/// image; fixed by v1.13.3). Exact numbers come from the query instead (identifier tokens are sent as phrases).
+/// image; fixed by v1.13.3). Exact numbers come from the query instead (<see cref="MeilisearchClaimSearch.BuildQuery"/>: identifier tokens are sent as phrases).
 /// </para>
 /// </summary>
 internal static class ClaimIndexSettings
@@ -21,6 +21,9 @@ internal static class ClaimIndexSettings
     internal static readonly string[] Filterable = ["claimantUserId", "assignedOfficerId", "market", "line", "status"];
 
     internal static readonly string[] Sortable = ["submittedAtMs"];
+
+    /// <summary>The fields a search highlights (every searchable field: the highlight is the "why it matched").</summary>
+    internal static readonly string[] Highlighted = Searchable;
 
     /// <summary>The facets a search returns counts for (under the caller's scope, like the hits).</summary>
     internal static readonly string[] Facets = ["status", "market", "line"];
