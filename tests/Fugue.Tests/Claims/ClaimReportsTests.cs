@@ -135,6 +135,32 @@ public sealed class ClaimReportsTests(ClaimReportsFixture fx) : IClassFixture<Cl
     }
 
     [Fact]
+    public async Task Workload_names_each_officers_oldest_open_claim_and_lists_idle_officers_with_zeros()
+    {
+        using HttpClient staff = fx.Db.ClientAs(DevUsers.Staff);
+
+        ClaimWorkloadDto board = (await staff.GetFromJsonAsync<ClaimWorkloadDto>("/api/v1/claims/workload"))!;
+
+        OfficerWorkloadDto a = board.Officers.Single(o => o.OfficerId == fx.OfficerA);
+        OfficerWorkloadDto b = board.Officers.Single(o => o.OfficerId == fx.OfficerB);
+        Assert.Equal(10.0, a.OldestOpenAgeDays!.Value, precision: 6); // the oldest open claim of A is claim 3 (10 days), not claim 2 (5 days)
+        Assert.Equal(ClaimStatus.InfoRequested, (await staff.GetFromJsonAsync<ClaimDto>($"/api/v1/claims/{a.OldestOpenClaimId}"))!.Status);
+        Assert.Equal(ClaimStatus.UnderReview, (await staff.GetFromJsonAsync<ClaimDto>($"/api/v1/claims/{b.OldestOpenClaimId}"))!.Status); // claim 4 (20 days)
+
+        // The seeded staff and support officers can handle claims but hold none here: present, all zeros, no oldest claim.
+        OfficerWorkloadDto[] idle = [.. board.Officers.Where(o => o.OfficerId != fx.OfficerA && o.OfficerId != fx.OfficerB)];
+        Assert.NotEmpty(idle);
+        Assert.All(idle, o =>
+        {
+            Assert.Equal((0, 0, 0, 0), (o.UnderReview, o.InfoRequested, o.DecidedLast7Days, o.DecidedLast30Days));
+            Assert.Null(o.OldestOpenAgeDays);
+            Assert.Null(o.OldestOpenClaimId);
+            Assert.Null(o.MedianDaysToDecision);
+        });
+        Assert.DoesNotContain(board.Officers, o => o.OfficerName == "Ada Claimant"); // a claimant cannot handle claims, so is not an officer
+    }
+
+    [Fact]
     public async Task Workload_needs_the_workload_permission_and_a_claimant_is_refused()
     {
         using HttpClient self = fx.Db.ClientAs(DevUsers.Self);

@@ -37,7 +37,8 @@ internal sealed class ClaimReports(FugueDbContext db) : IClaimReports
             [.. officers.Select(o => new OfficerWorkloadDto(
                 UserId.From(o.OfficerId), o.OfficerName, o.UnderReview, o.InfoRequested,
                 o.OldestOpenSubmittedAt is { } oldest ? Math.Max(0, (asOf - oldest).TotalDays) : null,
-                o.DecidedWeek, o.DecidedMonth, o.MedianDays))]);
+                o.DecidedWeek, o.DecidedMonth, o.MedianDays,
+                o.OldestOpenClaimId is { } oldestId ? ClaimId.From(oldestId) : null))]);
     }
 
     public async Task<ClaimExposureDto> GetExposureAsync(DateTimeOffset asOf, CancellationToken ct)
@@ -53,19 +54,20 @@ internal sealed class ClaimReports(FugueDbContext db) : IClaimReports
                 g.Key.Currency,
                 OpenCount = g.Count(c => c.Status != ClaimStatus.Approved),
                 Reserve = g.Sum(c => c.Status != ClaimStatus.Approved ? c.ReserveMinor ?? 0 : 0),
+                Unreserved = g.Count(c => c.Status != ClaimStatus.Approved && c.ReserveMinor == null),
                 ApprovedCount = g.Count(c => c.Status == ClaimStatus.Approved),
                 ApprovedAmount = g.Sum(c => c.Status == ClaimStatus.Approved ? c.ApprovedAmountMinor ?? 0 : 0),
             })
             .ToListAsync(ct);
 
         List<ExposureRowDto> rows = [.. grouped
-            .Select(g => new ExposureRowDto(g.Market, g.Line, g.Currency, g.OpenCount, g.Reserve, g.ApprovedCount, g.ApprovedAmount))
+            .Select(g => new ExposureRowDto(g.Market, g.Line, g.Currency, g.OpenCount, g.Reserve, g.ApprovedCount, g.ApprovedAmount, g.Unreserved))
             .OrderBy(r => r.Market).ThenBy(r => r.Line)];
 
         // Totals are per currency: a row is only ever added to rows of the SAME currency.
         List<ExposureTotalDto> totals = [.. rows.GroupBy(r => r.Currency).OrderBy(g => g.Key, StringComparer.Ordinal)
             .Select(g => new ExposureTotalDto(
-                g.Key, g.Sum(r => r.OpenCount), g.Sum(r => r.OutstandingReserveMinor), g.Sum(r => r.ApprovedNotSettledCount), g.Sum(r => r.ApprovedNotSettledMinor)))];
+                g.Key, g.Sum(r => r.OpenCount), g.Sum(r => r.OutstandingReserveMinor), g.Sum(r => r.ApprovedNotSettledCount), g.Sum(r => r.ApprovedNotSettledMinor), g.Sum(r => r.UnreservedOpenCount)))];
 
         return new ClaimExposureDto(asOf, rows, totals);
     }
@@ -82,6 +84,8 @@ internal sealed class ClaimReports(FugueDbContext db) : IClaimReports
         public int InfoRequested { get; set; }
 
         public DateTimeOffset? OldestOpenSubmittedAt { get; set; }
+
+        public Guid? OldestOpenClaimId { get; set; }
 
         public int DecidedWeek { get; set; }
 
