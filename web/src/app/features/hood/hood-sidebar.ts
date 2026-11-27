@@ -1,4 +1,12 @@
-import { afterEveryRender, ChangeDetectionStrategy, Component, ElementRef, inject, signal, viewChild } from '@angular/core';
+import {
+  afterEveryRender,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
@@ -50,7 +58,9 @@ const statusClass = (s: number) => (s >= 500 || s === 0 ? 's5' : s >= 400 ? 's4'
                   <li class="call">
                     <div class="line">
                       <span class="method">{{ c.method }}</span>
-                      <span class="path" [title]="c.path">{{ c.path }}</span>
+                      <span class="path">{{ c.path }}</span>
+                      <!-- The full path on hover, a child of the row: it moves and goes with the row, unlike a native title tooltip. -->
+                      <span class="tip" aria-hidden="true" data-testid="hood-call-tip">{{ c.path }}</span>
                     </div>
                     <div class="line meta">
                       <span class="status" [class]="cls(c)">{{ c.status || 'ERR' }}</span>
@@ -81,6 +91,24 @@ const statusClass = (s: number) => (s >= 500 || s === 0 ? 's5' : s >= 400 ? 's4'
                 <p class="why">{{ line }}</p>
               }
             </section>
+            @if (n.flow?.length) {
+              <section aria-labelledby="hood-flow">
+                <h3 id="hood-flow" class="sec">What happens</h3>
+                <ol class="flow" data-testid="hood-flow">
+                  @for (s of n.flow; track $index) {
+                    <li class="step">
+                      <span class="fl-layer" [attr.data-layer]="s.layer">{{ s.layer }}</span>
+                      <span class="fl-text">{{ s.text }}</span>
+                      @if (s.path) {
+                        <a class="fl-path" [href]="url(s.path)" target="_blank" rel="noopener noreferrer">{{
+                          fileName(s.path)
+                        }}</a>
+                      }
+                    </li>
+                  }
+                </ol>
+              </section>
+            }
             <section aria-labelledby="hood-how">
               <h3 id="hood-how" class="sec">How the API does it</h3>
               <ul class="how" data-testid="hood-how">
@@ -201,6 +229,11 @@ export class HoodSidebar {
 
   protected url(path: string): string {
     return hoodUrl(path);
+  }
+
+  /** The last path segment, e.g. `AuditController.cs`; the link carries the full path. */
+  protected fileName(path: string): string {
+    return path.split('#', 1)[0].split('/').pop() ?? path;
   }
 
   protected onKey(e: KeyboardEvent): void {

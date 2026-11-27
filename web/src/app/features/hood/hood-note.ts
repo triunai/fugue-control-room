@@ -33,10 +33,24 @@ export interface HoodTest {
   readonly asserts: string;
 }
 
+/** The layer a flow step happens in; the sidebar shows it as a tag. */
+export type HoodLayer = 'web' | 'api' | 'handler' | 'db' | 'audit' | 'outbox' | 'webhook' | 'search' | 'job';
+
+/** One step of what really happens for the page's main action, in order. */
+export interface HoodStep {
+  readonly layer: HoodLayer;
+  /** One plain line (at most 160 characters). */
+  readonly text: string;
+  /** Repository path of the file that does this step, e.g. `src/Fugue.Api/Controllers/AuditController.cs`. */
+  readonly path?: string;
+}
+
 /** What the "Under the hood" sidebar says about a page. The live API calls need no note. */
 export interface HoodNote {
   /** Two lines: why the page works the way it does. */
   readonly why: readonly string[];
+  /** Optional: the page's main action as an ordered sequence of steps, request to storage and back. Shown before `how`. */
+  readonly flow?: readonly HoodStep[];
   /** Two to four short lines on how the API does it: endpoints, concurrency, idempotency, scope. Only what is true of the page. */
   readonly how: readonly string[];
   /** Three to five tests behind the page, one per layer where one exists. */
