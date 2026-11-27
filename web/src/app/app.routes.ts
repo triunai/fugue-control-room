@@ -31,6 +31,27 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', canActivate: [landing], children: [] },
       {
+        path: 'claims/mine',
+        canActivate: [permissionGuard],
+        data: { permission: 'CLAIMS_SUBMIT', section: 'Claims', breadcrumb: 'My claims' },
+        title: 'My claims · Fugue Console',
+        loadComponent: () => import('./features/claims/my-claims-page').then((m) => m.MyClaimsPage),
+      },
+      {
+        path: 'claims/new',
+        canActivate: [permissionGuard],
+        data: { permission: 'CLAIMS_SUBMIT', section: 'Claims', breadcrumb: 'Report an incident' },
+        title: 'Report an incident · Fugue Console',
+        loadComponent: () => import('./features/claims/report-page').then((m) => m.ReportPage),
+      },
+      {
+        path: 'claims/:id',
+        canActivate: [permissionGuard],
+        data: { permission: 'CLAIMS_READ', section: 'Claims', breadcrumb: 'Claim' },
+        title: 'Claim · Fugue Console',
+        loadComponent: () => import('./features/claims/claim-detail-page').then((m) => m.ClaimDetailPage),
+      },
+      {
         path: 'customers',
         canActivate: [permissionGuard],
         data: { permission: 'CUSTOMERS_VIEW', section: 'Data', breadcrumb: 'Customers' },

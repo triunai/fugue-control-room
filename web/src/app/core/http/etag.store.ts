@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-/** The resource a URL acts on: query string dropped, action suffixes (suspend, reactivate, rotate-secret) stripped. */
+/** The resource a URL acts on: query string dropped, action suffixes (suspend, reactivate, rotate-secret, and the claim commands) stripped. */
 export function resourceKey(url: string): string {
   let path = url;
   try {
@@ -8,7 +8,10 @@ export function resourceKey(url: string): string {
   } catch {
     /* keep as-is */
   }
-  return path.replace(/\/+$/, '').replace(/\/(suspend|reactivate|rotate-secret)$/, '');
+  return path
+    .replace(/\/+$/, '')
+    .replace(/\/info-requests(\/[^/]+\/response)?$/, '')
+    .replace(/\/(suspend|reactivate|rotate-secret|pickup|reserve|decision|settle)$/, '');
 }
 
 /**

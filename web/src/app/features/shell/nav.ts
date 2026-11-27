@@ -14,6 +14,23 @@ export interface NavGroup {
 /** Grouped Data / Access / Platform. Items are filtered by permission code; a switched-off module drops its codes, so its items vanish. */
 export const NAV: NavGroup[] = [
   {
+    label: 'Claims',
+    items: [
+      {
+        label: 'My claims',
+        path: '/claims/mine',
+        permission: 'CLAIMS_SUBMIT',
+        icon: 'M4 2.5h8v11H4zM6 5.5h4M6 8h4M6 10.5h2.5',
+      },
+      {
+        label: 'Report an incident',
+        path: '/claims/new',
+        permission: 'CLAIMS_SUBMIT',
+        icon: 'M8 3v10M3 8h10',
+      },
+    ],
+  },
+  {
     label: 'Data',
     items: [
       {

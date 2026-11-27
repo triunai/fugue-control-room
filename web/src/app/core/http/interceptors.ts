@@ -63,7 +63,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 };
 
 const CONDITIONAL = /^(PUT|PATCH|DELETE)$/;
-const CONDITIONAL_POST = /\/(suspend|reactivate|rotate-secret)$/;
+const CONDITIONAL_POST =
+  /\/(suspend|reactivate|rotate-secret|pickup|decision|settle|info-requests|info-requests\/[^/]+\/response)$/;
 
 /** 3. Remember ETags per resource; send If-Match on writes to a resource we have a tag for. */
 export const etagInterceptor: HttpInterceptorFn = (req, next) => {
