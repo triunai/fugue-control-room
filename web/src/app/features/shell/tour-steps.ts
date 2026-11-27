@@ -124,6 +124,12 @@ const STEPS: Record<Persona, TourStep[]> = {
       description:
         'Users, groups and per-user overrides. Permissions are read on every request, so a change lands on the next click.',
     },
+    {
+      selector: '[data-testid="roles-matrix"]',
+      title: 'Roles and permissions',
+      description:
+        'A read-only grid of what each role grants, by module. A user holds the union of their roles and groups.',
+    },
   ],
   member: [],
 };

@@ -229,6 +229,9 @@ ul {
 :host(.rail) .fold-body.closed > ul {
   visibility: visible;
 }
+:host(.rail) .fold-body > ul {
+  overflow: visible;
+}
 :host(.rail) .item {
   justify-content: center;
 }
