@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { injectInfiniteQuery, injectQuery, keepPreviousData } from '@tanstack/angular-query';
 import { ClaimsApi, ClaimFilter, claimKeys } from '../../api/claims.api';
 import { ClaimDto, ClaimStatus } from '../../api/models';
 import { StampPipe } from '../../ui/format';
+import { Select, SelectOption } from '../../ui/select';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
 import { livePoll } from './live-poll';
 import { ClaimStatusPill, MoneyPipe } from './claim-bits';
@@ -27,7 +29,7 @@ const TABS: { v: ClaimFilter['status']; l: string }[] = [
 @Component({
   selector: 'fg-claims-queue-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, ClaimStatusPill, ClaimSearchHits, MoneyPipe, StampPipe, SkeletonRows, EmptyState, ErrorState],
+  imports: [FormsModule, Select, RouterLink, ClaimStatusPill, ClaimSearchHits, MoneyPipe, StampPipe, SkeletonRows, EmptyState, ErrorState],
   styleUrl: './claims.css',
   template: `
     <div class="page">
@@ -82,23 +84,24 @@ const TABS: { v: ClaimFilter['status']; l: string }[] = [
             </button>
           }
         </div>
-        <label class="inline-filter">
-          <span class="sr-only">Market</span>
-          <select class="select" [value]="filters.market()" (change)="filters.setMarket($any($event.target).value)">
-            <option value="">All markets</option>
-            @for (m of markets; track m.code) {
-              <option [value]="m.code">{{ m.name }}</option>
-            }
-          </select>
-        </label>
-        <label class="inline-filter">
-          <span class="sr-only">Line</span>
-          <select class="select" [value]="filters.line()" (change)="filters.setLine($any($event.target).value)">
-            <option value="">Motor and property</option>
-            <option value="Motor">Motor</option>
-            <option value="Property">Property</option>
-          </select>
-        </label>
+        <div class="inline-filter">
+          <label class="sr-only" for="q-market">Market</label>
+          <fg-select
+            inputId="q-market"
+            [options]="marketOptions"
+            [ngModel]="filters.market()"
+            (ngModelChange)="filters.setMarket($event)"
+          />
+        </div>
+        <div class="inline-filter">
+          <label class="sr-only" for="q-line">Line</label>
+          <fg-select
+            inputId="q-line"
+            [options]="lineOptions"
+            [ngModel]="filters.line()"
+            (ngModelChange)="filters.setLine($event)"
+          />
+        </div>
         @if (query.isFetching() && !query.isPending()) {
           <span class="text-sm text-muted" aria-live="polite">Refreshing…</span>
         }
@@ -196,7 +199,15 @@ export class ClaimsQueuePage {
   protected readonly filters = inject(ClaimsFilterStore);
 
   protected readonly tabs = TABS;
-  protected readonly markets = MARKETS;
+  protected readonly marketOptions: SelectOption[] = [
+    { value: '', label: 'All markets' },
+    ...MARKETS.map((m) => ({ value: m.code, label: m.name })),
+  ];
+  protected readonly lineOptions: SelectOption[] = [
+    { value: '', label: 'Motor and property' },
+    { value: 'Motor', label: 'Motor' },
+    { value: 'Property', label: 'Property' },
+  ];
   protected readonly assignedOptions: { v: ClaimFilter['assigned']; l: string }[] = [
     { v: 'any', l: 'Everyone' },
     { v: 'me', l: 'Assigned to me' },

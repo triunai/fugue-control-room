@@ -10,4 +10,3 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | `nth-import` | `.worktrees/nth-import` | dacfb06 | nth-import (Opus), relay-dispatched | D-064 | 11a: intake import module (spreadsheet, inbox, WhatsApp file imports) |
 | `nth-searchx` | `.worktrees/nth-searchx` | dacfb06 | nth-searchx (Opus), relay-dispatched | D-064 | 10: Meilisearch hardening |
 | `nth-paid` | `.worktrees/nth-paid` | f3d7637 | nth-paid (Opus), relay-dispatched | W-037 | 11c: paid/settled figure on Team and exposure |
-| `nth-formsfix` | `.worktrees/nth-formsfix` | 1e3d63d | nth-formsfix (Sonnet), relay-dispatched | W-030 | item 5 follow-up: queue filters + calendar day jump to fg-select/fg-date, e2e claims.spec.ts:30 locator |
