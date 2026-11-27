@@ -77,6 +77,15 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-065 — Owner-steered parallel lanes, verified before merge, run overnight under a loop — 2026-11-28
+WS: WS-22
+Context: from 02:41 the owner sent screen-by-screen asks faster than one agent can build them, then went to sleep with the submission at 15:00.
+Decision: ADR-014. One lead owns main and the spine; each ask is a lane in its own worktree with a written brief and a model sized to the work; no lane pushes or merges; the lead merges only after re-running gates, reading the lane's screenshot and a headless check of the merged result; the pre-push hook runs the full .NET suite. Overnight the lead works `docs/plans/overnight-2026-11-28.md` under `/loop`, resuming from hot-state after each compaction; feature cut-off 13:00, clean demo stack by 14:00.
+Why: speed without losing the "every done is verified" promise; the record (ADR, D-rows, journal, failure modes) is part of what the panel sees.
+Who: owner (the way of working, overnight run), AI lead (gates, lane rules, cut-off)
+Status: accepted
+Promote: ADR-014
+
 ## D-064 — Submission-morning asks past the freeze: shell polish, USD view, add users, onboarding — 2026-11-28
 WS: WS-22
 Context: at 02:41 on submission day (15:00) the owner asked, with screenshots: no box inside the page card; the SLA calendar day as a side drawer; the reserve workbook with sheet tabs like the Wishes2Vows one; "where the money is" with USD amounts, bar and pie charts; a first-visit welcome that points at the README and autoplays the tour; adding users from the console ("UAM is incomplete"); a better My profile.

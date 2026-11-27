@@ -2,26 +2,24 @@
 
 OVERWRITTEN at every wrap or pause, never appended; at most 40 lines. After a wrap or days away: read this first, then do "Next action" exactly. History lives in `docs/project-log.md` and `CHANGELOG.md`.
 
-## ▶ RESUME HERE — 2026-11-28 01:00 +08 (submission today 15:00)
-`main` = v0.0.2 (tag) + post-tag polish + header claims search (D-063, merge 133c962). FEATURE FREEZE (D-062) otherwise stands. Timed claims build = `claims-window-start..claims-window-end`.
-Verified on 133c962: web 226 Vitest, lint, build clean; claims search 7 + ArchTests 37 in isolation; full suite = the pre-push gate (check `git ls-remote origin main` equals `git rev-parse main`). Headless on the demo stack (:8080): claimant finds own claims by number, policy and place and never another claimant's; staff find any; zero console errors; top bar and sidebar brand row share one line at 54 px (full and rail).
-No worktrees but `main`; no lanes running.
+## ▶ RESUME HERE — 2026-11-28 03:10 +08 (submission today 15:00; owner asleep, lead runs the overnight loop)
+Mode: D-064 asks past the freeze, run as parallel lanes under ADR-014 / D-065. Task list: `docs/plans/overnight-2026-11-28.md` (work it top to bottom, tick with shas).
+main = 3dcdb02 + spine commit (local); origin/main = fb10684 (push pending, item 2). Verified on main before the last two commits: web 241 Vitest, lint, build; full .NET suite 747 + ArchTests 37 at the fb10684 push.
+Demo stack `fugue-demo` on :8080 (web rebuilt at cda483c; rebuild after each merge). Login limiter: `docker compose -p fugue-demo restart api` after many test sign-ins (failure mode 25).
 
-## Next action (exact, in order) — demo start
-1. Right before the call, recreate the clean demo stack: `docker compose -p fugue-demo down -v && docker compose -p fugue-demo up -d --build` (dev data stays in `fugue_fugue-pgdata`; back to it with `docker compose -p fugue-demo down -v && docker compose up -d`).
-2. Do NOT run Bruno against the demo stack (it adds BRU- claims).
-3. Two windows: claimant `self@fugue.test` left, staff `staff@fugue.test` right, `http://localhost:8080/?tour=off` (add `&hood=off` while presenting), password in runbook 05. Script: `docs/DEMO.md`; rehearsal checklist: section 6 of `docs/reviews/fable/2026-11-27-panel-stress-test.md`. New beat: type a claim number in the header search as the claimant, then another claimant's number (nothing), then the same as staff.
-4. Private prep: `~/Repos/personal-work/interview-prep/walkthrough-prep.md` sections 0b, 12, 13.
+## Live lanes (ledger rows in docs/branch-ledger.md)
+- nth-uam (Opus): admin creates users; full suite was running at 02:54; nothing committed yet. Merge after its report.
+- nth-score (Opus): The Score inspector; not reported yet.
+- search-research (Haiku, no worktree): asked to write `docs/research/2026-11-28-meilisearch.md` (commit it with the spine).
+Retired today: nth-money, nth-prelude, nth-onboard, nth-readme (merged), nth-shellfix, nth-claimsearch.
 
-## Not done (owner's call)
-- `./start.sh` from a fresh clone end to end (tested only with a stub docker). It clashes with `fugue-demo` container names: `docker compose -p fugue-demo down` first.
-- Hosting (owner: tomorrow, if time): API as a Render free Docker web service (sleeps after 15 min, ~1 min wake) + Neon free Postgres + console as a static site; fallback Azure App Service F1.
+## Next action (exact)
+1. Overnight list item 1: browser re-check of 2ba4e19 on rebuilt :8080 (welcome centred, outside click closes it, nav spam works).
+2. Push main with `GIT_SSH_COMMAND="ssh -o ServerAliveInterval=20 -o ServerAliveCountMax=90"`, then `git ls-remote origin main`.
+3. Continue the list; spawn lanes for items 5 to 10 (briefs: goal, allowed files, gates, headless screenshot, trailer `Refs: D-064`).
 
-## Pending owner questions
-Trimming Univer and the calendar for memory-capped deploys (owner's own note). Panel leftovers: backlog #009.
-
-## Owed inbox
-nth-quality flagged: context threshold 50% (`docs/conventions/doc-spine.md`) vs 60% elsewhere; `.githooks/README.md` says set `core.hooksPath` (AGENTS.md forbids). nth-polish: banner/tracks/Help sit inside commit c193a2e (message names only the SLA fix).
+## Owner facts to keep straight
+"nth" = nice-to-have lane prefix. The owner believes Postgres 18 and timestamped GUIDs: verify (compose image, id generation) and state the truth in the Stack modal and the handoff. Owner wants ideas weighed before building. Refactor plan: backlog #010 (after lanes, today).
 
 ## Traps hit
-Failure modes 33 (signed-in AND reloaded browser check), 34 (push keepalive + `git ls-remote`), 35 (shared test clock and background indexer: prove a flaky fix by injecting its condition). Login limiter 429 on back-to-back Bruno runs: `docker compose restart api` (25). Git hooks need `dotnet` on PATH in the committing shell.
+33 (signed-in + reloaded browser check), 34 (push keepalive + ls-remote), 35 (shared test clock, background indexer, crowded DB: prove flaky fixes by injecting the condition). A native modal `<dialog>` makes the page inert: it must be visible and dismissable by an outside click. zsh does not word-split `$F`: use `bash -c`. Git hooks need dotnet on PATH in the committing shell.

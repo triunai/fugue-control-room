@@ -135,3 +135,13 @@ export DOTNET_ROOT=$HOME/.dotnet PATH=$HOME/.dotnet:$PATH DOTNET_CLI_TELEMETRY_O
 All of these are in [`CLAUDE.md`](../CLAUDE.md) under "Commands"; the local setup walkthrough is [runbook 01](runbooks/01-local-setup.md).
 
 Do not trust a number in a document, including this one. Run the command.
+
+## 7. Submission day: many asks, parallel lanes, an overnight loop (ADR-014, D-065)
+The owner reviewed the running console screen by screen and asked for changes faster than one agent can build them. The lead
+turned each ask into a lane: its own worktree and branch (`nth-<topic>`), a written brief, a model sized to the job. Lanes
+never push or merge. The lead merges only after re-running the gates, reading the lane's screenshot and checking the merged app
+headless; the pre-push hook runs the full .NET suite before GitHub sees it. Ideas are weighed before they are built. Overnight,
+the lead works `docs/plans/overnight-2026-11-28.md` under `/loop`, compacting and resuming from `docs/hot-state.md`, with a
+feature cut-off at 13:00 and a clean demo stack by 14:00. The record of how it went: `docs/ai-journal.md`,
+`docs/decisions.md` (D-063 to D-065), `docs/failure-modes.md` (33 to 35).
+
