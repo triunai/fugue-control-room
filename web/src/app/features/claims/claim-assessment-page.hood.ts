@@ -5,6 +5,50 @@ export const CLAIM_ASSESSMENT_HOOD: HoodNote = {
     'The worksheet is a calculator in the browser: five items minus the excess, in exact minor units. The API never sees the worksheet, only the net amount you choose to use as the reserve.',
     'Use as reserve is the same guarded command as on the claim page, so a stale or foreign claim is refused, not overwritten.',
   ],
+  flow: [
+    {
+      layer: 'web',
+      text:
+        'The five items and the excess are summed in the browser in integer minor units; nothing is sent while you type.',
+      path: 'web/src/app/features/claims/claim-assessment-logic.ts',
+    },
+    {
+      layer: 'web',
+      text:
+        '"Use as reserve" is enabled when the net is above zero and the claim\'s status allows a reserve.',
+      path: 'web/src/app/features/claims/claim-assessment-sheet.ts',
+    },
+    {
+      layer: 'web',
+      text:
+        "It calls setReserve with the net amount: PUT /claims/{id}/reserve with the claim's ETag as If-Match.",
+      path: 'web/src/app/api/claims.api.ts',
+    },
+    {
+      layer: 'api',
+      text:
+        'The same endpoint as the claim page: CLAIMS_HANDLE, [IfMatch], then ReserveClaimCommand.',
+      path: 'src/Fugue.Api/Controllers/ClaimsController.cs',
+    },
+    {
+      layer: 'handler',
+      text:
+        'If-Match (428), scope (404) and the version check (412) come before the state machine; then the assignment rule and the aggregate (409).',
+      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+    },
+    {
+      layer: 'db',
+      text:
+        'The UPDATE carries the xmin check; the reserve, its audit row and the ClaimReserveSet outbox row commit in one SaveChanges.',
+      path: 'src/Fugue.Infrastructure/Persistence/Claims/ClaimRepository.cs',
+    },
+    {
+      layer: 'web',
+      text:
+        'The sheet emits the reserved claim and the page refreshes its cache with the new ETag.',
+      path: 'web/src/app/features/claims/claim-assessment-page.ts',
+    },
+  ],
   how: [
     'Reads GET /claims/{id} for the claim and its currency; the totals are formulas in the sheet and are never stored.',
     '"Use as reserve" sends PUT /claims/{id}/reserve with the net in minor units and the claim’s ETag as If-Match (xmin).',

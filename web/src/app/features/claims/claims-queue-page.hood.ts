@@ -5,6 +5,44 @@ export const CLAIMS_QUEUE_HOOD: HoodNote = {
     'Open claims, longest-waiting first, in keyset pages ("Load more"). Tab counts come from one grouped counts call that follows the same filters.',
     'It refreshes on focus and every 15 s. Reserves show in each claim’s own currency and are never added across currencies.',
   ],
+  flow: [
+    {
+      layer: 'web',
+      text:
+        'The page keeps its filters in the URL and refetches on focus and every 15 s.',
+      path: 'web/src/app/features/claims/claims-query-params.ts',
+    },
+    {
+      layer: 'api',
+      text:
+        'GET /claims needs CLAIMS_READ; the controller turns the query string into a ListClaimsQuery.',
+      path: 'src/Fugue.Api/Controllers/ClaimsController.cs',
+    },
+    {
+      layer: 'handler',
+      text:
+        "The caller's scope comes from the token: CLAIMS_ALL sees every claim, anyone else only their own (D-063).",
+      path: 'src/Fugue.Application/Features/Claims/ClaimScope.cs',
+    },
+    {
+      layer: 'db',
+      text:
+        'An EF keyset read (no tracking), the scope and filters applied in the query; oldest first for staff. GET /claims/counts uses the same filter.',
+      path: 'src/Fugue.Infrastructure/Persistence/Claims/ClaimRepository.cs',
+    },
+    {
+      layer: 'search',
+      text:
+        'Typing in the search box calls GET /claims/search, which asks Meilisearch with the scope as a filter in the engine query.',
+      path: 'src/Fugue.Infrastructure/Search/MeilisearchClaimSearch.cs',
+    },
+    {
+      layer: 'job',
+      text:
+        'The claim indexer keeps that index current from the claims table; if the engine is off the search answers 503 and this list stays.',
+      path: 'src/Fugue.Infrastructure/Search/ClaimIndexer.cs',
+    },
+  ],
   how: [
     'Calls GET /claims (keyset paged, filters in the query) and GET /claims/counts for the tabs; both need CLAIMS_READ.',
     'Staff with CLAIMS_ALL see every claim, oldest first; everyone else is scoped to their own claims by the same query.',

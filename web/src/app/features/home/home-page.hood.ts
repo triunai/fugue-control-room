@@ -5,6 +5,38 @@ export const HOME_HOOD: HoodNote = {
     'The landing is chosen from permission codes, not role names: admin, manager, officer, claimant. Anyone else goes to their first nav item.',
     'Each persona gets one primary action and reads only what its scope allows.',
   ],
+  flow: [
+    {
+      layer: 'web',
+      text:
+        'The landing page asks GET /me for your permission codes; the persona (admin, manager, officer, claimant) comes from those, not a role name.',
+      path: 'web/src/app/features/home/home-logic.ts',
+    },
+    {
+      layer: 'api',
+      text:
+        'GET /me answers your effective permission codes.',
+      path: 'src/Fugue.Api/Controllers/MeController.cs',
+    },
+    {
+      layer: 'web',
+      text:
+        'Each persona then asks GET /claims with its own filters (status, assigned), refreshed on focus and every 15 s.',
+      path: 'web/src/app/features/home/home-page.ts',
+    },
+    {
+      layer: 'handler',
+      text:
+        'The list is scoped on the server: CLAIMS_ALL sees the queue, a claimant only their own claims.',
+      path: 'src/Fugue.Application/Features/Claims/ClaimScope.cs',
+    },
+    {
+      layer: 'db',
+      text:
+        'An EF keyset read with the scope and filters in the WHERE; the page only reads and links to the claim pages for any action.',
+      path: 'src/Fugue.Infrastructure/Persistence/Claims/ClaimRepository.cs',
+    },
+  ],
   how: [
     'Calls GET /me for the permission codes, then GET /claims with the persona’s filters (status, assigned).',
     'The page never checks a role name; the API reads the same permission codes from the token on every call (D-044).',

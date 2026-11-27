@@ -11,4 +11,3 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | `nth-searchx` | `.worktrees/nth-searchx` | dacfb06 | nth-searchx (Opus), relay-dispatched | D-064 | 10: Meilisearch hardening |
 | `nth-pdf` | `.worktrees/nth-pdf` | dacfb06 | nth-pdf (Opus), relay-dispatched | D-064 | 11b: settlement and decision letters as PDF |
 | `nth-paid` | `.worktrees/nth-paid` | f3d7637 | nth-paid (Opus), relay-dispatched | W-037 | 11c: paid/settled figure on Team and exposure |
-| `nth-hoodflow` | `.worktrees/nth-hoodflow` | c191a05 | nth-hoodflow (Sonnet), relay-dispatched | W-035 | 11e follow-up: flow steps on the 9 claims-area hood notes |

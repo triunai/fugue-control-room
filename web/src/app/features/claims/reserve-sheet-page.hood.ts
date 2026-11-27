@@ -5,6 +5,44 @@ export const RESERVE_SHEET_HOOD: HoodNote = {
     'A spreadsheet is the natural view for reviewing many reserves at once, but it has no special write path: each changed row is the same guarded command as on the claim page.',
     'Rows save one after another with their own result; a stale row (412) is re-read and a failed row never stops the next one.',
   ],
+  flow: [
+    {
+      layer: 'web',
+      text:
+        'The sheet loads open claims one status at a time with GET /claims; only the reserve column is editable.',
+      path: 'web/src/app/features/claims/reserve-sheet-page.ts',
+    },
+    {
+      layer: 'web',
+      text:
+        "Save collects the rows whose reserve changed, as minor units in each claim's own currency.",
+      path: 'web/src/app/features/claims/reserve-sheet-logic.ts',
+    },
+    {
+      layer: 'api',
+      text:
+        "Each changed row is its own PUT /claims/{id}/reserve with that claim's ETag; there is no bulk endpoint (D-059).",
+      path: 'web/src/app/api/claims.api.ts',
+    },
+    {
+      layer: 'handler',
+      text:
+        'Every row meets the same checks as the claim page: If-Match (428), scope (404), version (412), then the aggregate (409).',
+      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+    },
+    {
+      layer: 'db',
+      text:
+        'A row that passes is UPDATEd with the xmin check and its ClaimReserveSet event queued in the same SaveChanges.',
+      path: 'src/Fugue.Infrastructure/Persistence/Claims/ClaimRepository.cs',
+    },
+    {
+      layer: 'web',
+      text:
+        'Results are per row: a stale row is re-read, a failed row never stops the next, and the sheet shows each new ETag.',
+      path: 'web/src/app/features/claims/reserve-sheet-page.ts',
+    },
+  ],
   how: [
     'Loads open claims with GET /claims, one open status at a time, paged, oldest first. Only the reserve column is editable.',
     'Save sends PUT /claims/{id}/reserve per changed row with that claim’s ETag as If-Match (xmin); there is no bulk endpoint (D-059).',
