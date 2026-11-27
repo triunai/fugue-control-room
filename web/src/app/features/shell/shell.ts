@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
   ActivatedRouteSnapshot,
   NavigationEnd,
@@ -27,6 +27,10 @@ import { visibleGroups } from './nav';
   selector: 'fg-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, BrandMark],
+  host: {
+    '(document:click)': 'closeMenuOutside($event)',
+    '(document:keydown.escape)': 'menuOpen.set(false)',
+  },
   template: `
     <div class="shell" [class.rail]="collapsed()">
       <a class="skip" href="#main">Skip to content</a>
@@ -104,28 +108,30 @@ import { visibleGroups } from './nav';
         </div>
         <div class="side-foot">
           @if (me(); as me) {
-            <div class="card">
-              <div class="card-id">
-                <span class="avatar" aria-hidden="true">{{ initials() }}</span>
-                <span class="user-text">
-                  <span class="user-name">{{ me.displayName }}</span>
-                  <span class="user-roles">{{ me.roles.join(', ') || 'no role' }}</span>
-                </span>
-              </div>
-              <div class="card-actions">
-                <a class="act" routerLink="/me" data-tip="My profile">
-                  <span class="label">My profile</span>
-                </a>
+            <button
+              type="button"
+              class="acct"
+              aria-haspopup="menu"
+              [attr.aria-expanded]="menuOpen()"
+              [attr.data-tip]="me.displayName"
+              [attr.aria-label]="collapsed() ? me.displayName : null"
+              (click)="menuOpen.set(!menuOpen())"
+            >
+              <span class="avatar" aria-hidden="true">{{ initials() }}</span>
+              <span class="user-text">
+                <span class="user-name">{{ me.displayName }}</span>
+                <span class="user-roles">{{ me.roles.join(', ') || 'no role' }}</span>
+              </span>
+            </button>
+            @if (menuOpen()) {
+              <div class="menu" role="menu" aria-label="Account">
+                <a role="menuitem" class="act" routerLink="/me">My profile</a>
                 @if (access.has('AUDIT_READ')) {
-                  <a class="act" routerLink="/audit" data-tip="Audit log">
-                    <span class="label">Audit log</span>
-                  </a>
+                  <a role="menuitem" class="act" routerLink="/audit">Audit log</a>
                 }
-                <button type="button" class="act" data-tip="Sign out" (click)="auth.signOut()">
-                  <span class="label">Sign out</span>
-                </button>
+                <button type="button" role="menuitem" class="act" (click)="auth.signOut()">Sign out</button>
               </div>
-            </div>
+            }
           }
           <p class="status" [attr.data-tip]="healthLabel()">
             <span
@@ -201,6 +207,14 @@ import { visibleGroups } from './nav';
       flex: 1 1 auto;
       min-height: 0;
       overflow-y: auto;
+      scrollbar-width: thin;
+      overscroll-behavior: contain;
+      /* Scroll cue: a soft shadow shows on whichever edge still has items beyond it. */
+      background:
+        linear-gradient(var(--surface) 30%, transparent) 0 0 / 100% 1.6rem local no-repeat,
+        linear-gradient(transparent, var(--surface) 70%) 0 100% / 100% 1.6rem local no-repeat,
+        linear-gradient(rgb(var(--shadow-color) / 0.16), transparent) 0 0 / 100% 0.5rem scroll no-repeat,
+        linear-gradient(to top, rgb(var(--shadow-color) / 0.16), transparent) 0 100% / 100% 0.5rem scroll no-repeat;
     }
     .side-head {
       flex: none;
@@ -326,25 +340,43 @@ import { visibleGroups } from './nav';
     }
     .side-foot {
       flex: none;
-      padding-top: 0.75rem;
+      padding-top: 0.5rem;
     }
-    .card {
-      border: 1.5px solid var(--line);
-      border-radius: var(--radius-control);
-      background: var(--bg);
-      padding: 0.6rem;
+    .side-foot {
+      position: relative;
+      border-top: 1px solid var(--line);
     }
-    .card-id {
+    .acct {
       display: flex;
       align-items: center;
       gap: 0.6rem;
+      width: 100%;
+      padding: 0.4rem 0.45rem;
+      border: 0;
+      border-radius: var(--radius-control);
+      background: none;
+      color: var(--text);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
     }
-    .card-actions {
+    .acct:hover,
+    .acct[aria-expanded='true'] {
+      background: color-mix(in oklab, var(--accent) 6%, var(--surface));
+    }
+    .menu {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(100% - 0.35rem);
+      z-index: 40;
       display: flex;
       flex-direction: column;
-      margin-top: 0.5rem;
-      padding-top: 0.4rem;
-      border-top: 1px solid var(--line);
+      padding: 0.3rem;
+      background: var(--surface2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      box-shadow: var(--shadow-overlay);
     }
     .act {
       display: block;
@@ -480,7 +512,6 @@ import { visibleGroups } from './nav';
     .rail .brand-name,
     .rail .label,
     .rail .user-text,
-    .rail .card-actions .act:not(:last-child),
     .rail .group span,
     .rail .item .badge {
       display: none;
@@ -494,19 +525,21 @@ import { visibleGroups } from './nav';
     .rail .item {
       justify-content: center;
     }
-    .rail .card {
-      padding: 0.4rem 0.2rem;
+    .rail .acct {
+      justify-content: center;
+      padding: 0.3rem 0;
     }
-    .rail .card-id,
     .rail .status {
       justify-content: center;
     }
-    .rail .act {
-      text-align: center;
+    .rail .menu {
+      left: 0;
+      right: auto;
+      min-width: 10rem;
+      bottom: 0;
+      left: calc(100% + 0.5rem);
     }
-    .rail .card-actions .act:last-child::before {
-      content: '\\21E5';
-    }
+
     [data-tip] {
       position: relative;
     }
@@ -569,6 +602,7 @@ export class Shell {
   private readonly toasts = inject(ToastStore);
   private readonly correlation = inject(CorrelationService);
 
+  protected readonly menuOpen = signal(false);
   protected readonly me = this.access.me;
   protected readonly collapsed = this.prefs.sidebarCollapsed;
   protected readonly folded = computed(() => new Set(this.prefs.collapsedGroups()));
@@ -616,7 +650,17 @@ export class Shell {
       .toUpperCase(),
   );
 
+  protected closeMenuOutside(event: Event): void {
+    if (this.menuOpen() && !(event.target as Element).closest('.side-foot')) this.menuOpen.set(false);
+  }
+
   constructor() {
+    this.router.events
+      .pipe(
+        filter((e) => e instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.menuOpen.set(false));
     // When /me changes under us (refetch on focus or after a token refresh) and the area on screen lost its
     // permission (a module switched off, an override revoked), leave calmly instead of showing a wall of 404s.
     effect(() => {
