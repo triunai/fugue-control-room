@@ -70,10 +70,20 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 | D-057 | Console money: ISO code plus two decimals for every market currency | - |
 | D-058 | Audit search on Meilisearch, fed by an indexer from audit_log (owner reversed the earlier AI-only rejection) | - |
 | D-059 | Nice-to-have UI on Univer (reserve sheet) and FullCalendar (SLA calendar), lazy-loaded | - |
-| D-060 | Console shell ported from the owner's reference app and admin-console design | - |
+| D-060 | Console shell adapted (not ported) from the owner's reference app; faithful port parked (correction in the entry) | - |
 | D-061 | Fable interview-readiness review: all 15 changes accepted, Kafka adapter included | [review](reviews/fable/2026-11-27-interview-readiness.md) |
+| D-062 | Feature freeze for v0.0.2; Kafka kept but ignored (off by default, out of the demo and README highlights) | - |
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
+
+## D-062 — Feature freeze for v0.0.2; Kafka kept but ignored — 2026-11-27
+WS: WS-22
+Context: the evening before submission, with every brief ask built and nine lanes merged, the console went blank for a returning signed-in user (NG0203, failure mode 33) although every gate was green. The optional Kafka adapter (lane nth-kafka) finished but had never reported.
+Decision: freeze features: fixes and polish only until the walkthrough (the owner's "Under the hood" guard snippets count as polish on a shipped panel). Merge the Kafka adapter as built: `Events:Publisher` defaults to `Webhooks`, so the app behaves exactly as before; the broker runs only under the compose profile `kafka`. Keep Kafka out of `docs/DEMO.md` and out of the README highlights (one "optional" row under "Beyond the brief"), and answer "where is Kafka?" by pointing at the port, the adapter and runbook 12. Release what is on main as v0.0.2 (CHANGELOG entry and git tag; the sidebar already says v0.0.2).
+Why: the risk the night before is a regression, not a missing feature; an adapter that is off by default costs nothing at runtime and turns a verbal answer into code.
+Who: owner (freeze, keep-but-ignore Kafka, v0.0.2), AI lead (merge after verification)
+Status: accepted
+Promote: no
 
 ## D-061 — Fable interview-readiness review: all 15 changes accepted — 2026-11-27
 WS: WS-22
@@ -90,7 +100,8 @@ Context: the owner could not see the shell they asked for: the sidebar's pinned 
 Decision: lane nth-shell ports the reference shell into Angular, colours through tokens only, light theme; the nav scroll defect is fixed first as its own commit. The reference apps are not named in this public repo.
 Why: the owner's design reference is the bar; one shell for every persona.
 Who: owner (asked), AI (scope)
-Status: accepted
+Status: accepted; delivered as an ADAPTATION, not a port (correction 2026-11-27 19:56)
+Correction: the owner, looking at the result, said the shell was never ported (only the breadcrumbs). Lane nth-shell's own report agrees: it kept the console's item style instead of the reference's tree line and sliding card and left out the theme switch, the inbox bell and click-to-expand rail (the header search came later from nth-polish). What landed: the nav scroll fix, collapsible remembered groups, rail with tooltips, progress bar, account menu, eyebrow header and breadcrumbs. A faithful port is parked until after submission (D-062 freeze).
 Promote: no
 
 ## D-059 — Nice-to-have UI on Univer and FullCalendar, lazy-loaded — 2026-11-27
