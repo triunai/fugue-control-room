@@ -125,6 +125,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/audit/audit-page').then((m) => m.AuditPage),
       },
       {
+        path: 'audit/trace/:correlationId',
+        canActivate: [permissionGuard],
+        data: { permission: 'AUDIT_READ', section: 'Data', breadcrumb: 'The Score' },
+        title: 'The Score · Fugue Console',
+        loadComponent: () => import('./features/audit/score-page').then((m) => m.ScorePage),
+      },
+      {
         path: 'access',
         canActivate: [permissionGuard],
         data: {

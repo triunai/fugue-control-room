@@ -14,6 +14,8 @@ export * from './auditSearchHitDto';
 export * from './auditSearchHitDtoHighlights';
 export * from './auditSearchParams';
 export * from './auditSearchResultDto';
+export * from './auditTraceDto';
+export * from './auditTraceVoiceDto';
 export * from './badRequestResponse';
 export * from './claimCountsDto';
 export * from './claimDto';

@@ -1,0 +1,118 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1 class="page-title">The Score</h1>
+      <p class="page-lede">
+        One request, voice by voice: the command it ran, the event it recorded and every webhook delivery of that event,
+        read from the audit log, the outbox and the delivery table under one correlation id.
+      </p>
+    </div>
+    <a class="btn btn-sm btn-quiet" [routerLink]="['/audit']" [queryParams]="{ correlationId: correlationId() }">
+      Rows in the audit log
+    </a>
+  </header>
+
+  @if (query.isPending()) {
+    <fg-skeleton-rows [rows]="4" [widths]="['18%', '52%', '10%']" />
+  } @else if (notFound()) {
+    <fg-empty-state
+      title="Nothing recorded under this id"
+      body="No audit row, outbox event or webhook delivery carries this correlation id. Reads are not audited, so a GET leaves no trace."
+    />
+  } @else if (query.isError()) {
+    <fg-error-state [error]="query.error()" (retry)="query.refetch()" />
+  } @else if (query.data(); as t) {
+    @if (layout(); as l) {
+      <section class="score-head" aria-label="Correlation">
+        <fg-ref-chip label="correlation" [value]="t.correlationId" maxWidth="40ch" />
+        <span class="pill" [class]="pill(t.status)">{{ t.status }}</span>
+        <span class="text-sm text-muted">
+          {{ l.steps.length }} steps over {{ ms(l.spanMs) }}, from {{ t.startedAt | stamp }}
+        </span>
+      </section>
+
+      <figure class="score-figure">
+        <svg
+          class="score-svg"
+          [attr.viewBox]="'0 0 ' + l.width + ' ' + l.height"
+          role="img"
+          aria-labelledby="score-title"
+          aria-describedby="score-steps"
+        >
+          <title id="score-title">Timeline of {{ l.steps.length }} steps over {{ ms(l.spanMs) }}</title>
+          @for (lane of l.lanes; track lane.id; let odd = $odd) {
+            @if (odd) {
+              <rect class="lane-band" x="0" [attr.y]="lane.y - 20" [attr.width]="l.width" height="40" />
+            }
+            <text class="lane-label" x="8" [attr.y]="lane.y" dominant-baseline="middle">{{ lane.label }}</text>
+          }
+          @for (tick of l.ticks; track tick.ms) {
+            <line class="tick-line" [attr.x1]="tick.x" [attr.x2]="tick.x" y1="0" [attr.y2]="l.axisY" />
+            <text class="tick-label" [attr.x]="tick.x" [attr.y]="l.axisY + 18" text-anchor="middle">
+              {{ ms(tick.ms) }}
+            </text>
+          }
+          <line
+            class="axis"
+            [attr.x1]="l.ticks[0].x"
+            [attr.x2]="l.width - 24"
+            [attr.y1]="l.axisY"
+            [attr.y2]="l.axisY"
+          />
+          @for (c of l.connectors; track $index) {
+            <path class="connector" [attr.d]="'M' + c.x1 + ' ' + c.y1 + ' L' + c.x2 + ' ' + c.y2" />
+          }
+          @for (b of l.bars; track b.key) {
+            <rect
+              class="bar"
+              [class]="'bar-' + b.tone"
+              [attr.x]="b.x"
+              [attr.y]="b.y"
+              [attr.width]="b.width"
+              height="14"
+              rx="3"
+            >
+              <title>{{ b.laneLabel }}: {{ b.title }} ({{ b.status }}), {{ ms(b.startMs) }}</title>
+            </rect>
+          }
+        </svg>
+      </figure>
+
+      <ol id="score-steps" class="score-steps" aria-label="Steps in order">
+        @for (s of l.steps; track s.key) {
+          <li class="step" [class]="'step-' + s.tone">
+            <span class="step-mark" aria-hidden="true">
+              @if (s.tone === 'ok') {
+                <svg width="14" height="14" viewBox="0 0 16 16">
+                  <path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="2" />
+                </svg>
+              } @else if (s.tone === 'err') {
+                <svg width="14" height="14" viewBox="0 0 16 16">
+                  <path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="2" />
+                </svg>
+              } @else {
+                <svg width="14" height="14" viewBox="0 0 16 16">
+                  <circle cx="8" cy="8" r="3.5" fill="currentColor" />
+                </svg>
+              }
+            </span>
+            <span class="step-lane">{{ s.laneLabel }}</span>
+            <span class="step-body">
+              <span class="mono">{{ s.title }}</span>
+              @if (s.detail) {
+                <span class="text-sm text-muted">{{ s.detail }}</span>
+              }
+            </span>
+            <span class="step-status text-sm">{{ s.status }}</span>
+            <span class="step-ms mono">
+              {{ ms(s.startMs) }}
+              @if (s.endMs > s.startMs) {
+                to {{ ms(s.endMs) }}
+              }
+            </span>
+          </li>
+        }
+      </ol>
+    }
+  }
+</div>

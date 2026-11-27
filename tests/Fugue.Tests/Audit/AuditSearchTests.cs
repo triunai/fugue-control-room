@@ -125,9 +125,12 @@ public sealed class AuditSearchTests(PostgresFixture db) : IAsyncLifetime
         Assert.True(result.GetProperty("estimatedTotalHits").GetInt32() >= 1);
         Assert.Contains("<em>", hit.GetProperty("highlights").GetProperty("entityId").GetString());
 
+        // Rows matching both words rank first; when fewer than a page of them are indexed, partial matches ("Dev Self-Service One") fill the rest.
         JsonElement byActor = await SearchAsync(_admin, "q=Dev%20Admin&limit=5");
-        Assert.All(byActor.GetProperty("hits").EnumerateArray(), h => Assert.Equal("Dev Admin", h.GetProperty("actorDisplay").GetString()));
-        Assert.NotEmpty(byActor.GetProperty("hits").EnumerateArray());
+        bool[] isAdmin = [.. byActor.GetProperty("hits").EnumerateArray().Select(h => h.GetProperty("actorDisplay").GetString() == "Dev Admin")];
+        Assert.NotEmpty(isAdmin);
+        Assert.True(isAdmin[0]);
+        Assert.Equal(isAdmin.OrderByDescending(a => a), isAdmin); // no partial match outranks a full one
     }
 
     [Fact]

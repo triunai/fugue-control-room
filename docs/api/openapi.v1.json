@@ -428,6 +428,112 @@
         ],
         "type": "object"
       },
+      "AuditTraceDto": {
+        "additionalProperties": false,
+        "description": "The trace of one correlation id, oldest first. SpanMs is the time from the first row to the last moment any row records. Status is `failed` (a command failed or an event or delivery is dead), `pending` (an event or delivery is still waiting) or `complete`.",
+        "properties": {
+          "correlationId": {
+            "type": "string"
+          },
+          "spanMs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "voices": {
+            "items": {
+              "$ref": "#/components/schemas/AuditTraceVoiceDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "correlationId",
+          "spanMs",
+          "startedAt",
+          "status",
+          "voices"
+        ],
+        "type": "object"
+      },
+      "AuditTraceVoiceDto": {
+        "additionalProperties": false,
+        "description": "One voice of the trace. AtMs and EndMs are milliseconds after the first row. For a command, Label is the audit action, Detail the HTTP method and route, Status the outcome and DurationMs the pipeline time (failure rows only). For an event, the event type, the outbox status and EndMs when it was relayed. For a delivery, the event type, the subscription name, the delivery status, attempts, the last HTTP status code and EndMs when it succeeded or was dead-lettered.",
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "atMs": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "attempts": {
+            "format": "int32",
+            "nullable": true,
+            "type": "integer"
+          },
+          "detail": {
+            "nullable": true,
+            "type": "string"
+          },
+          "durationMs": {
+            "format": "int32",
+            "nullable": true,
+            "type": "integer"
+          },
+          "endMs": {
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
+          "entityId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "entityType": {
+            "nullable": true,
+            "type": "string"
+          },
+          "errorCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "statusCode": {
+            "format": "int32",
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "at",
+          "atMs",
+          "id",
+          "kind",
+          "label",
+          "status"
+        ],
+        "type": "object"
+      },
       "ClaimCountsDto": {
         "additionalProperties": false,
         "description": "Claims per status under the caller's scope and the list's filters (status excluded). Every status is present, zero included.",
@@ -2254,6 +2360,74 @@
           }
         ],
         "summary": "Full-text search over the audit trail (D-058): typo tolerant, newest first, with highlight snippets. Eventually consistent with the log (an indexer copies rows). 503 `search.unavailable` when the search engine is not configured or unreachable.",
+        "tags": [
+          "Audit"
+        ]
+      }
+    },
+    "/api/v1/audit/trace/{correlationId}": {
+      "get": {
+        "operationId": "Audit_Trace",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "correlationId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditTraceDto"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not Found. Codes: `audit.trace_not_found`, `module.disabled`.",
+            "headers": {
+              "X-Correlation-Id": {
+                "$ref": "#/components/headers/X-Correlation-Id"
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "summary": "\"The Score\" (D-064): everything one correlation id left behind, oldest first: the audited command(s), the outbox event(s) and the webhook deliveries of those events, with times in milliseconds after the first row. 404 `audit.trace_not_found` when nothing has that id.",
         "tags": [
           "Audit"
         ]

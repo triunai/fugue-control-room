@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<AuditLogSaveChangesInterceptor>();
         services.AddScoped<IAuditTrail, AuditTrail>();
         services.AddScoped<Fugue.Application.Features.Audit.IAuditLogReader, AuditLogReader>();
+        services.AddScoped<Fugue.Application.Features.Audit.IAuditTraceReader, AuditTraceReader>();
         services.AddScoped<IActorDirectory, ActorDirectory>();
         services.TryAddScoped<IAuditRequestInfo, NullAuditRequestInfo>();
 

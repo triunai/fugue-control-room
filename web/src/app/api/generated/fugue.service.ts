@@ -29,6 +29,7 @@ import type {
   AuditLogDto,
   AuditSearchParams,
   AuditSearchResultDto,
+  AuditTraceDto,
   ClaimCountsDto,
   ClaimDto,
   ClaimExposureDto,
@@ -267,6 +268,40 @@ export class FugueAPIService {
     ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
         params: filteredParams,}
+    );
+  }
+
+/**
+ * @summary "The Score" (D-064): everything one correlation id left behind, oldest first: the audited command(s), the outbox event(s) and the webhook deliveries of those events, with times in milliseconds after the first row. 404 `audit.trace_not_found` when nothing has that id.
+ */
+ auditTrace<TData = AuditTraceDto>(correlationId: string, options?: HttpClientBodyOptions): Observable<TData>;
+ auditTrace<TData = AuditTraceDto>(correlationId: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ auditTrace<TData = AuditTraceDto>(correlationId: string, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  auditTrace<TData = AuditTraceDto>(
+    correlationId: string, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.get<TData>(
+      `/api/v1/audit/trace/${correlationId}`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.get<TData>(
+      `/api/v1/audit/trace/${correlationId}`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.get<TData>(
+      `/api/v1/audit/trace/${correlationId}`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
     );
   }
 
@@ -2155,6 +2190,7 @@ export class FugueAPIService {
 
 export type AuditListClientResult = NonNullable<AuditLogDto[]>
 export type AuditSearchClientResult = NonNullable<AuditSearchResultDto>
+export type AuditTraceClientResult = NonNullable<AuditTraceDto>
 export type AuthLogoutClientResult = NonNullable<void>
 export type AuthRefreshClientResult = NonNullable<TokenDto>
 export type AuthTokenClientResult = NonNullable<TokenDto>

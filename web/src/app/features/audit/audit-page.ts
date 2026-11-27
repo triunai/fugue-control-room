@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, untracked } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { injectInfiniteQuery, injectQuery, keepPreviousData } from '@tanstack/angular-query';
 import { AuditApi, auditKeys, AuditFilter } from '../../api/audit.api';
 import type { AuditSearchHitDto } from '../../api/generated/model';
@@ -39,7 +40,17 @@ const ENTITY_TYPES = [
 @Component({
   selector: 'fg-audit-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RefChip, RelativeTimePipe, StampPipe, DatePipe, SkeletonRows, EmptyState, ErrorState],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    RefChip,
+    RelativeTimePipe,
+    StampPipe,
+    DatePipe,
+    SkeletonRows,
+    EmptyState,
+    ErrorState,
+  ],
   templateUrl: './audit-page.html',
   styleUrl: './audit-page.css',
 })
