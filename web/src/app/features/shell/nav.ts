@@ -50,6 +50,12 @@ export const NAV: NavGroup[] = [
         icon: 'M2.5 2.5h11v11h-11zM2.5 6.5h11M2.5 10h11M7 2.5v11',
       },
       {
+        label: 'Import',
+        path: '/claims/import',
+        permission: 'CLAIMS_HANDLE',
+        icon: 'M8 2.5v7M5 6.5l3 3 3-3M3 10.5v3h10v-3',
+      },
+      {
         label: 'SLA calendar',
         path: '/claims/calendar',
         permission: 'CLAIMS_READ',

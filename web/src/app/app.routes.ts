@@ -90,6 +90,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/claims/reserve-sheet-page').then((m) => m.ReserveSheetPage),
       },
       {
+        path: 'claims/import',
+        canActivate: [permissionGuard],
+        data: { permission: 'CLAIMS_HANDLE', section: 'Claims', breadcrumb: 'Import' },
+        title: 'Import · Fugue Console',
+        loadComponent: () => import('./features/import/import-page').then((m) => m.ImportPage),
+      },
+      {
         path: 'claims/calendar',
         canActivate: [permissionGuard],
         data: { permission: 'CLAIMS_READ', section: 'Claims', breadcrumb: 'SLA calendar' },

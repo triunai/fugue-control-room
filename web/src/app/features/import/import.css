@@ -1,0 +1,107 @@
+.imp-upload {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.imp-small {
+  margin: 0.25rem 0 0;
+  font-size: 0.8667rem;
+}
+.imp-map {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.75rem 1rem;
+  margin-top: 0.9rem;
+}
+.imp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+.imp-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 1rem 0 0.75rem;
+}
+.imp-bar .imp-actions {
+  margin-top: 0;
+}
+.imp-draft {
+  margin-bottom: 0.75rem;
+  padding: 0.9rem 1rem 1rem;
+  border-left: 3px solid var(--line);
+}
+.imp-draft[data-state='ready'] {
+  border-left-color: var(--accent);
+}
+.imp-draft[data-state='problems'] {
+  border-left-color: var(--warn);
+}
+.imp-draft[data-state='created'] {
+  border-left-color: var(--ok);
+}
+.imp-draft[data-state='imported'] {
+  border-left-color: var(--control);
+  opacity: 0.85;
+}
+.imp-draft-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+.imp-item {
+  font-weight: 600;
+  color: var(--text);
+}
+.imp-include input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--accent);
+}
+.imp-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 0.6rem 1rem;
+  margin-top: 0.75rem;
+}
+.imp-fields .wide {
+  grid-column: 1 / -1;
+}
+.imp-inner {
+  margin-top: 0.75rem;
+}
+.imp-how {
+  margin-top: 0.75rem;
+  font-size: 0.8667rem;
+  color: var(--muted);
+}
+.imp-how summary {
+  cursor: pointer;
+  color: var(--accent-text);
+}
+.imp-how ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+}
+.imp-note {
+  max-height: 16rem;
+  overflow: auto;
+  margin: 0.25rem 0 0;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-control);
+  background: var(--surface2);
+  color: var(--text);
+  font: 0.8rem/1.45 var(--font-mono);
+  white-space: pre-wrap;
+}
+.sub {
+  display: block;
+  font-size: 0.8667rem;
+  color: var(--muted);
+}
