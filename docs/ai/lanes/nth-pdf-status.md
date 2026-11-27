@@ -3,7 +3,7 @@
 ## Commits
 - `056ea6b` feat(api): sample claim letter template and PDF writer
 - `bb6f0e1` feat(api): GET /claims/{id}/letter downloads the sample letter
-- slice 3: `feat(web): settlement or decision letter button on the claim header` (this commit)
+- `8b0679c` feat(web): settlement or decision letter button on the claim header
 
 ## Gates (copied from output)
 - `dotnet build`: Build succeeded. 0 Warning(s) 0 Error(s)
@@ -18,6 +18,7 @@
 - headless (Playwright, dev server :4406 proxied to this branch's API :5206): staff and the claimant each download
   `CLM-SG-2026-000002-settlement-letter.pdf` (5177 / 5181 bytes, header `%PDF-`, number and SGD 4,500.00 inside, claimant copy without
   the SGD 5,000.00 reserve); no button on an undecided claim; console errors: 0. RESULT PASS
+- FULL suite under the fleet lock: Fugue.ArchTests Passed! 37/37; Fugue.Tests Passed! - Failed: 0, Passed: 780, Skipped: 0, Total: 780
 - Rendered both letters and opened them with poppler (`pdftotext -layout`, `pdfinfo`: no parse errors) and macOS `sips` (PNG)
 
 ## Decision: how the PDF is made
@@ -43,4 +44,4 @@
 - The letter's correlation id is the id of the request that made it (echoed as `X-Correlation-Id`), labelled "Request correlation id".
 
 ## Next slice
-- none: lane complete; full .NET suite once under the fleet lock, then the report.
+- none: lane complete. Report: `.worktrees/_briefs/reports/nth-pdf.md`.
