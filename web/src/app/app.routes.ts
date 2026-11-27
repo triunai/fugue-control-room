@@ -4,6 +4,7 @@ import { AccessService } from './core/auth/access.service';
 import { authGuard, guestGuard, permissionGuard } from './core/auth/guards';
 import { ACCESS_HOOD } from './features/access/access-page.hood';
 import { AUDIT_HOOD } from './features/audit/audit-page.hood';
+import { SCORE_HOOD } from './features/audit/score-page.hood';
 import { CLAIM_DETAIL_HOOD } from './features/claims/claim-detail-page.hood';
 import { CLAIMS_QUEUE_HOOD } from './features/claims/claims-queue-page.hood';
 import { MY_CLAIMS_HOOD } from './features/claims/my-claims-page.hood';
@@ -127,7 +128,7 @@ export const routes: Routes = [
       {
         path: 'audit/trace/:correlationId',
         canActivate: [permissionGuard],
-        data: { permission: 'AUDIT_READ', section: 'Data', breadcrumb: 'The Score' },
+        data: { hood: SCORE_HOOD, permission: 'AUDIT_READ', section: 'Data', breadcrumb: 'The Score' },
         title: 'The Score · Fugue Console',
         loadComponent: () => import('./features/audit/score-page').then((m) => m.ScorePage),
       },

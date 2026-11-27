@@ -9,7 +9,19 @@ function find(path: string): Route | undefined {
 }
 
 describe('hood notes registered by route data', () => {
-  const pages = ['', 'claims/mine', 'claims/new', 'claims/queue', 'claims/team', 'claims/:id', 'audit', 'access'];
+  const pages = [
+    '',
+    'claims/mine',
+    'claims/new',
+    'claims/queue',
+    'claims/team',
+    'claims/:id',
+    'audit',
+    'audit/trace/:correlationId',
+    'access',
+  ];
+  // The platform and access pages (part A of item 11e) set the standard: each also walks its main action as a flow.
+  const withFlow = ['audit', 'audit/trace/:correlationId'];
 
   it.each(pages)('route "%s" carries a well-formed note', (path) => {
     const note = find(path)?.data?.['hood'] as HoodNote | undefined;
@@ -58,15 +70,30 @@ describe('hood notes registered by route data', () => {
       expect(lines.length).toBeLessThanOrEqual(8);
       const file = resolve(repo, g.path);
       expect(existsSync(file)).toBe(true);
-      const real = new Set(readFileSync(file, 'utf8').split('\n').map((l) => l.trim()));
+      const real = new Set(
+        readFileSync(file, 'utf8')
+          .split('\n')
+          .map((l) => l.trim()),
+      );
       for (const l of lines.map((x) => x.trim()).filter((x) => x && x !== '…')) {
         expect({ path: g.path, line: l, found: real.has(l) }).toEqual({ path: g.path, line: l, found: true });
       }
     }
   });
 
-  it('pages without a note (customers, modules) show only the live calls', () => {
-    expect(find('customers')?.data?.['hood']).toBeUndefined();
-    expect(find('modules')?.data?.['hood']).toBeUndefined();
+  it.each(withFlow)('route "%s" walks its main action as a flow of real files', (path) => {
+    const note = find(path)?.data?.['hood'] as HoodNote;
+    expect(note.flow?.length ?? 0).toBeGreaterThanOrEqual(3);
+    for (const step of note.flow!) {
+      expect(['web', 'api', 'handler', 'db', 'audit', 'outbox', 'webhook', 'search', 'job']).toContain(step.layer);
+      expect(step.text.length).toBeLessThanOrEqual(160);
+      if (step.path) {
+        expect(step.path).toMatch(/^(src|web|tests|bruno|docs)\//);
+        expect({ path: step.path, exists: existsSync(resolve(repo, step.path)) }).toEqual({
+          path: step.path,
+          exists: true,
+        });
+      }
+    }
   });
 });
