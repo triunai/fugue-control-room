@@ -18,7 +18,7 @@ describe('sheet layout', () => {
   });
 
   it('sizes the host to the chrome plus the rows', () => {
-    expect(sheetHostHeight(9)).toBe(360);
+    expect(sheetHostHeight(9)).toBe(124 + 32 + 8 * 28 + 20); // chrome + header band + eight data rows + footer slack
     expect(sheetHostHeight(17)).toBeGreaterThan(sheetHostHeight(9));
   });
 });

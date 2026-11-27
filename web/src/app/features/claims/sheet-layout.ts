@@ -13,8 +13,12 @@ export const ASSESSMENT_COLUMN_WIDTHS: readonly number[] = [300, 170];
 
 /** Pixel height that fits the Univer chrome (ribbon, toolbar, formula bar, column letters) plus every row, no dead space. */
 export function sheetHostHeight(rowCount: number): number {
-  return 124 + rowCount * 24 + 20;
+  return 124 + HEADER_ROW_HEIGHT + (rowCount - 1) * ROW_HEIGHT + 20;
 }
+
+/** Row heights (px): a taller header band and roomy data rows, closer to a desktop spreadsheet than Univer's 24 px. */
+export const HEADER_ROW_HEIGHT = 32;
+export const ROW_HEIGHT = 28;
 
 /** Reserve workbook sheet ids: the claims sheet is the only one read back and saved; the summary is formulas over it. */
 export const RESERVES_SHEET = 's1';
