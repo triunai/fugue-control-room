@@ -5,7 +5,7 @@ The lead works this list top to bottom under `/loop` while the owner sleeps (ADR
 screenshot, merges, rebuilds the `fugue-demo` stack, re-checks headless, pushes with the SSH keepalive and `git ls-remote`.
 Tick `[x]` with the merge sha. Never: force push, `--no-verify`, drop a non-throwaway database, pkill by name, headed browsers.
 
-Feature cut-off 13:00. 13:00-14:00 only fixes. 14:00: recreate the clean demo stack, final push, hot-state.
+Order inside P1: demo-visible first (5 to 9), then 11a and 11b, then 10, 11c. Feature cut-off 13:00. 13:00-14:00 only fixes. 14:00: recreate the clean demo stack, final push, hot-state.
 
 ## P0 — demo breakers
 - [ ] 1. Browser re-check of 2ba4e19 (welcome can never freeze the page): fresh context, sign in WITHOUT `?tour=off`, welcome
@@ -31,6 +31,23 @@ Feature cut-off 13:00. 13:00-14:00 only fixes. 14:00: recreate the clean demo st
       Singapore ...), typo tolerance off for claim/policy numbers, highlights showing why a hit matched, facets; settings applied
       idempotently at startup; tests. Decide other global-search candidates (users for admins, customers) with a D-row.
 - [ ] 11. README counts and screenshots refreshed after the merges (verified numbers only).
+
+- [ ] 11a. Intake import module (brief: "claimants submit by phone or email", staff work "from shared inboxes and
+      spreadsheets"). Staff-only page "Import" with three sources, all producing DRAFT claims a person reviews before they
+      are created (never auto-submitted): (a) spreadsheet importer, .xlsx/.csv upload, column mapping, per-row validation
+      preview using the same rules as Report an incident, import the valid rows; (b) shared inbox, upload .eml/.mbox
+      exports, route by sender domain to market (a domain -> market table in config, IOptions), parse subject/body into a
+      draft; (c) WhatsApp, upload a chat export .txt, parse messages into a draft with the transcript attached as a note.
+      Honest labels: these are FILE IMPORTS that stand in for live connectors (no Graph/Gmail/WhatsApp Business API calls);
+      say so on the page and in a D-row. Audited, idempotent (same file twice does not duplicate), tests per parser.
+- [ ] 11b. PDF export with a fixed template: a "Settlement letter" (approved/settled claims: claimant, policy, incident,
+      approved amount in the claim currency, decision reason, officer, dates, claim number, correlation id) and a decision
+      letter for rejections. One fixed, branded template (QuestPDF on the API or a client-side generator; pick the one that
+      keeps the bundle and licences clean, record it). Download from the claim page for staff and for the claimant on their
+      own claim (scope rules apply: 404 outside scope). Label it a sample document, not a legal letter.
+- [ ] 11c. Backlog items still open in `docs/state-backlog.md`: #003 (faithful shell port: superseded by the shell work,
+      close with a note), #006 (queue counts in one call), #007 (past info requests list), #009 (panel leftovers: a paid or
+      settled figure on Team and exposure, a notification consumer for events, the Send question during an API restart).
 
 ## P2 — after the lanes merge (backlog #010)
 - [ ] 12. Per-slice folders `Commands/ Queries/ Models/ Repos/ Helpers/` + DI extension; namespaces follow folders (IDE fix or
