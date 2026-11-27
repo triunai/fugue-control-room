@@ -1,0 +1,74 @@
+<div class="page">
+  <header class="page-head">
+    <div>
+      <h1 class="page-title">Decisions</h1>
+      <p class="page-lede">
+        {{ counts.adrs }} ADRs and {{ counts.decisions }} decision entries, newest first, grouped by the release they
+        landed in. Generated from the repository docs; each entry opens its full text.
+      </p>
+    </div>
+  </header>
+
+  <div class="filters">
+    <div class="tabs kinds" role="group" aria-label="Kind">
+      @for (k of kinds; track k.value) {
+        <button
+          type="button"
+          class="tab"
+          [attr.aria-pressed]="kind() === k.value"
+          [attr.aria-selected]="kind() === k.value"
+          (click)="kind.set(k.value)"
+        >
+          {{ k.label }}
+        </button>
+      }
+    </div>
+    <label class="search">
+      <span class="sr-only">Filter decisions</span>
+      <input
+        class="input"
+        type="search"
+        placeholder="Filter by id, title or words"
+        [value]="text()"
+        (input)="onText($event)"
+      />
+    </label>
+    <span class="count" aria-live="polite">{{ shown() }} of {{ total }}</span>
+  </div>
+
+  @for (g of groups(); track g.version) {
+    <section class="release" [attr.aria-label]="g.version">
+      <h2 class="release-title">
+        {{ g.version }}
+        <span class="release-date">{{ g.date ?? 'not yet tagged' }}</span>
+      </h2>
+      <ol class="timeline">
+        @for (e of g.entries; track e.id) {
+          <li class="entry">
+            <span class="dot" aria-hidden="true"></span>
+            <div class="head">
+              <span class="pill mono" [class.pill-acc]="e.kind === 'ADR'" [class.pill-muted]="e.kind === 'D'">{{
+                e.id
+              }}</span>
+              <a class="title" [href]="href(e)" target="_blank" rel="noopener noreferrer">{{ e.title }}</a>
+              <time class="date" [attr.datetime]="e.date">{{ e.date }}</time>
+            </div>
+            @if (e.summary) {
+              <p class="summary">{{ e.summary }}</p>
+            }
+            <p class="meta">
+              @if (e.status) {
+                <span>{{ e.status }}</span>
+              }
+              @if (e.adr) {
+                <span>promoted to {{ e.adr }}</span>
+              }
+            </p>
+          </li>
+        }
+      </ol>
+    </section>
+  } @empty {
+    <div class="panel panel-pad">Nothing matches that filter.</div>
+  }
+</div>
