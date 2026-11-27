@@ -7,6 +7,7 @@ using Fugue.Domain.Webhooks;
 using Fugue.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Npgsql;
 
 namespace Fugue.Infrastructure.Webhooks;
 
@@ -17,17 +18,13 @@ namespace Fugue.Infrastructure.Webhooks;
 /// </summary>
 internal sealed class WebhookDeliveryStore(FugueDbContext db, SqlExecutor sql, IAuditTrail audit, TimeProvider time) : IWebhookDeliveryStore
 {
-    private const string ReviveSql = """
-        UPDATE webhook_deliveries
-        SET status = 'pending', attempts = 0, next_attempt_at = @Now, locked_until = NULL, claim_token = NULL, dead_lettered_at = NULL, last_error = NULL
-        WHERE id = @Id AND status = 'dead'
-        """;
+    private static readonly string ReviveSql = SqlScripts.Get("webhooks/revive-delivery");
 
     public async Task<IReadOnlyList<WebhookDeliveryDto>> ListAsync(WebhookDeliveryFilter filter, KeysetCursor? after, int take, CancellationToken ct)
     {
         IQueryable<WebhookDelivery> deliveries = after is { } cursor
             // Row-value comparison is not expressible in LINQ; the filters compose on top of this.
-            ? db.WebhookDeliveries.FromSql($"SELECT * FROM webhook_deliveries WHERE (occurred_at, id) < ({cursor.CreatedAt}, {cursor.Id})")
+            ? db.WebhookDeliveries.FromSqlRaw(SqlScripts.Get("webhooks/list-deliveries-before"), new NpgsqlParameter("createdAt", cursor.CreatedAt), new NpgsqlParameter("id", cursor.Id))
             : db.WebhookDeliveries;
 
         deliveries = deliveries.AsNoTracking();

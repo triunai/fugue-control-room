@@ -20,25 +20,11 @@ internal sealed class ClaimSeeder(FugueDbContext db, SqlExecutor sql, IUnitOfWor
 {
     private const int FirstSequence = 900_001;
 
-    private const string InsertClaimSql = """
-        INSERT INTO claims (id, number, market, currency, line, status, claimant_user_id, assigned_officer_id, assigned_at, policy_number, incident_date,
-                            incident_description, incident_location, submitted_at, reserve_minor, approved_amount_minor, decision_reason, decided_at, settled_at,
-                            created_at, created_by, updated_at, updated_by)
-        VALUES (@Id, @Number, @Market, @Currency, @Line, @Status, @ClaimantUserId, @AssignedOfficerId, @AssignedAt, @PolicyNumber, @IncidentDate,
-                @IncidentDescription, @IncidentLocation, @SubmittedAt, @ReserveMinor, @ApprovedAmountMinor, @DecisionReason, @DecidedAt, @SettledAt,
-                @CreatedAt, @Actor, @UpdatedAt, @Actor)
-        ON CONFLICT (number) DO NOTHING
-        """;
+    private static readonly string InsertClaimSql = SqlScripts.Get("seeding/insert-claim");
 
-    private const string InsertTimelineSql = """
-        INSERT INTO claim_timeline (id, claim_id, occurred_at, from_status, to_status, actor_user_id, actor_display, note, created_at, created_by, updated_at, updated_by)
-        VALUES (@Id, @ClaimId, @OccurredAt, @FromStatus, @ToStatus, @ActorUserId, @ActorDisplay, @Note, @OccurredAt, @Actor, @OccurredAt, @Actor)
-        """;
+    private static readonly string InsertTimelineSql = SqlScripts.Get("seeding/insert-claim-timeline");
 
-    private const string InsertInfoRequestSql = """
-        INSERT INTO claim_info_requests (id, claim_id, question, requested_by_user_id, requested_at, response, responded_at, created_at, created_by, updated_at, updated_by)
-        VALUES (@Id, @ClaimId, @Question, @RequestedByUserId, @RequestedAt, @Response, @RespondedAt, @RequestedAt, @Actor, @UpdatedAt, @Actor)
-        """;
+    private static readonly string InsertInfoRequestSql = SqlScripts.Get("seeding/insert-claim-info-request");
 
     private sealed record Spec(
         Market Market, LineOfBusiness Line, string Claimant, double DaysAgo, ClaimStatus Final, string? Officer = null,

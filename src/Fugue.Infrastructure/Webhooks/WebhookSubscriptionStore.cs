@@ -5,6 +5,7 @@ using Fugue.Domain.Ids;
 using Fugue.Domain.Webhooks;
 using Fugue.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Fugue.Infrastructure.Webhooks;
 
@@ -24,7 +25,7 @@ internal sealed class WebhookSubscriptionStore(FugueDbContext db) : IWebhookSubs
     public async Task<IReadOnlyList<WebhookSubscriptionDto>> ListAsync(KeysetCursor? after, int take, CancellationToken ct)
     {
         IQueryable<WebhookSubscription> query = after is { } cursor
-            ? db.WebhookSubscriptions.FromSql($"SELECT * FROM webhook_subscriptions WHERE (created_at, id) > ({cursor.CreatedAt}, {cursor.Id})")
+            ? db.WebhookSubscriptions.FromSqlRaw(SqlScripts.Get("webhooks/list-subscriptions-after"), new NpgsqlParameter("createdAt", cursor.CreatedAt), new NpgsqlParameter("id", cursor.Id))
             : db.WebhookSubscriptions;
 
         List<Row> rows = await query.AsNoTracking().OrderBy(s => s.CreatedAt).ThenBy(s => s.Id).Take(take).Select(Projection).ToListAsync(ct);

@@ -12,12 +12,7 @@ namespace Fugue.Infrastructure.Outbox;
 /// </summary>
 internal sealed class OutboxWriter(SqlExecutor sql, OutboxRowFactory factory) : IOutbox
 {
-    private const string InsertSql = """
-        INSERT INTO outbox_messages (id, occurred_at, event_type, aggregate_type, aggregate_id, payload, correlation_id, saga_id, traceparent,
-                                     status, attempts, next_attempt_at)
-        VALUES (@Id, @OccurredAt, @EventType, @AggregateType, @AggregateId, CAST(@Payload AS jsonb), @CorrelationId, @SagaId, @Traceparent,
-                @Status, 0, @NextAttemptAt)
-        """;
+    private static readonly string InsertSql = SqlScripts.Get("outbox/insert-message");
 
     public async Task EnqueueAsync(IHasDomainEvents aggregate, CancellationToken ct)
     {

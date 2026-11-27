@@ -5,6 +5,7 @@ using Fugue.Domain.Ids;
 using Fugue.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Npgsql;
 
 namespace Fugue.Infrastructure.Identity;
 
@@ -35,12 +36,10 @@ internal sealed class RefreshTokenStore(FugueDbContext db, IAuditStamp stamp) : 
             await LockFamilyAsync(old.FamilyId, ct); // serialize with family revocation: a revoke started later sees our new token
             var newId = RefreshTokenId.New();
             AuditStampValue s = stamp.Capture();
-            int claimed = await db.Database.ExecuteSqlInterpolatedAsync($"""
-                UPDATE refresh_tokens SET revoked_at = {now}, replaced_by_id = {newId.Value}, updated_at = {s.Now}, updated_by = {s.Actor}
-                WHERE id = {old.Id.Value} AND revoked_at IS NULL AND expires_at > {now}
-                  AND EXISTS (SELECT 1 FROM users u WHERE u.id = refresh_tokens.user_id AND u.is_active AND NOT u.is_deleted
-                              AND (u.tenant_id IS NULL OR EXISTS (SELECT 1 FROM tenants t WHERE t.id = u.tenant_id AND t.is_active)))
-                """, ct);
+            int claimed = await db.Database.ExecuteSqlRawAsync(
+                SqlScripts.Get("identity/rotate-refresh-token"),
+                [new NpgsqlParameter("now", now), new NpgsqlParameter("newId", newId.Value), new NpgsqlParameter("stampNow", s.Now), new NpgsqlParameter("actor", s.Actor), new NpgsqlParameter("id", old.Id.Value)],
+                ct);
 
             if (claimed == 1)
             {
@@ -102,8 +101,10 @@ internal sealed class RefreshTokenStore(FugueDbContext db, IAuditStamp stamp) : 
         {
             await LockFamilyAsync(family, ct); // wait for any in-flight rotation; the UPDATE below then takes a fresh snapshot
             AuditStampValue s = stamp.Capture();
-            int revoked = await db.Database.ExecuteSqlInterpolatedAsync(
-                $"UPDATE refresh_tokens SET revoked_at = {now}, updated_at = {s.Now}, updated_by = {s.Actor} WHERE family_id = {family} AND revoked_at IS NULL", ct);
+            int revoked = await db.Database.ExecuteSqlRawAsync(
+                SqlScripts.Get("identity/revoke-token-family"),
+                [new NpgsqlParameter("now", now), new NpgsqlParameter("stampNow", s.Now), new NpgsqlParameter("actor", s.Actor), new NpgsqlParameter("family", family)],
+                ct);
             if (own is not null)
             {
                 await own.CommitAsync(ct);
@@ -125,7 +126,7 @@ internal sealed class RefreshTokenStore(FugueDbContext db, IAuditStamp stamp) : 
     /// UPDATE and its INSERT misses the new token (READ COMMITTED snapshot) and the family survives revocation (Codex build review, HIGH).
     /// </summary>
     private Task<int> LockFamilyAsync(Guid family, CancellationToken ct) =>
-        db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({family.ToString()}, 0))", ct);
+        db.Database.ExecuteSqlRawAsync(SqlScripts.Get("identity/lock-token-family"), [new NpgsqlParameter("family", family.ToString())], ct);
 
     private static RefreshToken Build(RefreshTokenId id, UserId user, Guid family, string tokenHash, DateTimeOffset expiresAt, ClientInfo client) => new()
     {
