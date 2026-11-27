@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { injectMutation, injectQuery, QueryClient } from '@tanstack/angular-query';
 import { ToastStore } from '../../core/ui/toast.store';
 import { ClaimsApi, EMPTY_CLAIM_FILTER, claimKeys } from '../../api/claims.api';
@@ -245,6 +245,7 @@ export class HomePage {
   private readonly api = inject(ClaimsApi);
   protected readonly access = inject(AccessService);
   private readonly toasts = inject(ToastStore);
+  private readonly router = inject(Router);
   private readonly queryClient = inject(QueryClient);
 
   protected readonly sla = SLA_DECISION_DAYS;
@@ -325,9 +326,11 @@ export class HomePage {
 
   protected readonly pickup = injectMutation(() => ({
     mutationFn: (id: string) => this.api.pickup(id),
+    // Picking a claim up is the start of working it: confirm, refresh the lists, and open the claim.
     onSuccess: (c) => {
       this.toasts.ok(`Picked up ${c.number}`);
       void this.queryClient.invalidateQueries({ queryKey: claimKeys.all });
+      void this.router.navigate(['/claims', c.id]);
     },
   }));
 
