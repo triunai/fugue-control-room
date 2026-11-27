@@ -12,7 +12,8 @@ namespace Fugue.Api.Auth;
 /// Configures JwtBearer from <see cref="AuthOptions"/>: HS256 only, issuer, audience, signature and lifetime all validated
 /// (lifetime against <see cref="TimeProvider"/> so tests and issuance share one clock), claims not remapped. The per-request
 /// permission lookup runs in <c>OnTokenValidated</c> (once per request, because the handler caches its result) and can fail
-/// the ticket for an inactive or deleted user. 401 and 403 are written as problem+json.
+/// the ticket for an inactive or deleted user. 401 and 403 are written as problem+json; both leave an <c>access_audit</c> row
+/// (the 401 one is bounded per client IP, <see cref="UnauthenticatedAuditLimiter"/>).
 /// </summary>
 public sealed class JwtBearerSetup(IOptions<AuthOptions> auth, TimeProvider time) : IConfigureNamedOptions<JwtBearerOptions>
 {
@@ -91,13 +92,63 @@ public sealed class JwtBearerSetup(IOptions<AuthOptions> auth, TimeProvider time
         }
     }
 
-    private static Task OnChallenge(JwtBearerChallengeContext context)
+    private static async Task OnChallenge(JwtBearerChallengeContext context)
     {
         context.HandleResponse();
+        await RecordUnauthenticatedAsync(context);
         context.Response.Headers.WWWAuthenticate = "Bearer";
-        return AuthProblems.WriteAsync(
+        await AuthProblems.WriteAsync(
             context.HttpContext, StatusCodes.Status401Unauthorized, "auth.unauthenticated", "Authentication is required or the token is not valid.");
     }
+
+    /// <summary>
+    /// Writes the <c>unauthenticated</c>/<c>denied</c> access_audit row of a 401, bounded per client IP. The client is told nothing about the
+    /// reason (the response is identical for all three); the token itself is never read into the row.
+    /// </summary>
+    private static async Task RecordUnauthenticatedAsync(JwtBearerChallengeContext context)
+    {
+        HttpContext http = context.HttpContext;
+        try
+        {
+            ClientInfo client = AuthProblems.ClientOf(http);
+            if (!http.RequestServices.GetRequiredService<UnauthenticatedAuditLimiter>().TryAcquire(client.Ip))
+            {
+                AuditMetrics.RecordWriteFailure(AuditMetrics.AccessAuditTable, AuditMetrics.SuppressedReason);
+                return;
+            }
+
+            string reason = ReasonFor(context.AuthenticateFailure, http.Request.Headers.ContainsKey("Authorization"), http.RequestServices.GetRequiredService<TimeProvider>());
+            await http.RequestServices.GetRequiredService<IAccessAuditWriter>().WriteAsync(
+                new AccessAuditEntry("unauthenticated", "denied", reason, null, null, client), http.RequestAborted);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Auditing is best effort: a 401 must stay a 401 even when the audit services cannot be built (no database, a broken container).
+            AuditMetrics.RecordWriteFailure(AuditMetrics.AccessAuditTable, ex.GetType().Name);
+            ChallengeAuditFailed(http.RequestServices.GetService<ILoggerFactory>()?.CreateLogger(typeof(JwtBearerSetup).FullName!), ex);
+        }
+    }
+
+    private static readonly Action<ILogger, Exception?> ChallengeAuditLog =
+        LoggerMessage.Define(LogLevel.Warning, new EventId(1), "Could not record the unauthenticated access_audit row for a 401");
+
+    private static void ChallengeAuditFailed(ILogger? logger, Exception ex)
+    {
+        if (logger is not null)
+        {
+            ChallengeAuditLog(logger, ex);
+        }
+    }
+
+    /// <summary>missing_token (no credentials sent), expired (a lifetime failure past its expiry), invalid_token (everything else).</summary>
+    private static string ReasonFor(Exception? failure, bool authorizationSent, TimeProvider time) => failure switch
+    {
+        null => authorizationSent ? "invalid_token" : "missing_token",
+        AggregateException aggregate => aggregate.InnerExceptions.Any(e => ReasonFor(e, authorizationSent, time) == "expired") ? "expired" : "invalid_token",
+        SecurityTokenExpiredException => "expired",
+        SecurityTokenInvalidLifetimeException { Expires: { } expires } when expires.ToUniversalTime() <= time.GetUtcNow().UtcDateTime => "expired",
+        _ => "invalid_token",
+    };
 
     private static async Task OnForbidden(ForbiddenContext context)
     {

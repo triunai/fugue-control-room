@@ -37,4 +37,11 @@ public sealed class AuditOptions
 
     /// <summary>False stores no client IP on audit rows (the user agent is still stored).</summary>
     public bool CaptureClientIp { get; set; } = true;
+
+    /// <summary>
+    /// Flood bound for <c>access_audit</c> rows of 401 challenges (<c>unauthenticated</c>): at most this many per client IP per minute (a fixed
+    /// window in memory). Past it the request is still answered 401 and counted on <c>fugue.audit.write_failures</c> (<c>reason=suppressed</c>) but no
+    /// row is written. 0 records none. Every other audit row is never sampled.
+    /// </summary>
+    public int UnauthenticatedRowsPerIpPerMinute { get; set; } = 30;
 }

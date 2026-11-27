@@ -3,9 +3,12 @@ using Fugue.Domain.Ids;
 namespace Fugue.Application.Abstractions;
 
 /// <summary>One authentication or authorization event for <c>access_audit</c>. Never carries a password or a token.</summary>
-/// <param name="Event">login, refresh, refresh_reuse, logout, forbidden, module_disabled.</param>
+/// <param name="Event">login, refresh, refresh_reuse, logout, forbidden, module_disabled, unauthenticated.</param>
 /// <param name="Outcome">success, failure, denied.</param>
-/// <param name="ReasonCode">An internal reason (bad_password, expired, the missing permission code, the module code...). Never sent to the client.</param>
+/// <param name="ReasonCode">An internal reason (bad_password, expired, the missing permission code, the module code...). Never sent to the client.
+/// For <c>unauthenticated</c> (a 401 challenge, outcome <c>denied</c>, no user, no email) it is <c>missing_token</c>, <c>expired</c> or
+/// <c>invalid_token</c>; the token itself is never stored. These rows are bounded per client IP (<c>Audit:UnauthenticatedRowsPerIpPerMinute</c>);
+/// past the bound no row is written and <c>fugue.audit.write_failures</c> counts it with <c>reason=suppressed</c>.</param>
 /// <param name="Email">The raw email attempted; only a keyed hash of its canonical form is stored.</param>
 public sealed record AccessAuditEntry(string Event, string Outcome, string? ReasonCode, UserId? UserId, string? Email, ClientInfo? Client);
 

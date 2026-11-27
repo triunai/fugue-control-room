@@ -57,6 +57,7 @@ try
     builder.Services.AddSingleton<IValidateOptions<AuthOptions>, AuthOptionsValidator>();
     builder.Services.AddSingleton<IAccessTokenIssuer, JwtAccessTokenIssuer>();
     builder.Services.AddSingleton<IConfigureOptions<JwtBearerOptions>, JwtBearerSetup>();
+    builder.Services.AddSingleton<UnauthenticatedAuditLimiter>();
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
     builder.Services.AddAuthorizationBuilder().SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
     builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();

@@ -7,7 +7,7 @@ Which table answers which question:
 | Table | Holds | Ask it |
 |---|---|---|
 | `audit_log` | data changes (field-level) and failed commands | who changed this row, what was the old value, which request |
-| `access_audit` | sign-ins, refresh, logout, 403s, disabled modules | who tried to get in, who was refused |
+| `access_audit` | sign-ins, refresh, logout, 401s, 403s, disabled modules | who tried to get in, who was refused |
 | `grant_audit` | role, group and override grants and revokes | who gave this user that permission |
 
 ## 1. Start the API and sign in as admin
@@ -99,8 +99,13 @@ Expect each to stop with `ERROR:  audit_log is append-only: UPDATE is not allowe
 | `ExcludedEntities` | `[]` | CLR entity names that are not audited (built in: the audit tables, `RefreshToken`) |
 | `MaxChangesBytes` | `16384` | past it, trailing fields are dropped and `"_truncated": true` is added |
 | `CaptureClientIp` | `true` | `false` stores no client IP |
+| `UnauthenticatedRowsPerIpPerMinute` | `30` | cap on `access_audit` rows for 401 challenges per client IP per minute (`0` records none); past it the 401 is still returned and `fugue.audit.write_failures` counts `reason=suppressed` |
 
 On code: `[AuditMask]` on an entity property masks it, `[NoAudit]` on a property omits it, on an entity class excludes the entity, on a command skips the failure row (only the authentication commands use it). Rows are never sampled.
+
+## 401s in `access_audit`
+
+A request that is refused with `401` (no token, an expired token, any other invalid token) leaves one `access_audit` row: `event` `unauthenticated`, `outcome` `denied`, `reason_code` `missing_token`, `expired` or `invalid_token`, no user and no email. The client sees the same `401` problem and `WWW-Authenticate: Bearer` whatever the reason; the token itself is never stored. The rows are bounded per client IP (`UnauthenticatedRowsPerIpPerMinute`, a fixed one-minute window in memory), because an anonymous caller can otherwise write a row per request. Excess requests are answered normally and counted, not stored. Find them with `SELECT occurred_at, reason_code, ip, correlation_id FROM access_audit WHERE event = 'unauthenticated' ORDER BY occurred_at DESC LIMIT 20;`.
 
 ## What is and is not audited
 

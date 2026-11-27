@@ -24,6 +24,11 @@ public sealed class AuditOptionsValidator(IHostEnvironment environment) : IValid
             failures.Add($"Audit:MaxChangesBytes must be at least {MinChangesBytes}.");
         }
 
+        if (options.UnauthenticatedRowsPerIpPerMinute < 0)
+        {
+            failures.Add("Audit:UnauthenticatedRowsPerIpPerMinute must be 0 or more (0 records none).");
+        }
+
         return failures.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(failures);
     }
 }

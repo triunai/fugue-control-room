@@ -203,6 +203,15 @@ public sealed class AuditOptionsValidatorTests
     }
 
     [Fact]
+    public void A_negative_unauthenticated_row_cap_is_refused_and_zero_is_allowed()
+    {
+        var validator = new AuditOptionsValidator(new Env("Development"));
+
+        Assert.False(validator.Validate(null, new AuditOptions { UnauthenticatedRowsPerIpPerMinute = -1 }).Succeeded);
+        Assert.True(validator.Validate(null, new AuditOptions { UnauthenticatedRowsPerIpPerMinute = 0 }).Succeeded);
+    }
+
+    [Fact]
     public void A_size_bound_too_small_to_hold_a_field_is_refused()
     {
         Assert.False(new AuditOptionsValidator(new Env("Development")).Validate(null, new AuditOptions { MaxChangesBytes = 10 }).Succeeded);
