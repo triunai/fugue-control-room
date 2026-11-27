@@ -9,6 +9,94 @@
     </div>
   </header>
 
+  <section *hasPermission="'USERS_VIEW'" class="table-wrap mb-5" aria-labelledby="u-title" data-testid="users-list">
+    <div class="flex flex-wrap items-center justify-between gap-3 px-4 pt-4 pb-3">
+      <h2 id="u-title" class="section-title m-0">Users</h2>
+      <div class="flex items-center gap-2">
+        <label class="sr-only" for="u-search">Search users</label>
+        <input
+          id="u-search"
+          type="search"
+          class="input"
+          placeholder="Search email or name"
+          autocomplete="off"
+          [value]="userSearch()"
+          (input)="userSearch.set($any($event.target).value)"
+        />
+      </div>
+    </div>
+    @if (users.isPending()) {
+      <fg-skeleton-rows [rows]="5" />
+    } @else if (users.isError() && !userRows().length) {
+      <fg-error-state [error]="users.error()" (retry)="users.refetch()" />
+    } @else {
+      <table class="table" [class.dim]="users.isPlaceholderData()">
+        <thead>
+          <tr>
+            <th scope="col">Email</th>
+            <th scope="col">Name</th>
+            <th scope="col">Active</th>
+            <th scope="col">Roles</th>
+            <th scope="col">Groups</th>
+            <th scope="col">Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of userRows(); track u.id) {
+            <tr
+              class="user-row cursor-pointer"
+              data-testid="user-row"
+              [class.on]="userId() === u.id"
+              tabindex="0"
+              (click)="pickUser(u)"
+              (keydown.enter)="pickUser(u)"
+            >
+              <td class="mono">{{ u.email }}</td>
+              <td>{{ u.displayName }}</td>
+              <td>
+                <span class="pill pill-plain" [class.pill-ok]="u.isActive" [class.pill-muted]="!u.isActive">{{
+                  u.isActive ? 'active' : 'inactive'
+                }}</span>
+              </td>
+              <td>
+                <div class="flex flex-wrap gap-1">
+                  @for (r of u.roles; track r) {
+                    <span class="pill pill-acc pill-plain">{{ r }}</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <div class="flex flex-wrap gap-1">
+                  @for (g of u.groups; track g) {
+                    <span class="pill pill-muted pill-plain">{{ g }}</span>
+                  }
+                </div>
+              </td>
+              <td class="text-muted">{{ u.createdAt | stamp }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="text-muted">No users match.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <div class="table-foot">
+        <span class="text-muted">{{ userRows().length }} users</span>
+        @if (users.hasNextPage()) {
+          <button
+            type="button"
+            class="btn btn-sm"
+            (click)="users.fetchNextPage()"
+            [disabled]="users.isFetchingNextPage()"
+          >
+            {{ users.isFetchingNextPage() ? 'Loading…' : 'Load more' }}
+          </button>
+        }
+      </div>
+    }
+  </section>
+
   <div class="cols">
     <section class="panel" aria-labelledby="ov-title">
       <div class="panel-pad flex flex-col gap-3 border-b border-line">
@@ -24,25 +112,10 @@
           />
           <button type="submit" class="btn">Show</button>
         </form>
-        @if (recentActors.data()?.length) {
-          <div class="flex flex-wrap items-center gap-1.5">
-            <span class="text-sm text-muted">Recently active:</span>
-            @for (a of recentActors.data(); track a.id) {
-              <button
-                type="button"
-                class="pill pill-muted pill-plain cursor-pointer"
-                [class.pill-acc]="userId() === a.id"
-                (click)="pick(a.id, a.name)"
-              >
-                {{ a.name }}
-              </button>
-            }
-          </div>
-        }
       </div>
 
       @if (!userId()) {
-        <fg-empty-state title="Choose a user" body="Pick someone who acted recently, or paste a user id." />
+        <fg-empty-state title="Choose a user" body="Pick someone from the list above, or paste a user id." />
       } @else {
         <div class="panel-pad flex flex-col gap-4">
           <div class="flex flex-wrap items-center gap-2">

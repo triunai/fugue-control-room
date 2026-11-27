@@ -1,9 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { injectMutation, injectQuery, QueryClient } from '@tanstack/angular-query';
+import {
+  injectInfiniteQuery,
+  injectMutation,
+  injectQuery,
+  keepPreviousData,
+  QueryClient,
+} from '@tanstack/angular-query';
 import { AccessApi, accessKeys, PERMISSION_CODES, SetOverride } from '../../api/access.api';
-import { AuditApi } from '../../api/audit.api';
-import { EMPTY_AUDIT_FILTER } from '../../api/audit.api';
+import type { UserDto } from '../../api/generated/model';
 import { OverrideDto } from '../../api/models';
 import { AccessService } from '../../core/auth/access.service';
 import { HasPermissionDirective } from '../../core/auth/has-permission.directive';
@@ -34,7 +39,6 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 })
 export class AccessPage {
   private readonly api = inject(AccessApi);
-  private readonly audit = inject(AuditApi);
   private readonly queryClient = inject(QueryClient);
   private readonly toasts = inject(ToastStore);
   private readonly correlation = inject(CorrelationService);
@@ -52,19 +56,27 @@ export class AccessPage {
     enabled: this.access.has('GROUPS_VIEW'),
   }));
 
-  /** There is no user directory endpoint yet, so offer the people who recently acted (from the audit log). */
-  protected readonly recentActors = injectQuery(() => ({
-    queryKey: ['access', 'recent-actors'],
-    queryFn: async () => {
-      const page = await this.audit.list(EMPTY_AUDIT_FILTER, null, 200);
-      const seen = new Map<string, string>();
-      for (const e of page.items) {
-        if (e.actorUserId && !seen.has(e.actorUserId)) seen.set(e.actorUserId, e.actorDisplay ?? e.actorUserId);
-      }
-      return [...seen].map(([id, name]) => ({ id, name }));
-    },
-    enabled: this.access.has('AUDIT_READ'),
+  /** The search box text, and the debounced value the query uses. */
+  protected readonly userSearch = signal('');
+  protected readonly userQ = signal('');
+
+  protected readonly users = injectInfiniteQuery(() => ({
+    queryKey: accessKeys.users(this.userQ()),
+    queryFn: ({ pageParam }) => this.api.users(this.userQ(), pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+    placeholderData: keepPreviousData,
+    enabled: this.access.has('USERS_VIEW'),
   }));
+  protected readonly userRows = computed(() => this.users.data()?.pages.flatMap((p) => p.items) ?? []);
+
+  constructor() {
+    effect((onCleanup) => {
+      const text = this.userSearch().trim();
+      const timer = setTimeout(() => untracked(() => this.userQ.set(text)), 300);
+      onCleanup(() => clearTimeout(timer));
+    });
+  }
 
   protected readonly overrides = injectQuery(() => ({
     queryKey: accessKeys.overrides(this.userId() ?? ''),
@@ -101,6 +113,10 @@ export class AccessPage {
     onSuccess: (_d, o) => this.toasts.ok(`Override on ${o.permission} removed`, undefined, this.correlation.id()),
     onSettled: () => this.queryClient.invalidateQueries({ queryKey: ['access', 'overrides'] }),
   }));
+
+  protected pickUser(u: UserDto): void {
+    this.pick(u.id, u.displayName || u.email);
+  }
 
   protected pick(id: string, name: string | null): void {
     this.userIdText.set(id);

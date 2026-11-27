@@ -4,7 +4,9 @@ import { firstValueFrom } from 'rxjs';
 import { CONSOLE_CONFIG } from '../core/config';
 import { SEND_IF_MATCH } from '../core/http/context';
 import { EtagStore } from '../core/http/etag.store';
-import { GroupDto, OverrideDto } from './models';
+import type { UserDto } from './generated/model';
+import { getPage, params } from './http-page';
+import { GroupDto, OverrideDto, Page } from './models';
 
 /** Permission codes the API seeds (migration AddIdentity); used to offer override choices. */
 export const PERMISSION_CODES = [
@@ -31,6 +33,7 @@ export interface SetOverride {
 }
 
 export const accessKeys = {
+  users: (q: string) => ['access', 'users', q] as const,
   groups: ['access', 'groups'] as const,
   overrides: (userId: string) => ['access', 'overrides', userId] as const,
 };
@@ -43,6 +46,11 @@ export class AccessApi {
 
   private url(userId: string, permission: string): string {
     return `${this.base}/overrides/${userId}/${permission}`;
+  }
+
+  /** Keyset-paged user directory (USERS_VIEW); `q` matches email and display name. */
+  users(q: string, cursor: string | null, limit = 25): Promise<Page<UserDto>> {
+    return getPage<UserDto>(this.http, `${this.base}/users`, params({ limit, cursor, q: q.trim() }));
   }
 
   groups(): Promise<GroupDto[]> {
