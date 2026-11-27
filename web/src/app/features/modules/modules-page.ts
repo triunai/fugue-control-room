@@ -14,6 +14,14 @@ import { whenOff } from './when-off';
 
 const PROTECTED = 'SYSTEM';
 
+/**
+ * Which ['modules', ...] queries to refetch after a switch. Switching AUDIT off must not refetch the Last changed cells:
+ * they are still enabled until the module list arrives, and the audit endpoint already answers 404.
+ */
+export function refetchesAfterToggle(key: readonly unknown[], v: { m: { code: string }; on: boolean }): boolean {
+  return !(key[2] === 'last-changed' && v.m.code === 'AUDIT' && !v.on);
+}
+
 @Component({
   selector: 'fg-modules-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -55,9 +63,9 @@ export class ModulesPage {
       }
     },
     // /me changes too: a module's permissions leave everyone's effective set, so the navigation re-renders.
-    onSettled: () =>
+    onSettled: (_d, _e, v) =>
       Promise.all([
-        this.queryClient.invalidateQueries({ queryKey: moduleKeys.all }),
+        this.queryClient.invalidateQueries({ queryKey: moduleKeys.all, predicate: (q) => refetchesAfterToggle(q.queryKey, v) }),
         this.queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY }),
       ]),
   }));
