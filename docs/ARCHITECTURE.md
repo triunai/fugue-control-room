@@ -283,7 +283,7 @@ Rules from [ADR-006](adr/ADR-006-ef-core-reads-dapper-writes.md):
 
 `SqlExecutor` runs Dapper on EF's own connection and current transaction. `IUnitOfWork` (`BeginAsync`, `CommitAsync`; disposing without committing rolls back) starts that transaction. So an EF `SaveChanges` and a Dapper statement inside one unit of work commit or roll back together. The audit row and the outbox row ride on this seam.
 
-`CustomerRepository.AddAsync` shows it: a Dapper insert returning `xmin`, then `audit.RecordAsync(...)` and `outbox.EnqueueAsync(...)` on the same transaction, then one commit. SQL statements: see D-054 in [`decisions.md`](decisions.md). Dapper does not read domain aggregates, and it does not run outside `SqlExecutor`. EF writes are stamped by `AuditableSaveChangesInterceptor`; Dapper SQL binds `IAuditStamp.Capture()` explicitly.
+`CustomerRepository.AddAsync` shows it: a Dapper insert returning `xmin`, then `audit.RecordAsync(...)` and `outbox.EnqueueAsync(...)` on the same transaction, then one commit. The SQL itself lives in `src/Fugue.Infrastructure/Persistence/Sql/<area>/<name>.sql` (embedded, loaded by `SqlScripts.Get("customers/insert")`, first line `-- <what>. Caller: <Class>.`); a test fails if a referenced script is missing or a script is unreferenced, and the audit fitness rules read the `.sql` files too (D-054). `npm run db:script` exports the EF migrations as one idempotent script; agents read the database through a restricted Postgres MCP as `fugue_readonly` (runbook 03). Dapper does not read domain aggregates, and it does not run outside `SqlExecutor`. EF writes are stamped by `AuditableSaveChangesInterceptor`; Dapper SQL binds `IAuditStamp.Capture()` explicitly.
 
 ## 9. Identity and authorization
 

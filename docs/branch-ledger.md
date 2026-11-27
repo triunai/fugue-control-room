@@ -5,4 +5,3 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | Branch | Worktree path | Base sha | Owner (lane) | W id | Status |
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
-| `rd-sql` | `.worktrees/rd-sql` | ce403cb | readability-sql (Sonnet) | W-007 | D-054 runtime SQL into .sql files; Infrastructure only |
