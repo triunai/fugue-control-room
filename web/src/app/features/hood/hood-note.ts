@@ -22,12 +22,25 @@ export interface HoodGuard {
   readonly note?: string;
 }
 
+/** A test that covers the page, copied by name from the repository so a panelist can find it. */
+export interface HoodTest {
+  readonly layer: 'unit' | 'integration' | 'arch' | 'api' | 'web' | 'e2e';
+  /** Repository path of the test file. */
+  readonly path: string;
+  /** The real test method, `it()` title or Bruno request name, verbatim: the file must contain it. */
+  readonly name: string;
+  /** One plain line (at most 140 characters) on what it proves. */
+  readonly asserts: string;
+}
+
 /** What the "Under the hood" sidebar says about a page. The live API calls need no note. */
 export interface HoodNote {
   /** Two lines: why the page works the way it does. */
   readonly why: readonly string[];
   /** Two to four short lines on how the API does it: endpoints, concurrency, idempotency, scope. Only what is true of the page. */
   readonly how: readonly string[];
+  /** Three to five tests behind the page, one per layer where one exists. */
+  readonly tests: readonly HoodTest[];
   /** ADRs that really govern the page, linked as `docs/adr/ADR-NNN-slug.md`; shown first. */
   readonly adrs: readonly HoodLink[];
   /** Two to four links to decisions or sections of the claims write-up. */

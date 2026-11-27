@@ -14,6 +14,13 @@ export const REPORT_HOOD: HoodNote = {
     { label: 'ADR-013 Idempotency keys', path: 'docs/adr/ADR-013-idempotency-keys.md' },
     { label: 'ADR-004 Errors: FluentResults with ErrorType', path: 'docs/adr/ADR-004-fluentresults-with-errortype.md' },
   ],
+  tests: [
+    { layer: 'integration', path: 'tests/Fugue.Tests/Claims/ClaimsContractTests.cs', name: 'Submit_without_an_Idempotency_Key_is_400_and_creates_nothing_while_customers_create_stays_optional', asserts: 'Submit without an Idempotency-Key is 400 idempotency.key_required and creates no row; customer create keeps it optional.' },
+    { layer: 'integration', path: 'tests/Fugue.Tests/Idempotency/IdempotencyTests.cs', name: 'The_same_key_with_a_different_body_is_422_key_reused_and_creates_nothing', asserts: 'The same key with a different body is 422 idempotency.key_reused and creates nothing (shown on customer create, same filter).' },
+    { layer: 'integration', path: 'tests/Fugue.Tests/Claims/ClaimsContractTests.cs', name: 'Submit_validates_its_fields_and_the_incident_window', asserts: 'Bad fields or an incident date outside the window answer 400 validation.failed with the error on that field.' },
+    { layer: 'api', path: 'bruno/fugue/claims/26-submit-without-a-key-is-400.bru', name: 'Submit without an Idempotency-Key is 400 (idempotency.key_required)', asserts: 'Submit with no key answers 400 problem+json with code idempotency.key_required.' },
+    { layer: 'web', path: 'web/src/app/core/http/idempotency.spec.ts', name: 'gives a changed body a fresh key, because the same key with another body is refused with 422', asserts: 'An edited body gets a fresh Idempotency-Key, since the same key with another body would be refused.' },
+  ],
   decisions: [
     { label: 'D-050 Idempotency keys with stored replay', path: 'docs/decisions.md' },
     { label: 'D-056 Submit key is required', path: 'docs/decisions.md' },

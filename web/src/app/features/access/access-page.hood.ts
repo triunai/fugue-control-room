@@ -15,6 +15,13 @@ export const ACCESS_HOOD: HoodNote = {
     { label: 'ADR-008 Auth and identity model', path: 'docs/adr/ADR-008-auth-and-identity-model.md' },
     { label: 'ADR-006 Data access: xmin is the ETag', path: 'docs/adr/ADR-006-ef-core-reads-dapper-writes.md' },
   ],
+  tests: [
+    { layer: 'integration', path: 'tests/Fugue.Tests/Identity/OverridesTests.cs', name: 'Changing_an_existing_override_needs_the_current_etag', asserts: 'Changing an override without If-Match is 428, with a stale one 412, and the refused write leaves no grant_audit row.' },
+    { layer: 'integration', path: 'tests/Fugue.Tests/Identity/EffectivePermissionTests.cs', name: 'A_deny_override_removes_a_role_grant', asserts: 'An unexpired deny override removes a permission the user’s role grants.' },
+    { layer: 'api', path: 'bruno/fugue/overrides/03-override-takes-effect.bru', name: 'The override takes effect on the user\'s very next request', asserts: 'After an override is set, the user’s very next request already sees the effect.' },
+    { layer: 'web', path: 'web/src/app/features/access/roles-matrix.spec.ts', name: 'renders roles as columns, a dot only where a role grants the permission', asserts: 'The matrix shows roles as columns, with a dot only where a role grants the permission.' },
+    { layer: 'arch', path: 'tests/Fugue.ArchTests/FitnessTests.cs', name: 'Fitness_Auth_every_HasPermission_literal_exists_in_the_seeded_catalog', asserts: 'Every HasPermission code in the controllers exists in the seeded catalog, so a typo fails the build.' },
+  ],
   decisions: [
     { label: 'D-017 Precedence deny > allow > role', path: 'docs/decisions.md' },
     { label: 'D-036 Override If-Match', path: 'docs/decisions.md' },
