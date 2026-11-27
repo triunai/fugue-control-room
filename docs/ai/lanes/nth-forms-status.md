@@ -3,10 +3,12 @@
 Shared accessible select and date controls, every form swapped, an example filler per form, behaviour unchanged.
 
 ## Commits
-- slice 1: `fg-select` (`web/src/app/ui/select.ts`) + spec
+- `21276e0` feat(web): fg-select, an accessible select-only combobox on the CDK overlay
+- slice 2: `fg-date` (`web/src/app/ui/date-picker.ts`) + spec
 
 ## Gates (copied from output)
 - slice 1: `ng test --include src/app/ui/select.spec.ts`: 1 file, 7 tests passed; eslint + prettier clean on both files
+- slice 2: `ng test --include` both ui specs: 2 files, 15 tests passed; eslint + prettier clean
 
 ## What changed in shared files (exactly)
 - `docs/branch-ledger.md`: the nth-forms row (as on main) with its Status cell updated.
@@ -18,4 +20,4 @@ Shared accessible select and date controls, every form swapped, an example fille
 - The app has six markets (SG, MY, TH, HK, ID, PH: `web/src/app/features/claims/claims-logic.ts:5-12`), not five.
 
 ## Next slice
-- slice 2: `fg-date` + spec
+- slice 3: swap the native controls in the forms
