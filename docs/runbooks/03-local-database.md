@@ -37,8 +37,9 @@ dotnet user-secrets set "ConnectionStrings:Postgres" "Host=localhost;Port=5432;D
 ## 2. Start, stop, reset
 
 ```bash
-docker compose up -d
+docker compose up -d postgres
 ```
+This starts only the database. `docker compose up -d` with no service name starts the whole stack (runbook 10).
 Expect: `Container fugue-postgres  Started`. Check health (takes a few seconds):
 ```bash
 docker compose ps
@@ -46,7 +47,7 @@ docker compose ps
 Expect: `fugue-postgres ... Up ... (healthy)`.
 
 Stop (keeps data): `docker compose down`.
-Reset (deletes the named volume `fugue-pgdata`, so all data): `docker compose down -v`, then `docker compose up -d` and migrate again.
+Reset (deletes the named volume `fugue-pgdata`, so all data): `docker compose down -v`, then `docker compose up -d postgres` and migrate again.
 
 ## 3. Apply the migrations
 
