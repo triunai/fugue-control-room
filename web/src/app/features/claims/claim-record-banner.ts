@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { ClaimDto } from '../../api/models';
 import { ClaimStatusPill } from './claim-bits';
+import { ClaimLetterButton } from './claim-letter-button';
 import { Overlays } from '../../ui/overlays';
 import { Icon } from '../../ui/icon';
 import { ClaimTracksDialog } from './claim-tracks-dialog';
@@ -12,7 +13,7 @@ import { startTour } from './tour-hook';
 @Component({
   selector: 'fg-claim-record-banner',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ClaimStatusPill, HelpButton, Icon],
+  imports: [ClaimStatusPill, ClaimLetterButton, HelpButton, Icon],
   styleUrl: './claim-record.css',
   template: `
     <header class="record-banner" data-testid="record-banner" data-tour="record-banner">
@@ -26,6 +27,7 @@ import { startTour } from './tour-hook';
           @if (staff()) {
             <span class="pill pill-muted" data-testid="money-chip">{{ chip() }}</span>
           }
+          <fg-claim-letter-button [claim]="claim()" />
           <fg-help-button (pressed)="tour()" />
         </div>
       </div>
