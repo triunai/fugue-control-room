@@ -12,3 +12,4 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | `nth-pdf` | `.worktrees/nth-pdf` | dacfb06 | nth-pdf (Opus), relay-dispatched | D-064 | 11b: settlement and decision letters as PDF |
 | `nth-paid` | `.worktrees/nth-paid` | f3d7637 | nth-paid (Opus), relay-dispatched | W-037 | 11c: paid/settled figure on Team and exposure |
 | `nth-formsfix` | `.worktrees/nth-formsfix` | 1e3d63d | nth-formsfix (Sonnet), relay-dispatched | W-030 | item 5 follow-up: queue filters + calendar day jump to fg-select/fg-date, e2e claims.spec.ts:30 locator |
+| `nth-datetime` | `.worktrees/nth-datetime` | 8ed5cce | nth-datetime (Sonnet), relay-dispatched | W-030 | item 5 follow-up: fg-date time mode, overrides Until + audit From/To |
