@@ -39,7 +39,10 @@ function render() {
 }
 
 describe('Shell sidebar', () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    localStorage.clear();
+    localStorage.setItem('fugue.tour.seen.admin', '1'); // no auto-started tour inside these tests
+  });
 
   it('scrolls the nav list in its own container between the header and the pinned footer', () => {
     const fixture = render();
@@ -66,7 +69,7 @@ describe('Shell sidebar', () => {
     (root.querySelector('.acct') as HTMLButtonElement).click();
     fixture.detectChanges();
     const items = [...root.querySelectorAll('[role="menuitem"]')].map((e) => (e as HTMLElement).textContent?.trim());
-    expect(items).toEqual(['My profile', 'Audit log', 'Sign out']);
+    expect(items).toEqual(['My profile', 'Audit log', 'Take the tour', 'Sign out']);
   });
 
   it('opens the group that holds the open route even if the user had folded it', () => {

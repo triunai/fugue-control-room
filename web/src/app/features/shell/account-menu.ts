@@ -4,8 +4,9 @@ import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter } from 'rxjs';
 import { AccessService } from '../../core/auth/access.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { TourService } from './tour.service';
 
-/** The account card pinned under the nav: one row that opens an upward menu (profile, audit, sign out). */
+/** The account card pinned under the nav: one row that opens an upward menu (profile, audit, tour, sign out). */
 @Component({
   selector: 'fg-account-menu',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,6 +38,7 @@ import { AuthService } from '../../core/auth/auth.service';
           @if (access.has('AUDIT_READ')) {
             <a role="menuitem" class="act" routerLink="/audit">Audit log</a>
           }
+          <button type="button" role="menuitem" class="act" (click)="startTour()">Take the tour</button>
           <button type="button" role="menuitem" class="act" (click)="auth.signOut()">Sign out</button>
         </div>
       }
@@ -143,6 +145,7 @@ import { AuthService } from '../../core/auth/auth.service';
 export class AccountMenu {
   protected readonly access = inject(AccessService);
   protected readonly auth = inject(AuthService);
+  private readonly tour = inject(TourService);
   protected readonly me = this.access.me;
   protected readonly open = signal(false);
   /** True in the icon rail, where the avatar has no visible name. */
@@ -164,6 +167,11 @@ export class AccountMenu {
         takeUntilDestroyed(),
       )
       .subscribe(() => this.open.set(false));
+  }
+
+  protected startTour(): void {
+    this.open.set(false);
+    void this.tour.start();
   }
 
   protected closeOutside(event: Event): void {

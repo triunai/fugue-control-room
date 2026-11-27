@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRouteSnapshot, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
@@ -9,6 +9,7 @@ import { ToastStore } from '../../core/ui/toast.store';
 import { deriveCrumbs } from './breadcrumbs';
 import { NavProgress } from './nav-progress';
 import { Sidebar } from './sidebar';
+import { TourService } from './tour.service';
 
 @Component({
   selector: 'fg-shell',
@@ -23,6 +24,7 @@ export class Shell {
   private readonly prefs = inject(PrefsStore);
   private readonly toasts = inject(ToastStore);
   private readonly correlation = inject(CorrelationService);
+  private readonly tour = inject(TourService);
 
   protected readonly me = this.access.me;
   protected readonly collapsed = this.prefs.sidebarCollapsed;
@@ -36,6 +38,11 @@ export class Shell {
   );
 
   constructor() {
+    // First sign-in per persona: offer the reviewer tour once (dismissible; remembered in localStorage).
+    effect(() => {
+      if (this.me()) untracked(() => this.tour.maybeAutoStart());
+    });
+
     // When /me changes under us (refetch on focus or after a token refresh) and the area on screen lost its
     // permission (a module switched off, an override revoked), leave calmly instead of showing a wall of 404s.
     effect(() => {
