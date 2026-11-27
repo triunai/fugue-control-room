@@ -77,6 +77,16 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-067 — The decision timeline page is generated from the docs, never hand-copied — 2026-11-28
+WS: WS-22
+Context: the owner asked (03:15) for the decision trail itself in the console: every ADR and D-row, dated, linked, grouped by the release it landed in (overnight item 11d, lane nth-decisions).
+Decision: `scripts/gen-decisions.mjs` (run as `npm run gen:decisions` in `web/`) parses `docs/adr/ADR-*.md`, the `## D-` sections of `docs/decisions.md` and the CHANGELOG version headings into `web/src/app/features/decisions/decisions.data.json`, deterministically; the read-only `/decisions` page (staff, managers, admins) renders it. No API.
+Why: hand-copied lists drift; a generated file with tests (both heading styles, version ranges, determinism) stays honest.
+Consequences: re-run `npm run gen:decisions` and commit the JSON after editing decisions.md, an ADR or the CHANGELOG; there is no CI check yet, so the integrator regenerates at each spine commit and at the wrap.
+Who: owner (asked), AI (generator over hand-copy)
+Status: accepted
+Promote: no
+
 ## D-066 — Dispatcher, integrator and contract-bound builder lanes replace the single overnight lead — 2026-11-28
 WS: WS-22
 Context: at 03:09 one Opus lead ran a `/loop` over about 15 items, building and merging serially with two to four lanes (D-065). Asked to "split it" at 03:22, the AI's answer was to tell that same lead to go wider. The owner rejected that at 03:23 ("this is dumb and waiting to fail"): one agent that builds, merges and verifies is a single point of failure and a throughput bottleneck, and its long context is expensive.
@@ -85,7 +95,7 @@ Why: parallelism without merge chaos; machine gates, not an agent's say-so, deci
 Consequences: refines ADR-014 / D-065 (roles split three ways). The outcome (merge count, times, reds caught at integration) is recorded at the wrap.
 Who: owner (overrode the AI's "go wider" proposal; set the topology), AI (contracts, gates)
 Status: accepted
-Promote: no (refines ADR-014)
+Promote: no
 
 ## D-065 — Owner-steered parallel lanes, verified before merge, run overnight under a loop — 2026-11-28
 WS: WS-22
