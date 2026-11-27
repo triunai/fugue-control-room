@@ -13,17 +13,20 @@ export const CLAIMS_QUEUE_HOOD: HoodNote = {
   ],
   adrs: [
     { label: 'ADR-008 Auth and identity model', path: 'docs/adr/ADR-008-auth-and-identity-model.md' },
+    { label: 'ADR-006 Reads: EF keyset paging', path: 'docs/adr/ADR-006-ef-core-reads-dapper-writes.md' },
   ],
   tests: [
     { layer: 'integration', path: 'tests/Fugue.Tests/Claims/ClaimsContractTests.cs', name: 'A_claimant_lists_only_their_own_claims_newest_first_and_staff_list_all_oldest_first', asserts: 'A claimant lists only their own claims, newest first; staff list every claim, oldest first.' },
     { layer: 'api', path: 'bruno/fugue/claims/05-staff-queue-oldest-first.bru', name: 'Staff queue: unassigned Submitted claims, oldest first', asserts: 'Filters Submitted and unassigned, answers 200 and checks the submit times are in ascending order.' },
     { layer: 'web', path: 'web/src/app/features/claims/claims-query-params.spec.ts', name: 'round-trips a filter through the URL', asserts: 'A queue filter written to the URL reads back as the same filter.' },
+    { layer: 'integration', path: 'tests/Fugue.Tests/Claims/ClaimSearchTests.cs', name: 'A_claimants_search_never_returns_another_claimants_claim_and_staff_find_both', asserts: 'Search never returns another claimant’s claim; staff find both.' },
     { layer: 'arch', path: 'tests/Fugue.ArchTests/FitnessTests.cs', name: 'Fitness_Auth_every_controller_action_declares_HasPermission_Authorize_or_AllowAnonymous', asserts: 'Every controller action declares a permission, a sign-in requirement or AllowAnonymous, so none is open by accident.' },
   ],
   decisions: [
     { label: 'Who sees what', path: 'docs/CLAIMS.md#3-who-sees-what' },
     { label: 'D-053 Claims platform shape', path: 'docs/decisions.md' },
     { label: 'D-057 Money: ISO code, two decimals', path: 'docs/decisions.md' },
+    { label: 'D-063 Claims search, scope enforced server-side', path: 'docs/decisions.md' },
   ],
   guards: [
     {
