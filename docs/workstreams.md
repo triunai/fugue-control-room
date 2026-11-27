@@ -89,7 +89,7 @@ Refs: D-066, D-067; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/
 
 ### WS-37 — Paid and settled figure on Team and exposure (item 11c, backlog #009) — 🟢 ACTIVE (2026-11-28)
 ID: W-037
-Status: lane nth-paid live.
+Status: merged bceb4e5 (nth-paid); closes at the wrap.
 Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
 Refs: D-064, D-066, D-069; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
 
