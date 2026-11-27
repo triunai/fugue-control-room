@@ -118,3 +118,25 @@ A failing failure-row write never changes the command's result, so it would othe
 
 - A counter `fugue.audit.write_failures` on the meter `Fugue.Audit` (no extra package; watch it with `dotnet-counters monitor --counters Fugue.Audit` or any OpenTelemetry meter subscription). Tags: `table` (`audit_log` or `access_audit`) and `reason` (the exception type name; `suppressed` for a 401 row dropped by the per-IP cap; `canceled` for a 401 row lost because the audit write was canceled while the request was still live).
 - A Warning log "Lost a failure audit row" carrying the action, entity type, entity id, error code and correlation id of the lost row (never its changes or metadata), so the row can be rebuilt from the logs.
+
+## Search
+
+Typo-tolerant, ranked, highlighted search over `audit_log` (D-058). It is optional: the table stays the source of truth and the index is a rebuildable copy.
+
+**Turn it on.** The compose stack runs Meilisearch (`getmeili/meilisearch:v1.12.8`, service `meilisearch`, volume `fugue-meili`, port `MEILI_PORT`, default 7700) and points the API at it. Put a key of at least 16 bytes in `.env` first: `MEILI_MASTER_KEY=$(openssl rand -base64 24)`. For a host-run API (`dotnet run`) set `Search__Meilisearch__Url=http://localhost:7700` and `Search__Meilisearch__ApiKey=<the same key>`. With no URL, search is off: `GET /api/v1/audit/search` answers `503` with problem code `search.unavailable` and nothing else changes. An engine that is configured but unreachable answers the same `503`.
+
+**How rows get there.** A background indexer (runs once at startup, then every `Search:Meilisearch:IndexerIntervalSeconds`, default 5) reads `audit_log` oldest first in keyset batches of `IndexerBatchSize` (default 500) after its checkpoint, upserts them into the `audit` index by row id, waits for the engine to apply the batch, then moves the checkpoint. The checkpoint is one document in the engine's own `audit_checkpoint` index, so there is no migration and no extra table. A crash between the upsert and the checkpoint repeats a batch; upserts are idempotent, so nothing is duplicated or skipped. Search is therefore eventually consistent: a row appears after the next cycle. What is indexed is what the row stores (masked values stay masked): action, entity type and id, actor display and id, outcome, error code and message, route, time. `changes` and `metadata` are not indexed.
+
+**Search.** Needs `AUDIT_READ`, like the list.
+```bash
+curl -s "localhost:5080/api/v1/audit/search?q=email_taken&outcome=failure&limit=5" -H "Authorization: Bearer $TOKEN" | python3 -m json.tool
+```
+Parameters: `q` (text, matched on action, entity type and id, actor display, error code and message, route; empty returns the newest rows), `entityType`, `action`, `outcome` (exact), `from` (inclusive), `to` (exclusive), `limit` (1 to 100, default 20). Response: `{ "hits": [...], "estimatedTotalHits": N }`, newest first; each hit has `highlights` (field to text with matches in `<em>`; the rest of the text is not HTML-escaped, so a console must escape everything but the `em` tags). `estimatedTotalHits` is the engine's estimate, not a count.
+
+**Rebuild.** Delete the two indexes (`DELETE /indexes/audit` and `/indexes/audit_checkpoint` with the master key, or remove the `fugue-meili` volume) and restart the API; the indexer re-reads the whole table.
+
+**Check it.**
+```bash
+curl -s localhost:7700/health                                                              # {"status":"available"}
+curl -s localhost:7700/indexes/audit/stats -H "Authorization: Bearer $MEILI_MASTER_KEY"    # numberOfDocuments
+```
