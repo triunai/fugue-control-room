@@ -10,7 +10,10 @@
     "api:test": "cd bruno/fugue && bru run --env local",
     "db:script": "dotnet ef migrations script --idempotent --project src/Fugue.Infrastructure --startup-project src/Fugue.Infrastructure -o artifacts/db/migrate.sql",
     "api:openapi": "FUGUE_OPENAPI_UPDATE=1 dotnet test tests/Fugue.Tests --filter \"FullyQualifiedName~OpenApiContractTests\"",
-    "api:test:compose": "cd bruno/fugue && bru run --env compose"
+    "api:test:compose": "cd bruno/fugue && bru run --env compose",
+    "mutation:claim": "cd tests/Fugue.MutationTests && dotnet dotnet-stryker -p Fugue.Domain.csproj -m \"**/Claims/Claim.cs\" -O ../../artifacts/mutation/claim",
+    "mutation:redactor": "cd tests/Fugue.MutationTests && dotnet dotnet-stryker -p Fugue.Infrastructure.csproj -m \"**/Audit/AuditRedactor.cs\" -O ../../artifacts/mutation/audit-redactor",
+    "mutation:idempotency": "cd tests/Fugue.MutationTests && dotnet dotnet-stryker -p Fugue.Api.csproj -m \"**/Idempotency/IdempotencyKeyHeader.cs\" -O ../../artifacts/mutation/idempotency-key-header"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",
