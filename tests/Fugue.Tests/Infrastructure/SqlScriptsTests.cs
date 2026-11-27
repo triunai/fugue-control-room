@@ -45,6 +45,25 @@ public sealed partial class SqlScriptsTests
         Assert.Equal(onDisk, SqlScripts.Names.Order(StringComparer.Ordinal));
     }
 
+    [Fact]
+    public void Every_script_header_names_a_caller_file_that_exists()
+    {
+        string src = Path.Combine(RepoRoot(), "src");
+        string[] cs = [.. Directory.GetFiles(src, "*.cs", SearchOption.AllDirectories).Select(Path.GetFileName).OfType<string>()];
+        string[] bad = [.. Directory.GetFiles(Path.Combine(src, "Fugue.Infrastructure", "Persistence", "Sql"), "*.sql", SearchOption.AllDirectories)
+            .Where(f =>
+            {
+                Match m = CallerHeader().Match(File.ReadLines(f).First());
+                return !m.Success || !cs.Contains(m.Groups["caller"].Value + ".cs");
+            })
+            .Select(f => Path.GetFileName(f)).Order(StringComparer.Ordinal)];
+
+        Assert.True(bad.Length == 0, "First line must be '-- <what>. Caller: <ClassName>.' naming an existing <ClassName>.cs: " + string.Join(", ", bad));
+    }
+
+    [GeneratedRegex(@"^-- .+ Caller: (?<caller>\w+)\.$")]
+    private static partial Regex CallerHeader();
+
     private static HashSet<string> Referenced() =>
         [.. Directory.GetFiles(Path.Combine(RepoRoot(), "src"), "*.cs", SearchOption.AllDirectories)
             .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))

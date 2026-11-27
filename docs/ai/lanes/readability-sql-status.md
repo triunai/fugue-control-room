@@ -10,18 +10,21 @@ Branch `rd-sql`, base ce403cb. Builder: Sonnet. Infrastructure only.
 
 ## Counts (from output)
 - `dotnet build -c Debug`: 0 Warning(s), 0 Error(s).
-- `Fugue.Tests`: Passed 622, Failed 0 (618 base + 4 new SqlScriptsTests).
-- `Fugue.ArchTests`: Passed 36, **Failed 1** (of 37): `Fitness_Audit_audit_log_has_exactly_one_insert_statement_in_the_source`.
+- `Fugue.Tests`: Passed 623, Failed 0 (618 base + 5 new SqlScriptsTests).
+- `Fugue.ArchTests`: Passed 37 (after the arch commit; 36 of 37 before it).
 - `git diff --exit-code ce403cb -- docs/api/openapi.v1.json`: SNAPSHOT-IDENTICAL.
 - `dotnet format --verify-no-changes`: clean.
 - `npm run db:script`: wrote `artifacts/db/migrate.sql` (82741 bytes); `artifacts/` was already gitignored.
 
-## OPEN: the arch red (needs a decision, outside my allowed files)
-`tests/Fugue.ArchTests/FitnessTests.cs:416` greps `src/**/*.cs` for `INSERT INTO audit_log` and expects `["AuditTrail.cs"]`; the statement now lives in
-`Persistence/Sql/audit/insert-audit-log.sql`. Worse, the sibling ratchet `RawWritesWithoutAudit` (line 443, `raw-sql-writes`) also scans only `.cs`, so it now passes
-VACUOUSLY: a raw write in a `.sql` file is invisible to it. Proposed fix (asked the lead, no answer yet): scan `.sql` too; rule 1 expects exactly
-`insert-audit-log.sql`; rule 2 takes each script's `-- ... Caller: X.` header, requires `X.cs` to mention `IAuditTrail` unless every table it writes is `[NoAudit]`.
-Until then main would have one red arch test and a weaker audit guard.
+## Arch rules now read the .sql files (commit test(arch): fitness rules read the .sql files)
+Only the two rules in `tests/Fugue.ArchTests/FitnessTests.cs` changed; no baseline touched (`RefreshTokenStore.cs` still matches, so the new scan sees its scripts).
+- audit_log insert rule: scans .cs and .sql, expects exactly `insert-audit-log.sql`; fails on an empty `.sql` glob.
+- raw-sql-writes ratchet: each .cs file's text plus the comment-stripped text of every script it loads via `SqlScripts.Get`; asserts scripts exist and write statements were found.
+- `-- Caller:` contract: `SqlScriptsTests.Every_script_header_names_a_caller_file_that_exists`.
+Final counts: ArchTests 37 of 37 pass, Tests 623 pass, format clean.
+Teeth (temporary edits, reverted): (1) `IAuditTrail` renamed away in CustomerRepository.cs ->
+`[raw-sql-writes] new violations: CustomerRepository.cs` (RED). (2) header of `outbox/insert-message.sql` set to `Caller: NoSuchClass.` ->
+`First line must be '-- <what>. Caller: <ClassName>.' naming an existing <ClassName>.cs: insert-message.sql` (RED). Both green again after revert.
 
 ## Greps
 Remaining SQL literals in `src/Fugue.Infrastructure` outside Migrations (`"""`, `SELECT `, `INSERT `, `UPDATE `, `DELETE FROM`, `SAVEPOINT`, code lines only): none
