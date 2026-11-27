@@ -41,6 +41,18 @@ public sealed class AuditLog
 
     public string? ErrorCode { get; set; }
 
+    /// <summary>Failure rows only: the <c>ErrorType</c> name (Conflict, NotFound...), or <c>Unhandled</c> for an exception. Null on success rows.</summary>
+    public string? ErrorType { get; set; }
+
+    /// <summary>
+    /// Failure rows only: the message the handler authored on its <c>FugueError</c> (capped at 2000 characters). For an unhandled
+    /// exception it is the exception type's full name and never <c>Exception.Message</c>, which can carry SQL values or personal data.
+    /// </summary>
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>Failure rows only: milliseconds the command took, measured around the rest of the pipeline. Null on success rows.</summary>
+    public int? DurationMs { get; set; }
+
     /// <summary>jsonb: <c>{ "field": { "old": ..., "new": ... } }</c>; added rows carry only <c>new</c>, deleted rows only <c>old</c>.</summary>
     public string? Changes { get; set; }
 

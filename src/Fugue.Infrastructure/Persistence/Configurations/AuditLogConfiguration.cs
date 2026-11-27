@@ -27,6 +27,9 @@ internal sealed class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
         b.Property(e => e.EntityId).HasMaxLength(128);
         b.Property(e => e.Outcome).HasMaxLength(16).IsRequired();
         b.Property(e => e.ErrorCode).HasMaxLength(128);
+        b.Property(e => e.ErrorType).HasColumnType("text");
+        b.Property(e => e.ErrorMessage).HasColumnType("text");
+        b.Property(e => e.DurationMs).HasColumnType("integer");
         b.Property(e => e.Changes).HasColumnType("jsonb");
         b.Property(e => e.CorrelationId).HasMaxLength(64);
         b.Property(e => e.SagaId).HasMaxLength(64);

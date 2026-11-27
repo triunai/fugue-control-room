@@ -63,6 +63,10 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(64)")
                         .HasColumnName("correlation_id");
 
+                    b.Property<int?>("DurationMs")
+                        .HasColumnType("integer")
+                        .HasColumnName("duration_ms");
+
                     b.Property<string>("EntityId")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
@@ -77,6 +81,14 @@ namespace Fugue.Infrastructure.Persistence.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
                         .HasColumnName("error_code");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("text")
+                        .HasColumnName("error_message");
+
+                    b.Property<string>("ErrorType")
+                        .HasColumnType("text")
+                        .HasColumnName("error_type");
 
                     b.Property<string>("HttpMethod")
                         .HasMaxLength(8)

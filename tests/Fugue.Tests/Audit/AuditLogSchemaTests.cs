@@ -50,8 +50,8 @@ public sealed class AuditLogSchemaTests(PostgresFixture db)
     {
         string[] expected =
         [
-            "action", "actor_display", "actor_type", "actor_user_id", "changes", "client_ip", "correlation_id", "entity_id", "entity_type",
-            "error_code", "http_method", "id", "metadata", "occurred_at", "outcome", "permission_used", "route_template", "saga_id",
+            "action", "actor_display", "actor_type", "actor_user_id", "changes", "client_ip", "correlation_id", "duration_ms", "entity_id", "entity_type",
+            "error_code", "error_message", "error_type", "http_method", "id", "metadata", "occurred_at", "outcome", "permission_used", "route_template", "saga_id",
             "tenant_id", "trace_id", "user_agent",
         ];
 
@@ -70,6 +70,31 @@ public sealed class AuditLogSchemaTests(PostgresFixture db)
         Assert.Equal("jsonb", columns["changes"]);
         Assert.Equal("jsonb", columns["metadata"]);
         Assert.Equal("timestamp with time zone", columns["occurred_at"]);
+        Assert.Equal(("text", "text", "integer"), (columns["error_type"], columns["error_message"], columns["duration_ms"]));
+    }
+
+    [Fact]
+    public async Task The_failure_detail_columns_are_nullable_and_the_trigger_still_blocks_changes_to_a_row_that_has_them()
+    {
+        Guid id = Guid.NewGuid();
+        await using (NpgsqlConnection connection = await OpenAsync())
+        {
+            await using NpgsqlCommand insert = new(
+                "INSERT INTO audit_log (id, occurred_at, actor_type, action, outcome, error_type, error_message, duration_ms) VALUES (@id, now(), 'system', 'test.detail', 'failure', 'Conflict', 'taken', 12)",
+                connection);
+            insert.Parameters.AddWithValue("id", id);
+            await insert.ExecuteNonQueryAsync();
+        }
+
+        Assert.Equal(1L, await ScalarAsync<long>("SELECT count(*) FROM audit_log WHERE action = 'test.detail' AND duration_ms = 12 AND error_type = 'Conflict'"));
+        Guid bare = await InsertRowAsync(); // the old insert shape (no detail columns) still works
+        Assert.Equal(1L, await ScalarAsync<long>("SELECT count(*) FROM audit_log WHERE id = @id AND error_type IS NULL AND error_message IS NULL AND duration_ms IS NULL", ("id", bare)));
+
+        await using NpgsqlConnection other = await OpenAsync();
+        await using NpgsqlCommand update = new("UPDATE audit_log SET duration_ms = 0 WHERE id = @id", other);
+        update.Parameters.AddWithValue("id", id);
+        PostgresException ex = await Assert.ThrowsAsync<PostgresException>(() => update.ExecuteNonQueryAsync());
+        Assert.Equal("23001", ex.SqlState);
     }
 
     [Fact]
@@ -167,6 +192,10 @@ public sealed class AuditLogMigrationRollbackTests
         IMigrator migrator = context.GetService<IMigrator>();
 
         await migrator.MigrateAsync();
+        Assert.True(await ExistsAsync(container, "SELECT to_regclass('audit_log') IS NOT NULL"));
+
+        await migrator.MigrateAsync("AddDeliveryClaimToken");
+        Assert.False(await ExistsAsync(container, "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'audit_log' AND column_name IN ('error_type', 'error_message', 'duration_ms'))"));
         Assert.True(await ExistsAsync(container, "SELECT to_regclass('audit_log') IS NOT NULL"));
 
         await migrator.MigrateAsync("AddIdentity");
