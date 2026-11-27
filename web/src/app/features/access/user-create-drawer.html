@@ -1,0 +1,110 @@
+<div class="drawer">
+  <header class="head">
+    <div class="min-w-0">
+      <p class="kicker">New user</p>
+      <h2 class="title">Add a user</h2>
+    </div>
+    <button type="button" class="btn btn-quiet btn-icon" aria-label="Close" (click)="close()">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+      </svg>
+    </button>
+  </header>
+
+  <div class="body">
+    <form id="user-form" [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-5" novalidate>
+      <div class="field">
+        <label class="label" for="nu-email">Email</label>
+        <input
+          id="nu-email"
+          class="input"
+          type="email"
+          formControlName="email"
+          autocomplete="off"
+          [attr.aria-invalid]="!!err('email')"
+          aria-describedby="nu-email-msg"
+        />
+        @if (err('email'); as m) {
+          <span id="nu-email-msg" class="field-error">{{ m }}</span>
+        } @else {
+          <span id="nu-email-msg" class="field-hint">They sign in with it. Stored lower-case; unique among users.</span>
+        }
+      </div>
+      <div class="field">
+        <label class="label" for="nu-name">Name</label>
+        <input
+          id="nu-name"
+          class="input"
+          formControlName="displayName"
+          autocomplete="off"
+          [attr.aria-invalid]="!!err('displayName')"
+          aria-describedby="nu-name-msg"
+        />
+        @if (err('displayName'); as m) {
+          <span id="nu-name-msg" class="field-error">{{ m }}</span>
+        }
+      </div>
+      <div class="field">
+        <label class="label" for="nu-password">Initial password</label>
+        <input
+          id="nu-password"
+          class="input"
+          type="password"
+          formControlName="password"
+          autocomplete="new-password"
+          [attr.aria-invalid]="!!err('password')"
+          aria-describedby="nu-password-msg"
+        />
+        @if (err('password'); as m) {
+          <span id="nu-password-msg" class="field-error">{{ m }}</span>
+        } @else {
+          <span id="nu-password-msg" class="field-hint"
+            >At least {{ passwordMin }} characters. Hand it over directly; it is never shown again.</span
+          >
+        }
+      </div>
+      <fieldset class="field" aria-describedby="nu-roles-msg">
+        <legend class="label">Roles</legend>
+        @if (roles.isPending()) {
+          <span class="skeleton" style="width: 12rem"></span>
+        } @else if (roles.isError()) {
+          <fg-error-state [error]="roles.error()" (retry)="roles.refetch()" />
+        } @else {
+          <div class="flex flex-col gap-2">
+            @for (r of roles.data(); track r.code) {
+              <label class="flex items-center gap-2" data-testid="role-option">
+                <input
+                  type="checkbox"
+                  [checked]="hasRole(r.code)"
+                  (change)="setRole(r.code, $any($event.target).checked)"
+                />
+                <span>{{ r.name }}</span>
+                <span class="mono text-muted text-sm">{{ r.code }}</span>
+              </label>
+            }
+          </div>
+        }
+        @if (err('roles'); as m) {
+          <span id="nu-roles-msg" class="field-error">{{ m }}</span>
+        } @else {
+          <span id="nu-roles-msg" class="field-hint"
+            >You can only assign roles whose permissions you hold yourself.</span
+          >
+        }
+      </fieldset>
+      @if (formErrors().length) {
+        <div class="banner banner-err" role="alert">
+          <span><span class="banner-title">The API refused this.</span> {{ formErrors().join(' ') }}</span>
+        </div>
+      }
+    </form>
+  </div>
+
+  <footer class="foot">
+    <div class="flex-1"></div>
+    <button type="button" class="btn" (click)="close()">Cancel</button>
+    <button type="submit" form="user-form" class="btn btn-primary" [disabled]="save.isPending()">
+      {{ save.isPending() ? 'Creating…' : 'Create user' }}
+    </button>
+  </footer>
+</div>

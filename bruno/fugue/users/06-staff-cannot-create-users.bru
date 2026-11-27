@@ -1,0 +1,32 @@
+meta {
+  name: Staff cannot create users: 403
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/v1/users
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+script:pre-request {
+  const res = await bru.sendRequest({
+    method: "POST",
+    url: bru.getEnvVar("baseUrl") + "/api/v1/auth/token",
+    headers: { "Content-Type": "application/json" },
+    data: { email: "staff@fugue.test", password: bru.getEnvVar("devPw") }, // secrets-scan:ignore
+  });
+  req.setHeader("Authorization", "Bearer " + res.data.accessToken);
+  req.setBody({ email: "never-created@fugue.test", displayName: "Never", password: bru.getVar("devPw"), roles: ["STAFF"] }); // secrets-scan:ignore
+}
+
+tests {
+  test("403", function () {
+    expect(res.status).to.equal(403);
+  });
+}

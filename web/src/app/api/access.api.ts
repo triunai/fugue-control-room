@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { CONSOLE_CONFIG } from '../core/config';
 import { SEND_IF_MATCH } from '../core/http/context';
 import { EtagStore } from '../core/http/etag.store';
-import type { UserDto } from './generated/model';
+import type { CreateUserRequest, UserDto } from './generated/model';
 import { getPage, params } from './http-page';
 import { GroupDto, OverrideDto, Page } from './models';
 
@@ -51,6 +51,11 @@ export class AccessApi {
   /** Keyset-paged user directory (USERS_VIEW); `q` matches email and display name. */
   users(q: string, cursor: string | null, limit = 25): Promise<Page<UserDto>> {
     return getPage<UserDto>(this.http, `${this.base}/users`, params({ limit, cursor, q: q.trim() }));
+  }
+
+  /** Creates a user with an initial password and roles (USERS_MANAGE). The response never carries the password. */
+  createUser(body: CreateUserRequest): Promise<UserDto> {
+    return firstValueFrom(this.http.post<UserDto>(`${this.base}/users`, body));
   }
 
   groups(): Promise<GroupDto[]> {

@@ -1,0 +1,26 @@
+meta {
+  name: Same email again (any case): 409 user.email_taken
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/v1/users
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}
+
+script:pre-request {
+  req.setBody({ email: bru.getVar("newUserEmail").toUpperCase(), displayName: "Bruno Duplicate", password: bru.getVar("newUserPw"), roles: ["STAFF"] }); // secrets-scan:ignore
+}
+
+tests {
+  test("409 user.email_taken", function () {
+    expect(res.status).to.equal(409);
+    expect(res.body.code).to.equal("user.email_taken");
+  });
+}
