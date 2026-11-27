@@ -1,6 +1,6 @@
 import { ASSESSMENT_INPUTS } from './claim-assessment-logic';
 import { RESERVE_COL, SHEET_COLUMNS } from './reserve-sheet-logic';
-import { ASSESSMENT_COLUMN_WIDTHS, RESERVE_COLUMN_WIDTHS, sheetHostHeight, sheetRowCount } from './sheet-layout';
+import { ASSESSMENT_COLUMN_WIDTHS, ASSESSMENT_SPARE_ROWS, RESERVE_COLUMN_WIDTHS, sheetHostHeight, sheetRowCount } from './sheet-layout';
 
 describe('sheet layout', () => {
   it('has exactly the data rows plus the header', () => {
@@ -20,5 +20,14 @@ describe('sheet layout', () => {
   it('sizes the host to the chrome plus the rows', () => {
     expect(sheetHostHeight(9)).toBe(124 + 32 + 8 * 28 + 20); // chrome + header band + eight data rows + footer slack
     expect(sheetHostHeight(17)).toBeGreaterThan(sheetHostHeight(9));
+  });
+});
+
+describe('assessment worksheet spare space', () => {
+  it('has spare rows so the grid is taller than its data', () => {
+    expect(ASSESSMENT_SPARE_ROWS).toBeGreaterThan(0);
+    expect(sheetHostHeight(sheetRowCount(ASSESSMENT_INPUTS.length + 3 + ASSESSMENT_SPARE_ROWS))).toBeGreaterThan(
+      sheetHostHeight(sheetRowCount(ASSESSMENT_INPUTS.length + 3)),
+    );
   });
 });

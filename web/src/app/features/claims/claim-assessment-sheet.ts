@@ -30,7 +30,9 @@ import {
 } from './claim-assessment-logic';
 import { availableActions, formatMoney } from './claims-logic';
 import { loadStylesheet } from './lazy-css';
-import { sheetHostHeight, sheetRowCount } from './sheet-layout';
+import { ASSESSMENT_SPARE_ROWS, sheetHostHeight, sheetRowCount } from './sheet-layout';
+import { Icon } from '../../ui/icon';
+import { downloadCsv } from './csv-export';
 import { errorResult } from './reserve-sheet-logic';
 import type { UniverHandle } from './univer-loader';
 import { downloadXlsx } from './xlsx-export';
@@ -40,11 +42,12 @@ const LABELS = [...ASSESSMENT_INPUTS, 'Gross estimate', 'Less: excess', 'Net est
 /**
  * An officer's estimate worksheet for one claim, in the claim's currency: repair or rebuild, parts, labour, rental, other,
  * less the excess, giving the net estimate (Gross and Net are live Univer formulas). "Use as reserve" sends the existing
- * guarded reserve command; "Open in Excel" downloads the sheet as a real .xlsx. The worksheet is ephemeral: it is not saved.
+ * guarded reserve command; "Save to Excel" downloads the sheet as a real .xlsx (with live formulas) and "Export" as a plain .csv of its values. The worksheet is ephemeral: it is not saved.
  * Univer and ExcelJS load on demand, so this component adds nothing to the initial bundle.
  */
 @Component({
   selector: 'fg-claim-assessment-sheet',
+  imports: [Icon],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './claim-assessment-sheet.css',
   template: `
@@ -65,8 +68,13 @@ const LABELS = [...ASSESSMENT_INPUTS, 'Gross estimate', 'Less: excess', 'Net est
       <footer class="assess-foot">
         <p class="text-muted text-sm assess-caption">Tinted cells are editable inputs; everything else is formula.</p>
         <div class="assess-actions">
-          <button type="button" class="btn" data-tour="assessment-excel" [disabled]="!ready()" (click)="openInExcel()">
-            Open in Excel
+          <button type="button" class="btn" data-testid="assess-export" [disabled]="!ready()" (click)="exportCsv()">
+            <fg-icon name="export" />
+            Export
+          </button>
+          <button type="button" class="btn" data-tour="assessment-excel" [disabled]="!ready()" (click)="saveToExcel()">
+            <fg-icon name="excel" />
+            Save to Excel
           </button>
           <button
             type="button"
@@ -76,6 +84,7 @@ const LABELS = [...ASSESSMENT_INPUTS, 'Gross estimate', 'Less: excess', 'Net est
             [title]="useHint()"
             (click)="useAsReserve()"
           >
+            <fg-icon name="reserve" />
             Use as reserve
           </button>
         </div>
@@ -106,7 +115,7 @@ export class ClaimAssessmentSheet implements AfterViewInit, OnDestroy {
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   private univer: UniverHandle | null = null;
 
-  protected readonly hostHeight = sheetHostHeight(sheetRowCount(LABELS.length));
+  protected readonly hostHeight = sheetHostHeight(sheetRowCount(LABELS.length + ASSESSMENT_SPARE_ROWS));
   protected readonly ready = signal(false);
   protected readonly assessment = signal<Assessment | null>(null);
   protected readonly message = signal('');
@@ -193,15 +202,25 @@ export class ClaimAssessmentSheet implements AfterViewInit, OnDestroy {
     }
   }
 
-  protected async openInExcel(): Promise<void> {
+  /** The sheet as it is now, or null (with the reason shown) when an amount is not a valid number. */
+  private currentGrid() {
     const a = this.assessment();
     if (!a || !a.ok) {
       this.failed.set(true);
       this.message.set('Fix the amounts first: every amount must be a number with at most two decimals.');
-      return;
+      return null;
     }
     const { items, excess } = this.inputs();
-    const grid = assessmentGrid(this.claim().currency, items.map(cellToNumber), cellToNumber(excess));
-    await downloadXlsx(`assessment-${this.claim().number}.xlsx`, 'Assessment', grid);
+    return assessmentGrid(this.claim().currency, items.map(cellToNumber), cellToNumber(excess));
+  }
+
+  protected async saveToExcel(): Promise<void> {
+    const grid = this.currentGrid();
+    if (grid) await downloadXlsx(`assessment-${this.claim().number}.xlsx`, 'Assessment', grid);
+  }
+
+  protected exportCsv(): void {
+    const grid = this.currentGrid();
+    if (grid) downloadCsv(`assessment-${this.claim().number}.csv`, grid);
   }
 }

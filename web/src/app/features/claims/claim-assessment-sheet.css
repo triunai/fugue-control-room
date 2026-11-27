@@ -3,7 +3,13 @@
 }
 .assess-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.6rem;
+}
+.assess-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 .assess-frame {
   max-width: 44rem;

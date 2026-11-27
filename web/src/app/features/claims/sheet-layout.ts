@@ -8,6 +8,9 @@ export function sheetRowCount(dataRows: number): number {
 /** Reserve sheet columns: claim, market, currency, line, status, officer, reserve, age (px). */
 export const RESERVE_COLUMN_WIDTHS: readonly number[] = [200, 70, 80, 100, 130, 170, 130, 90];
 
+/** Blank rows after the assessment data so the grid reads as a sheet, not a cropped table. */
+export const ASSESSMENT_SPARE_ROWS = 6;
+
 /** Assessment sheet columns: a wide label column, then the amount (px). */
 export const ASSESSMENT_COLUMN_WIDTHS: readonly number[] = [300, 170];
 

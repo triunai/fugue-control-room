@@ -4,6 +4,7 @@ import sheetsCoreEnUS from '@univerjs/preset-sheets-core/locales/en-US';
 import {
   RESERVE_COLUMN_WIDTHS,
   ASSESSMENT_COLUMN_WIDTHS,
+  ASSESSMENT_SPARE_ROWS,
   HEADER_ROW_HEIGHT,
   ROW_HEIGHT,
   RESERVES_SHEET,
@@ -27,7 +28,7 @@ const WORKBOOK_FOOTER = { sheetBar: true, statisticBar: true, menus: false, zoom
 
 /**
  * A Univer instance with the single-row toolbar (no Start / Formulas / View tabs), formula bar and context menu.
- * `footer` adds the sheet tabs; the small assessment sheet inside a claim page leaves it off.
+ * `footer` adds the sheet tabs, status bar and zoom; both workbooks use it.
  */
 function boot(container: HTMLElement, footer: false | typeof WORKBOOK_FOOTER = false) {
   return createUniver({
@@ -197,7 +198,7 @@ export function createAssessmentSheet(
   editable: (row: number, col: number) => boolean,
   onEdited: () => void,
 ): UniverHandle {
-  const { univer, univerAPI } = boot(container);
+  const { univer, univerAPI } = boot(container, WORKBOOK_FOOTER);
   const text = token('--text');
   const muted = token('--muted');
   const input = token('--sheet-input');
@@ -225,8 +226,8 @@ export function createAssessmentSheet(
       s1: {
         id: 's1',
         name: 'Assessment',
-        rowCount: sheetRowCount(labels.length),
-        columnCount: 2,
+        rowCount: sheetRowCount(labels.length + ASSESSMENT_SPARE_ROWS),
+        columnCount: ASSESSMENT_COLUMN_WIDTHS.length + SPARE_COLUMNS,
         ...rowGeometry,
         columnData: Object.fromEntries(ASSESSMENT_COLUMN_WIDTHS.map((width, c) => [c, { w: width }])),
         cellData,
