@@ -116,3 +116,17 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+.gs-action fg-claim-status {
+  margin-left: 0.35rem;
+}
+.gs-why {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.6rem;
+}
+.gs-facets {
+  margin: 0;
+  padding: 0.1rem 0.7rem 0.3rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}

@@ -3,7 +3,8 @@
 ## Commits
 - `7c2ad8a` slice 1/3: feat(api): claims index settings applied idempotently, market names, synonyms
 - `fe102f5` slice 2/3: feat(api): exact claim and policy numbers, every word must match, highlights, facets
-- fix(api): claim documents no longer store an empty `_formatted` field (this commit; found in the headless run's index stats)
+- `77feee8` fix(api): claim documents no longer store an empty `_formatted` field (found in the headless run's index stats)
+- slice 3/3: feat(web): header claim hits show why they matched and the match counts (this commit)
 
 ## Gates (copied from output)
 - `dotnet build`: Build succeeded. 0 Warning(s) 0 Error(s)
@@ -15,9 +16,15 @@
 - Injected "query sent unquoted": the exact-number test fails (DoesNotContain: the mistyped number found the claim), restored.
 - Fix: new test `Indexed_claims_carry_no_stored_formatted_field` fails without the `JsonIgnore` (Failed: 1) and passes with it;
   `--filter ClaimSearchTests`: Passed! Failed: 0, Passed: 23; format exit 0.
+- Slice 3 (web): `npm run lint`: All files pass linting; `npm test`: Test Files 44 passed, Tests 270 passed (4 new in
+  `global-search.spec.ts`); `npm run build`: Initial total 458.34 kB raw, 120.66 kB transfer (base 120.56 kB).
+  Injected the old bare-interpolation template: the new spec fails (Received " CLM-SG-2026- 000009"), restored.
+- Headless (Playwright, staff and self on :4404 -> API :5204 -> Meilisearch v1.12.8): 13/13 checks PASS, 0 console errors.
+- Live restart of the API against the same engine: no "settings differed" log line, `settingsUpdate` tasks for `claims` stay 1.
 
 ## What changed in shared files (exactly)
 - slice 1: none (all changes under `src/Fugue.Infrastructure/Search/` and `tests/Fugue.Tests/Claims/ClaimSearchTests.cs`)
+- slice 3: none outside `web/src/app/features/shell/global-search*`
 - slice 2: `src/Fugue.Api/Controllers/ClaimsController.cs` (the Search action's doc comment only), `docs/api/openapi.v1.json` and
   `web/src/app/api/generated/**` (regenerated: `highlights` on a hit, `facets` on the result, both optional)
 
@@ -36,6 +43,10 @@
 - Each hit has `highlights` (only the fields that matched, `<em>` tags, description cropped to 24 words around the match); the
   result has `facets` (status, market, line counts over all matches, under the same scope filter as the hits).
 
+- Web: each claim hit shows the number, market, line, place and description with the matched words marked, a "Matched on"
+  line for matches in fields the row does not show (policy, claimant, market name), and above the hits the counts over all
+  matches ("2 matches · Market SG 2 · Line Motor 2 · Status Settled 1, Submitted 1"). Counts are read-only text, not filters.
+
 ## Deviations and gaps
 - No row for nth-searchx in `docs/branch-ledger.md`; not added (the addendum allows only the Status cell of an own row).
 
@@ -43,4 +54,4 @@
   eventually consistent, so a highlight assertion there would be timing-dependent. Covered by the integration tests instead.
 
 ## Next slice
-- 3/3: header search renders highlights (why it matched) and facet counts; headless check.
+- none: full .NET suite under the lock, then the report.
