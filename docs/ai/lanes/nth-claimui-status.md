@@ -52,3 +52,8 @@ Commits: d708a8f (A, B, F), e596429 (D), f24261a (C), 8b42690 (G), 69f215b (E), 
 - F: lining numerals on `.kpi-n` and the landing hero title.
 - G: officer landing (needs my action, pick up next with inline Pick up, waiting on claimant), manager (to settle + summary), claimant hero text names the claim.
 Not fitted / unverified: "days since asked" on the officer landing uses the claim's `updatedAt` (list rows carry no question time); the home pickup button and polling were not exercised end to end; the Open-tab count is the sum of three single-status counts (capped at 100 each, shown with +); e2e specs still unrun.
+
+## Round 3 (lead facts: tour merged, nth-api2 merged)
+- `tour-hook.ts` calls `globalThis.startTour(key)`. `data-tour` attributes added: claim-actions (next step card), claim-timeline (Activity), claim-answer (answer panel), queue-kpis, queue-tabs, exposure-totals (matrix), exposure-note, team-workload (officers), plus record-banner, team-kpis, landing-hero (extra, unused by the tour). Not tested against the real tour service on this branch.
+- Past questions: `ClaimsApi.questions(id)` + hand-written `ClaimQuestionEntry` (no client regen); the record shows answered ones as "Past questions"; polled like the rest. Not verified against the live endpoint (it is on main, not this branch's API build).
+- Optional backend fields stay behind local types; nothing regenerated.
