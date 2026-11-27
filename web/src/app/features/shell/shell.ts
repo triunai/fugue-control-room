@@ -13,6 +13,8 @@ import { searchVisible } from './global-search-logic';
 import { HelpButton } from './help-button';
 import { tourKeyFor } from './tour-steps';
 import { NavProgress } from './nav-progress';
+import { Overlays } from '../../ui/overlays';
+import { StackDialog } from './stack-dialog';
 import { WelcomeDialog } from './welcome-dialog';
 import { Sidebar } from './sidebar';
 import { TourService } from './tour.service';
@@ -31,6 +33,7 @@ export class Shell {
   private readonly toasts = inject(ToastStore);
   private readonly correlation = inject(CorrelationService);
   private readonly tour = inject(TourService);
+  private readonly overlays = inject(Overlays);
 
   protected readonly canSearch = computed(() => searchVisible((c) => this.access.has(c)));
   protected readonly me = this.access.me;
@@ -66,6 +69,11 @@ export class Shell {
         void this.router.navigate(['/unavailable'], { queryParams: { reason: 'changed' } });
       }
     });
+  }
+
+  /** The env pill: what the app is built on. Focus returns to the pill on close. */
+  protected openStack(): void {
+    this.overlays.modal(StackDialog, undefined, { width: 'min(600px, calc(100vw - 2rem))' });
   }
 
   /** Help: the tour of the page on screen. */

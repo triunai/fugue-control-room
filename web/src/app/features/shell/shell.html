@@ -22,7 +22,15 @@
         <fg-global-search />
       }
       <fg-help-button (pressed)="help()" />
-      <span class="env" title="Environment, API runtime and version">dev &middot; net8 &middot; v1</span>
+      <button
+        type="button"
+        class="env"
+        data-testid="env-pill"
+        title="Environment, API runtime and version: open the stack"
+        (click)="openStack()"
+      >
+        dev &middot; net8 &middot; v1
+      </button>
     </header>
     <main id="main" tabindex="-1" class="outline-none">
       <div #page class="page-host">

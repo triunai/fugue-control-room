@@ -91,3 +91,48 @@ describe('Shell sidebar', () => {
     expect(TestBed.inject(PrefsStore).collapsedGroups()).toContain('Starter example');
   });
 });
+
+describe('Shell stack dialog', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    localStorage.setItem('fugue.tour.seen.admin', '1');
+  });
+
+  const pill = (root: HTMLElement) => root.querySelector('[data-testid="env-pill"]') as HTMLButtonElement;
+  const dialog = () => document.querySelector('[data-testid="stack-dialog"]');
+  const settle = async (fixture: { detectChanges(): void }) => {
+    fixture.detectChanges();
+    await new Promise((r) => setTimeout(r, 30));
+    fixture.detectChanges();
+  };
+
+  it('opens from the env pill, lists the stack, and closes on Escape', async () => {
+    const fixture = render();
+    const root = fixture.nativeElement as HTMLElement;
+    pill(root).focus();
+    pill(root).click();
+    await settle(fixture);
+    expect(dialog()?.textContent).toContain('PostgreSQL');
+    document
+      .querySelector('.cdk-dialog-container')
+      ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, bubbles: true }));
+    await settle(fixture);
+    expect(dialog()).toBeNull();
+  });
+
+  it('closes on an outside (backdrop) click and on the Close button', async () => {
+    const fixture = render();
+    const root = fixture.nativeElement as HTMLElement;
+    pill(root).click();
+    await settle(fixture);
+    (document.querySelector('.cdk-overlay-backdrop') as HTMLElement).click();
+    await settle(fixture);
+    expect(dialog()).toBeNull();
+
+    pill(root).click();
+    await settle(fixture);
+    (document.querySelector('[data-testid="stack-close"]') as HTMLButtonElement).click();
+    await settle(fixture);
+    expect(dialog()).toBeNull();
+  });
+});
