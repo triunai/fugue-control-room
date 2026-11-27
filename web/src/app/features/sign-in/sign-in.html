@@ -8,39 +8,50 @@
     <div class="copy">
       <h1 id="headline">One request, heard in every voice.</h1>
       <p>
-        The claims console for the Fugue API. File a claim, work it, settle it, and follow each change through the audit
-        trail and out to a signed webhook, all under one correlation id.
+        From first notice to final settlement. Independent components working in concert, every decision recorded, every
+        event traceable.
       </p>
     </div>
 
-    <figure class="score" aria-label="One correlation id carried by the request, the audit row and the webhook">
-      <svg viewBox="0 0 440 150" role="img" aria-hidden="true">
-        @for (y of [22, 34, 46, 58, 70]; track y) {
-          <line x1="0" [attr.y1]="y" x2="440" [attr.y2]="y" class="staff" />
-        }
-        @for (y of [92, 104, 116, 128, 140]; track y) {
-          <line x1="0" [attr.y1]="y" x2="440" [attr.y2]="y" class="staff" />
-        }
-        <!-- subject: the request -->
-        <g class="voice v1">
-          <ellipse cx="22" cy="46" rx="6.5" ry="4.8" transform="rotate(-20 22 46)" />
-          <line x1="28" y1="45" x2="150" y2="45" />
-        </g>
-        <!-- answer: the audit row, entering later and higher -->
-        <g class="voice v2">
-          <ellipse cx="150" cy="28" rx="6.5" ry="4.8" transform="rotate(-20 150 28)" />
-          <line x1="156" y1="27" x2="290" y2="27" />
-        </g>
-        <!-- third voice: the signed event, in the lower staff -->
-        <g class="voice v3">
-          <ellipse cx="290" cy="110" rx="6.5" ry="4.8" transform="rotate(-20 290 110)" />
-          <line x1="296" y1="109" x2="432" y2="109" />
-        </g>
-      </svg>
-      <figcaption>
-        <span><b>Request</b> Set reserve</span>
-        <span><b>Audit row</b> amount: old → new</span>
-        <span><b>Signed event</b> claim.reserve.set.v1</span>
+    <figure class="prelude">
+      <div class="prelude-panel" aria-hidden="true">
+        <div class="prelude-head">
+          <span class="prelude-title">Fugue <i>/</i> The anatomy of a request</span>
+          <span class="prelude-op">Op. 01</span>
+        </div>
+        <svg viewBox="0 0 480 232" focusable="false">
+          @for (top of staffTop; track top; let v = $index) {
+            <text class="voice-label" x="480" text-anchor="end" [attr.y]="top - 10">{{ voiceLabels[v] }}</text>
+            @for (i of [0, 1, 2, 3, 4]; track i) {
+              <line class="staff" x1="0" [attr.y1]="top + i * 8" x2="480" [attr.y2]="top + i * 8" />
+            }
+          }
+          @for (c of connectors; track $index) {
+            <path class="link" [attr.d]="c.d" [style.--d.ms]="c.delayMs" pathLength="1" />
+          }
+          @for (n of notes; track $index) {
+            <g class="note" [class.gold]="n.voice === 2" [style.--d.ms]="n.delayMs">
+              <line [attr.x1]="n.x + 5.5" [attr.y1]="n.y - 1" [attr.x2]="n.x + 5.5" [attr.y2]="n.y - 24" />
+              <ellipse
+                [attr.cx]="n.x"
+                [attr.cy]="n.y"
+                rx="6.2"
+                ry="4.6"
+                [attr.transform]="'rotate(-20 ' + n.x + ' ' + n.y + ')'"
+              />
+            </g>
+          }
+        </svg>
+        <p class="prelude-id"><span>correlation_id:</span> 8f2a-91c4</p>
+        <div class="prelude-foot">
+          <span><b>Request</b> Set reserve</span>
+          <span><b>Audit</b> State recorded</span>
+          <span class="gold"><b>Event</b> Webhook signed</span>
+        </div>
+      </div>
+      <figcaption class="sr-only">
+        One correlation id, 8f2a-91c4, enters as a request, is answered by an audit row, and is echoed by a signed
+        webhook event, like one subject imitated by three voices.
       </figcaption>
     </figure>
   </section>
