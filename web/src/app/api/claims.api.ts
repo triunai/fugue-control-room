@@ -17,6 +17,16 @@ import {
   SubmitClaimRequest,
 } from './models';
 
+/** One question put to the claimant and its answer (`GET /claims/{id}/info-requests`); hand-written until the client is regenerated. */
+export interface ClaimQuestionEntry {
+  id: string;
+  question: string;
+  askedBy: string;
+  askedAt: string;
+  answer?: string | null;
+  answeredAt?: string | null;
+}
+
 export type AssignedFilter = 'any' | 'me' | 'none';
 
 /** Everything the list endpoint filters on. `status` is one status or '' for all. */
@@ -42,6 +52,7 @@ export const claimKeys = {
   list: (f: ClaimFilter) => ['claims', 'list', f] as const,
   counts: (f: Omit<ClaimFilter, 'status'>) => ['claims', 'counts', f] as const,
   one: (id: string) => ['claims', 'one', id] as const,
+  questions: (id: string) => ['claims', 'questions', id] as const,
   timeline: (id: string) => ['claims', 'timeline', id] as const,
   workload: ['claims', 'workload'] as const,
   exposure: ['claims', 'exposure'] as const,
@@ -102,6 +113,11 @@ export class ClaimsApi {
 
   timeline(id: string): Promise<ClaimTimelineEntryDto[]> {
     return firstValueFrom(this.http.get<ClaimTimelineEntryDto[]>(`${this.url(id)}/timeline`));
+  }
+
+  /** Every question asked on the claim, newest first. */
+  questions(id: string): Promise<ClaimQuestionEntry[]> {
+    return firstValueFrom(this.http.get<ClaimQuestionEntry[]>(`${this.url(id)}/info-requests`));
   }
 
   /** `idempotencyKey` makes a retry of this submission safe (the same key and body return the first claim). */

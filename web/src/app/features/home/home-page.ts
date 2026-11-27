@@ -29,7 +29,7 @@ import { bySlaRisk, claimantHero, landingKind, needsMyAction, officerPrimary } f
           @if (claimantQuery.isPending()) {
             <div class="panel panel-pad"><span class="skeleton" style="width: 50%; height: 2rem"></span></div>
           } @else if (hero().claim; as c) {
-            <section class="hero" [class.hero-urgent]="hero().needsYou" data-testid="hero">
+            <section class="hero" [class.hero-urgent]="hero().needsYou" data-testid="hero" data-tour="landing-hero">
               <div>
                 <p class="hero-kicker">{{ hero().needsYou ? 'This one needs you' : 'Where your claim stands' }}</p>
                 <h2 class="hero-title">

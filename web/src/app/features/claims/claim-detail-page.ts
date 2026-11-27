@@ -128,7 +128,12 @@ const DONE: Record<Command['kind'], string> = {
             }
 
             @if (c.openInfoRequest && canRespond()) {
-              <section class="panel panel-pad" aria-labelledby="q-h" data-testid="answer-panel">
+              <section
+                class="panel panel-pad"
+                aria-labelledby="q-h"
+                data-testid="answer-panel"
+                data-tour="claim-answer"
+              >
                 <h2 id="q-h" class="section-title">A question for you</h2>
                 <p class="question">{{ c.openInfoRequest.question }}</p>
                 <form [formGroup]="answerForm" (ngSubmit)="answer()" novalidate class="flex flex-col gap-3">
@@ -154,7 +159,31 @@ const DONE: Record<Command['kind'], string> = {
               </section>
             }
 
-            <section class="panel panel-pad" aria-labelledby="t-h">
+            @if (pastQuestions().length) {
+              <section class="panel panel-pad" aria-labelledby="pq-h" data-testid="past-questions">
+                <h2 id="pq-h" class="section-title">Past questions</h2>
+                <ul class="qa">
+                  @for (q of pastQuestions(); track q.id) {
+                    <li>
+                      <p class="question">{{ q.question }}</p>
+                      <span class="text-muted" [title]="q.askedAt | stamp"
+                        >{{ q.askedBy }} asked {{ q.askedAt | relative }}</span
+                      >
+                      @if (q.answer) {
+                        <p class="mt-2 mb-0">{{ q.answer }}</p>
+                        <span class="text-muted" [title]="q.answeredAt ?? '' | stamp"
+                          >answered {{ q.answeredAt ?? '' | relative }}</span
+                        >
+                      } @else {
+                        <p class="mt-2 mb-0 text-muted">No answer yet.</p>
+                      }
+                    </li>
+                  }
+                </ul>
+              </section>
+            }
+
+            <section class="panel panel-pad" aria-labelledby="t-h" data-tour="claim-timeline">
               <h2 id="t-h" class="section-title">Activity</h2>
               @if (timelineQuery.isPending()) {
                 <span class="skeleton" style="width: 60%"></span>
@@ -284,6 +313,16 @@ export class ClaimDetailPage {
     userId: this.access.me()?.userId,
     permissions: this.access.permissions(),
   }));
+
+  protected readonly questionsQuery = injectQuery(() => ({
+    queryKey: claimKeys.questions(this.id()),
+    queryFn: () => this.api.questions(this.id()),
+    retry: false,
+    ...this.live,
+  }));
+
+  /** Answered questions only: the open one has its own panel. A failed read just hides the list. */
+  protected readonly pastQuestions = computed(() => (this.questionsQuery.data() ?? []).filter((q) => !!q.answer));
 
   /** The activity list, newest first. */
   protected readonly activity = computed(() =>

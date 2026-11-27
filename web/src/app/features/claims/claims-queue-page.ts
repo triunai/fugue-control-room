@@ -40,7 +40,7 @@ const TABS: { v: ClaimFilter['status']; l: string }[] = [
         </div>
       </header>
 
-      <section class="kpis" aria-label="Queue at a glance" data-testid="kpis">
+      <section class="kpis" aria-label="Queue at a glance" data-testid="kpis" data-tour="queue-kpis">
         @for (k of kpis; track k.status) {
           <button
             type="button"
@@ -103,7 +103,7 @@ const TABS: { v: ClaimFilter['status']; l: string }[] = [
         }
       </div>
 
-      <div class="tabs" role="tablist" aria-label="Status">
+      <div class="tabs" role="tablist" data-tour="queue-tabs" aria-label="Status">
         @for (t of tabs; track t.v) {
           <button
             type="button"

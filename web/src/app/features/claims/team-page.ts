@@ -39,7 +39,7 @@ type OfficerX = OfficerWorkloadDto & { oldestOpenClaimId?: string | null };
         } @else if (workload.isError()) {
           <div class="panel"><fg-error-state [error]="workload.error()" (retry)="workload.refetch()" /></div>
         } @else if (workload.data(); as w) {
-          <section class="kpis kpis-5" aria-label="What is breaching" data-testid="team-kpis">
+          <section class="kpis kpis-5" aria-label="What is breaching" data-testid="team-kpis" data-tour="team-kpis">
             <a
               class="kpi"
               routerLink="/claims/queue"
@@ -96,7 +96,7 @@ type OfficerX = OfficerWorkloadDto & { oldestOpenClaimId?: string | null };
             </p>
           }
 
-          <section class="panel panel-pad" aria-labelledby="off-h">
+          <section class="panel panel-pad" aria-labelledby="off-h" data-tour="team-workload">
             <h2 id="off-h" class="section-title">Who is carrying what</h2>
             <p class="mt-1 mb-3 text-muted">
               Open load is under review plus waiting on the claimant, heaviest first; the bar is relative to the busiest
@@ -202,7 +202,7 @@ type OfficerX = OfficerWorkloadDto & { oldestOpenClaimId?: string | null };
       @if (canMoney()) {
         <section class="panel panel-pad" aria-labelledby="exp-h">
           <h2 id="exp-h" class="section-title">Where the money is</h2>
-          <p class="mt-1 mb-3 text-muted" data-testid="exposure-summary">
+          <p class="mt-1 mb-3 text-muted" data-testid="exposure-summary" data-tour="exposure-note">
             Per cell: outstanding reserve, with approved-not-settled under it. Each market settles in its own currency,
             so bars are scaled within a currency and nothing is ever added across currencies: there is no grand total.
           </p>
@@ -217,7 +217,7 @@ type OfficerX = OfficerWorkloadDto & { oldestOpenClaimId?: string | null };
             />
           } @else {
             <div class="table-wrap">
-              <table class="table matrix" data-testid="exposure-table">
+              <table class="table matrix" data-testid="exposure-table" data-tour="exposure-totals">
                 <thead>
                   <tr>
                     <th scope="col">Market</th>

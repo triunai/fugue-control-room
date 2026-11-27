@@ -9,7 +9,12 @@ import { Actor, NextAction, nextStep } from './claims-logic';
   styleUrl: './claim-record.css',
   template: `
     @if (step(); as s) {
-      <section [class]="'panel panel-pad next-card tone-' + s.tone" aria-label="Next step" data-testid="next-step">
+      <section
+        [class]="'panel panel-pad next-card tone-' + s.tone"
+        aria-label="Next step"
+        data-tour="claim-actions"
+        data-testid="next-step"
+      >
         <div class="nc-head">
           <div class="nc-label">
             <h2 class="section-title m-0">Next step</h2>
