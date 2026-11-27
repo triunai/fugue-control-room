@@ -4,6 +4,14 @@ Tracks notable changes across migrations, API contracts, and project documentati
 
 > **ADR links.** An entry that reflects a real architectural decision cites it as `(ADR-NNN)`; the ADR lives in `docs/adr/`.
 
+## v0.0.2 — 2026-11-27
+Release: the claims platform plus the owner's polish round, frozen for the walkthrough (D-062). Tag `v0.0.2`; the timed claims build is `claims-window-start..claims-window-end`.
+Claims platform: Claim aggregate with a guarded state machine (Submitted, UnderReview, InfoRequested, Approved, Rejected, Settled), claimant timeline and info requests, claimant scope as 404 never 403, If-Match on every action (428/412) checked before the state machine, a required Idempotency-Key on submit (422 on a reused key), status + timeline + audit + outbox in one transaction, claim.* events to signed webhooks and an optional Kafka publisher (off by default), workload, exposure per currency, claim counts and past questions; one Angular console for claimant, officer, manager and admin with persona landings, the two-track claim record with a next-step card, and Team and exposure.
+Owner polish: console shell adaptation with breadcrumbs (D-060, corrected: adapted, not ported), reviewer tour, roles x permissions matrix, Univer reserve sheet and assessment worksheet with Open in Excel, SLA calendar, Meilisearch audit search, the "Under the hood" panel (live API calls, how the API does it, guards with the real enforcing code, tests per page, ADRs first), Stryker/PICT/k6.
+Fixed in the release round: blank console for a returning signed-in user (NG0203, 284a191), Open in Excel in the production bundle (e66e082), Team and exposure and the landings refresh live (b451cd7), claim events reach the dev sink in Docker (1688126), one definition of "open with no reserve", exposure cells open the queue, sign-in lists the four personas (03448e5).
+Verification: ArchTests 37, Tests 740 (Testcontainers Postgres), Bruno 101 requests / 123 tests on the Docker stack, web 218 (Vitest), lint and build clean; live browser checks signed in and after a reload with zero console errors.
+Decisions: D-060, D-061, D-062; failure modes 33 and 34. The freeze-round commits cite `Refs: D-062` and no W thread (W-022 was closed at release), so commit-link-check lists them as unlinked; this entry is their home. Reviews: docs/reviews/fable/2026-11-27-interview-readiness.md, docs/reviews/fable/2026-11-27-panel-stress-test.md.
+
 ## 2026-11-27 — Closed W-022: Post-core quality wave and nice-to-haves (lands together after the claims build)
 WS: WS-22
 Closed: W-022 (WS-22) Post-core quality wave and nice-to-haves (lands together after the claims build)

@@ -5,5 +5,3 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | Branch | Worktree path | Base sha | Owner (lane) | W id | Status |
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
-| `nth-hood2` | `.worktrees/nth-hood2` | 284a191 | nth-hood2 (Sonnet) | D-062 | hood guards with code excerpts, API notes, ADR links |
-| `nth-airtight` | `.worktrees/nth-airtight` | 1688126 | nth-airtight (Sonnet) | D-062 | panel review web fixes: no-reserve count, sign-in personas, exposure drill-down, claimant nav, webhooks copy |

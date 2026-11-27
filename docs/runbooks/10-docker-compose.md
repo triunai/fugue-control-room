@@ -45,9 +45,12 @@ docker compose down        # stops and removes containers; the fugue-pgdata volu
 ```
 Never add `-v` to a project that shares the dev database: it deletes `fugue-pgdata`. To start from an empty database, use a throwaway project name so it gets its own volume:
 ```bash
-docker compose -p fugue-scratch up -d --build     # own containers and volume; set WEB_PORT, API_PORT and POSTGRES_PORT so they do not clash
-docker compose -p fugue-scratch down -v           # safe: removes only fugue-scratch_fugue-pgdata
+docker compose down                               # free the fixed container names (fugue-postgres, fugue-meilisearch); keeps fugue_fugue-pgdata
+docker compose -p fugue-demo up -d --build        # own volume (fugue-demo_fugue-pgdata): migrate + seed from empty, same ports
+docker compose -p fugue-demo down -v              # safe: removes only the fugue-demo volumes
+docker compose up -d                              # back to the dev database, untouched
 ```
+Two projects cannot run side by side: `container_name` is fixed for Postgres and Meilisearch, so a second project clashes on the name even with other ports (verified 2026-11-27; the earlier "set the ports" advice did not work).
 
 ## 5. Troubleshooting
 
