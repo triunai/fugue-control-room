@@ -26,7 +26,7 @@ public sealed class JwtAccessTokenIssuer(IOptions<AuthOptions> options, TimeProv
             Expires = expires.UtcDateTime,
             Subject = new ClaimsIdentity(
             [
-                new Claim(JwtRegisteredClaimNames.Sub, userId.Value.ToString()),
+                new Claim(FugueClaimTypes.Subject, userId.Value.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
             ]),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(o.KeyBytes()), SecurityAlgorithms.HmacSha256),

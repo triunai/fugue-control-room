@@ -48,7 +48,7 @@ public sealed class JwtBearerSetup(IOptions<AuthOptions> auth, TimeProvider time
                 return expires is not null && expires.Value + p.ClockSkew > now
                     && (notBefore is null || notBefore.Value - p.ClockSkew <= now);
             },
-            NameClaimType = "sub",
+            NameClaimType = FugueClaimTypes.Subject,
         };
         options.Events = new JwtBearerEvents
         {
@@ -60,7 +60,7 @@ public sealed class JwtBearerSetup(IOptions<AuthOptions> auth, TimeProvider time
 
     private static async Task OnTokenValidated(TokenValidatedContext context)
     {
-        string? sub = context.Principal?.FindFirstValue("sub");
+        string? sub = context.Principal?.FindFirstValue(FugueClaimTypes.Subject);
         if (!Guid.TryParse(sub, out Guid id) || context.Principal?.Identity is not ClaimsIdentity identity)
         {
             context.Fail("Token has no usable subject.");
@@ -76,19 +76,19 @@ public sealed class JwtBearerSetup(IOptions<AuthOptions> auth, TimeProvider time
         }
 
         // Defence in depth: the issuer never puts permissions in a token, but a token that somehow carries `perm` claims must not keep them.
-        foreach (Claim stale in identity.FindAll(ClaimsCurrentUser.PermissionClaim).ToList())
+        foreach (Claim stale in identity.FindAll(FugueClaimTypes.Permission).ToList())
         {
             identity.RemoveClaim(stale);
         }
 
         foreach (string permission in access.Permissions)
         {
-            identity.AddClaim(new Claim(ClaimsCurrentUser.PermissionClaim, permission));
+            identity.AddClaim(new Claim(FugueClaimTypes.Permission, permission));
         }
 
         if (access.TenantId is { } tenant)
         {
-            identity.AddClaim(new Claim("tenant_id", tenant.Value.ToString()));
+            identity.AddClaim(new Claim(FugueClaimTypes.TenantId, tenant.Value.ToString()));
         }
     }
 
@@ -162,7 +162,7 @@ public sealed class JwtBearerSetup(IOptions<AuthOptions> auth, TimeProvider time
         HttpContext http = context.HttpContext;
         // The client is told nothing about WHICH permission; the audit row records it (internal) for operators.
         string? permissions = string.Join(',', http.GetEndpoint()?.Metadata.GetOrderedMetadata<HasPermissionAttribute>().Select(a => a.Permission) ?? []);
-        _ = Guid.TryParse(http.User.FindFirstValue("sub"), out Guid sub);
+        _ = Guid.TryParse(http.User.FindFirstValue(FugueClaimTypes.Subject), out Guid sub);
         await http.RequestServices.GetRequiredService<IAccessAuditWriter>().WriteAsync(
             new AccessAuditEntry("forbidden", "denied", permissions.Length > 0 ? permissions : null, sub == Guid.Empty ? null : UserId.From(sub), null, AuthProblems.ClientOf(http)),
             http.RequestAborted);

@@ -49,7 +49,7 @@ try
     builder.Services.AddFugueOpenApi();
     builder.Services.AddConsoleCors(builder.Configuration, builder.Environment);
     builder.Services.AddHttpContextAccessor();
-    builder.Services.AddScoped<ICurrentUser, ClaimsCurrentUser>();
+    builder.Services.AddScoped<ICurrentUser, JwtCurrentUser>();
 
     // Authentication (JWT HS256) and authorization (effective permissions). The fallback policy makes every endpoint
     // require an authenticated caller; anonymous endpoints are explicit [AllowAnonymous] exceptions.

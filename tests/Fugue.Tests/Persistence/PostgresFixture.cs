@@ -32,7 +32,7 @@ public sealed class TestClock : TimeProvider
 /// </summary>
 public sealed class TestCurrentUser(IHttpContextAccessor accessor) : ICurrentUser
 {
-    private readonly ClaimsCurrentUser _claims = new(accessor);
+    private readonly JwtCurrentUser _claims = new(accessor);
 
     public Guid? UserId => _claims.IsAuthenticated ? _claims.UserId : null;
 

@@ -2,7 +2,7 @@
 
 Status: REVISED 2026-11-25 after the cross-family review (`docs/reviews/codex/2026-11-25-s3-identity-plan.md`, verdict REJECT, 10 findings; the owner accepted all 10). Owner scope changes folded in (section 10). Critical seam: auth, migration. D-016 to D-026 carry the decisions; ADR-008 (auth model) and ADR-009 (module management) are written with the build. The model is a port of the owner's UAM v3 design, trimmed; schema is ported, not redesigned.
 
-Premises checked: `ICurrentUser` and `ClaimsCurrentUser` exist; no auth is wired in `Program.cs`; `MapStatus` is IMPLEMENTED (4e8ee4e, W-009, closes review finding 8); the last migration is `InitialCustomers`; a fitness test bans `Microsoft.AspNetCore*` in Application.
+Premises checked: `ICurrentUser` and `JwtCurrentUser` exist; no auth is wired in `Program.cs`; `MapStatus` is IMPLEMENTED (4e8ee4e, W-009, closes review finding 8); the last migration is `InitialCustomers`; a fitness test bans `Microsoft.AspNetCore*` in Application.
 
 ## Review resolutions (Codex REJECT, all 10 accepted)
 | # | Sev | Finding | Resolution | Pinned by |

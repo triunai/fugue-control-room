@@ -47,7 +47,7 @@ public sealed class PermissionHandler : AuthorizationHandler<PermissionRequireme
 {
     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
     {
-        if (context.User.HasClaim(ClaimsCurrentUser.PermissionClaim, requirement.Permission))
+        if (context.User.HasClaim(FugueClaimTypes.Permission, requirement.Permission))
         {
             context.Succeed(requirement);
         }
