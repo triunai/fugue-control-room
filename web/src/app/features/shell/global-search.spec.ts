@@ -109,7 +109,7 @@ describe('global search dropdown', () => {
       () => Promise.resolve(CLAIMS),
       () => Promise.resolve(AUDIT),
     );
-    expect(input.placeholder).toBe('Search claims: number, policy, place');
+    expect(input.placeholder).toBe('Try: SG motor, CLM-SG-…');
     expect(claimSearch).toHaveBeenCalledWith('orchard', 8);
     expect(auditSearch).not.toHaveBeenCalled();
     const menu = root.querySelector('[data-testid="global-search-menu"]')!;
@@ -208,5 +208,82 @@ describe('claim hits say why they matched', () => {
     expect(hitEl.querySelector('.gs-action fg-gs-hl')!.textContent).toBe('CLM-SG-2026-000009');
     expect(root.querySelector('[data-testid="claim-why"]')!.textContent).toContain('Market:');
     expect(root.querySelector('[data-testid="claim-facets"]')!.textContent).toContain('3 matches · Market SG 2, MY 1');
+  });
+});
+
+describe('global search first-use explainer', () => {
+  const KEY = 'fugue.search.intro';
+  function mount() {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        { provide: AccessService, useValue: { has: (c: string) => c === 'CLAIMS_READ' } },
+        { provide: ClaimsApi, useValue: { search: vi.fn(() => Promise.resolve(CLAIMS)) } },
+        { provide: AuditApi, useValue: { search: vi.fn() } },
+      ],
+    });
+    const fixture = TestBed.createComponent(GlobalSearch);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    return { fixture, root, input: root.querySelector<HTMLInputElement>('input')! };
+  }
+  const intro = (root: HTMLElement) => root.querySelector('[data-testid="global-search-intro"]');
+
+  beforeEach(() => localStorage.removeItem(KEY));
+
+  it('shows on first focus with both Meilisearch links, says what it is and is not, then stays dismissed', () => {
+    const { fixture, root, input } = mount();
+    input.dispatchEvent(new Event('focus'));
+    fixture.detectChanges();
+    const box = intro(root)!;
+    const hrefs = Array.from(box.querySelectorAll('a')).map((a) => [a.getAttribute('href'), a.getAttribute('rel')]);
+    expect(hrefs).toEqual([
+      ['https://www.meilisearch.com/', 'noopener'],
+      ['https://www.meilisearch.com/docs/getting_started/sdks/dotnet', 'noopener'],
+    ]);
+    expect(box.textContent).toContain('keyword search, not AI or semantic');
+    expect(box.textContent).not.toMatch(/hybrid/i);
+
+    root.querySelector<HTMLButtonElement>('[data-testid="global-search-intro-dismiss"]')!.click();
+    fixture.detectChanges();
+    expect(intro(root)).toBeNull();
+    expect(localStorage.getItem(KEY)).toBe('1');
+
+    // A later visit (new component, same browser) does not show it again; the "?" reopens it.
+    TestBed.resetTestingModule();
+    const again = mount();
+    again.input.dispatchEvent(new Event('focus'));
+    again.fixture.detectChanges();
+    expect(intro(again.root)).toBeNull();
+    again.root.querySelector<HTMLButtonElement>('[data-testid="global-search-help"]')!.click();
+    again.fixture.detectChanges();
+    expect(intro(again.root)).not.toBeNull();
+  });
+
+  it('never blocks typing: typing closes it', () => {
+    const { fixture, root, input } = mount();
+    input.dispatchEvent(new Event('focus'));
+    fixture.detectChanges();
+    expect(intro(root)).not.toBeNull();
+    input.value = 'sg';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(intro(root)).toBeNull();
+  });
+
+  it('"/" and Ctrl+K focus the box; "/" is ignored while typing in another field', () => {
+    const { fixture, input } = mount();
+    document.body.appendChild(fixture.nativeElement);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: '/', bubbles: true }));
+    expect(document.activeElement).toBe(input);
+    input.blur();
+    const other = document.createElement('input');
+    document.body.appendChild(other);
+    other.focus();
+    other.dispatchEvent(new KeyboardEvent('keydown', { key: '/', bubbles: true }));
+    expect(document.activeElement).toBe(other);
+    other.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
+    expect(document.activeElement).toBe(input);
+    other.remove();
   });
 });
