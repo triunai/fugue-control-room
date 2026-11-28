@@ -27,6 +27,9 @@ public sealed class UpdateUserHandlerTests
     private static UserDto Existing(params string[] roles) =>
         new(Target, "t@example.test", "Target", true, roles, [], DateTimeOffset.UnixEpoch, 7);
 
+    private static UserDto InGroup(string group) =>
+        new(Target, "t@example.test", "Target", true, [], [group], DateTimeOffset.UnixEpoch, 7);
+
     private static (UpdateUserHandler Handler, FakeAdmin Admin) Build(UserDto? existing, Guid callerId, params string[] callerPermissions)
     {
         var admin = new FakeAdmin();
@@ -106,8 +109,23 @@ public sealed class UpdateUserHandlerTests
 
         var validator = new UpdateUserValidator();
         Assert.False(validator.Validate(new UpdateUserCommand(Target, "", true, [], 7)).IsValid);
-        Assert.Contains(validator.Validate(new UpdateUserCommand(Target, "X", true, [], 7)).Errors, e => e.PropertyName == "Roles");
+        Assert.True(validator.Validate(new UpdateUserCommand(Target, "X", true, [], 7)).IsValid); // emptiness is the handler's call (groups)
         Assert.Contains(validator.Validate(new UpdateUserCommand(Target, new string('a', 201), true, ["STAFF"], 7)).Errors, e => e.PropertyName == "DisplayName");
+    }
+
+    [Fact]
+    public async Task Empty_roles_are_saved_for_a_user_in_a_group_but_a_400_for_one_with_no_group()
+    {
+        var (handler, admin) = Build(InGroup("SUPPORT"), Caller, Permissions.UsersManage);
+
+        Result<UserDto> grouped = await handler.Handle(new UpdateUserCommand(Target, "Renamed", true, [], 7), default);
+        Assert.True(grouped.IsSuccess);
+        Assert.Empty(admin.Saved!.RoleCodes);
+
+        (handler, admin) = Build(Existing("STAFF"), Caller, Permissions.UsersManage); // no groups
+        Result<UserDto> bare = await handler.Handle(new UpdateUserCommand(Target, "X", true, [], 7), default);
+        Assert.Equal(ErrorType.Validation, Assert.IsType<FugueError>(Assert.Single(bare.Errors)).Type);
+        Assert.Null(admin.Saved);
     }
 
     [Fact]

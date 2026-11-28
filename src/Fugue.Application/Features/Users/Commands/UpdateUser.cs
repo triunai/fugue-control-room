@@ -26,7 +26,7 @@ public sealed class UpdateUserValidator : AbstractValidator<UpdateUserCommand>
     {
         RuleFor(x => x.Id).Must(id => id.Value != Guid.Empty);
         RuleFor(x => x.DisplayName).NotEmpty().MaximumLength(200);
-        RuleFor(x => x.Roles).NotEmpty().WithMessage("Pick at least one role.");
+        RuleFor(x => x.Roles).NotNull(); // may be empty: the handler allows that when a group keeps the user's access
         RuleForEach(x => x.Roles).NotEmpty().MaximumLength(64);
     }
 }
@@ -49,6 +49,11 @@ public sealed class UpdateUserHandler(
         }
 
         string[] codes = [.. command.Roles.Select(r => r.Trim().ToUpperInvariant()).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+        if (codes.Length == 0 && current.Groups.Count == 0)
+        {
+            return Result.Fail<UserDto>(UserErrors.NoAccess()); // no direct role and no active group: the user could do nothing
+        }
+
         Dictionary<string, RoleDto> catalog = (await roles.ListAsync(cancellationToken)).Where(r => r.IsActive).ToDictionary(r => r.Code, StringComparer.Ordinal);
 
         string[] unknown = [.. codes.Where(c => !catalog.ContainsKey(c))];
