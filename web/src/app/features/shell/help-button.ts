@@ -30,6 +30,7 @@ import { ChangeDetectionStrategy, Component, output } from '@angular/core';
       font-size: 0.85rem;
       color: var(--muted);
       text-decoration: none;
+      white-space: nowrap;
     }
     .explained:hover {
       color: var(--text);

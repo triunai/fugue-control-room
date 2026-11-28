@@ -19,3 +19,9 @@
 
 ## Slice 3 (mermaid notice)
 - Added `web/public/_runtime/NOTICE.md` (MIT, mermaid 11.16.0 copied under the 11.16.1 name). Kept: the page needs it to render diagrams offline.
+
+## Slice 4: nav item (owner 11:35)
+- Worktree re-created from main b55270a (the first one was retired after merge); 805a298 (NOTICE) cherry-picked since it was not on main.
+- `nav.ts`: new optional `external` flag and a "Fugue, explained" item in Platform (no permission: every persona). `sidebar.html`/`sidebar.ts`/`sidebar.css`: external items render as a plain new-tab link with an external-link icon (shared item body via ng-template). Files beyond the lane list: sidebar.* (needed to render a non-route link).
+- Gates: lint pass; tests 58 files / 370 passed; build complete. Headless as claimant and admin: item visible, click opens /explained/index.html, heading visible, 0 console errors. Shot: `.worktrees/_briefs/reports/nth-explained-nav-self.png`.
+- Help-pill link got `white-space: nowrap` (it wrapped in the top bar).
