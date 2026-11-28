@@ -4,6 +4,8 @@ export interface NavItem {
   /** Permission CODE(S) (any of). Absent: always visible. */
   permission?: string | string[];
   icon: string;
+  /** Opens a static page outside the app (new tab); `path` is then a plain URL, never a route. */
+  external?: boolean;
 }
 
 export interface NavGroup {
@@ -99,6 +101,12 @@ export const NAV: NavGroup[] = [
         path: '/changelog',
         permission: ['CLAIMS_ALL', 'MODULES_VIEW'],
         icon: 'M8 2.5v11M8 5.5H3.5M8 10.5h4.5M2.5 5.5h2M11.5 10.5h2',
+      },
+      {
+        label: 'Fugue, explained',
+        path: '/explained/index.html',
+        external: true,
+        icon: 'M4 2.5h8v11H4zM6 5.5h4M6 8h4M6 10.5h2.5',
       },
       {
         label: 'Webhooks',

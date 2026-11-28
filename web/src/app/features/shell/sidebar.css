@@ -320,3 +320,12 @@ ul {
     transition: none;
   }
 }
+.item svg.ext {
+  width: 11px;
+  height: 11px;
+  margin-left: auto;
+  opacity: 0.6;
+}
+:host(.rail) .item svg.ext {
+  display: none;
+}

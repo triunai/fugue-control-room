@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -23,7 +24,7 @@ import { visibleGroups } from './nav';
 @Component({
   selector: 'fg-sidebar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, BrandMark, AccountMenu],
+  imports: [NgTemplateOutlet, RouterLink, BrandMark, AccountMenu],
   host: { '[class.rail]': 'collapsed()', '(document:keydown)': 'onKey($event)' },
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
