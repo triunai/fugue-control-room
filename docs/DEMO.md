@@ -75,7 +75,7 @@ Shown from the presenter's machine, not committed: the slide is Dex Horthy's (@d
 
 Two live examples from 2026-11-28:
 - **nth-brunoci**: the owner pasted a red CI `api-contract` run (115 of 127 requests passed: the collection signed in more often than the 20-per-minute limiter allows, then got 401s). A fix lane made the collection sign in once per account per run with the limiter still on; 127 of 127 passed on the demo stack; merged in 766ff6f.
-- **nth-kafkafix**: the refactor lane's base check found that the Kafka "no broker" test relays every leftover outbox row to a dead address, stalling or crashing a full run; a tests-only fix lane took it as the critical path for the push.
+- **nth-kafkafix**: the refactor lane's base check found that the Kafka "no broker" test relays every leftover outbox row to a dead address, stalling or crashing a full run; a tests-only fix lane made the test relay only its own row (merged 1082413), and the full suite went from over 12 minutes to 1 m 30 s in one run. Behind the flaky test sat a real production risk, now a recorded known issue (D-079, backlog #013): with the broker down one relay cycle is serial inside one transaction.
 
 ## Keep in the product, off the screen (unless asked)
 Customers (the starter's sample), webhook subscription management, groups and overrides and the roles matrix, audit search, the reserve sheet and SLA calendar, the reviewer tour, mutation/pairwise/load reports, module toggles (20 seconds, only if "is it really modular?" comes up), runbooks.

@@ -95,6 +95,7 @@ export * from './tooManyRequestsResponse';
 export * from './unauthorizedResponse';
 export * from './unprocessableEntityResponse';
 export * from './updateCustomerRequest';
+export * from './updateUserRequest';
 export * from './updateWebhookSubscriptionRequest';
 export * from './userDto';
 export * from './usersListParams';

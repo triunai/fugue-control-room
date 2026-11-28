@@ -52,7 +52,7 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
 - [x] 10. (merge aa401bc, nth-searchx, W-032, D-072 + D-073 (users/customers not indexed); lane full suite 776/776 + Arch 37; on merged main build 0 warnings, OpenAPI regen unchanged, web 360 tests; on :8080 as staff: "SG motor" 8 hits all SG Motor with highlights and a "Matched on" reason, "CLM-PH-2026-900011" exactly 1 hit; as self: "motor" 8 hits, all their own (checked against their scoped /claims list), another claimant's claim number 0 hits; 0 console errors. Note: the ClaimSearchHitDto comment says ClaimantName is null for a claimant; it is not (no leak, own claims only); comment to fix) Search hardening from `docs/research/2026-11-28-meilisearch.md`: market name and line searchable, synonyms (SG ->
       Singapore ...), typo tolerance off for claim/policy numbers, highlights showing why a hit matched, facets; settings applied
       idempotently at startup; tests. Decide other global-search candidates (users for admins, customers) with a D-row.
-- [ ] 11. README counts and screenshots refreshed after the merges (verified numbers only).
+- [ ] 11. (lane nth-readme2 from 7adb4d9, READY by 12:55; also the ClaimSearchHitDto comment fix) README counts and screenshots refreshed after the merges (verified numbers only).
 
 - [x] 11d. (merge 2e0ecbf, nth-decisions; D-067; on :8080 admin sees 80 of 80 with D-066, claimant -> /unavailable, 0 errors; web 270 tests, scripts 88) Decisions timeline in the console (owner 03:15): one read-only page or help-panel tab, ADR-001..014 and D-001..065 with
       id, title, date, one line, link to the ADR file or decisions.md anchor, grouped by the CHANGELOG version it landed in;
@@ -108,7 +108,7 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
       protection; hard stop 12:50, else defer with a D-row.
 - [x] 28. (merge 766ff6f at f89c523; bruno/ only; on the demo stack after an api restart (fresh limiter, as in CI) the full `bru run --env compose` passes 127/127 requests, 153/153 tests) nth-brunoci (FIX, W-041): CI api-contract run was red (127 requests, 12 failed: 429 at sign-in, then 401s); the collection
       caches one token per account per run, the limiter stays on. Wrap gate: full `bru run --env compose` green.
-- [ ] 29. nth-kafkafix (FIX, tests only, dispatched 12:00 as the critical path, READY or BLOCKED by 12:35; if BLOCKED a known-issue D-row and the dispatcher decides the push at 12:45; never --no-verify): KafkaPublisherTests' no-broker test crashes the test host
+- [x] 29. (merge 1082413 at 275b9e5, W-041: the no-broker test now relays only its own outbox row instead of every leftover due row (about 227 in a full run, 3 s timeout each, one transaction); injection: the old relay-all form fails the new assertion (expected 1, actual 2); lane full suite in ONE run 849/849 + 37/37 in 1 m 30 s (was over 12 min)) nth-kafkafix (FIX, tests only, dispatched 12:00 as the critical path, READY or BLOCKED by 12:35; if BLOCKED a known-issue D-row and the dispatcher decides the push at 12:45; never --no-verify): KafkaPublisherTests' no-broker test crashes the test host
       (librdkafka -> 127.0.0.1:1) on this machine, so the full suite does not finish in one run; known issue if not fixed by 13:45.
 README refresh (11) slides to about 12:30.
 

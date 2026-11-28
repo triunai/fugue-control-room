@@ -16,4 +16,14 @@ public static class UserErrors
     /// <summary>The caller asked for a role that grants a permission they do not hold themselves (no escalation through user creation).</summary>
     public static FugueError RoleBeyondCaller(IEnumerable<string> codes) =>
         FugueErrors.Forbidden("user.role_escalation", $"You cannot assign a role that grants more than you hold: {string.Join(", ", codes)}.");
+
+    public static FugueError VersionMismatch() =>
+        FugueErrors.PreconditionFailed("user.version_mismatch", "The user changed since it was read. Re-read it and retry with the new ETag.");
+
+    public static FugueError IfMatchRequired() =>
+        FugueErrors.PreconditionRequired("user.if_match_required", "This operation requires an If-Match header with the current ETag.");
+
+    /// <summary>An administrator editing themselves cannot deactivate the account or drop the last direct role that lets them manage users.</summary>
+    public static FugueError SelfLockout() =>
+        FugueErrors.Conflict("user.self_lockout", "You cannot deactivate yourself or remove your own last role that grants USERS_MANAGE.");
 }
