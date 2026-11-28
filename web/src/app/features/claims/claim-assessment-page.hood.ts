@@ -34,7 +34,7 @@ export const CLAIM_ASSESSMENT_HOOD: HoodNote = {
       layer: 'handler',
       text:
         'If-Match (428), scope (404) and the version check (412) come before the state machine; then the assignment rule and the aggregate (409).',
-      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+      path: 'src/Fugue.Application/Features/Claims/Helpers/ClaimFlow.cs',
     },
     {
       layer: 'db',
@@ -95,7 +95,7 @@ export const CLAIM_ASSESSMENT_HOOD: HoodNote = {
     {
       status: '409',
       name: 'not your claim',
-      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+      path: 'src/Fugue.Application/Features/Claims/Helpers/ClaimFlow.cs',
       code: `bool allowed = claim.AssignedOfficerId is not { } assigned
     || (user.UserId is { } me && assigned.Value == me)
     || user.HasPermission(Permissions.ClaimsSettle);
@@ -105,7 +105,7 @@ return allowed ? Result.Ok() : Result.Fail(ClaimErrors.NotAssignedToYou());`,
     {
       status: '412',
       name: 'stale',
-      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+      path: 'src/Fugue.Application/Features/Claims/Helpers/ClaimFlow.cs',
       code: `if (claim.RowVersion != expected)
 {
     return Result.Fail<ClaimDto>(ClaimErrors.VersionMismatch());

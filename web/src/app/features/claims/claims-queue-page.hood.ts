@@ -22,7 +22,7 @@ export const CLAIMS_QUEUE_HOOD: HoodNote = {
       layer: 'handler',
       text:
         "The caller's scope comes from the token: CLAIMS_ALL sees every claim, anyone else only their own (D-063).",
-      path: 'src/Fugue.Application/Features/Claims/ClaimScope.cs',
+      path: 'src/Fugue.Application/Features/Claims/Helpers/ClaimScope.cs',
     },
     {
       layer: 'db',

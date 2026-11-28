@@ -22,7 +22,7 @@ export const MY_CLAIMS_HOOD: HoodNote = {
       layer: 'handler',
       text:
         'ClaimScope.From reads your id and CLAIMS_ALL from the token; without CLAIMS_ALL the scope is your own claims.',
-      path: 'src/Fugue.Application/Features/Claims/ClaimScope.cs',
+      path: 'src/Fugue.Application/Features/Claims/Helpers/ClaimScope.cs',
     },
     {
       layer: 'db',
@@ -60,7 +60,7 @@ export const MY_CLAIMS_HOOD: HoodNote = {
     {
       status: '404',
       name: 'outside your scope',
-      path: 'src/Fugue.Application/Features/Claims/ClaimScope.cs',
+      path: 'src/Fugue.Application/Features/Claims/Helpers/ClaimScope.cs',
       code: `public static ClaimScope From(ICurrentUser user) =>
     new(user.HasPermission(Permissions.ClaimsAll), user.UserId is { } id ? UserId.From(id) : null);`,
       note: 'The scope is built from the caller, never from a request field.',

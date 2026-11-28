@@ -22,13 +22,13 @@ export const CLAIM_DETAIL_HOOD: HoodNote = {
       layer: 'handler',
       text:
         'The handler runs the shared claim flow: If-Match missing is 428, a claim outside your scope is 404.',
-      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+      path: 'src/Fugue.Application/Features/Claims/Helpers/ClaimFlow.cs',
     },
     {
       layer: 'handler',
       text:
         "The ETag is compared before the state machine: a stale tag is 412 whatever the claim's status now is (D-056).",
-      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+      path: 'src/Fugue.Application/Features/Claims/Helpers/ClaimFlow.cs',
     },
     {
       layer: 'handler',
@@ -89,7 +89,7 @@ export const CLAIM_DETAIL_HOOD: HoodNote = {
     {
       status: '428',
       name: 'If-Match required',
-      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+      path: 'src/Fugue.Application/Features/Claims/Helpers/ClaimFlow.cs',
       code: `if (expectedVersion is not { } expected)
 {
     return Result.Fail<ClaimDto>(ClaimErrors.IfMatchRequired());
@@ -99,7 +99,7 @@ export const CLAIM_DETAIL_HOOD: HoodNote = {
     {
       status: '412',
       name: 'stale',
-      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+      path: 'src/Fugue.Application/Features/Claims/Helpers/ClaimFlow.cs',
       code: `if (claim.RowVersion != expected)
 {
     return Result.Fail<ClaimDto>(ClaimErrors.VersionMismatch());
@@ -119,7 +119,7 @@ export const CLAIM_DETAIL_HOOD: HoodNote = {
     {
       status: '409',
       name: 'not your claim',
-      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+      path: 'src/Fugue.Application/Features/Claims/Helpers/ClaimFlow.cs',
       code: `bool allowed = claim.AssignedOfficerId is not { } assigned
     || (user.UserId is { } me && assigned.Value == me)
     || user.HasPermission(Permissions.ClaimsSettle);

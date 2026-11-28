@@ -109,7 +109,7 @@ FOR UPDATE SKIP LOCKED`,
     {
       status: 'sig',
       name: 'HMAC-SHA256 v1',
-      path: 'src/Fugue.Application/Features/Webhooks/WebhookSecretFormat.cs',
+      path: 'src/Fugue.Application/Features/Webhooks/Helpers/WebhookSecretFormat.cs',
       code: `byte[] prefix = Encoding.UTF8.GetBytes(unixSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture) + ".");
 …
 return SignatureVersion + "=" + Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes(secret), message)).ToLowerInvariant();`,
