@@ -6,7 +6,7 @@
   ],
   "counts": {
     "adrs": 14,
-    "decisions": 79,
+    "decisions": 80,
     "releases": 1,
     "closed": 22
   },
@@ -17,6 +17,16 @@
       "notes": [],
       "closed": [],
       "entries": [
+        {
+          "kind": "D",
+          "id": "D-080",
+          "title": "Editing a user is PUT with If-Match, not an upsert; a self-lockout guard",
+          "date": "2026-11-28",
+          "summary": "PUT /api/v1/users/{id} with If-Match (display name, roles, active; email read-only), USERS_MANAGE and the same role-escalation rule as create, audited; the Add user drawer is reused, prefilled, and gains a show-password…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-080--editing-a-user-is-put-with-if-match-not-an-upsert-a-self-lockout-guard--2026-11-28"
+        },
         {
           "kind": "D",
           "id": "D-079",
