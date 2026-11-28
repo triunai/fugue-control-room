@@ -20,7 +20,7 @@
             </button>
           } @else {
             <p class="step-text">
-              Creates a subscription for <span class="mono">customer.*</span> and gives the sink its secret.
+              Creates a subscription for <span class="mono">claim.*</span> and gives the sink its secret.
             </p>
             <button
               type="button"
@@ -36,18 +36,24 @@
       <li>
         <span class="n" aria-hidden="true">2</span>
         <div>
-          <p class="step-title">Change a customer</p>
-          <p class="step-text">Edit one in Customers, or create a throwaway one here.</p>
-          <button type="button" class="btn btn-sm" (click)="sendTest.mutate()" [disabled]="sendTest.isPending()">
-            {{ sendTest.isPending() ? 'Creating…' : 'Create a test customer' }}
-          </button>
+          <p class="step-title">Move a claim</p>
+          <p class="step-text">
+            Pick up a claim, set a reserve or decide one in the Claims queue; each step is a
+            <span class="mono">claim.*</span> event.
+          </p>
+          <a *hasPermission="'CLAIMS_ALL'; else noQueue" routerLink="/claims/queue" class="btn btn-sm">
+            Open the claims queue
+          </a>
+          <ng-template #noQueue>
+            <p class="step-text">The queue needs claims staff (CLAIMS_ALL); sign in as one to move a claim.</p>
+          </ng-template>
         </div>
       </li>
       <li>
         <span class="n" aria-hidden="true">3</span>
         <div>
           <p class="step-title">See it signed and delivered</p>
-          <p class="step-text">The event carries the request's correlation id and the customer's id as its saga.</p>
+          <p class="step-text">Each event carries the request's correlation id, and the signature is checked before it is listed.</p>
         </div>
       </li>
     </ol>
@@ -95,15 +101,15 @@
         <p class="m-0 max-w-[40ch] text-muted">
           {{
             sinkSub()
-              ? 'Change a customer and it appears here within a few seconds.'
-              : 'Connect the sink first, then change a customer.'
+              ? 'Move a claim and it appears here within a few seconds.'
+              : 'Connect the sink first, then move a claim.'
           }}
         </p>
       </div>
     } @else {
       <ol class="events" role="list" aria-live="polite">
         @for (e of events(); track e.eventId) {
-          <li class="event" [class.fresh]="e.fresh" [class.mine]="matchesTest(e)">
+          <li class="event" [class.fresh]="e.fresh">
             <div class="event-top">
               <span class="type mono">{{ e.eventType }}</span>
               <span

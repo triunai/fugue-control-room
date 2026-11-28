@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { injectInfiniteQuery, injectMutation, injectQuery, QueryClient } from '@tanstack/angular-query';
-import { CustomersApi, customerKeys } from '../../api/customers.api';
-import { CreateCustomerRequest, ReceivedWebhookDto } from '../../api/models';
+import { ReceivedWebhookDto } from '../../api/models';
 import { webhookKeys, WebhooksApi } from '../../api/webhooks.api';
+import { RouterLink } from '@angular/router';
+import { HasPermissionDirective } from '../../core/auth/has-permission.directive';
 import { CorrelationService } from '../../core/http/correlation.service';
 import { SubmissionKey } from '../../core/http/idempotency';
 import { ToastStore } from '../../core/ui/toast.store';
@@ -23,13 +24,12 @@ interface SinkEvent extends ReceivedWebhookDto {
 @Component({
   selector: 'fg-sink-tab',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RefChip, RelativeTimePipe, StampPipe, ErrorState],
+  imports: [RouterLink, HasPermissionDirective, RefChip, RelativeTimePipe, StampPipe, ErrorState],
   templateUrl: './sink-tab.html',
   styleUrl: './sink-tab.css',
 })
 export class SinkTab {
   private readonly api = inject(WebhooksApi);
-  private readonly customers = inject(CustomersApi);
   private readonly toasts = inject(ToastStore);
   private readonly queryClient = inject(QueryClient);
   private readonly correlation = inject(CorrelationService);
@@ -39,11 +39,8 @@ export class SinkTab {
   private firstLoad = true;
   /** Event ids that arrived since the previous poll: highlighted for a moment, the tab's one motion. */
   private readonly freshIds = signal<ReadonlySet<string>>(new Set());
-  protected readonly lastTestRef = signal<string | null>(null);
-  /** The sink subscription create and the test customer are submissions: the body and the Idempotency-Key are fixed until one succeeds, so a retry after a lost response replays the first result. */
+  /** The sink subscription create is a submission: the body and the Idempotency-Key are fixed until one succeeds, so a retry after a lost response replays the first result. */
   private readonly connectKey = new SubmissionKey();
-  private readonly testKey = new SubmissionKey();
-  private pendingTest: CreateCustomerRequest | null = null;
 
   protected readonly feed = injectQuery(() => ({
     queryKey: webhookKeys.sink,
@@ -95,7 +92,7 @@ export class SinkTab {
       if (existing) {
         result = await this.api.rotate(existing.id);
       } else {
-        const body = { name: 'Development sink', url: this.target, eventTypes: ['customer.*'] };
+        const body = { name: 'Development sink', url: this.target, eventTypes: ['claim.*'] };
         result = await this.api.create(body, this.connectKey.forBody(body));
         this.connectKey.reset();
       }
@@ -105,33 +102,10 @@ export class SinkTab {
     onSuccess: (how) =>
       this.toasts.ok(
         how === 'connected' ? 'Sink connected' : 'Sink reconnected with a new secret',
-        'Customer events are now signed and sent to it. Change a customer to see one arrive.',
+        'Claim events are now signed and sent to it. Move a claim to see one arrive.',
         this.correlation.id(),
       ),
     onSettled: () => this.queryClient.invalidateQueries({ queryKey: ['webhooks'] }),
-  }));
-
-  protected readonly sendTest = injectMutation(() => ({
-    mutationFn: async () => {
-      const ref = this.correlation.id();
-      this.lastTestRef.set(ref);
-      this.pendingTest ??= {
-        name: `Sink check ${new Date().toLocaleTimeString('en-GB')}`,
-        email: `sink.${Date.now()}@example.test`,
-        phone: null,
-      };
-      const created = await this.customers.create(this.pendingTest, this.testKey.forBody(this.pendingTest));
-      this.pendingTest = null;
-      this.testKey.reset();
-      return created;
-    },
-    onSuccess: (c) =>
-      this.toasts.ok(
-        `Created ${c.name}`,
-        'Watch for customer.created.v1 with the same correlation id.',
-        this.lastTestRef(),
-      ),
-    onSettled: () => this.queryClient.invalidateQueries({ queryKey: customerKeys.all }),
   }));
 
   protected readonly clear = injectMutation(() => ({
@@ -142,10 +116,6 @@ export class SinkTab {
     },
     onSettled: () => this.queryClient.invalidateQueries({ queryKey: webhookKeys.sink }),
   }));
-
-  protected matchesTest(e: SinkEvent): boolean {
-    return !!e.correlationId && e.correlationId === this.lastTestRef();
-  }
 }
 
 function parseBody(body: string): { data: string; subject: string | null } {
