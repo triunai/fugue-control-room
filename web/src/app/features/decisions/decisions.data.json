@@ -6,12 +6,16 @@
   ],
   "counts": {
     "adrs": 14,
-    "decisions": 76
+    "decisions": 76,
+    "releases": 1,
+    "closed": 22
   },
   "groups": [
     {
       "version": "Unreleased",
       "date": null,
+      "notes": [],
+      "closed": [],
       "entries": [
         {
           "kind": "D",
@@ -158,6 +162,188 @@
     {
       "version": "v0.0.2",
       "date": "2026-11-27",
+      "notes": [
+        {
+          "label": "Release",
+          "text": "the claims platform plus the owner's polish round, frozen for the walkthrough (D-062). Tag v0.0.2; the timed claims build is claims-window-start..claims-window-end."
+        },
+        {
+          "label": "Claims platform",
+          "text": "Claim aggregate with a guarded state machine (Submitted, UnderReview, InfoRequested, Approved, Rejected, Settled), claimant timeline and info requests, claimant scope as 404 never 403, If-Match on every action (428/412) checked before the state machine, a required Idempotency-Key on submit (422 on a reused key), status + timeline + audit + outbox in one transaction, claim. events to signed webhooks and an optional Kafka publisher (off by default), workload, exposure per currency, claim counts and past questions; one Angular console for claimant, officer, manager and admin with persona landings, the two-track claim record with a next-step card, and Team and exposure."
+        },
+        {
+          "label": "Owner polish",
+          "text": "console shell adaptation with breadcrumbs (D-060, corrected: adapted, not ported), reviewer tour, roles x permissions matrix, Univer reserve sheet and assessment worksheet with Open in Excel, SLA calendar, Meilisearch audit search, the \"Under the hood\" panel (live API calls, how the API does it, guards with the real enforcing code, tests per page, ADRs first), Stryker/PICT/k6."
+        },
+        {
+          "label": "Fixed in the release round",
+          "text": "blank console for a returning signed-in user (NG0203, 284a191), Open in Excel in the production bundle (e66e082), Team and exposure and the landings refresh live (b451cd7), claim events reach the dev sink in Docker (1688126), one definition of \"open with no reserve\", exposure cells open the queue, sign-in lists the four personas (03448e5)."
+        },
+        {
+          "label": "Verification",
+          "text": "ArchTests 37, Tests 740 (Testcontainers Postgres), Bruno 101 requests / 123 tests on the Docker stack, web 218 (Vitest), lint and build clean; live browser checks signed in and after a reload with zero console errors."
+        },
+        {
+          "label": "Decisions",
+          "text": "D-060, D-061, D-062; failure modes 33 and 34. The freeze-round commits cite Refs: D-062 and no W thread (W-022 was closed at release), so commit-link-check lists them as unlinked; this entry is their home. Reviews: docs/reviews/fable/2026-11-27-interview-readiness.md, docs/reviews/fable/2026-11-27-panel-stress-test.md."
+        }
+      ],
+      "closed": [
+        {
+          "id": "W-024",
+          "title": "Claims follow-ups: counts endpoint, open-first queue, past questions",
+          "date": "2026-11-27",
+          "outcome": "GET /api/v1/claims/counts feeds the KPI strip and tabs in one call, the queue opens on open statuses, and past info requests are listed on the claim record (backlog #006, #007); Bruno requests added.",
+          "commits": 36
+        },
+        {
+          "id": "W-022",
+          "title": "Post-core quality wave and nice-to-haves (lands together after the claims build)",
+          "date": "2026-11-27",
+          "outcome": "Post-core wave landed: AI harness write-up, Stryker/PICT/k6, console shell adaptation (D-060 correction: adapted, not ported), reviewer tour, roles matrix, Univer reserve sheet and assessment worksheet, SLA calendar, Meilisearch audit search, Fable readiness review (D-061) and its 15 changes, owner polish round, under-the-hood sidebar, optional Kafka publisher (D-062). Released as v0.0.2.",
+          "commits": 97
+        },
+        {
+          "id": "W-021",
+          "title": "Audit full-text search",
+          "date": "2026-11-27",
+          "outcome": "Audit search shipped on Meilisearch, not Postgres tsvector: the owner reversed the earlier AI-only rejection (D-058). An indexer feeds it from the append-only audit_log; GET /api/v1/audit/search (AUDIT_READ) answers 503 when the service is down; search box on the audit page and in the shell header.",
+          "commits": 13
+        },
+        {
+          "id": "W-020",
+          "title": "Claims platform: the timed build window",
+          "date": "2026-11-27",
+          "outcome": "Claims platform built inside the timed window (tag claims-window-start): Claim aggregate with a guarded state machine, append-only claimant timeline, info requests, claimant-only visibility (404), ten endpoints with If-Match and a required Idempotency-Key on submit, workload and exposure per currency, seed, Bruno claims folder, and the Angular claimant/staff/manager screens. Codex seam review: 3 findings accepted and fixed, 2 declined with reasons. Verified on main: build 0 warnings, ArchTests…",
+          "commits": 38
+        },
+        {
+          "id": "W-019",
+          "title": "Users list endpoint for the Access screen",
+          "date": "2026-11-27",
+          "outcome": "GET /api/v1/users (keyset, search, USERS_READ) and the Access screen's users list with the roles x permissions matrix; contract snapshot and generated client refreshed.",
+          "commits": 13
+        },
+        {
+          "id": "W-018",
+          "title": "Import the owner's earlier audit-logging design and harden audit",
+          "date": "2026-11-27",
+          "outcome": "Swept the owner's earlier audit package against W-012 and ported four ideas: 401 challenges recorded in access_audit with a fixed-bucket per-IP cap; failure rows carry error_type, an audit-safe error_message (field names or exception type, never handler text) and duration_ms; a Fugue.Audit meter plus a structured fallback log for lost writes; a fitness test that every audited command has a named action. Nine ideas rejected (async writer, sampling, body capture, regex masking, XFF trust, header…",
+          "commits": 11
+        },
+        {
+          "id": "W-011",
+          "title": "Project README",
+          "date": "2026-11-27",
+          "outcome": "README written by a research agent (Google README guide applied; other sources unreachable), stale status lines corrected by the lead before commit. Status and highlights need a refresh whenever a batch lands.",
+          "commits": 1
+        },
+        {
+          "id": "W-007",
+          "title": "S5 REST hardening: idempotency, versioning, rate limits, cache, telemetry",
+          "date": "2026-11-27",
+          "outcome": "S5 essentials: idempotency keys with stored-response replay (ADR-013, two Codex reviews; required on claim submit), one-command Docker stack, CI workflow (unrun: no remote), reviewer runbook, Bruno compose env. Readability pass from the owner's review: runtime SQL in 40 embedded .sql files with tested caller headers and fitness rules that read them, a read-only DB role and restricted Postgres MCP config, db:script export (D-054); one file per concept and list filter records (D-055, backlog…",
+          "commits": 39
+        },
+        {
+          "id": "W-017",
+          "title": "Fugue Console: Angular admin console for the API (web/)",
+          "date": "2026-11-26",
+          "outcome": "Fugue Console shipped in web/: Angular 22 (signals, OnPush, lazy routes), SignalStore client state, TanStack Query server state, Vellum tokens. Screens: sign-in, shell, customers (keyset Load more, edit drawer, 412 banner with replay), audit (filters, diff, correlation chips), modules, webhooks (one-time secrets, deliveries, live dev sink), users and access, profile. 18 unit tests, 5 Playwright e2e against the API; review findings fixed.",
+          "commits": 14
+        },
+        {
+          "id": "W-016",
+          "title": "OpenAPI contract, CORS for the console, GET /me",
+          "date": "2026-11-26",
+          "outcome": "The API now publishes its contract: a Swashbuckle OpenAPI v1 document pinned by the committed snapshot docs/api/openapi.v1.json (test-gated, refreshed with npm run api:openapi), Swagger UI only in Development, a named CORS policy for the console (exact origins, no credentials, exposed and allowed headers tested including a preflight), and GET /api/v1/me (identity, roles, groups, effective permissions, enabled modules). Permission literals are checked against the seeded catalog. Codex review: no…",
+          "commits": 3
+        },
+        {
+          "id": "W-015",
+          "title": "Codex W-013 findings: no-op override PUT skips the xmin check, email ceiling charged late",
+          "date": "2026-11-26",
+          "outcome": "Both Codex W-013 MED findings fixed with regression tests shown RED first: a no-op override PUT now runs the version-guarded UPDATE (412 on a racing change), and the per-email login ceiling reserves a slot before verification and refunds on success. dotnet test 363 green.",
+          "commits": 1
+        },
+        {
+          "id": "W-013",
+          "title": "S3 review follow-ups",
+          "date": "2026-11-26",
+          "outcome": "Email uniqueness is per owner (migration CustomerEmailPerOwner) and login is limited per (IP, email) plus a loose per-email ceiling, both owner calls. Override changes need If-Match (migration OverrideConcurrencyToken); group self-target, 23505 races, tenant is_active, fail-closed module config, access_audit clipping and HMAC subkey fixed and pinned; module PATCH audit was already covered by W-012. Recorded not fixed: raw user ids in createdBy, anonymous access_audit growth. Suite 260 green…",
+          "commits": 4
+        },
+        {
+          "id": "W-012",
+          "title": "Rich append-only audit log",
+          "date": "2026-11-26",
+          "outcome": "Rich append-only audit_log: who, what, field-level old/new, outcome and error code, request and trace ids, in the SAME transaction as the change (EF SaveChanges interceptor plus IAuditTrail for Dapper writes), one failure row per failed command (AuditBehavior), write-time masking and size bound, trigger blocks UPDATE/DELETE/TRUNCATE, GET /api/v1/audit behind AUDIT_READ (admin) with keyset paging. Codex review: 1 HIGH + 3 MED, all fixed and pinned (fixes not re-reviewed). Suite 222 green, Bruno…",
+          "commits": 5
+        },
+        {
+          "id": "W-006",
+          "title": "S4 transactional outbox and signed webhooks",
+          "date": "2026-11-26",
+          "outcome": "Transactional outbox and signed webhooks shipped (ADR-011): outbox rows in the same transaction, a two-stage leased dispatcher with the outbox as the single retry authority, SSRF-guarded sender, encrypted subscription secrets, a Development-only sink, runbook 07 and Bruno. The Codex review (1 HIGH, 4 MED) is fixed and pinned. dotnet test 363 green; Bruno 47 requests, 64 tests green.",
+          "commits": 7
+        },
+        {
+          "id": "W-014",
+          "title": "Commit traceability index",
+          "date": "2026-11-25",
+          "outcome": "Refs: now takes several ids per trailer and resolves closed W via log, archive or CHANGELOG. trace-index.mjs generates docs/traceability.md (commit <-> W <-> ADR <-> D) from git log and the committed docs; npm run trace, a pre-push advisory stale check, and wrap-session wiring added. close-workstream now records D/ADR ids from a W's commits. test:scripts 83 green.",
+          "commits": 2
+        },
+        {
+          "id": "W-009",
+          "title": "MapStatus: ErrorType to HTTP status",
+          "date": "2026-11-25",
+          "outcome": "MapStatus implemented as an exhaustive ErrorType-to-status switch (owner-approved). New ErrorType.Unavailable maps to 503; GlobalExceptionHandler answers 503 + Retry-After for transient DbException/TimeoutException; SendNoContent<T> returns 204 + ETag. The 16 red-by-design tests are green; suite 82/82.",
+          "commits": 1
+        },
+        {
+          "id": "W-008",
+          "title": "H1 port the AI engineering harness",
+          "date": "2026-11-25",
+          "outcome": "Ported the AI engineering harness from my two other repos, public-safe: local beads, W-/D-/ADR- ids, refs-trailer and fix-has-test commit gates, a PreToolUse safety guard, an advisory seam-triggered Codex gate, four project skills, fitness functions with shrink-only baselines, doc-lifecycle scripts (close-workstream, commit-link-check, prune-check, adr-check, archive-project-log), failure modes, branch ledger, handoff and the how-we-use-ai narrative. The Codex invocation is confirmed from…",
+          "commits": 4
+        },
+        {
+          "id": "W-005",
+          "title": "S3 identity: JWT auth, lean UAM v3, module management",
+          "date": "2026-11-25",
+          "outcome": "JWT HS256 login with refresh rotation and family reuse detection, per-request uncached effective permissions (roles, groups, overrides; deny > allow > role), ownership scoping with 404, module management (config kill switch + registry), tenants, groups, grant_audit and access_audit, 204 mutations. Codex rejected the first plan (10 findings, all accepted); Codex and a Sonnet reviewer reviewed the build (1 HIGH fixed and pinned). Suite 171 green, Bruno 32 requests / 45 assertions.",
+          "commits": 12
+        },
+        {
+          "id": "W-004",
+          "title": "S2 persistence: Postgres, EF Core + Dapper, audit, typed ids, Customers slice",
+          "date": "2026-11-25",
+          "outcome": "Compose Postgres, EF Core + Dapper over one unit of work, audit stamping on both paths, Uuid7 typed ids, Customers vertical slice, dev seeder, Testcontainers tests, Bruno suite and runbooks 03-04. 16 tests stay red until MapStatus exists.",
+          "commits": 2
+        },
+        {
+          "id": "W-003",
+          "title": "S1 validation, exception handler, Serilog, correlation and saga IDs",
+          "date": "2026-11-25",
+          "outcome": "Validation and logging behaviors, global exception handler, Serilog, correlation and saga ids (ADR-005), a ping feature that exercises the real pipeline, runbook 02 and tests; framework 400s fixed to problem+json.",
+          "commits": 2
+        },
+        {
+          "id": "W-002",
+          "title": "S0 retarget .NET 8, FluentResults, Application layer, neutral docs",
+          "date": "2026-11-25",
+          "outcome": "Retargeted to .NET 8 (Fugue.sln, SDK pinned 8.0.428); added Fugue.Application; replaced the hand-rolled Result with FluentResults and FugueError; Send returns ActionResult<T>; neutral docs, ADR-003/004, roadmap, runbook 01 and the AI journal.",
+          "commits": 1
+        },
+        {
+          "id": "W-001",
+          "title": "Bootstrap the doc spine",
+          "date": "2026-11-11",
+          "outcome": "Router, spine files, git hooks and spine scripts installed; the link checker runs clean.",
+          "commits": 1
+        }
+      ],
       "entries": [
         {
           "kind": "D",

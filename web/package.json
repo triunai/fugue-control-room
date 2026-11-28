@@ -9,7 +9,8 @@
     "test": "ng test --watch=false",
     "lint": "ng lint",
     "format": "prettier --write \"src/**/*.{ts,html,css}\"",
-    "gen:decisions": "node ../scripts/gen-decisions.mjs",
+    "gen:changelog": "node ../scripts/gen-decisions.mjs",
+    "gen:decisions": "npm run gen:changelog",
     "api:gen": "orval --config orval.config.ts && node scripts/api-gen-post.mjs",
     "e2e": "playwright test",
     "screenshots": "playwright test e2e/02-screenshots.spec.ts"
