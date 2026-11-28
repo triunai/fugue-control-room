@@ -14,6 +14,7 @@ import { DatePicker } from '../../ui/date-picker';
 import { daysAgo, INCIDENT_EXAMPLES, incidentExamplesFor, samplePolicy } from '../../ui/examples';
 import { ExamplesPanel } from '../../ui/examples-panel';
 import { Select, SelectOption } from '../../ui/select';
+import { TourService } from '../shell/tour.service';
 import { MARKETS, currencyOf, localToday } from './claims-logic';
 
 type Field = 'market' | 'line' | 'policyNumber' | 'incidentDate' | 'incidentDescription' | 'incidentLocation';
@@ -143,6 +144,7 @@ type Field = 'market' | 'line' | 'policyNumber' | 'incidentDate' | 'incidentDesc
 export class ReportPage {
   private readonly api = inject(ClaimsApi);
   private readonly router = inject(Router);
+  private readonly tour = inject(TourService);
   private readonly queryClient = inject(QueryClient);
   private readonly toasts = inject(ToastStore);
   private readonly correlation = inject(CorrelationService);
@@ -193,7 +195,15 @@ export class ReportPage {
     onSuccess: (claim) => {
       this.toasts.ok(`Claim ${claim.number} submitted`, undefined, this.correlation.id());
       void this.queryClient.invalidateQueries({ queryKey: claimKeys.all });
-      void this.router.navigate(['/claims', claim.id]);
+      void this.router
+        .navigate(['/claims', claim.id])
+        .then(() =>
+          this.tour.hint(
+            '[data-tour="search"]',
+            'psst 👀',
+            `Try finding it: type ${claim.number} in the search bar (or press /).`,
+          ),
+        );
     },
     onError: (e) => {
       if (isApiProblem(e) && e.isValidation) this.formErrors.set(applyServerErrors(this.form, e));

@@ -152,6 +152,35 @@ export class TourService {
     }
   }
 
+  /**
+   * One-off popover on a single element (driver.js, same setup as the tours): a nudge, never a blocker. Skipped
+   * silently while a tour or the welcome is open, under `?tour=off`, or when the element is not visible (mobile).
+   */
+  async hint(selector: string, title: string, description: string): Promise<void> {
+    if (this.running || this.welcomeOpen() || tourSuppressed()) return;
+    await waitFor(selector, 2000);
+    const el = document.querySelector<HTMLElement>(selector);
+    if (!el || el.getClientRects().length === 0 || this.running || this.welcomeOpen()) return;
+    this.running = true;
+    try {
+      const { driver } = await import('driver.js');
+      const d = driver({
+        animate: !matchMedia('(prefers-reduced-motion: reduce)').matches,
+        allowClose: true,
+        overlayOpacity: 0.3,
+        popoverClass: 'fg-tour',
+        showButtons: ['next'],
+        doneBtnText: 'Got it',
+        nextBtnText: 'Got it',
+        onDestroyed: () => (this.running = false),
+        steps: [{ element: selector, popover: { title, description, onNextClick: () => d.destroy() } }],
+      });
+      d.drive();
+    } catch {
+      this.running = false;
+    }
+  }
+
   /** Bring the page a step needs on screen and wait for its element. */
   private async goTo(step: TourStep): Promise<void> {
     const page = step.page;
