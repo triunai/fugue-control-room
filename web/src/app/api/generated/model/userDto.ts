@@ -7,7 +7,7 @@
  */
 
 /**
- * A user as the admin console lists them: who, whether they can sign in, the roles assigned directly and the groups they belong to (by code). The password hash and every other credential field stay out of this type on purpose.
+ * A user as the admin console lists them: who, whether they can sign in, the roles assigned directly and the groups they belong to (by code). The password hash and every other credential field stay out of this type on purpose. `Version` (the row's xmin) is also sent as the `ETag`; an edit sends it back in `If-Match`.
  */
 export interface UserDto {
   createdAt: string;
@@ -17,4 +17,5 @@ export interface UserDto {
   id: string;
   isActive: boolean;
   roles: string[];
+  version: number;
 }

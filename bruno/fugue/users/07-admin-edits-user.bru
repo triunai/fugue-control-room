@@ -1,0 +1,43 @@
+meta {
+  name: Admin edits a user's name and roles with If-Match: 200, new ETag
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/api/v1/users/{{editUserId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}
+
+script:pre-request {
+  // A fresh STAFF user to edit; its initial password is kept for 09 (who signs in as this user).
+  const headers = { "Content-Type": "application/json", Authorization: "Bearer " + bru.getVar("token") };
+  bru.setVar("editUserEmail", "bruno-edit-" + Date.now() + "@fugue.test");
+  bru.setVar("editUserPw", "Bruno-Edit-" + Date.now()); // secrets-scan:ignore
+  const created = await bru.sendRequest({
+    method: "POST", url: bru.getEnvVar("baseUrl") + "/api/v1/users", headers,
+    data: { email: bru.getVar("editUserEmail"), displayName: "Before edit", password: bru.getVar("editUserPw"), roles: ["STAFF"] }, // secrets-scan:ignore
+  });
+  bru.setVar("editUserId", created.data.id);
+  const read = await bru.sendRequest({ method: "GET", url: bru.getEnvVar("baseUrl") + "/api/v1/users/" + created.data.id, headers });
+  bru.setVar("editUserFirstEtag", read.headers.etag);
+  req.setUrl(bru.getEnvVar("baseUrl") + "/api/v1/users/" + created.data.id);
+  req.setHeader("If-Match", read.headers.etag);
+  req.setBody({ displayName: "After edit", isActive: true, roles: ["STAFF", "MANAGER"] });
+}
+
+tests {
+  test("200, the new name and roles, the email unchanged, a new ETag", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.displayName).to.equal("After edit");
+    expect(res.body.roles).to.eql(["MANAGER", "STAFF"]);
+    expect(res.body.email).to.equal(bru.getVar("editUserEmail"));
+    expect(res.headers.etag).to.equal('"' + res.body.version + '"');
+    expect(res.headers.etag).to.not.equal(bru.getVar("editUserFirstEtag"));
+  });
+}

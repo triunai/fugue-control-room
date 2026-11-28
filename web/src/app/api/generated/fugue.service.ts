@@ -75,6 +75,7 @@ import type {
   SubmitClaimRequest,
   TokenDto,
   UpdateCustomerRequest,
+  UpdateUserRequest,
   UpdateWebhookSubscriptionRequest,
   UserDto,
   UsersListParams,
@@ -2063,7 +2064,7 @@ return formData;
   }
 
 /**
- * @summary Get one user (same shape as a list row). An unknown or deleted user is 404.
+ * @summary Get one user (same shape as a list row), with its `ETag`. An unknown or deleted user is 404.
  */
  usersGet<TData = UserDto>(id: string, options?: HttpClientBodyOptions): Observable<TData>;
  usersGet<TData = UserDto>(id: string, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
@@ -2090,6 +2091,47 @@ return formData;
 
     return this.http.get<TData>(
       `/api/v1/users/${id}`,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'body',
+      }
+    );
+  }
+
+/**
+ * @summary Edit a user: display name, active flag and the full set of direct roles (the email and the password are not editable). Needs `If-Match` with the ETag from a read (428 without it, 412 `user.version_mismatch` when the user changed since). A role ADDED here follows the create rule (403 `user.role_escalation`); editing yourself cannot deactivate you or drop your last direct USERS_MANAGE role (409 `user.self_lockout`). Every role added or removed is written to grant_audit in the same transaction.
+ */
+ usersUpdate<TData = UserDto>(id: string,
+    updateUserRequest?: UpdateUserRequest, options?: HttpClientBodyOptions): Observable<TData>;
+ usersUpdate<TData = UserDto>(id: string,
+    updateUserRequest?: UpdateUserRequest, options?: HttpClientEventOptions): Observable<HttpEvent<TData>>;
+ usersUpdate<TData = UserDto>(id: string,
+    updateUserRequest?: UpdateUserRequest, options?: HttpClientResponseOptions): Observable<AngularHttpResponse<TData>>;
+  usersUpdate<TData = UserDto>(
+    id: string,
+    updateUserRequest?: UpdateUserRequest, options?: HttpClientObserveOptions): Observable<TData | HttpEvent<TData> | AngularHttpResponse<TData>> {
+    if (options?.observe === 'events') {
+      return this.http.put<TData>(
+      `/api/v1/users/${id}`,
+      updateUserRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'events',
+      }
+    );
+    }
+
+    if (options?.observe === 'response') {
+      return this.http.put<TData>(
+      `/api/v1/users/${id}`,
+      updateUserRequest,{
+        ...(options as Omit<NonNullable<typeof options>, 'observe'>),
+        observe: 'response',
+      }
+    );
+    }
+
+    return this.http.put<TData>(
+      `/api/v1/users/${id}`,
+      updateUserRequest,{
         ...(options as Omit<NonNullable<typeof options>, 'observe'>),
         observe: 'body',
       }
@@ -2441,6 +2483,7 @@ export type RolesListClientResult = NonNullable<RoleDto[]>
 export type UsersListClientResult = NonNullable<UserDto[]>
 export type UsersCreateClientResult = NonNullable<UserDto>
 export type UsersGetClientResult = NonNullable<UserDto>
+export type UsersUpdateClientResult = NonNullable<UserDto>
 export type WebhooksListDeliveriesClientResult = NonNullable<WebhookDeliveryDto[]>
 export type WebhooksRedeliverClientResult = NonNullable<void>
 export type WebhooksListClientResult = NonNullable<WebhookSubscriptionDto[]>

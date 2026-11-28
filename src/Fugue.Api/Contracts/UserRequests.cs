@@ -8,6 +8,12 @@ namespace Fugue.Api.Contracts;
 /// </summary>
 public sealed record CreateUserRequest(string Email, string DisplayName, string Password, IReadOnlyList<string> Roles);
 
+/// <summary>
+/// Body of a user edit (PUT with <c>If-Match</c>): the display name, the active flag and the full set of direct role codes. The email and the
+/// password are not editable here, so an edit can never reset a password.
+/// </summary>
+public sealed record UpdateUserRequest(string DisplayName, bool IsActive, IReadOnlyList<string> Roles);
+
 /// <summary>Query parameters of the users list, bound as one object. <c>Q</c> matches the email or the display name.</summary>
 public sealed record UserListFilter
 {

@@ -1,0 +1,29 @@
+meta {
+  name: Edit with the pre-edit ETag: 412 user.version_mismatch
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{baseUrl}}/api/v1/users/{{editUserId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {}
+}
+
+script:pre-request {
+  req.setUrl(bru.getEnvVar("baseUrl") + "/api/v1/users/" + bru.getVar("editUserId"));
+  req.setHeader("If-Match", bru.getVar("editUserFirstEtag"));
+  req.setBody({ displayName: "Should not apply", isActive: true, roles: ["STAFF"] });
+}
+
+tests {
+  test("412 problem with the version_mismatch code", function () {
+    expect(res.status).to.equal(412);
+    expect(res.headers["content-type"]).to.include("application/problem+json");
+    expect(res.body.code).to.equal("user.version_mismatch");
+  });
+}
