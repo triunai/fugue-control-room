@@ -57,7 +57,7 @@ Shown from the presenter's machine, not committed: the slide is Dex Horthy's (@d
 |---|---|
 | CEO / vision, PMs, engineers | The owner (product and engineering); the brief is the vision |
 | Complaints, feature requests | The owner's asks, e.g. 11:26 (W-040, overnight items 18-25) |
-| Monitoring, incidents | CI red (`api-contract`) and the suite stall (failure mode 36). Monitoring today is correlation ids, the audit log and API logs; there is NO production monitoring (gap) |
+| Monitoring, incidents | CI red (`api-contract`) and the Kafka no-broker test stall (nth-kafkafix). Monitoring today is correlation ids, the audit log and API logs; there is NO production monitoring (gap) |
 | Stuff to do | `docs/plans/overnight-2026-11-28.md`, `docs/state-backlog.md`, `docs/branch-ledger.md` |
 | Orchestration | A dispatcher (contracts, verify against git) and an integrator (merge, push, the doc spine), D-066 |
 | Harness | Lane contracts (`docs/ai/briefs/fleet-2026-11-28/HEADER.md`, `OWNERS.md`), `AGENTS.md`, `CLAUDE.md`, the lefthook gates (`lefthook.yml`) |
