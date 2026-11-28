@@ -80,7 +80,8 @@
 }
 
 .step-mark {
-  align-self: center;
+  align-self: start;
+  padding-top: 0.15rem;
   display: inline-flex;
 }
 
