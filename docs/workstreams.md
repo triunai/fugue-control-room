@@ -111,6 +111,12 @@ Status: seven web-only lanes from ddd2ded (nth-tour, nth-searchui, nth-importui,
 Resume: integrator merges as READY arrives (refactor, then useredit, then the web lanes); feature cut-off 13:00; close at the wrap.
 Refs: D-064, D-066; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/` (OWNERS Addendum 10)
 
+### WS-41 — Load testing and caching: k6 scenarios, HybridCache (owner ask 11:30) — 🟢 ACTIVE (2026-11-28)
+ID: W-041
+Status: lane nth-k6 live (item 26, no src/); nth-hybridcache pending dispatch after the refactor (item 27, hard stop 12:50).
+Resume: integrator merges on READY; close or defer at the wrap.
+Refs: D-064, D-066; `docs/plans/overnight-2026-11-28.md` items 26-27; contracts in `docs/ai/briefs/fleet-2026-11-28/` (OWNERS Addendum 11)
+
 ### WS-23 — API versioning with Sunset, HybridCache, OpenTelemetry — ⏸ PARKED (2026-11-27)
 ID: W-023
 Status: follow-up of W-007 (closed). Not built: a v2 example with `Deprecation`/`Sunset` on v1, HybridCache on the `/me` permission lookup, OpenTelemetry traces.
