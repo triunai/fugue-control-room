@@ -1,0 +1,463 @@
+{
+  "schema": 1,
+  "scenario": "smoke",
+  "label": "uncached baseline",
+  "startedAt": "2026-11-28T03:38:07.985Z",
+  "durationSec": 30.974526,
+  "target": "http://localhost:5431",
+  "k6Version": "v2.4.0",
+  "env": {
+    "note": "Load profile: sign-in limiter raised, API + Postgres + k6 on one laptop."
+  },
+  "limits": {
+    "p95": 300,
+    "p99": 800,
+    "failRate": 0.01
+  },
+  "totals": {
+    "requests": 150,
+    "rps": 5.02815768302494,
+    "failedRate": 0,
+    "checksRate": 1,
+    "droppedIterations": 0,
+    "peakRps": 5
+  },
+  "thresholds": [
+    {
+      "metric": "http_req_duration{endpoint:claims_counts}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_counts}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{endpoint:claims_list}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{endpoint:claim_detail}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{phase:run}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{phase:run}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{phase:run}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{endpoint:me}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{endpoint:claims_search}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_list}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_list}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_search}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_search}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{endpoint:claim_detail}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{endpoint:claims_list}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{endpoint:claims_counts}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{endpoint:me}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{endpoint:claims_search}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claim_detail}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claim_detail}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{phase:run}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "checks",
+      "expr": "rate>0.99",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:me}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:me}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{endpoint:claims_counts}",
+      "expr": "count>=0",
+      "ok": true
+    }
+  ],
+  "overall": {
+    "min": 2.785,
+    "avg": 5.323833333333337,
+    "p50": 4.064500000000001,
+    "p90": 8.709800000000001,
+    "p95": 11.668299999999997,
+    "p99": 15.92216,
+    "max": 16.408
+  },
+  "endpoints": {
+    "me": {
+      "count": 30,
+      "failRate": 0,
+      "min": 6.846,
+      "avg": 9.922433333333336,
+      "p50": 8.288,
+      "p90": 15.1439,
+      "p95": 15.9388,
+      "p99": 16.326220000000003,
+      "max": 16.408
+    },
+    "claims_list": {
+      "count": 30,
+      "failRate": 0,
+      "min": 3.187,
+      "avg": 4.4546333333333346,
+      "p50": 4.106999999999999,
+      "p90": 6.146,
+      "p95": 6.7215,
+      "p99": 7.66892,
+      "max": 8.032
+    },
+    "claims_search": {
+      "count": 30,
+      "failRate": 0,
+      "min": 3.018,
+      "avg": 4.0584333333333324,
+      "p50": 3.782,
+      "p90": 5.2201,
+      "p95": 5.462149999999999,
+      "p99": 5.95731,
+      "max": 6.091
+    },
+    "claims_counts": {
+      "count": 30,
+      "failRate": 0,
+      "min": 2.785,
+      "avg": 4.054366666666667,
+      "p50": 3.5455,
+      "p90": 5.012200000000001,
+      "p95": 7.750849999999996,
+      "p99": 10.695799999999998,
+      "max": 11.357
+    },
+    "claim_detail": {
+      "count": 30,
+      "failRate": 0,
+      "min": 3.261,
+      "avg": 4.129299999999999,
+      "p50": 3.8835,
+      "p90": 4.9022,
+      "p95": 5.652099999999999,
+      "p99": 6.72895,
+      "max": 7.003
+    }
+  },
+  "timeline": {
+    "widthSec": 1,
+    "points": [
+      {
+        "t": 0,
+        "p50": 4.238,
+        "p95": 7.171,
+        "p99": 7.171,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 1,
+        "p50": 6.058,
+        "p95": 10.773,
+        "p99": 10.773,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 2,
+        "p50": 4.483,
+        "p95": 8.669,
+        "p99": 8.669,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 3,
+        "p50": 3.942,
+        "p95": 8.064,
+        "p99": 8.064,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 4,
+        "p50": 4.673,
+        "p95": 9.425,
+        "p99": 9.425,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 5,
+        "p50": 8.032,
+        "p95": 15.081,
+        "p99": 15.081,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 6,
+        "p50": 3.638,
+        "p95": 7.865,
+        "p99": 7.865,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 7,
+        "p50": 4.161,
+        "p95": 8.512,
+        "p99": 8.512,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 8,
+        "p50": 4.053,
+        "p95": 9.125,
+        "p99": 9.125,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 9,
+        "p50": 3.865,
+        "p95": 7.901,
+        "p99": 7.901,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 10,
+        "p50": 3.551,
+        "p95": 7.192,
+        "p99": 7.192,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 11,
+        "p50": 3.261,
+        "p95": 7.303,
+        "p99": 7.303,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 12,
+        "p50": 3.187,
+        "p95": 6.846,
+        "p99": 6.846,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 13,
+        "p50": 3.353,
+        "p95": 7.043,
+        "p99": 7.043,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 14,
+        "p50": 3.349,
+        "p95": 7.279,
+        "p99": 7.279,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 15,
+        "p50": 3.38,
+        "p95": 7.374,
+        "p99": 7.374,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 16,
+        "p50": 3.355,
+        "p95": 7.302,
+        "p99": 7.302,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 17,
+        "p50": 3.549,
+        "p95": 6.957,
+        "p99": 6.957,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 18,
+        "p50": 3.879,
+        "p95": 9.077,
+        "p99": 9.077,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 19,
+        "p50": 3.576,
+        "p95": 7.526,
+        "p99": 7.526,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 20,
+        "p50": 4.062,
+        "p95": 14.057,
+        "p99": 14.057,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 21,
+        "p50": 3.744,
+        "p95": 11.923,
+        "p99": 11.923,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 22,
+        "p50": 4.133,
+        "p95": 16.126,
+        "p99": 16.126,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 23,
+        "p50": 4.107,
+        "p95": 10.994,
+        "p99": 10.994,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 24,
+        "p50": 5.041,
+        "p95": 14.463,
+        "p99": 14.463,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 25,
+        "p50": 4.602,
+        "p95": 7.806,
+        "p99": 7.806,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 26,
+        "p50": 5.63,
+        "p95": 15.71,
+        "p99": 15.71,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 27,
+        "p50": 5.216,
+        "p95": 14.148,
+        "p99": 14.148,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 28,
+        "p50": 5.213,
+        "p95": 16.408,
+        "p99": 16.408,
+        "rps": 5,
+        "err": 0
+      },
+      {
+        "t": 29,
+        "p50": 3.754,
+        "p95": 10.624,
+        "p99": 10.624,
+        "rps": 5,
+        "err": 0
+      }
+    ]
+  }
+}

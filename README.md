@@ -293,6 +293,7 @@ Every step is copy-pasteable and says what you should see. Index: [`docs/runbook
 | [10](docs/runbooks/10-docker-compose.md) | The compose stack: ports, accounts, reset |
 | [11](docs/runbooks/11-claims.md) | The claims platform with curl, guard by guard |
 | [12](docs/runbooks/12-kafka.md) | Run the optional Kafka broker and watch claim events |
+| [Load testing](docs/runbooks/load-testing.md) | k6 smoke, load and stampede runs, percentile reports, before/after overlay (`load/`) |
 </details>
 
 <details>
