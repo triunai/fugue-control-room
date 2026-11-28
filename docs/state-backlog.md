@@ -29,6 +29,10 @@ WS: WS-22
 WS: WS-31
 Design only: `docs/design/legacy-sync.md` (anti-corruption adapter, idempotent upserts keyed by legacy id, backfill then incremental, reconciliation; section 9 covers scaling and offline sync). The built path today is file import (D-074). Size L. Close when a legacy source and its owner exist; D-077.
 
+### #013 — Known issue: with the broker down, one Kafka relay cycle is serial inside one transaction
+WS: WS-41
+With Kafka unreachable, a relay cycle sends up to `Webhooks:Dispatcher:BatchSize` (500) rows, each waiting `Events:Kafka:MessageTimeoutMs` (default 10 s), all inside ONE transaction that holds the row locks: about 83 minutes in the worst case. Found through a flaky test (nth-kafkafix, merge 1082413: the harness clock at 2040 made every leftover row due; 227 rows took about 11 minutes). Not fixed before the cut-off. Size S. Close by stopping the batch after the first transport failure (leave the rest pending), or by giving the relay a cycle deadline; D-079.
+
 ## Done or retired (kept for history; 2026-11-28 03:30 prune, overnight lead)
 
 - #002 guided product tour: DONE, delivered by nth-onboard (e4e750f, merge 4345366): first-visit welcome and autoplayed landing tour per user.

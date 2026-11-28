@@ -77,6 +77,16 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-079 — Known issue recorded: a broker outage makes one relay cycle long and lock-holding — 2026-11-28
+WS: WS-41
+Context: nth-kafkafix (merge 1082413) traced a stalled full suite to the no-broker test relaying every leftover due outbox row to a dead broker, 3 s each, in one transaction (227 rows, about 11 minutes; live psql showed a backend idle in transaction for 4 minutes). The test now relays only its own row, and the suite runs in 1 m 30 s.
+Decision: record the production behaviour behind it as a known issue (backlog #013), not a fix before the cut-off: with the broker down a cycle is serial, up to BatchSize (500) x MessageTimeoutMs (default 10 s) inside one transaction holding row locks, about 83 minutes worst case. Follow-up: stop the batch after the first transport failure, or give the relay a cycle deadline.
+Why: the change touches the outbox relay, a critical seam, on submission day.
+Consequences: walkthrough line: the factory found a production risk by way of a flaky test. Not settled: whether the earlier "test host crash" was the blame hang timeout killing the host or a native abort; the stall is removed either way.
+Who: dispatcher (decided), lane nth-kafkafix (found), integrator (recorded)
+Status: accepted
+Promote: no
+
 ## D-078 — One folder layout per slice: Commands, Queries, Models, Repos, Helpers — 2026-11-28
 WS: WS-39
 Context: backlog #010 item 1 (owner, 02:45): every vertical slice should read the same way.
