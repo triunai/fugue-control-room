@@ -1,7 +1,8 @@
 # Lane nth-useredit status (Refs D-064)
 
 ## Commits
-- slice 1: feat(api): edit a user with PUT /users/{id} and If-Match
+- `340cc55` feat(api): edit a user with PUT /users/{id} and If-Match
+- slice 2: feat(web): edit users from the access table, show/hide the initial password
 
 ## Gates (copied from output)
 - `dotnet build`: Build succeeded (0 warnings).
@@ -12,6 +13,12 @@
 - Bruno `npx bru run users --env local --env-var baseUrl=http://localhost:5232` on a throwaway postgres:17 (55532, `--seed`):
   Requests 9 (9 Passed), Tests 9/9 (07 edit 200, 08 stale 412, 09 escalation 403).
 
+- Web (slice 2): `npm run lint` All files pass linting; `npm test` Test Files 58 passed (58), Tests 388 passed (388);
+  `npm run build` exit 0.
+- Headless Playwright (dev server 4432 -> API 5232): admin edits support@fugue.test name + adds STAFF, reload shows
+  "Support Edited 33514 active STAFF SUPPORT", add-mode toggle flips type and aria-pressed, consoleErrors [].
+  Screenshots `.worktrees/_briefs/reports/nth-useredit-{1-table,2-edit-drawer,3-after-reload,4-add-show-password}.png`.
+
 ## What changed in shared files (exactly)
 - `src/Fugue.Infrastructure/Identity/UserAdmin.cs`: `UpdateAsync` (row lock + xmin check + roles diff + grant_audit), create
   returns the version.
@@ -20,6 +27,8 @@
 - `src/Fugue.Api/Contracts/UserRequests.cs`: `UpdateUserRequest`.
 - `tests/Fugue.Tests/Identity/UsersAndRolesTests.cs`: the exact list-row field set gains `version` (still fails if any
   other field, for example a password hash, appears).
+- `web/src/app/api/access.api.ts`: `user(id)` and `updateUser(id, body, version)` (explicit If-Match).
+- `web/src/app/features/access/access-page.{html,ts}`: an Edit button per users row (USERS_MANAGE), colspan 7.
 - No migration: `users.xmin` is read with SQL, not mapped in the EF model (mapping it would be a snapshot migration).
 
 ## Deviations
@@ -27,4 +36,4 @@
   mapping (`IdentityConfigurations.cs:38-55`), so the version is read by SQL under `SELECT ... FOR UPDATE`.
 
 ## Next slice
-- 2: web add/edit drawer, show-password toggle.
+- 3: audit only (console add/edit gaps), in the lane report.
