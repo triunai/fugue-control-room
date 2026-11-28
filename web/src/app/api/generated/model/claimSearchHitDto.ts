@@ -11,7 +11,7 @@ import type { LineOfBusiness } from './lineOfBusiness';
 import type { Market } from './market';
 
 /**
- * One hit, shaped like a queue row. ClaimantName is staff-only (null for a claimant, who only ever finds their own claims). Highlights says why the claim matched: field name (`number`, `policyNumber`, `claimantName`, `marketName`, `market`, `line`, `incidentLocation`, `incidentDescription`) to its text with the matched words wrapped in `<em>` (the description cropped around the match). Only matched fields appear; the rest of the text is NOT HTML-escaped, so render it as text.
+ * One hit, shaped like a queue row. ClaimantName is returned to every caller; a claimant only ever finds their own claims, so for them it is their own name. Highlights says why the claim matched: field name (`number`, `policyNumber`, `claimantName`, `marketName`, `market`, `line`, `incidentLocation`, `incidentDescription`) to its text with the matched words wrapped in `<em>` (the description cropped around the match). Only matched fields appear; the rest of the text is NOT HTML-escaped, so render it as text.
  */
 export interface ClaimSearchHitDto {
   /** @nullable */

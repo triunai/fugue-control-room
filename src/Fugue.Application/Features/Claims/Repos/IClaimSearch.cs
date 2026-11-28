@@ -19,7 +19,7 @@ public interface IClaimSearch
 public sealed record ClaimSearchFilter(string Query, Guid? ClaimantUserId, int Limit);
 
 /// <summary>
-/// One hit, shaped like a queue row. <paramref name="ClaimantName"/> is staff-only (null for a claimant, who only ever finds their own claims).
+/// One hit, shaped like a queue row. <paramref name="ClaimantName"/> is returned to every caller; a claimant only ever finds their own claims, so for them it is their own name.
 /// <paramref name="Highlights"/> says why the claim matched: field name (<c>number</c>, <c>policyNumber</c>, <c>claimantName</c>, <c>marketName</c>,
 /// <c>market</c>, <c>line</c>, <c>incidentLocation</c>, <c>incidentDescription</c>) to its text with the matched words wrapped in <c>&lt;em&gt;</c> (the
 /// description cropped around the match). Only matched fields appear; the rest of the text is NOT HTML-escaped, so render it as text.

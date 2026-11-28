@@ -6,7 +6,7 @@
 ![Angular 22](https://img.shields.io/badge/Angular-22-DD0031)
 ![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-336791)
 ![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED)
-![Tests](https://img.shields.io/badge/xUnit-740%2B-brightgreen)
+![Tests](https://img.shields.io/badge/xUnit-858%20listed-brightgreen)
 ![Release](https://img.shields.io/badge/release-v0.0.2-blue)
 
 A claims platform for motor and property claims across six APAC markets (SG, MY, TH, HK, ID, PH): a .NET 8 API and one Angular console for claimants, claims officers, managers and admins. It is a take-home build, so it says plainly what it does and does not do.
@@ -48,9 +48,11 @@ Open **http://localhost:8080** (console). The API is on **:5081**, Swagger at `/
 | `self@fugue.test` | claimant | the claim that needs them ("We need one answer from you"); can answer it, report an incident, follow the claim |
 | `staff@fugue.test` | claims officer | My work: needs my action, pick up next, waiting on claimant; the claim record's next-step card; reserve sheet; SLA calendar |
 | `manager@fugue.test` | manager | To settle; Team and exposure per currency |
-| `admin@fugue.test` | admin | everything: users, the roles x permissions matrix, audit log with search, module toggles, webhooks |
+| `admin@fugue.test` | admin | everything: users (create and edit, edits guarded by If-Match), the roles x permissions matrix, audit log with search, module toggles, webhooks |
 
-**Fugue, explained:** a one-page illustrated tour of the system, readable offline in a browser: [`docs/explained/index.html`](docs/explained/index.html) (also served by the console at `/explained/`).
+**Fugue, explained:** a one-page illustrated tour of the system, readable offline in a browser: [`docs/explained/index.html`](docs/explained/index.html) (also served by the console at `/explained/`, and linked in its sidebar). The console's **Changelog** page shows the release history in the app; the file is [`CHANGELOG.md`](CHANGELOG.md).
+
+**Demo and load testing.** The presenter's walkthrough, including step 15 (the software factory, mapped to this repo), is [`docs/DEMO.md`](docs/DEMO.md). k6 smoke, load and stampede scripts with a before/after percentile comparison: [`docs/runbooks/load-testing.md`](docs/runbooks/load-testing.md). Not built, design only and parked: syncing with a legacy system, [`docs/design/legacy-sync.md`](docs/design/legacy-sync.md).
 
 Where things live: the migration catalog is [`docs/migrations/migration-catalog.md`](docs/migrations/migration-catalog.md), the release history is [`CHANGELOG.md`](CHANGELOG.md), and the step-by-step guide for a clean clone is [`docs/runbooks/00-for-reviewers.md`](docs/runbooks/00-for-reviewers.md). A curl walk-through of every guard (404, 409, 412, 428, the required Idempotency-Key) is [`docs/runbooks/11-claims.md`](docs/runbooks/11-claims.md).
 
@@ -116,7 +118,7 @@ flowchart TB
 - **Duplicate-proof submits.** `POST /claims` requires an `Idempotency-Key`; a retry replays the first response, and a reused key is 422.
 - **A transactional outbox.** State, timeline row, audit row and event commit together or not at all. Events leave through signed webhooks; a Kafka publisher is optional and off by default.
 - **An append-only audit trail.** Field-level diffs, failure rows for rejected commands, and no way to write to it through the API.
-- **Search that degrades honestly.** Meilisearch backs audit search and claim search (claim number, policy number, place, description, claimant name; typo tolerant). Claim search applies the caller's scope itself. When the engine is down the endpoint answers 503, not an empty list.
+- **Search that degrades honestly.** Keyword full-text search (Meilisearch: typo tolerance, synonyms, highlights) backs audit search and claim search (claim number, policy number, place, description, claimant name). It is keyword search, not semantic or vector search. Claim search applies the caller's scope itself. When the engine is down the endpoint answers 503, not an empty list.
 - **Excel in the console.** A reserve sheet and a claim assessment worksheet (Univer) with Save to Excel.
 - **An SLA calendar** (FullCalendar, lazy-loaded).
 - **Team and exposure, per currency.** Per officer: open load, oldest claim, decisions in 7 and 30 days, median days to decision. Exposure per market, line and currency; there is no grand total, because SGD plus IDR needs a rate and a rate date.
@@ -124,7 +126,7 @@ flowchart TB
 
 ### The console
 
-Screenshots below are captured by the Playwright suite (`cd web && npm run screenshots`).
+Screenshots below were captured headlessly (Playwright) against the running Docker stack as `staff@fugue.test` and `self@fugue.test`; the specs in `web/e2e/` write the same paths. The right-hand panel is the "Under the hood" sidebar, and the demo data carries edits made while testing.
 
 | Claims queue | Officer's claim record | Claimant's claim record |
 |---|---|---|
@@ -180,7 +182,8 @@ tests/
   pict/                 pairwise case models
 web/                    the Angular console (TanStack Query, NgRx SignalStore, generated client)
 bruno/fugue             HTTP regression collection (claims/ is the window's folder)
-perf/k6                 load scripts
+perf/k6                 k6 correctness-under-concurrency scripts (pickup race, idempotent submit)
+load/                   k6 latency scripts (smoke, load, stampede) and the percentile report
 scripts/                repo tooling and git-hook checks (scripts/spine/)
 docs/                   claims domain, architecture, ADRs, runbooks, decisions, journal
 ```
@@ -198,7 +201,7 @@ The dependency rule and the vertical slices are explained in [`docs/ARCHITECTURE
 | Validation and errors | FluentValidation, FluentResults | Typed errors become RFC 9457 problem details |
 | Persistence | EF Core (writes), Dapper (reads) | One transaction per command, ADR-006 |
 | Database | PostgreSQL 17 | `xmin` is the ETag |
-| Search | Meilisearch | Optional service; indexed from the append-only audit log and from claims |
+| Search | Meilisearch | Keyword full-text search (typo tolerance, synonyms, highlights). Optional service; indexed from the append-only audit log and from claims |
 | Events | Transactional outbox, signed webhooks | Kafka (Redpanda in compose) behind the `kafka` profile, off by default |
 | Console | Angular 22, TanStack Query, NgRx SignalStore | API client generated from the committed OpenAPI snapshot |
 | Tests | xUnit, Testcontainers, NetArchTest, Vitest, Playwright, Bruno | Details under Reference |
@@ -254,19 +257,19 @@ cd web && npm run e2e                                     # Playwright flows aga
 npm ci && (cd bruno/fugue && npx bru run --env compose)   # API regression suite against the Docker stack
 ```
 
-| Suite | Size (v0.0.2) | Runs against |
+| Suite | Count | Runs against |
 |---|---|---|
-| `Fugue.Tests` (xUnit) | about 740 cases | a real Postgres 17 (Testcontainers) or the full HTTP host, plus in-process tests of the state machine, validators and mapping |
-| `Fugue.ArchTests` (NetArchTest) | 37 fitness functions | layering, one-line controllers, every action declares a permission; baselines may only shrink |
-| Bruno | 101 requests, 123 tests (per CHANGELOG) | the Docker stack: every guard (404, 409, 412, 428, 422) over HTTP |
-| Console (Vitest) | roughly 200 tests; the exact count moves with each merge | `cd web && npm test` |
-| Console e2e (Playwright) | 20 flows in a browser, claimant to settlement | `web/e2e/` |
+| `Fugue.Tests` (xUnit) | 858 listed | a real Postgres 17 (Testcontainers) or the full HTTP host, plus in-process tests of the state machine, validators and mapping |
+| `Fugue.ArchTests` (NetArchTest) | 37 passed | layering, one-line controllers, every action declares a permission; baselines may only shrink |
+| Bruno | 127 requests; 148 of 153 tests passed in one run | `bru run --env local` against the demo stack on :8080: every guard (404, 409, 412, 428, 422) over HTTP. The 5 misses were demo-data state, not the code (a renamed officer, a webhook poll that had not settled) |
+| Console (Vitest) | 388 tests in 58 files, all passed | `cd web && npm test` |
+| Console e2e (Playwright) | 23 listed, in 9 files | `web/e2e/`, against the running stack |
 
-Counts drift as lanes merge; the totals at release are in [`CHANGELOG.md`](CHANGELOG.md).
+How these were counted: "listed" is `dotnet test --list-tests` and `npx playwright test --list`; "passed" is the real run. The last full-suite run recorded in git history is 858 passed for `Fugue.Tests` and 37 for `Fugue.ArchTests` (commit `97efc00`, the user-edit lane). Counts drift as work merges; the history is in [`CHANGELOG.md`](CHANGELOG.md).
 
 **Why this many, and why these.** The code was written mostly by AI agents, so the tests are the specification they cannot argue with: each pins an invariant of the domain ("a stale ETag is 412 and nothing is written", "outside your scope is 404, never 403", "exposure is never summed across currencies", "the audit log cannot be written through the API"). They are deterministic on purpose: a real database instead of mocks of it, time-dependent rules on a fake clock (`FakeTimeProvider`), waits that are bounded polls or timeouts and never sleep-then-assert. A red test therefore means the code drifted, not that the test flaked. The hooks run them before every push, so drift does not reach the remote.
 
-Also in the repo: Stryker.NET mutation runs (`npm run mutation:claim`), PICT pairwise models (`tests/pict/`), k6 load scripts (`npm run perf:queue`, `perf:submit`, `perf:race`). See [`docs/quality/README.md`](docs/quality/README.md) and [`perf/k6/README.md`](perf/k6/README.md).
+Also in the repo: Stryker.NET mutation runs (`npm run mutation:claim`), PICT pairwise models (`tests/pict/`), k6 scripts (`npm run perf:queue`, `perf:submit`, `perf:race`; latency runs in [`docs/runbooks/load-testing.md`](docs/runbooks/load-testing.md)). See [`docs/quality/README.md`](docs/quality/README.md) and [`perf/k6/README.md`](perf/k6/README.md).
 </details>
 
 <details>
@@ -327,7 +330,7 @@ The timed window starts at tag `claims-window-start` and ends at `claims-window-
 | Univer reserve sheet and assessment worksheet with Save to Excel; FullCalendar SLA calendar (bundle cost in `web/README.md`) | `web/src/app/features/claims/` |
 | Meilisearch audit search and claim search (optional service) | [runbook 06](docs/runbooks/06-audit.md) |
 | Kafka publisher behind the event port (optional compose profile) | [runbook 12](docs/runbooks/12-kafka.md), [ADR-011](docs/adr/ADR-011-outbox-and-signed-webhooks.md) |
-| Mutation testing (Stryker.NET), pairwise cases (PICT), k6 load scripts | [`docs/quality/`](docs/quality/README.md), `perf/k6/` |
+| Mutation testing (Stryker.NET), pairwise cases (PICT), k6 load scripts | [`docs/quality/`](docs/quality/README.md), `perf/k6/`, `load/` |
 | How the AI harness runs this repo | [`docs/ai/harness.md`](docs/ai/harness.md) |
 </details>
 
@@ -370,7 +373,9 @@ Optional Kafka: `EVENTS_PUBLISHER=Both docker compose --profile kafka up -d --bu
 | Scoping (404), If-Match (412, 428), Idempotency-Key (422) | Built, tested |
 | Outbox, signed webhooks, dev sink | Built, tested |
 | Kafka publisher | Built, optional, off by default |
-| Audit search and claim search (Meilisearch) | Built, optional service, 503 when down |
+| Audit search and claim search (keyword full-text, Meilisearch) | Built, optional service, 503 when down |
+| Edit users (`PUT /users/{id}`, If-Match) | Built, tested |
+| Legacy system sync | Design only, parked ([`docs/design/legacy-sync.md`](docs/design/legacy-sync.md)) |
 | Workload and exposure, per currency | Built, live SQL, refreshed every 15 s |
 | One-command Docker stack | Built (`./start.sh`) |
 | CI workflow (`.github/workflows/ci.yml`) | Written, not yet run on a real remote |
