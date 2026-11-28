@@ -6,7 +6,7 @@
   ],
   "counts": {
     "adrs": 14,
-    "decisions": 80,
+    "decisions": 81,
     "releases": 1,
     "closed": 22
   },
@@ -17,6 +17,16 @@
       "notes": [],
       "closed": [],
       "entries": [
+        {
+          "kind": "D",
+          "id": "D-081",
+          "title": "HybridCache for GET /me, invalidated by tags; enforcement stays uncached",
+          "date": "2026-11-28",
+          "summary": "Microsoft.Extensions.Caching.Hybrid 9.10.0 (MIT, supports net8), L1 only, for GET /me: key = authenticated user id, tags perm:user:{id} and perm:all, invalidated after group, override, module and user-edit writes…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-081--hybridcache-for-get-me-invalidated-by-tags-enforcement-stays-uncached--2026-11-28"
+        },
         {
           "kind": "D",
           "id": "D-080",

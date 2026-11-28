@@ -77,6 +77,15 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-081 — HybridCache for GET /me, invalidated by tags; enforcement stays uncached — 2026-11-28
+WS: WS-41
+Context: the k6 stampede run (item 26) failed only on `/me`: p95 382.5 ms against p95 < 300 ms with cold simultaneous calls.
+Decision: Microsoft.Extensions.Caching.Hybrid 9.10.0 (MIT, supports net8), L1 only, for `GET /me`: key = authenticated user id, tags `perm:user:{id}` and `perm:all`, invalidated after group, override, module and user-edit writes (including `UpdateUser`, with a handler test); TTL 30 s bounds clock-expired overrides. Enforcement is not cached: the JWT check re-reads access per request (`JwtBearerSetup.cs:70`), so a stale cache can only delay the console's nav, never grant access. Not IMemoryCache (no stampede protection, no tags); no Redis/L2 (not in compose; HybridCache accepts an `IDistributedCache` later without code changes). Stampede p95 for `/me` 382 -> about 212-241 ms (one run each, same laptop), threshold FAIL -> PASS; a claims read was not cached (claims_list already passed, p95 123 ms). Merged in fe7845a (W-041, lane nth-hybridcache).
+Why: fix the one measured hot spot with stampede protection, without caching any authorization decision.
+Who: owner (asked, item 27), AI (lane nth-hybridcache)
+Status: accepted
+Promote: no
+
 ## D-080 — Editing a user is PUT with If-Match, not an upsert; a self-lockout guard — 2026-11-28
 WS: WS-40
 Context: the owner found users could not be edited (11:26, item 25); lane nth-useredit, merged c7b1234.
