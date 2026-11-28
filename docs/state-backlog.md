@@ -25,6 +25,10 @@ Status 2026-11-28: item 1 = overnight item 12 (lane nth-refactor), item 2 = over
 WS: WS-22
 `GET /audit/trace/{correlationId}` (nth-score, merge dacfb06) reads `Sql/audit/trace.sql`; its outbox leg filters `outbox_messages.correlation_id`, which has no index, so that part scans the table (audit_log's leg is fine). Harmless at demo volume. Size S. Close with a migration adding a btree index on `outbox_messages(correlation_id)` through the migration QA gate and catalog row; not on submission day (migrations are a critical seam).
 
+### #012 — KIV: legacy sync adapter over the import module
+WS: WS-31
+Design only: `docs/design/legacy-sync.md` (anti-corruption adapter, idempotent upserts keyed by legacy id, backfill then incremental, reconciliation; section 9 covers scaling and offline sync). The built path today is file import (D-074). Size L. Close when a legacy source and its owner exist; D-077.
+
 ## Done or retired (kept for history; 2026-11-28 03:30 prune, overnight lead)
 
 - #002 guided product tour: DONE, delivered by nth-onboard (e4e750f, merge 4345366): first-visit welcome and autoplayed landing tour per user.

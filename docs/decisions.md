@@ -77,6 +77,15 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-077 — Legacy sync stays a design; the built path is file import — 2026-11-28
+WS: WS-31
+Context: the owner asked (11:30) for a way to bring existing legacy data in so the platform is backward compatible, with the import module as the central adapter; lane nth-legacydoc wrote `docs/design/legacy-sync.md` (merged 615f0d1).
+Decision: keep legacy sync as a design (backlog #012, KIV). The built path is the file import (D-074): spreadsheets, inbox and chat exports reviewed into drafts, idempotent by item. The design doc marks everything beyond section 1 as PROPOSAL and adds a section on scaling to many users and offline sync grounded in ADR-001/003/006/011/013.
+Why: no legacy source or owner exists to build against on submission day; the design is an interview talking point, not a promise.
+Who: owner (asked, KIV), integrator (recorded)
+Status: accepted
+Promote: no
+
 ## D-076 — Items 15 and 11g deferred; item 13 only if the refactor merges by 11:00 — 2026-11-28
 WS: WS-39
 Context: from about 07:00 the Mac slept on battery (failure mode 36), so suites ran only in dark-wake windows and the morning lost about three hours; at 10:14 it is still on battery.

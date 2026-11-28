@@ -76,6 +76,18 @@ Extend the `claim_imports` idea to a ledger keyed `(source_system, legacy_id)` h
 3. Quarantine and dead letter with an operator screen.
 4. Scheduled pull connector and watermark.
 
+## 9. Scaling to many users and offline sync (PROPOSAL, nothing here is built)
+
+Each point names the mechanism that already exists in Fugue and what a scaled version would add.
+- **Offline queue on the client.** A field or call-centre client keeps an outbox of pending commands, each with an `Idempotency-Key` (ADR-013). Replaying the queue after a reconnect is safe because the API already answers a repeated key with the stored response instead of a second claim.
+- **Conflicts are detected, never overwritten silently.** Every mutable aggregate carries Postgres `xmin` as its ETag and updates need `If-Match` (ADR-006): a stale offline edit gets `412`, the client shows both versions and a person chooses. Last-writer detection, not last-writer-wins.
+- **Incremental pull with watermarks.** The search indexers already page by an `(updated_at, id)` cursor; the same watermark, returned as a sync token, lets a client ask only for what changed since its last pull.
+- **Fan-out through the server outbox.** Domain events are written in the same transaction as the change (ADR-011) and delivered to any number of signed-webhook consumers with retry and dead letters, so new consumers (mobile push, a data warehouse, the legacy system itself) subscribe without touching the write path.
+- **Read scaling.** Search already runs on Meilisearch (D-063, D-072), off the primary; hot reads such as the permission lookup on `/me` are the HybridCache candidate (item 27, W-041), with stampede protection.
+- **Partitioning by market or tenant.** The schema already carries the tenancy toggle (ADR-001, ADR-003); a scaled deployment partitions by market or tenant first, because claims never cross markets.
+
+Interview: "Offline clients queue commands with idempotency keys, so a retry never doubles a claim. Conflicts surface as 412 through the xmin ETag, so nobody's edit is lost silently. Everything downstream hangs off the transactional outbox and cursor watermarks we already run, so scaling out adds consumers and partitions, not a new write path."
+
 ## Interview answer in 3 sentences
 
 Legacy compatibility is an anti-corruption layer built on our import module: connectors (a file drop today, a scheduled pull next) emit neutral records, a versioned mapping layer normalises them and quarantines anything unmapped, and an idempotent ledger keyed by legacy id decides create, skip or report. Every synced record goes through the same commands, validators, audit and outbox as the console, so there is no back door, and failures dead-letter and retry the way our webhook deliveries do. Today only the file import, its hash ledger and the domain-to-market config exist; the pull connector, mapping tables, watermark and reconciliation report are a proposal, and I would build the reconciliation counts first.

@@ -6,7 +6,7 @@
   ],
   "counts": {
     "adrs": 14,
-    "decisions": 76,
+    "decisions": 77,
     "releases": 1,
     "closed": 22
   },
@@ -17,6 +17,16 @@
       "notes": [],
       "closed": [],
       "entries": [
+        {
+          "kind": "D",
+          "id": "D-077",
+          "title": "Legacy sync stays a design; the built path is file import",
+          "date": "2026-11-28",
+          "summary": "Keep legacy sync as a design (backlog #012, KIV). The built path is the file import (D-074): spreadsheets, inbox and chat exports reviewed into drafts, idempotent by item. The design doc marks everything beyond section…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-077--legacy-sync-stays-a-design-the-built-path-is-file-import--2026-11-28"
+        },
         {
           "kind": "D",
           "id": "D-076",
