@@ -6,13 +6,23 @@
   ],
   "counts": {
     "adrs": 14,
-    "decisions": 75
+    "decisions": 76
   },
   "groups": [
     {
       "version": "Unreleased",
       "date": null,
       "entries": [
+        {
+          "kind": "D",
+          "id": "D-076",
+          "title": "Items 15 and 11g deferred; item 13 only if the refactor merges by 11:00",
+          "date": "2026-11-28",
+          "summary": "Defer item 15 (audit \"Sign-ins\" tab over access_audit, the [NoAudit] comment reword) and 11g (permission-chip tooltips: no DTO exposes permissions.description, so it needs an src/ change). Item 13 (IOptions) is…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-076--items-15-and-11g-deferred-item-13-only-if-the-refactor-merges-by-1100--2026-11-28"
+        },
         {
           "kind": "D",
           "id": "D-075",

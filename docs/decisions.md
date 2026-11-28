@@ -77,6 +77,16 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-076 — Items 15 and 11g deferred; item 13 only if the refactor merges by 11:00 — 2026-11-28
+WS: WS-39
+Context: from about 07:00 the Mac slept on battery (failure mode 36), so suites ran only in dark-wake windows and the morning lost about three hours; at 10:14 it is still on battery.
+Decision: defer item 15 (audit "Sign-ins" tab over `access_audit`, the `[NoAudit]` comment reword) and 11g (permission-chip tooltips: no DTO exposes `permissions.description`, so it needs an src/ change). Item 13 (IOptions) is dispatched only if item 12 merges by 11:00, else deferred too. The README refresh (11) runs at 12:00 regardless; the 14:00 wrap is unchanged. A red suite counts only once `pmset -g batt` says AC Power.
+Why: finished and verified beats new on submission day; an unreliable machine cannot prove a new change.
+Consequences: 15 and 11g stay in the plan as deferred; interview answers: `access_audit` already records every sign-in (the tab is a read view), and the catalog already has descriptions (one DTO field away).
+Who: dispatcher (decided 09:58), integrator (recorded)
+Status: accepted
+Promote: no
+
 ## D-075 — Item 14 deferred: the Worker host and building-blocks split stay in the backlog — 2026-11-28
 WS: WS-39
 Context: overnight item 14 (a `Fugue.Worker` host for the four BackgroundServices, a building-blocks project for the pipeline behaviours) was gated at 10:00 (05:15 plan). About two hours were lost to the OrbStack daemon hang (failure mode 36, about 07:00-09:03), and item 13 (IOptions) after the refactor runs to about 10:40, so 14 could not start before its gate.
