@@ -2,7 +2,8 @@
 
 ## Commits
 - `340cc55` feat(api): edit a user with PUT /users/{id} and If-Match
-- slice 2: feat(web): edit users from the access table, show/hide the initial password
+- `3db1fb9` feat(web): edit users from the access table, show/hide the initial password
+- `3f553a0` merge main (66db90a); this status update
 
 ## Gates (copied from output)
 - `dotnet build`: Build succeeded (0 warnings).
@@ -18,6 +19,9 @@
 - Headless Playwright (dev server 4432 -> API 5232): admin edits support@fugue.test name + adds STAFF, reload shows
   "Support Edited 33514 active STAFF SUPPORT", add-mode toggle flips type and aria-pressed, consoleErrors [].
   Screenshots `.worktrees/_briefs/reports/nth-useredit-{1-table,2-edit-drawer,3-after-reload,4-add-show-password}.png`.
+
+- Full suite once under the lock at 3db1fb9: ArchTests Passed 37/37; Fugue.Tests Passed 858, Failed 0, Total 858.
+- After merging main 66db90a: build succeeded; Users tests + OpenApiContractTests Passed 21, Failed 0.
 
 ## What changed in shared files (exactly)
 - `src/Fugue.Infrastructure/Identity/UserAdmin.cs`: `UpdateAsync` (row lock + xmin check + roles diff + grant_audit), create
@@ -36,4 +40,4 @@
   mapping (`IdentityConfigurations.cs:38-55`), so the version is read by SQL under `SELECT ... FOR UPDATE`.
 
 ## Next slice
-- 3: audit only (console add/edit gaps), in the lane report.
+- None. Slice 3 (console add/edit audit) is in `.worktrees/_briefs/reports/nth-useredit.md`. READY.
