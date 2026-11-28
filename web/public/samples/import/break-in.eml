@@ -1,0 +1,20 @@
+From: Aminah Rahman <aminah@kedai-armenian.com.my>
+To: claims-inbox@fugue.test
+Subject: Break-in at the shop
+Date: Thu, 26 Nov 2026 09:30:00 +0800
+Message-ID: <kr-0001@kedai-armenian.com.my>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="outer"
+
+--outer
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+
+SGksDQoNClNvbWVvbmUgYnJva2UgaW50byBvdXIgc2hvcGhvdXNlIGluIEdlb3JnZXRvd24gbGFzdCBuaWdodCBhbmQgdG9vayB0aGUgY2FzaCByZWdpc3Rlci4NClBvbGljeWhvbGRlcjogRGV2IFNlbGYtU2VydmljZSBPbmUgPHNlbGZAZnVndWUudGVzdD4NClBvbGljeSBubzogUE9MLU1ZLTMwMDQwMQ0KTG9jYXRpb246IDIxIExlYnVoIEFybWVuaWFuLCBHZW9yZ2UgVG93biwgUGVuYW5nDQoNCkFtaW5haA0K
+--outer
+Content-Type: image/jpeg; name="door.jpg"
+Content-Disposition: attachment; filename="door.jpg"
+Content-Transfer-Encoding: base64
+
+/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAP
+--outer--
