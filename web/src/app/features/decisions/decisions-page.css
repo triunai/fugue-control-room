@@ -106,3 +106,80 @@
   color: var(--muted);
   font-size: 0.85rem;
 }
+.how {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.how-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0;
+}
+.how-lede,
+.how-note {
+  margin: 0;
+  max-width: 80ch;
+}
+.how-note {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.how-steps {
+  list-style: decimal;
+  margin: 0;
+  padding-left: 1.25rem;
+  max-width: 80ch;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.sub {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 1rem 0 0.5rem;
+}
+.note-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 80ch;
+}
+.note dt {
+  font-weight: 600;
+}
+.note dd {
+  margin: 0;
+}
+.empty-note {
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+.closed {
+  margin: 0.5rem 0;
+}
+.closed summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.closed summary .sub {
+  margin: 0.25rem 0;
+}
+.closed-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+.closed-title {
+  font-weight: 600;
+}

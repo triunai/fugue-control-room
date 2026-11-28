@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { generate, parseAdr, parseDecisions, parseVersions, slug, versionFor } from "./gen-decisions.mjs";
+import { generate, parseAdr, parseChangelog, parseDecisions, parseVersions, slug, versionFor } from "./gen-decisions.mjs";
 
 const DECISIONS = `# Fugue — decisions
 
@@ -61,6 +61,34 @@ const ADR_DASH = `# ADR-010 — Rich append-only audit log
 * **Append-only.** A trigger.
 `;
 
+const CHANGELOG = `# Changelog
+
+intro
+
+## v0.0.2 — 2026-11-27
+Release: the claims platform, frozen for the walkthrough.
+No label here, it is a sentence. Second sentence: with a colon.
+
+## 2026-11-27 — Closed W-9: Something shipped
+WS: WS-22
+Outcome: It landed. Released as v0.0.2.
+Commits:
+- abc1234 feat(x): a
+- def5678 fix(x): b
+
+## 2026-11-25 — S2 — old style, no work item
+Text.
+`;
+
+test("parseChangelog reads release notes with optional labels and closed work items with commit counts", () => {
+  const { releases, closed } = parseChangelog(CHANGELOG);
+  assert.equal(releases.length, 1);
+  assert.deepEqual(releases[0].notes[0], { label: "Release", text: "the claims platform, frozen for the walkthrough." });
+  assert.equal(releases[0].notes[1].label, "");
+  assert.equal(closed.length, 1);
+  assert.deepEqual(closed[0], { id: "W-9", title: "Something shipped", date: "2026-11-27", outcome: "It landed. Released as v0.0.2.", commits: 2 });
+});
+
 test("slug matches GitHub anchors for the D heading shape", () => {
   assert.equal(slug("D-065 — Owner-steered lanes, run — 2026-11-28"), "d-065--owner-steered-lanes-run--2026-11-28");
 });
@@ -99,13 +127,15 @@ test("parseAdr reads both heading styles and the first Decision paragraph", () =
 test("generate groups newest first, Unreleased on top, skips the template, is deterministic", () => {
   const root = mkdtempSync(path.join(tmpdir(), "decisions-"));
   mkdirSync(path.join(root, "docs/adr"), { recursive: true });
-  writeFileSync(path.join(root, "CHANGELOG.md"), "# Changelog\n\n## v0.0.2 — 2026-11-27\nx\n");
+  writeFileSync(path.join(root, "CHANGELOG.md"), CHANGELOG);
   writeFileSync(path.join(root, "docs/decisions.md"), DECISIONS);
   writeFileSync(path.join(root, "docs/adr/ADR-001-x.md"), ADR_COLON);
   writeFileSync(path.join(root, "docs/adr/ADR-010-x.md"), ADR_DASH);
   writeFileSync(path.join(root, "docs/adr/_template.md"), "# ADR-NNN: template\n- Date: YYYY-MM-DD\n");
   const r = generate(root);
-  assert.deepEqual(r.data.counts, { adrs: 2, decisions: 3 });
+  assert.deepEqual(r.data.counts, { adrs: 2, decisions: 3, releases: 1, closed: 1 });
+  assert.equal(r.data.groups[1].notes.length, 2);
+  assert.deepEqual(r.data.groups[1].closed.map((c) => c.id), ["W-9"]);
   assert.deepEqual(r.data.groups.map((g) => g.version), ["Unreleased", "v0.0.2"]);
   assert.deepEqual(r.data.groups[0].entries.map((e) => e.id), ["D-065"]);
   assert.deepEqual(r.data.groups[1].entries.map((e) => e.id), ["ADR-010", "D-021", "D-003", "ADR-001"]);
