@@ -4,6 +4,8 @@ Goal: subscribe the Development sink, change a customer, watch the signed event 
 
 How it flows: a customer change writes an `outbox_messages` row in the SAME transaction. A background dispatcher relays each message to one `webhook_deliveries` row per matching subscription, then sends them (HTTP outside any transaction), signed with the subscription's secret. Delivery is at least once: receivers verify, reject old timestamps and dedupe on the event id.
 
+Note for the console's Webhooks page, Development sink tab: in Development the sink is seeded to `claim.*` only (`DevSinkSeeder.cs:26`). To see events there, move a claim (pick up, set a reserve, decide). `customer.*` events need their own subscription, as below and as Bruno's `webhooks/` folder does.
+
 ## 1. Start the API with local destinations allowed
 
 Webhooks go to `https` public hosts only. To send to the sink on this machine, run in Development with the local switch (the host refuses to start with it on anywhere else). The short backoff and attempt cap make section 6 quick:

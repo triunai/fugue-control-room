@@ -1,5 +1,7 @@
 # 12 - Kafka: watch claim events on a topic
 
+Optional, OFF by default: the demo publishes through the outbox as signed webhooks; Kafka only with `EVENTS_PUBLISHER=Both` and `--profile kafka`.
+
 Goal: run a single-node broker next to the stack, make a claim move, and watch its events arrive on `fugue.claims.v1` keyed by the claim id. Needs runbooks 03 and 05 (database, signing key) and 11 (claims). The design is the Kafka amendment in `docs/adr/ADR-011-outbox-and-signed-webhooks.md`.
 
 How it flows: the outbox relay (ADR-011) calls every registered `IEventPublisher` per message. `Events:Publisher` picks them: `Webhooks` (default, nothing changes), `Kafka`, or `Both`. The Kafka adapter produces to a topic per event family (`fugue.claims.v1`, `fugue.customers.v1`, else `fugue.events.v1`), key = aggregate id (the claim id, so one claim's events stay in order), value = the same JSON envelope the webhooks sign, headers `event-type`, `event-id`, `correlation-id`, `saga-id`, `traceparent`. The relay waits for the broker acknowledgement before it marks the outbox row dispatched.

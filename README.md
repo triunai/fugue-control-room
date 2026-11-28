@@ -303,7 +303,7 @@ Every step is copy-pasteable and says what you should see. Index: [`docs/runbook
 <details>
 <summary><strong>Decisions and ADRs</strong></summary>
 
-Every decision is numbered (D-NNN) in [`docs/decisions.md`](docs/decisions.md). Architecture records are in [`docs/adr/`](docs/adr/): shared-DB tenant id, controllers, typed errors, trace and saga ids, EF writes with Dapper reads, AI harness gates, auth and identity, module management, audit log, outbox and signed webhooks, OpenAPI and the console boundary, idempotency keys (ADR-001 to ADR-013). The claims plan, with its cut lines, is [`docs/plans/claims-window.md`](docs/plans/claims-window.md); cross-family reviews and how each finding was handled are in [`docs/reviews/`](docs/reviews/).
+Every decision is numbered (D-NNN) in [`docs/decisions.md`](docs/decisions.md). Architecture records are in [`docs/adr/`](docs/adr/): shared-DB tenant id, controllers, typed errors, trace and saga ids, EF Core reads with Dapper writes, AI harness gates, auth and identity, module management, audit log, outbox and signed webhooks, OpenAPI and the console boundary, idempotency keys, owner-steered parallel lanes, HybridCache for `/me` (ADR-001 to ADR-015). The claims plan, with its cut lines, is [`docs/plans/claims-window.md`](docs/plans/claims-window.md); cross-family reviews and how each finding was handled are in [`docs/reviews/`](docs/reviews/).
 </details>
 
 <details>

@@ -5,7 +5,7 @@
     "CHANGELOG.md"
   ],
   "counts": {
-    "adrs": 14,
+    "adrs": 15,
     "decisions": 81,
     "releases": 2,
     "closed": 39
@@ -169,7 +169,7 @@
           "date": "2026-11-28",
           "summary": "Microsoft.Extensions.Caching.Hybrid 9.10.0 (MIT, supports net8), L1 only, for GET /me: key = authenticated user id, tags perm:user:{id} and perm:all, invalidated after group, override, module and user-edit writes…",
           "status": "accepted",
-          "adr": null,
+          "adr": "ADR-015",
           "path": "docs/decisions.md#d-081--hybridcache-for-get-me-invalidated-by-tags-enforcement-stays-uncached--2026-11-28"
         },
         {
@@ -341,6 +341,16 @@
           "status": "accepted",
           "adr": null,
           "path": "docs/decisions.md#d-064--submission-morning-asks-past-the-freeze-shell-polish-usd-view-add-users-onboarding--2026-11-28"
+        },
+        {
+          "kind": "ADR",
+          "id": "ADR-015",
+          "title": "HybridCache for GET /me, invalidated by tags; authorization is never cached",
+          "date": "2026-11-28",
+          "summary": "Cache the /me permission payload with Microsoft.Extensions.Caching.Hybrid 9.10.0 (MIT, supports net8), in-process (L1) only, for GET /me only. Key = the authenticated user id; tags perm:user:{id} and perm:all; every…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/adr/ADR-015-hybridcache-for-me.md"
         },
         {
           "kind": "ADR",

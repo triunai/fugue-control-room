@@ -18,5 +18,6 @@ Step-by-step guides for someone who has never seen this repo. Every step is copy
 | [11-claims.md](11-claims.md) | The claims platform: accounts, the state machine, a curl walk-through of the happy path, the 404/409/412/428 demos, workload and exposure |
 | [12-kafka.md](12-kafka.md) | Run the optional Kafka broker and watch claim events on the topic |
 | [agent-tooling.md](agent-tooling.md) | Demo: read-only Postgres MCP, psql, Bruno CLI, headless Playwright |
+| [load-testing.md](load-testing.md) | k6 smoke, load and stampede runs, percentile reports, a before/after compare; never against the demo stack on :8080 |
 
 Conventions: commands run from the repo root unless stated; "Expect" lines show the output that means the step worked.
