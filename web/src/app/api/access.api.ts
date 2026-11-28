@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { CONSOLE_CONFIG } from '../core/config';
 import { SEND_IF_MATCH } from '../core/http/context';
 import { EtagStore } from '../core/http/etag.store';
-import type { CreateUserRequest, UserDto } from './generated/model';
+import type { CreateUserRequest, UpdateUserRequest, UserDto } from './generated/model';
 import { getPage, params } from './http-page';
 import { GroupDto, OverrideDto, Page } from './models';
 
@@ -56,6 +56,18 @@ export class AccessApi {
   /** Creates a user with an initial password and roles (USERS_MANAGE). The response never carries the password. */
   createUser(body: CreateUserRequest): Promise<UserDto> {
     return firstValueFrom(this.http.post<UserDto>(`${this.base}/users`, body));
+  }
+
+  /** One user (USERS_VIEW); the ETag interceptor records its ETag. */
+  user(id: string): Promise<UserDto> {
+    return firstValueFrom(this.http.get<UserDto>(`${this.base}/users/${id}`));
+  }
+
+  /** Edits a user (USERS_MANAGE) against the version you read: If-Match is sent explicitly, so a stale one is a 412. */
+  updateUser(id: string, body: UpdateUserRequest, version: number): Promise<UserDto> {
+    return firstValueFrom(
+      this.http.put<UserDto>(`${this.base}/users/${id}`, body, { headers: { 'If-Match': `"${version}"` } }),
+    );
   }
 
   groups(): Promise<GroupDto[]> {

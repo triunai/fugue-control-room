@@ -77,6 +77,16 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-080 — Editing a user is PUT with If-Match, not an upsert; a self-lockout guard — 2026-11-28
+WS: WS-40
+Context: the owner found users could not be edited (11:26, item 25); lane nth-useredit, merged c7b1234.
+Decision: `PUT /api/v1/users/{id}` with `If-Match` (display name, roles, active; email read-only), USERS_MANAGE and the same role-escalation rule as create, audited; the Add user drawer is reused, prefilled, and gains a show-password toggle for create. Not an upsert: ids are server-generated UUID v7, create needs a password and an escalation check, an update must never reset a password, and idempotent creates already carry the retry-safety idea (ADR-013); an upsert would merge two authorization paths into one ambiguous endpoint. The ETag is `users.xmin` read by SQL under a row lock rather than an EF row-version mapping, to avoid a snapshot-only migration on submission day. Self-lockout guard: editing yourself cannot deactivate you or remove your last direct role granting USERS_MANAGE (409 `user.self_lockout`); group- or override-derived USERS_MANAGE does not count.
+Why: one clear endpoint per intent; concurrency the same way as every other mutable aggregate (ADR-006).
+Consequences: the lane's console add/edit audit (report slice 3) leaves these gaps on record: no user delete (deactivate via edit), no group CRUD and no UI for the group membership API, roles and grants change only by migration or seed; overrides, webhooks and customers are complete; modules toggle only, by design. A group-only user (no direct role) cannot be saved from the edit drawer without adding a role (the form requires one). Deactivating stops sign-in and refresh at once (Login refuses inactive users, `Features/Auth/Commands/Login.cs:35`; `Sql/identity/rotate-refresh-token.sql` requires `is_active AND NOT is_deleted`; `MeReader.cs:17` filters inactive); the honest limit is an access token already issued, valid until it expires (15 minutes), as with any bearer JWT; follow-up if needed: a per-user token-version claim checked on each request. Not tested: two concurrent PUTs with the same ETag (412 proven sequentially; Bruno users 08). User edits are audited but not outboxed, like create (no user event type exists).
+Who: owner (asked), AI (lane nth-useredit)
+Status: accepted
+Promote: no
+
 ## D-079 — Known issue recorded: a broker outage makes one relay cycle long and lock-holding — 2026-11-28
 WS: WS-41
 Context: nth-kafkafix (merge 1082413) traced a stalled full suite to the no-broker test relaying every leftover due outbox row to a dead broker, 3 s each, in one transaction (227 rows, about 11 minutes; live psql showed a backend idle in transaction for 4 minutes). The test now relays only its own row, and the suite runs in 1 m 30 s.

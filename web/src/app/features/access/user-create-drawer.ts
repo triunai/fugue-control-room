@@ -1,9 +1,9 @@
-import { DialogRef } from '@angular/cdk/dialog';
+import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { injectMutation, injectQuery, QueryClient } from '@tanstack/angular-query';
 import { AccessApi } from '../../api/access.api';
-import type { CreateUserRequest, UserDto } from '../../api/generated/model';
+import type { UserDto } from '../../api/generated/model';
 import { RolesApi } from '../../api/roles.api';
 import { applyServerErrors, controlError } from '../../core/forms/server-errors';
 import { CorrelationService } from '../../core/http/correlation.service';
@@ -14,14 +14,20 @@ import { ExamplesPanel } from '../../ui/examples-panel';
 import { ErrorState } from '../../ui/states';
 import {
   atLeastOneRole,
+  isStaleEdit,
   PASSWORD_MAX,
   PASSWORD_MIN,
   placeProblem,
   toCreateUserRequest,
   toggleRole,
+  toUpdateUserRequest,
 } from './user-create.logic';
 
-/** "Add user" (USERS_MANAGE): email, name, an initial password and at least one role. Closes with the created user. */
+/**
+ * "Add user" and "Edit user" (USERS_MANAGE). Add: email, name, an initial password and at least one role. Edit (opened with the
+ * row's UserDto): the email is read-only, there is no password, and the save is a PUT with the row's version as If-Match.
+ * Closes with the saved user.
+ */
 @Component({
   selector: 'fg-user-create-drawer',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,6 +43,12 @@ export class UserCreateDrawer {
   private readonly toasts = inject(ToastStore);
   private readonly correlation = inject(CorrelationService);
   private readonly fb = inject(NonNullableFormBuilder);
+  /** The user being edited, or null when adding. Its version is the If-Match of the save (a Reload replaces it). */
+  protected readonly editing = signal<UserDto | null>(inject<UserDto | null>(DIALOG_DATA, { optional: true }) ?? null);
+  /** Add mode: whether the initial password is shown as plain text. */
+  protected readonly revealed = signal(false);
+  /** Edit mode: the save was refused with 412 (someone else changed this user). */
+  protected readonly stale = signal(false);
 
   protected readonly passwordMin = PASSWORD_MIN;
   protected readonly formErrors = signal<string[]>([]);
@@ -46,7 +58,17 @@ export class UserCreateDrawer {
     displayName: ['', [Validators.required, Validators.maxLength(200)]],
     password: ['', [Validators.required, Validators.minLength(PASSWORD_MIN), Validators.maxLength(PASSWORD_MAX)]], // secrets-scan:ignore
     roles: this.fb.control<string[]>([], atLeastOneRole),
+    isActive: [true],
   });
+
+  constructor() {
+    const user = this.editing();
+    if (user) {
+      this.prefill(user);
+      this.form.controls.email.disable();
+      this.form.controls.password.disable(); // secrets-scan:ignore (an edit never sets a password)
+    }
+  }
 
   protected readonly roles = injectQuery(() => ({
     queryKey: ['access', 'roles'] as const,
@@ -54,14 +76,24 @@ export class UserCreateDrawer {
   }));
 
   protected readonly save = injectMutation(() => ({
-    mutationFn: (body: CreateUserRequest) => this.api.createUser(body),
-    meta: { handles: [400, 403, 409] },
+    mutationFn: () => {
+      const v = this.form.getRawValue();
+      const user = this.editing();
+      return user
+        ? this.api.updateUser(user.id, toUpdateUserRequest(v), user.version)
+        : this.api.createUser(toCreateUserRequest(v));
+    },
+    meta: { handles: [400, 403, 409, 412] },
     onSuccess: (user: UserDto) => {
-      this.toasts.ok(
-        `${user.email} created`,
-        'Hand the initial password over directly; it is not shown again.',
-        this.correlation.id(),
-      );
+      if (this.editing()) {
+        this.toasts.ok(`${user.email} saved`, undefined, this.correlation.id());
+      } else {
+        this.toasts.ok(
+          `${user.email} created`,
+          'Hand the initial password over directly; it is not shown again.',
+          this.correlation.id(),
+        );
+      }
       void this.queryClient.invalidateQueries({ queryKey: ['access', 'users'] });
       this.ref.close(user);
     },
@@ -96,8 +128,33 @@ export class UserCreateDrawer {
       displayName: u.displayName,
       password: pw, // secrets-scan:ignore (random sample password generated in the browser)
       roles: u.roles.filter((r) => known.has(r)),
+      isActive: true,
     });
     this.form.markAsDirty();
+  }
+
+  protected toggleReveal(): void {
+    this.revealed.update((v) => !v);
+  }
+
+  /** After a 412: read the user again, refill the form with what is saved now, and edit against the new version. */
+  protected async reload(): Promise<void> {
+    const user = this.editing();
+    if (!user) return;
+    const fresh = await this.api.user(user.id);
+    this.editing.set(fresh);
+    this.prefill(fresh);
+    this.stale.set(false);
+    this.formErrors.set([]);
+  }
+
+  private prefill(user: UserDto): void {
+    this.form.patchValue({
+      email: user.email,
+      displayName: user.displayName,
+      roles: [...user.roles],
+      isActive: user.isActive,
+    });
   }
 
   protected hasRole(code: string): boolean {
@@ -130,7 +187,7 @@ export class UserCreateDrawer {
       this.form.markAllAsTouched();
       return;
     }
-    this.save.mutate(toCreateUserRequest(this.form.getRawValue()));
+    this.save.mutate();
   }
 
   protected close(): void {
@@ -139,6 +196,10 @@ export class UserCreateDrawer {
 
   private handleError(e: unknown): void {
     if (!isApiProblem(e)) return;
+    if (isStaleEdit(e)) {
+      this.stale.set(true);
+      return;
+    }
     if (e.isValidation) {
       this.formErrors.set(applyServerErrors(this.form, e));
       return;

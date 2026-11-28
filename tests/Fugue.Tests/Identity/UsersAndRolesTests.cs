@@ -79,7 +79,7 @@ public sealed class UsersAndRolesTests(PostgresFixture db)
         using JsonDocument json = JsonDocument.Parse(raw);
         Assert.All(json.RootElement.EnumerateArray(), row =>
             Assert.Equal(
-                ["createdAt", "displayName", "email", "groups", "id", "isActive", "roles"],
+                ["createdAt", "displayName", "email", "groups", "id", "isActive", "roles", "version"], // version: the ETag an edit sends back
                 row.EnumerateObject().Select(p => p.Name).Order(StringComparer.Ordinal)));
     }
 

@@ -15,6 +15,7 @@ const user = (n: number): UserDto => ({
   roles: ['STAFF'],
   groups: ['SUPPORT'],
   createdAt: '2026-11-01T00:00:00Z',
+  version: 1,
 });
 
 class FakeAccess {

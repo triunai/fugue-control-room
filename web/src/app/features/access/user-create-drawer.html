@@ -1,8 +1,8 @@
 <div class="drawer">
   <header class="head">
     <div class="min-w-0">
-      <p class="kicker">New user</p>
-      <h2 class="title">Add a user</h2>
+      <p class="kicker">{{ editing() ? 'Edit user' : 'New user' }}</p>
+      <h2 class="title">{{ editing() ? editing()!.email : 'Add a user' }}</h2>
     </div>
     <button type="button" class="btn btn-quiet btn-icon" aria-label="Close" (click)="close()">
       <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
@@ -13,12 +13,14 @@
 
   <div class="body">
     <form id="user-form" [formGroup]="form" (ngSubmit)="submit()" class="flex flex-col gap-5" novalidate>
-      <fg-examples
-        [rows]="exampleRows"
-        [disabled]="save.isPending()"
-        note="Made-up people on example.com with a random sample password, shown once under its field."
-        (picked)="fillExample($event)"
-      />
+      @if (!editing()) {
+        <fg-examples
+          [rows]="exampleRows"
+          [disabled]="save.isPending()"
+          note="Made-up people on example.com with a random sample password, shown once under its field."
+          (picked)="fillExample($event)"
+        />
+      }
       <div class="field">
         <label class="label" for="nu-email">Email</label>
         <input
@@ -32,6 +34,8 @@
         />
         @if (err('email'); as m) {
           <span id="nu-email-msg" class="field-error">{{ m }}</span>
+        } @else if (editing()) {
+          <span id="nu-email-msg" class="field-hint">The email cannot be changed here.</span>
         } @else {
           <span id="nu-email-msg" class="field-hint">They sign in with it. Stored lower-case; unique among users.</span>
         }
@@ -50,30 +54,50 @@
           <span id="nu-name-msg" class="field-error">{{ m }}</span>
         }
       </div>
-      <div class="field">
-        <label class="label" for="nu-password">Initial password</label>
-        <input
-          id="nu-password"
-          class="input"
-          type="password"
-          formControlName="password"
-          autocomplete="new-password"
-          [attr.aria-invalid]="!!err('password')"
-          aria-describedby="nu-password-msg"
-        />
-        @if (err('password'); as m) {
-          <span id="nu-password-msg" class="field-error">{{ m }}</span>
-        } @else if (sampleShown()) {
-          <span id="nu-password-msg" class="field-hint" data-testid="sample-password"
-            >Sample password <span class="mono">{{ form.controls.password.value }}</span>. Hand it over directly; it is
-            never shown again.</span
-          >
-        } @else {
-          <span id="nu-password-msg" class="field-hint"
-            >At least {{ passwordMin }} characters. Hand it over directly; it is never shown again.</span
-          >
-        }
-      </div>
+      @if (!editing()) {
+        <div class="field">
+          <label class="label" for="nu-password">Initial password</label>
+          <div class="flex items-center gap-2">
+            <input
+              id="nu-password"
+              class="input flex-1"
+              [type]="revealed() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="new-password"
+              [attr.aria-invalid]="!!err('password')"
+              aria-describedby="nu-password-msg"
+            />
+            <button
+              type="button"
+              class="btn btn-quiet"
+              data-testid="toggle-password"
+              aria-controls="nu-password"
+              [attr.aria-pressed]="revealed()"
+              [attr.aria-label]="revealed() ? 'Hide password' : 'Show password'"
+              (click)="toggleReveal()"
+            >
+              {{ revealed() ? 'Hide' : 'Show' }}
+            </button>
+          </div>
+          @if (err('password'); as m) {
+            <span id="nu-password-msg" class="field-error">{{ m }}</span>
+          } @else if (sampleShown()) {
+            <span id="nu-password-msg" class="field-hint" data-testid="sample-password"
+              >Sample password <span class="mono">{{ form.controls.password.value }}</span>. Hand it over directly; it
+              is never shown again.</span
+            >
+          } @else {
+            <span id="nu-password-msg" class="field-hint"
+              >At least {{ passwordMin }} characters. Hand it over directly; it is never shown again.</span
+            >
+          }
+        </div>
+      } @else {
+        <label class="flex items-center gap-2" data-testid="active-option">
+          <input type="checkbox" formControlName="isActive" />
+          <span>Active (can sign in)</span>
+        </label>
+      }
       <fieldset class="field" aria-describedby="nu-roles-msg">
         <legend class="label">Roles</legend>
         @if (roles.isPending()) {
@@ -103,6 +127,15 @@
           >
         }
       </fieldset>
+      @if (stale()) {
+        <div class="banner banner-err" role="alert" data-testid="stale-banner">
+          <span
+            ><span class="banner-title">Changed by someone else.</span> This user was saved after you opened it; nothing
+            was changed. Reload to see the latest, then edit again.</span
+          >
+          <button type="button" class="btn" data-testid="reload-user" (click)="reload()">Reload</button>
+        </div>
+      }
       @if (formErrors().length) {
         <div class="banner banner-err" role="alert">
           <span><span class="banner-title">The API refused this.</span> {{ formErrors().join(' ') }}</span>
@@ -115,7 +148,11 @@
     <div class="flex-1"></div>
     <button type="button" class="btn" (click)="close()">Cancel</button>
     <button type="submit" form="user-form" class="btn btn-primary" [disabled]="save.isPending()">
-      {{ save.isPending() ? 'Creating…' : 'Create user' }}
+      @if (editing()) {
+        {{ save.isPending() ? 'Saving…' : 'Save changes' }}
+      } @else {
+        {{ save.isPending() ? 'Creating…' : 'Create user' }}
+      }
     </button>
   </footer>
 </div>
