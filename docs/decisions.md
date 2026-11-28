@@ -77,6 +77,15 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-075 — Item 14 deferred: the Worker host and building-blocks split stay in the backlog — 2026-11-28
+WS: WS-39
+Context: overnight item 14 (a `Fugue.Worker` host for the four BackgroundServices, a building-blocks project for the pipeline behaviours) was gated at 10:00 (05:15 plan). About two hours were lost to the OrbStack daemon hang (failure mode 36, about 07:00-09:03), and item 13 (IOptions) after the refactor runs to about 10:40, so 14 could not start before its gate.
+Decision: defer item 14; it stays as backlog #010 part 3. Interview answer: the four BackgroundServices (`OutboxDispatcherService`, `ClaimIndexer`, `AuditIndexer`, `IdempotencyPurgeService`) are already isolated behind their own options and DI registration, so lifting them into a host is mechanical.
+Why: a new host project and a compose service on submission day is high risk for no demo value.
+Who: dispatcher (decided 09:15), integrator (recorded)
+Status: accepted
+Promote: no
+
 ## D-074 — Intake import is file imports reviewed into drafts, not live connectors — 2026-11-28
 WS: WS-31
 Context: the brief says claimants submit by phone or email and staff work from shared inboxes and spreadsheets (overnight item 11a).

@@ -102,7 +102,7 @@ Run 12 + 13 only if every feature lane has merged by ~10:30, else defer with a D
 - [ ] 12. (lane nth-refactor from afc6fe9, W-039; base full suite 849 + Arch 37 at push 6, 3a6fb56) Per-slice folders `Commands/ Queries/ Models/ Repos/ Helpers/` + DI extension; namespaces follow folders (IDE fix or
       `dotnet format analyzers --diagnostics IDE0130`); full suite.
 - [ ] 13. Remaining hardcoded values to IOptions (page sizes kept in step with validators, webhook replay window, SLA days).
-- [ ] 14. `Fugue.Worker` host for the four BackgroundServices + a building-blocks project for pipeline behaviours; ArchTests.
+- [-] 14. (DEFERRED by D-075 at 09:15: two hours lost to the OrbStack hang, 10:00 gate; stays backlog #010 part 3) `Fugue.Worker` host for the four BackgroundServices + a building-blocks project for pipeline behaviours; ArchTests.
 - [ ] 15. Optional: audit page "Sign-ins" tab over `access_audit`; reword the `[NoAudit]` comment on LoginCommand.
 
 ## P3 — wrap (by 14:00)

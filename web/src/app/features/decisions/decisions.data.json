@@ -6,13 +6,23 @@
   ],
   "counts": {
     "adrs": 14,
-    "decisions": 74
+    "decisions": 75
   },
   "groups": [
     {
       "version": "Unreleased",
       "date": null,
       "entries": [
+        {
+          "kind": "D",
+          "id": "D-075",
+          "title": "Item 14 deferred: the Worker host and building-blocks split stay in the backlog",
+          "date": "2026-11-28",
+          "summary": "Defer item 14; it stays as backlog #010 part 3. Interview answer: the four BackgroundServices (OutboxDispatcherService, ClaimIndexer, AuditIndexer, IdempotencyPurgeService) are already isolated behind their own options…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-075--item-14-deferred-the-worker-host-and-building-blocks-split-stay-in-the-backlog--2026-11-28"
+        },
         {
           "kind": "D",
           "id": "D-074",
