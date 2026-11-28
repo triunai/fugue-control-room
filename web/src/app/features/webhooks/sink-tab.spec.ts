@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 import { QueryClient, provideTanStackQuery } from '@tanstack/angular-query';
-import { CustomersApi } from '../../api/customers.api';
 import { WebhooksApi } from '../../api/webhooks.api';
 import { CorrelationService } from '../../core/http/correlation.service';
 import { ToastStore } from '../../core/ui/toast.store';
@@ -14,12 +13,10 @@ interface Call {
 /** Retrying a submission after a lost response must replay the first result: same body, same Idempotency-Key. */
 describe('SinkTab submissions', () => {
   const subscriptionCalls: Call[] = [];
-  const customerCalls: Call[] = [];
   let failNext = 0;
 
   function setup() {
     subscriptionCalls.length = 0;
-    customerCalls.length = 0;
     failNext = 0;
     const maybeFail = () => (failNext-- > 0 ? Promise.reject(new Error('response lost')) : Promise.resolve());
     TestBed.configureTestingModule({
@@ -39,23 +36,12 @@ describe('SinkTab submissions', () => {
             },
           },
         },
-        {
-          provide: CustomersApi,
-          useValue: {
-            create: async (body: unknown, key: string) => {
-              customerCalls.push({ body, key });
-              await maybeFail();
-              return { id: 'c1', name: 'Created' };
-            },
-          },
-        },
         { provide: ToastStore, useValue: { ok: () => undefined, problem: () => undefined } },
         { provide: CorrelationService, useValue: { id: () => 'ref-1', begin: () => undefined } },
       ],
     });
     const cmp = TestBed.createComponent(SinkTab).componentInstance as unknown as {
       connect: { mutateAsync(): Promise<string> };
-      sendTest: { mutateAsync(): Promise<unknown> };
     };
     return cmp;
   }
@@ -73,20 +59,19 @@ describe('SinkTab submissions', () => {
     expect(subscriptionCalls[2].key).not.toBe(subscriptionCalls[0].key); // the first success reset the submission
   });
 
-  it('sendTest: a retry reuses the SAME customer body and key, not a regenerated one', async () => {
+  it('connect subscribes the sink to claim.*, matching the seeded subscription', async () => {
     const cmp = setup();
-    failNext = 2;
+    await cmp.connect.mutateAsync();
+    expect((subscriptionCalls[0].body as { eventTypes: string[] }).eventTypes).toEqual(['claim.*']);
+  });
 
-    await expect(cmp.sendTest.mutateAsync()).rejects.toThrow('response lost');
-    await new Promise((resolve) => setTimeout(resolve, 5)); // Date.now() moves on: a regenerated email would differ
-    await expect(cmp.sendTest.mutateAsync()).rejects.toThrow('response lost');
-    await cmp.sendTest.mutateAsync();
-    await cmp.sendTest.mutateAsync();
-
-    expect(customerCalls).toHaveLength(4);
-    expect(customerCalls[1]).toEqual(customerCalls[0]);
-    expect(customerCalls[2]).toEqual(customerCalls[0]);
-    expect(customerCalls[3].key).not.toBe(customerCalls[0].key);
-    expect(customerCalls[3].body).not.toEqual(customerCalls[0].body);
+  it('step 2 points at the claims queue and offers no customer action', () => {
+    setup();
+    const fixture = TestBed.createComponent(SinkTab);
+    fixture.detectChanges();
+    const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(text).toContain('Move a claim');
+    expect(text).not.toContain('Create a test customer');
+    expect(text).not.toContain('Change a customer');
   });
 });
