@@ -7,3 +7,4 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | Branch | Worktree path | Base sha | Owner (lane) | W id | Status |
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
+| `nth-sinkfix` | `.worktrees/nth-sinkfix` | 46362bc | nth-sinkfix (Sonnet), relay-dispatched | W-040 | owner fix: the dev sink tab's step 2 emits claim events (claim.*), not customer events; hard stop 14:40 |
