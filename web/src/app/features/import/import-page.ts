@@ -42,10 +42,10 @@ import {
     <div class="page">
       <header class="page-head">
         <div>
-          <h1 class="page-title">Import</h1>
+          <h1 class="page-title">Import legacy claims</h1>
           <p class="page-lede">
-            Turn a spreadsheet, exported emails or a WhatsApp chat into draft claims. Every draft is checked with the
-            same rules as Report an incident, and nothing is created until you review it and press Create.
+            Bring in claims that arrived through old channels (spreadsheets, shared inboxes, WhatsApp) as drafts you
+            review; nothing is created until you press Create.
           </p>
         </div>
       </header>

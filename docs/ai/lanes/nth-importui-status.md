@@ -19,3 +19,6 @@
 
 ## Deviations
 - No ledger row existed for this lane at base ddd2ded, so one was added.
+
+## Addendum (owner 11:29)
+- Renamed to "Import legacy claims": nav label (shell/nav.ts), route breadcrumb and title (app.routes.ts), h1, one-sentence intro. Route /claims/import unchanged. lint/test (370)/build green; no specs referenced the old label.
