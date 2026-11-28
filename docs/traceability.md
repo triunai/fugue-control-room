@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 41 workstreams, 14 ADRs, 81 decisions, 587 commits (14 unlinked). Newest commit indexed: `723513f`.
+Counts: 41 workstreams, 14 ADRs, 81 decisions, 588 commits (14 unlinked). Newest commit indexed: `9e512f1`.
 
 ## Workstreams
 
@@ -631,11 +631,12 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 587 commits (14 unlinked). Newest
 **Decision timeline generated from the docs (item 11d)** — CLOSED
 - Where: [project log entry](project-log.md#2026-11-28--closed-w-036-decision-timeline-generated-from-the-docs-item-11d)
 - Decisions and ADRs: [D-064](#d-064), [D-066](#d-066), [D-067](#d-067), [D-068](#d-068), [D-069](#d-069)
-- Commits (4):
+- Commits (5):
   - `2e0ecbf` feat(web): merge nth-decisions, the decision timeline generated from the docs (item 11d) (2026-11-28)
   - `8765f5d` docs(spine): W-025..W-038 for tonight, D-068 and D-069, fleet contracts archived (2026-11-28)
   - `d4b7c35` feat(web): merge nth-changelog, Decisions becomes the Changelog with versioning explained (item 21) (2026-11-28)
   - `4cf1826` fix(build): the changelog generator works with no Unreleased entries (2026-11-28)
+  - `9e512f1` chore(web): the Changelog explainer names the current release, v0.0.3 (2026-11-28)
 
 ### W-037
 
@@ -1770,6 +1771,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 587 commits (14 unlinked). Newest
   - `d4b7c35` feat(web): merge nth-changelog, Decisions becomes the Changelog with versioning explained (item 21) (2026-11-28)
   - `4cf1826` fix(build): the changelog generator works with no Unreleased entries (2026-11-28)
   - `723513f` docs(web): regenerate the changelog page data (2026-11-28)
+  - `9e512f1` chore(web): the Changelog explainer names the current release, v0.0.3 (2026-11-28)
 
 ### D-068
 
@@ -1907,6 +1909,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 587 commits (14 unlinked). Newest
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `9e512f1` | chore(web): the Changelog explainer names the current release, v0.0.3 | 2026-11-28 | [W-036](#w-036), [D-067](#d-067) |
 | `723513f` | docs(web): regenerate the changelog page data | 2026-11-28 | [D-067](#d-067) |
 | `213ccec` | docs(spine): post-tag fixes line in v0.0.3, hot-state at 13:50 | 2026-11-28 | [W-040](#w-040), [D-066](#d-066) |
 | `a717451` | feat(web): merge nth-searchhint, a hint to search the new claim number after submit | 2026-11-28 | [W-040](#w-040) |
