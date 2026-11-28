@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 41 workstreams, 14 ADRs, 81 decisions, 573 commits (14 unlinked). Newest commit indexed: `416a579`.
+Counts: 41 workstreams, 14 ADRs, 81 decisions, 577 commits (14 unlinked). Newest commit indexed: `69afa03`.
 
 ## Workstreams
 
@@ -678,7 +678,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 573 commits (14 unlinked). Newest
 **Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit** — CLOSED
 - Where: [project log entry](project-log.md#2026-11-28--closed-w-040-owner-asks-at-1126-tour-search-bar-import-ui-changelog-explained-overrides-the-score-grouping-user-edit)
 - Decisions and ADRs: [D-064](#d-064), [D-066](#d-066), [D-067](#d-067), [D-072](#d-072), [D-074](#d-074), [D-080](#d-080)
-- Commits (37):
+- Commits (38):
   - `8c4ce09` docs(spine): W-040 and ledger rows for the 11:26 owner asks (2026-11-28)
   - `5b6cc96` feat(web): merge nth-overrides, the override formula explained on Users & access (item 23) (2026-11-28)
   - `35f5cb6` docs(plans): tick 23, retire nth-overrides (2026-11-28)
@@ -716,6 +716,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 573 commits (14 unlinked). Newest
   - `909c90b` docs(docs): merge nth-explained3, Fugue explained says v0.0.3 with today's status (2026-11-28)
   - `0d36ce7` docs(plans): ledger rows for nth-nextpad and nth-helpguide (2026-11-28)
   - `416a579` fix(web): merge nth-nextpad, the Next step text no longer touches its coloured bar (2026-11-28)
+  - `69afa03` feat(web): merge nth-helpguide, Help is a guide by role and module, Kafka shown as an optional adapter (2026-11-28)
 
 ### W-041
 
@@ -1706,6 +1707,9 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 573 commits (14 unlinked). Newest
   - `1141f56` fix(web): edit drawer accepts no direct role for a user kept by a group (2026-11-28)
   - `1de57be` docs(readme): screenshots re-shot on the clean demo stack (2026-11-28)
   - `909c90b` docs(docs): merge nth-explained3, Fugue explained says v0.0.3 with today's status (2026-11-28)
+  - `5852287` feat(web): Help opens a guide to the app by module (2026-11-28)
+  - `95044e7` fix(web): Kafka shown as an optional adapter that is off; API v1 labelled (2026-11-28)
+  - `b79a9a3` fix(web): keep the env chip on one line (2026-11-28)
 
 ### D-065
 
@@ -1892,6 +1896,10 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 573 commits (14 unlinked). Newest
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `69afa03` | feat(web): merge nth-helpguide, Help is a guide by role and module, Kafka shown as an optional adapter | 2026-11-28 | [W-040](#w-040) |
+| `b79a9a3` | fix(web): keep the env chip on one line | 2026-11-28 | [D-064](#d-064) |
+| `95044e7` | fix(web): Kafka shown as an optional adapter that is off; API v1 labelled | 2026-11-28 | [D-064](#d-064) |
+| `5852287` | feat(web): Help opens a guide to the app by module | 2026-11-28 | [D-064](#d-064) |
 | `416a579` | fix(web): merge nth-nextpad, the Next step text no longer touches its coloured bar | 2026-11-28 | [W-040](#w-040) |
 | `e0b7504` | fix(web): breathing room between the Next step bar and its text | 2026-11-28 | [D-066](#d-066) |
 | `0d36ce7` | docs(plans): ledger rows for nth-nextpad and nth-helpguide | 2026-11-28 | [W-040](#w-040) |
