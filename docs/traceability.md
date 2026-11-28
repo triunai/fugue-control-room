@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 41 workstreams, 14 ADRs, 81 decisions, 582 commits (14 unlinked). Newest commit indexed: `16bda87`.
+Counts: 41 workstreams, 14 ADRs, 81 decisions, 587 commits (14 unlinked). Newest commit indexed: `723513f`.
 
 ## Workstreams
 
@@ -678,7 +678,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 582 commits (14 unlinked). Newest
 **Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit** — CLOSED
 - Where: [project log entry](project-log.md#2026-11-28--closed-w-040-owner-asks-at-1126-tour-search-bar-import-ui-changelog-explained-overrides-the-score-grouping-user-edit)
 - Decisions and ADRs: [D-064](#d-064), [D-066](#d-066), [D-067](#d-067), [D-072](#d-072), [D-074](#d-074), [D-080](#d-080)
-- Commits (41):
+- Commits (44):
   - `8c4ce09` docs(spine): W-040 and ledger rows for the 11:26 owner asks (2026-11-28)
   - `5b6cc96` feat(web): merge nth-overrides, the override formula explained on Users & access (item 23) (2026-11-28)
   - `35f5cb6` docs(plans): tick 23, retire nth-overrides (2026-11-28)
@@ -720,6 +720,9 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 582 commits (14 unlinked). Newest
   - `fd820cf` docs(spine): traceability after helpguide, nth-notifydoc ledger row (2026-11-28)
   - `cd8ca04` docs(web): merge nth-helpguide (e9a335f) (2026-11-28)
   - `16bda87` docs(web): merge nth-notifydoc (0360095) (2026-11-28)
+  - `3ce1c7b` docs(spine): traceability after helpguide D and notifydoc, searchhint row (2026-11-28)
+  - `a717451` feat(web): merge nth-searchhint, a hint to search the new claim number after submit (2026-11-28)
+  - `213ccec` docs(spine): post-tag fixes line in v0.0.3, hot-state at 13:50 (2026-11-28)
 
 ### W-041
 
@@ -1715,6 +1718,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 582 commits (14 unlinked). Newest
   - `b79a9a3` fix(web): keep the env chip on one line (2026-11-28)
   - `e9a335f` feat(web): What Fugue runs on lists the real stack, in-house patterns and quality tooling (2026-11-28)
   - `0360095` docs(design): notifications, attachments and the settlement saga, design only (2026-11-28)
+  - `5eab5be` feat(web): after a report, a psst hint points at the search bar (2026-11-28)
 
 ### D-065
 
@@ -1752,6 +1756,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 582 commits (14 unlinked). Newest
   - `0f2d304` docs(spine): hot-state time (2026-11-28)
   - `eb48905` chore(web): the console footer reads v0.0.3, README Bruno line from the clean run (2026-11-28)
   - `e0b7504` fix(web): breathing room between the Next step bar and its text (2026-11-28)
+  - `213ccec` docs(spine): post-tag fixes line in v0.0.3, hot-state at 13:50 (2026-11-28)
 
 ### D-067
 
@@ -1764,6 +1769,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 582 commits (14 unlinked). Newest
   - `d9f6e5a` docs(ai): merge nth-decisions lane status (2026-11-28)
   - `d4b7c35` feat(web): merge nth-changelog, Decisions becomes the Changelog with versioning explained (item 21) (2026-11-28)
   - `4cf1826` fix(build): the changelog generator works with no Unreleased entries (2026-11-28)
+  - `723513f` docs(web): regenerate the changelog page data (2026-11-28)
 
 ### D-068
 
@@ -1901,6 +1907,11 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 582 commits (14 unlinked). Newest
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `723513f` | docs(web): regenerate the changelog page data | 2026-11-28 | [D-067](#d-067) |
+| `213ccec` | docs(spine): post-tag fixes line in v0.0.3, hot-state at 13:50 | 2026-11-28 | [W-040](#w-040), [D-066](#d-066) |
+| `a717451` | feat(web): merge nth-searchhint, a hint to search the new claim number after submit | 2026-11-28 | [W-040](#w-040) |
+| `3ce1c7b` | docs(spine): traceability after helpguide D and notifydoc, searchhint row | 2026-11-28 | [W-040](#w-040) |
+| `5eab5be` | feat(web): after a report, a psst hint points at the search bar | 2026-11-28 | [D-064](#d-064) |
 | `16bda87` | docs(web): merge nth-notifydoc (0360095) | 2026-11-28 | [W-040](#w-040) |
 | `cd8ca04` | docs(web): merge nth-helpguide (e9a335f) | 2026-11-28 | [W-040](#w-040) |
 | `0360095` | docs(design): notifications, attachments and the settlement saga, design only | 2026-11-28 | [D-064](#d-064) |
