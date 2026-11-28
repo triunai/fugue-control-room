@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 41 workstreams, 14 ADRs, 81 decisions, 563 commits (14 unlinked). Newest commit indexed: `313b2cd`.
+Counts: 41 workstreams, 14 ADRs, 81 decisions, 568 commits (14 unlinked). Newest commit indexed: `eb48905`.
 
 ## Workstreams
 
@@ -678,7 +678,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 563 commits (14 unlinked). Newest
 **Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit** — CLOSED
 - Where: [project log entry](project-log.md#2026-11-28--closed-w-040-owner-asks-at-1126-tour-search-bar-import-ui-changelog-explained-overrides-the-score-grouping-user-edit)
 - Decisions and ADRs: [D-064](#d-064), [D-066](#d-066), [D-067](#d-067), [D-072](#d-072), [D-074](#d-074), [D-080](#d-080)
-- Commits (31):
+- Commits (33):
   - `8c4ce09` docs(spine): W-040 and ledger rows for the 11:26 owner asks (2026-11-28)
   - `5b6cc96` feat(web): merge nth-overrides, the override formula explained on Users & access (item 23) (2026-11-28)
   - `35f5cb6` docs(plans): tick 23, retire nth-overrides (2026-11-28)
@@ -710,6 +710,8 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 563 commits (14 unlinked). Newest
   - `0b6773f` docs(docs): README Bruno row cites the verified compose run, tick 11 (2026-11-28)
   - `fd74c0e` fix(api): merge nth-editfix, a group-only user can be saved from Edit (item 30) (2026-11-28)
   - `cd515ac` docs(spine): tick 30, D-080 says fixed, retire nth-editfix (2026-11-28)
+  - `63cadd4` docs(docs): merge nth-shots, README screenshots from the clean stack (2026-11-28)
+  - `eb48905` chore(web): the console footer reads v0.0.3, README Bruno line from the clean run (2026-11-28)
 
 ### W-041
 
@@ -1698,6 +1700,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 563 commits (14 unlinked). Newest
   - `fe7845a` feat(infra): merge nth-hybridcache, HybridCache for GET /me with tag invalidation (item 27) (2026-11-28)
   - `8ff2363` fix(api): edit allows no direct role when the user keeps access through a group (2026-11-28)
   - `1141f56` fix(web): edit drawer accepts no direct role for a user kept by a group (2026-11-28)
+  - `1de57be` docs(readme): screenshots re-shot on the clean demo stack (2026-11-28)
 
 ### D-065
 
@@ -1731,6 +1734,9 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 563 commits (14 unlinked). Newest
   - `f1f7ee5` docs(docs): DEMO step 15 and a Software factory section (owner ask 12:10) (2026-11-28)
   - `a8d8596` docs(docs): DEMO step 15 maps Dex Horthy's factory slide to the repo (owner ask 12:11) (2026-11-28)
   - `313b2cd` docs(spine): v0.0.3, W-025..W-041 closed, D-066 outcome, journal, traceability (2026-11-28)
+  - `01ce6b0` docs(spine): hot-state at the wrap (2026-11-28)
+  - `0f2d304` docs(spine): hot-state time (2026-11-28)
+  - `eb48905` chore(web): the console footer reads v0.0.3, README Bruno line from the clean run (2026-11-28)
 
 ### D-067
 
@@ -1880,6 +1886,11 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 563 commits (14 unlinked). Newest
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `eb48905` | chore(web): the console footer reads v0.0.3, README Bruno line from the clean run | 2026-11-28 | [W-040](#w-040), [D-066](#d-066) |
+| `63cadd4` | docs(docs): merge nth-shots, README screenshots from the clean stack | 2026-11-28 | [W-040](#w-040) |
+| `1de57be` | docs(readme): screenshots re-shot on the clean demo stack | 2026-11-28 | [D-064](#d-064) |
+| `0f2d304` | docs(spine): hot-state time | 2026-11-28 | [D-066](#d-066) |
+| `01ce6b0` | docs(spine): hot-state at the wrap | 2026-11-28 | [D-066](#d-066) |
 | `313b2cd` | docs(spine): v0.0.3, W-025..W-041 closed, D-066 outcome, journal, traceability | 2026-11-28 | [D-066](#d-066), [W-041](#w-041) |
 | `4cf1826` | fix(build): the changelog generator works with no Unreleased entries | 2026-11-28 | [W-036](#w-036), [D-067](#d-067) |
 | `3b903ba` | docs(spine): D-080 cites the editfix merge sha | 2026-11-28 | [D-080](#d-080) |
