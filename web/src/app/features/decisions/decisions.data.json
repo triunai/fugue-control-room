@@ -33,7 +33,7 @@
         },
         {
           "label": "",
-          "text": "Post-tag fixes on main after v0.0.3 (owner asks 13:33-13:48; the tag stays on eb48905): the explained page and README say v0.0.3 with today's status (909c90b); the Next step card no longer touches its coloured bar (416a579); Help is a guide by role and module, the env chip reads dev · .NET 8 · API v1, Kafka is shown as an optional adapter, off (69afa03); What Fugue runs on is complete and corrected, Dapper writes, EF Core reads (cd8ca04); a notifications, attachments and settlement-saga design, design only (16bda87); after a claimant submits, a hint to search the new claim number (a717451)."
+          "text": "Post-tag fixes on main after v0.0.3 (owner asks 13:33-13:48; the tag stays on eb48905): the explained page and README say v0.0.3 with today's status (909c90b); the Next step card no longer touches its coloured bar (416a579); Help is a guide by role and module, the env chip reads dev · .NET 8 · API v1, Kafka is shown as an optional adapter, off (69afa03); What Fugue runs on is complete and corrected, Dapper writes, EF Core reads (cd8ca04); a notifications, attachments and settlement-saga design, design only (16bda87); after a claimant submits, a hint to search the new claim number (a717451); the dev sink tab moves a claim instead of creating a customer (sinkfix); ADR-015 promotes D-081."
         },
         {
           "label": "Deferred",

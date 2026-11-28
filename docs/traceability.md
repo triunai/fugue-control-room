@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 41 workstreams, 14 ADRs, 81 decisions, 588 commits (14 unlinked). Newest commit indexed: `9e512f1`.
+Counts: 41 workstreams, 15 ADRs, 81 decisions, 592 commits (14 unlinked). Newest commit indexed: `234b944`.
 
 ## Workstreams
 
@@ -679,7 +679,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 588 commits (14 unlinked). Newest
 **Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit** — CLOSED
 - Where: [project log entry](project-log.md#2026-11-28--closed-w-040-owner-asks-at-1126-tour-search-bar-import-ui-changelog-explained-overrides-the-score-grouping-user-edit)
 - Decisions and ADRs: [D-064](#d-064), [D-066](#d-066), [D-067](#d-067), [D-072](#d-072), [D-074](#d-074), [D-080](#d-080)
-- Commits (44):
+- Commits (46):
   - `8c4ce09` docs(spine): W-040 and ledger rows for the 11:26 owner asks (2026-11-28)
   - `5b6cc96` feat(web): merge nth-overrides, the override formula explained on Users & access (item 23) (2026-11-28)
   - `35f5cb6` docs(plans): tick 23, retire nth-overrides (2026-11-28)
@@ -724,13 +724,15 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 588 commits (14 unlinked). Newest
   - `3ce1c7b` docs(spine): traceability after helpguide D and notifydoc, searchhint row (2026-11-28)
   - `a717451` feat(web): merge nth-searchhint, a hint to search the new claim number after submit (2026-11-28)
   - `213ccec` docs(spine): post-tag fixes line in v0.0.3, hot-state at 13:50 (2026-11-28)
+  - `b1c092d` docs(plans): nth-sinkfix ledger row (2026-11-28)
+  - `234b944` fix(web): merge nth-sinkfix, the dev sink tab moves a claim instead of creating a customer (2026-11-28)
 
 ### W-041
 
 **Load testing and caching: k6 scenarios, HybridCache (owner ask 11:30)** — CLOSED
 - Where: [project log entry](project-log.md#2026-11-28--closed-w-041-load-testing-and-caching-k6-scenarios-hybridcache-owner-ask-1130)
-- Decisions and ADRs: [D-064](#d-064), [D-066](#d-066), [D-079](#d-079), [D-081](#d-081)
-- Commits (18):
+- Decisions and ADRs: [ADR-015](#adr-015), [D-064](#d-064), [D-066](#d-066), [D-079](#d-079), [D-081](#d-081)
+- Commits (19):
   - `7b93ac8` docs(spine): tick 19 and 20, 22 restyle, W-041 for k6 and HybridCache, ledger rows (2026-11-28)
   - `06639d7` feat(build): merge nth-k6, k6 smoke, load and stampede scenarios with percentile reports (item 26) (2026-11-28)
   - `e429245` docs(plans): tick 26, retire nth-k6 (2026-11-28)
@@ -749,6 +751,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 588 commits (14 unlinked). Newest
   - `d353661` docs(spine): tick 27, D-081 HybridCache for /me, retire nth-hybridcache (2026-11-28)
   - `c3a0c3f` docs(docs): README counts after HybridCache, honest k6 wording in D-081 (2026-11-28)
   - `313b2cd` docs(spine): v0.0.3, W-025..W-041 closed, D-066 outcome, journal, traceability (2026-11-28)
+  - `2a3399a` docs(spine): ADR-015 HybridCache for /me, runbook index, sink and Kafka notes (2026-11-28)
 
 ## ADRs
 
@@ -914,6 +917,16 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 588 commits (14 unlinked). Newest
 - Cited in commit Refs: none
 - Workstreams: none
 - Decisions: [D-065](#d-065)
+
+### ADR-015
+
+**HybridCache for GET /me, invalidated by tags; authorization is never cached** — accepted — [`ADR-015-hybridcache-for-me.md`](adr/ADR-015-hybridcache-for-me.md)
+- Introduced by: `2a3399a` docs(spine): ADR-015 HybridCache for /me, runbook index, sink and Kafka notes (2026-11-28)
+- Amended by: none
+- Cited in commit Refs:
+  - `2a3399a` docs(spine): ADR-015 HybridCache for /me, runbook index, sink and Kafka notes (2026-11-28)
+- Workstreams: [W-041](#w-041)
+- Decisions: [D-081](#d-081)
 
 ## Decisions
 
@@ -1720,6 +1733,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 588 commits (14 unlinked). Newest
   - `e9a335f` feat(web): What Fugue runs on lists the real stack, in-house patterns and quality tooling (2026-11-28)
   - `0360095` docs(design): notifications, attachments and the settlement saga, design only (2026-11-28)
   - `5eab5be` feat(web): after a report, a psst hint points at the search bar (2026-11-28)
+  - `10188bd` fix(web): the sink tab matches its claim.* subscription (2026-11-28)
 
 ### D-065
 
@@ -1899,16 +1913,21 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 588 commits (14 unlinked). Newest
 ### D-081
 
 **HybridCache for GET /me, invalidated by tags; enforcement stays uncached** — accepted — [decisions.md](decisions.md#d-081--hybridcache-for-get-me-invalidated-by-tags-enforcement-stays-uncached--2026-11-28)
-- ADR: none
+- ADR: [ADR-015](adr/ADR-015-hybridcache-for-me.md)
 - Workstreams: [W-041](#w-041)
 - Cited in commit Refs:
   - `d353661` docs(spine): tick 27, D-081 HybridCache for /me, retire nth-hybridcache (2026-11-28)
   - `c3a0c3f` docs(docs): README counts after HybridCache, honest k6 wording in D-081 (2026-11-28)
+  - `2a3399a` docs(spine): ADR-015 HybridCache for /me, runbook index, sink and Kafka notes (2026-11-28)
 
 ## Commit to ids
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `234b944` | fix(web): merge nth-sinkfix, the dev sink tab moves a claim instead of creating a customer | 2026-11-28 | [W-040](#w-040) |
+| `10188bd` | fix(web): the sink tab matches its claim.* subscription | 2026-11-28 | [D-064](#d-064) |
+| `2a3399a` | docs(spine): ADR-015 HybridCache for /me, runbook index, sink and Kafka notes | 2026-11-28 | [W-041](#w-041), [D-081](#d-081), [ADR-015](#adr-015) |
+| `b1c092d` | docs(plans): nth-sinkfix ledger row | 2026-11-28 | [W-040](#w-040) |
 | `9e512f1` | chore(web): the Changelog explainer names the current release, v0.0.3 | 2026-11-28 | [W-036](#w-036), [D-067](#d-067) |
 | `723513f` | docs(web): regenerate the changelog page data | 2026-11-28 | [D-067](#d-067) |
 | `213ccec` | docs(spine): post-tag fixes line in v0.0.3, hot-state at 13:50 | 2026-11-28 | [W-040](#w-040), [D-066](#d-066) |
