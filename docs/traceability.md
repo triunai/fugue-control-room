@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 41 workstreams, 14 ADRs, 81 decisions, 568 commits (14 unlinked). Newest commit indexed: `eb48905`.
+Counts: 41 workstreams, 14 ADRs, 81 decisions, 570 commits (14 unlinked). Newest commit indexed: `909c90b`.
 
 ## Workstreams
 
@@ -678,7 +678,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 568 commits (14 unlinked). Newest
 **Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit** — CLOSED
 - Where: [project log entry](project-log.md#2026-11-28--closed-w-040-owner-asks-at-1126-tour-search-bar-import-ui-changelog-explained-overrides-the-score-grouping-user-edit)
 - Decisions and ADRs: [D-064](#d-064), [D-066](#d-066), [D-067](#d-067), [D-072](#d-072), [D-074](#d-074), [D-080](#d-080)
-- Commits (33):
+- Commits (35):
   - `8c4ce09` docs(spine): W-040 and ledger rows for the 11:26 owner asks (2026-11-28)
   - `5b6cc96` feat(web): merge nth-overrides, the override formula explained on Users & access (item 23) (2026-11-28)
   - `35f5cb6` docs(plans): tick 23, retire nth-overrides (2026-11-28)
@@ -712,6 +712,8 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 568 commits (14 unlinked). Newest
   - `cd515ac` docs(spine): tick 30, D-080 says fixed, retire nth-editfix (2026-11-28)
   - `63cadd4` docs(docs): merge nth-shots, README screenshots from the clean stack (2026-11-28)
   - `eb48905` chore(web): the console footer reads v0.0.3, README Bruno line from the clean run (2026-11-28)
+  - `0688a5e` docs(explained): the explained page and README badge at v0.0.3 (2026-11-28)
+  - `909c90b` docs(docs): merge nth-explained3, Fugue explained says v0.0.3 with today's status (2026-11-28)
 
 ### W-041
 
@@ -1701,6 +1703,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 568 commits (14 unlinked). Newest
   - `8ff2363` fix(api): edit allows no direct role when the user keeps access through a group (2026-11-28)
   - `1141f56` fix(web): edit drawer accepts no direct role for a user kept by a group (2026-11-28)
   - `1de57be` docs(readme): screenshots re-shot on the clean demo stack (2026-11-28)
+  - `909c90b` docs(docs): merge nth-explained3, Fugue explained says v0.0.3 with today's status (2026-11-28)
 
 ### D-065
 
@@ -1886,6 +1889,8 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 568 commits (14 unlinked). Newest
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `909c90b` | docs(docs): merge nth-explained3, Fugue explained says v0.0.3 with today's status | 2026-11-28 | [W-040](#w-040), [D-064](#d-064) |
+| `0688a5e` | docs(explained): the explained page and README badge at v0.0.3 | 2026-11-28 | [W-040](#w-040) |
 | `eb48905` | chore(web): the console footer reads v0.0.3, README Bruno line from the clean run | 2026-11-28 | [W-040](#w-040), [D-066](#d-066) |
 | `63cadd4` | docs(docs): merge nth-shots, README screenshots from the clean stack | 2026-11-28 | [W-040](#w-040) |
 | `1de57be` | docs(readme): screenshots re-shot on the clean demo stack | 2026-11-28 | [D-064](#d-064) |
