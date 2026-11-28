@@ -6,7 +6,7 @@
 ![Angular 22](https://img.shields.io/badge/Angular-22-DD0031)
 ![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-336791)
 ![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED)
-![Tests](https://img.shields.io/badge/xUnit-864%20listed-brightgreen)
+![Tests](https://img.shields.io/badge/xUnit-866%20listed-brightgreen)
 ![Release](https://img.shields.io/badge/release-v0.0.2-blue)
 
 A claims platform for motor and property claims across six APAC markets (SG, MY, TH, HK, ID, PH): a .NET 8 API and one Angular console for claimants, claims officers, managers and admins. It is a take-home build, so it says plainly what it does and does not do.
@@ -260,7 +260,7 @@ npm ci && (cd bruno/fugue && npx bru run --env compose)   # API regression suite
 
 | Suite | Count | Runs against |
 |---|---|---|
-| `Fugue.Tests` (xUnit) | 864 listed | a real Postgres 17 (Testcontainers) or the full HTTP host, plus in-process tests of the state machine, validators and mapping |
+| `Fugue.Tests` (xUnit) | 866 listed | a real Postgres 17 (Testcontainers) or the full HTTP host, plus in-process tests of the state machine, validators and mapping |
 | `Fugue.ArchTests` (NetArchTest) | 37 passed | layering, one-line controllers, every action declares a permission; baselines may only shrink |
 | Bruno | 130 requests, 156 of 156 tests passed | `npx bru run --env compose` from `bruno/fugue` against the demo stack (after an api restart, so the sign-in limiter starts fresh, as in CI): every guard (404, 409, 412, 428, 422) over HTTP. Use the `compose` environment for the Docker stack; `local` points the webhook sink at a host port the container cannot reach (failure mode 28) |
 | Console (Vitest) | 388 tests in 58 files, all passed | `cd web && npm test` |
