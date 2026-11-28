@@ -80,9 +80,9 @@ The ADR files stay the home of architecture reasoning; a D entry below is the sh
 ## D-079 — Known issue recorded: a broker outage makes one relay cycle long and lock-holding — 2026-11-28
 WS: WS-41
 Context: nth-kafkafix (merge 1082413) traced a stalled full suite to the no-broker test relaying every leftover due outbox row to a dead broker, 3 s each, in one transaction (227 rows, about 11 minutes; live psql showed a backend idle in transaction for 4 minutes). The test now relays only its own row, and the suite runs in 1 m 30 s.
-Decision: record the production behaviour behind it as a known issue (backlog #013), not a fix before the cut-off: with the broker down a cycle is serial, up to BatchSize (500) x MessageTimeoutMs (default 10 s) inside one transaction holding row locks, about 83 minutes worst case. Follow-up: stop the batch after the first transport failure, or give the relay a cycle deadline.
+Decision: record the production behaviour behind it as a known issue (backlog #013), not a fix before the cut-off: with the broker down a cycle is serial: up to `Webhooks:Dispatcher:BatchSize` rows (default 20, `WebhookOptions.cs:41`) x `Events:Kafka:MessageTimeoutMs` (default 10 s, `EventPublisherOptions.cs:32`) inside one transaction holding row locks, about 3.3 minutes per cycle with the defaults and longer with a larger batch (the test run hit 227 rows because the harness batch is larger and every leftover row was due). Follow-up: stop the batch after the first transport failure, or give the relay a cycle deadline.
 Why: the change touches the outbox relay, a critical seam, on submission day.
-Consequences: walkthrough line: the factory found a production risk by way of a flaky test. Not settled: whether the earlier "test host crash" was the blame hang timeout killing the host or a native abort; the stall is removed either way.
+Consequences: walkthrough line: the factory found a production risk by way of a flaky test. Settled by the lane's repro: the earlier "test host crash" was `--blame-hang-timeout 3m` killing the host during the stall, not a native abort. Correction 12:17: the default BatchSize is 20, not 500 as first written.
 Who: dispatcher (decided), lane nth-kafkafix (found), integrator (recorded)
 Status: accepted
 Promote: no

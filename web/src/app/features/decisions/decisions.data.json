@@ -22,7 +22,7 @@
           "id": "D-079",
           "title": "Known issue recorded: a broker outage makes one relay cycle long and lock-holding",
           "date": "2026-11-28",
-          "summary": "Record the production behaviour behind it as a known issue (backlog #013), not a fix before the cut-off: with the broker down a cycle is serial, up to BatchSize (500) x MessageTimeoutMs (default 10 s) inside one…",
+          "summary": "Record the production behaviour behind it as a known issue (backlog #013), not a fix before the cut-off: with the broker down a cycle is serial: up to Webhooks:Dispatcher:BatchSize rows (default 20…",
           "status": "accepted",
           "adr": null,
           "path": "docs/decisions.md#d-079--known-issue-recorded-a-broker-outage-makes-one-relay-cycle-long-and-lock-holding--2026-11-28"
