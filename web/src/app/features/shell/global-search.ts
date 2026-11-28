@@ -16,6 +16,24 @@ import {
   toRows,
 } from './global-search-logic';
 
+const INTRO_KEY = 'fugue.search.intro';
+const introSeen = (): boolean => {
+  try {
+    return localStorage.getItem(INTRO_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+const markIntroSeen = (): void => {
+  try {
+    localStorage.setItem(INTRO_KEY, '1');
+  } catch {
+    /* private mode: the explainer shows again next time, which is harmless */
+  }
+};
+const isTyping = (t: EventTarget | null): boolean =>
+  t instanceof HTMLElement && (t.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName));
+
 type State = 'idle' | 'loading' | 'ok' | 'off' | 'error';
 
 /**
@@ -52,22 +70,70 @@ class Highlighted {
   selector: 'fg-global-search',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ClaimStatusPill, Highlighted],
-  host: { '(document:click)': 'outside($event)', '(keydown.escape)': 'close()' },
+  host: {
+    '(document:click)': 'outside($event)',
+    '(document:keydown)': 'shortcut($event)',
+    '(keydown.escape)': 'close()',
+  },
   styleUrl: './global-search.css',
   template: `
     <div class="gs" role="search">
+      <svg class="gs-icon" viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true" focusable="false">
+        <path
+          d="M7 12.5a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM11 11l3.5 3.5"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+        />
+      </svg>
       <input
         type="search"
         class="gs-input"
         [placeholder]="placeholder()"
-        [attr.aria-label]="placeholder()"
+        [attr.aria-label]="'Search'"
         autocomplete="off"
         data-testid="global-search"
         [value]="q()"
+        (focus)="focused()"
         (input)="typed($any($event.target).value)"
         (keydown.enter)="run(true)"
       />
-      <span class="gs-badge" title="Meilisearch-powered search">Meilisearch</span>
+      <span class="gs-tools">
+        <kbd class="gs-kbd" title="Press / or Ctrl/Cmd+K to search">/</kbd>
+        <button
+          type="button"
+          class="gs-help"
+          data-testid="global-search-help"
+          aria-label="What is this search?"
+          [attr.aria-expanded]="help()"
+          (click)="toggleHelp()"
+        >
+          ?
+        </button>
+        <span class="gs-badge" title="Powered by Meilisearch">Meilisearch</span>
+      </span>
+      @if (help() && !open()) {
+        <div class="gs-intro" role="note" data-testid="global-search-intro" aria-label="About this search">
+          <p class="gs-intro-title">Search claims{{ canAudit ? ' and the audit trail' : '' }}</p>
+          <p>
+            Full-text keyword search, not AI or semantic search. It tolerates typos, knows synonyms
+            (SG and Singapore, car and motor), matches exact claim and policy numbers, highlights what matched and
+            counts results by market, line and status.
+          </p>
+          <p>Results are limited to what your role may see: a claimant sees only their own claims.</p>
+          <p class="gs-intro-links">
+            Powered by
+            <a href="https://www.meilisearch.com/" target="_blank" rel="noopener">Meilisearch</a>
+            ·
+            <a href="https://www.meilisearch.com/docs/getting_started/sdks/dotnet" target="_blank" rel="noopener"
+              >.NET SDK docs</a
+            >
+          </p>
+          <button type="button" class="gs-intro-ok" data-testid="global-search-intro-dismiss" (click)="dismissHelp()">
+            Got it
+          </button>
+        </div>
+      }
       @if (open()) {
         <div class="gs-menu" role="group" aria-label="Search results" data-testid="global-search-menu">
           @if (canClaims) {
@@ -176,8 +242,34 @@ export class GlobalSearch implements OnDestroy {
   protected get canAudit(): boolean {
     return this.access.has('AUDIT_READ');
   }
+  protected readonly help = signal(false);
   protected readonly placeholder = () =>
-    this.canClaims ? 'Search claims: number, policy, place' : 'Search the audit trail';
+    this.canClaims ? 'Try: SG motor, CLM-SG-…' : 'Search the audit trail';
+
+  protected focused(): void {
+    if (this.q().trim() || introSeen()) return;
+    markIntroSeen();
+    this.help.set(true);
+  }
+
+  protected toggleHelp(): void {
+    this.help.update((v) => !v);
+  }
+
+  protected dismissHelp(): void {
+    this.help.set(false);
+  }
+
+  /** "/" or Ctrl/Cmd+K focuses the box, except while the user is typing somewhere else ("/" only). */
+  protected shortcut(e: KeyboardEvent): void {
+    if (e.defaultPrevented || e.altKey) return;
+    const k = e.key.toLowerCase();
+    const chord = k === 'k' && (e.ctrlKey || e.metaKey) && !e.shiftKey;
+    const slash = k === '/' && !e.ctrlKey && !e.metaKey;
+    if (!chord && !(slash && !isTyping(e.target))) return;
+    e.preventDefault();
+    this.element.nativeElement.querySelector<HTMLInputElement>('input')?.focus();
+  }
 
   ngOnDestroy(): void {
     clearTimeout(this.timer);
@@ -186,6 +278,7 @@ export class GlobalSearch implements OnDestroy {
   protected typed(value: string): void {
     this.q.set(value);
     clearTimeout(this.timer);
+    this.help.set(false);
     if (!value.trim()) return this.close();
     this.timer = setTimeout(() => void this.run(false), 300);
   }
@@ -248,6 +341,7 @@ export class GlobalSearch implements OnDestroy {
   protected close(): void {
     this.seq++;
     this.open.set(false);
+    this.help.set(false);
   }
 
   protected outside(e: Event): void {
