@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest commit indexed: `3b903ba`.
+Counts: 41 workstreams, 14 ADRs, 81 decisions, 563 commits (14 unlinked). Newest commit indexed: `313b2cd`.
 
 ## Workstreams
 
@@ -500,51 +500,56 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest
 
 ### W-025
 
-**Admin creates users (overnight item 3)** — ACTIVE
-- Where: [board](workstreams.md)
-- Decisions and ADRs: [D-064](#d-064)
-- Commits (2):
+**Admin creates users (overnight item 3)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-025-admin-creates-users-overnight-item-3)
+- Decisions and ADRs: [D-064](#d-064), [D-080](#d-080)
+- Commits (5):
+  - `e182dbb` feat(api): merge nth-uam, administrators create users (overnight item 3) (2026-11-28)
   - `92be068` test(api): merge nth-brunofix, Bruno-created users are claimants, not staff (2026-11-28)
   - `3c477d3` docs(spine): nth-brunofix merged and retired, hot-state trap note (2026-11-28)
+  - `c7b1234` feat(api): merge nth-useredit, administrators edit users with If-Match (item 25) (2026-11-28)
+  - `fd74c0e` fix(api): merge nth-editfix, a group-only user can be saved from Edit (item 30) (2026-11-28)
 
 ### W-026
 
-**The Score, one correlation id as a timeline (item 4)** — ACTIVE
-- Where: [board](workstreams.md)
-- Decisions and ADRs: [D-069](#d-069)
-- Commits (2):
+**The Score, one correlation id as a timeline (item 4)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-026-the-score-one-correlation-id-as-a-timeline-item-4)
+- Decisions and ADRs: [D-064](#d-064), [D-069](#d-069)
+- Commits (3):
+  - `dacfb06` feat(web): merge nth-score, The Score per-correlation inspector (overnight item 4) (2026-11-28)
   - `f323559` docs(plans): tick 11c and 4a, retire nth-paid (2026-11-28)
   - `055d763` fix(web): merge nth-scorefix, The Score groups one request's audit rows by command (item 24) (2026-11-28)
 
 ### W-027
 
-**Claim page workbook, Save to Excel, next-step copy, track explainers (items 6, 7)** — ACTIVE
-- Where: [board](workstreams.md)
-- Decisions and ADRs: none
-- Commits (0):
-  - none yet
+**Claim page workbook, Save to Excel, next-step copy, track explainers (items 6, 7)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-027-claim-page-workbook-save-to-excel-next-step-copy-track-explainers-items-6-7)
+- Decisions and ADRs: [D-064](#d-064)
+- Commits (1):
+  - `0439df5` feat(web): merge nth-claimpage, the workbook worksheet and plain claim-page copy (overnight items 6, 7) (2026-11-28)
 
 ### W-028
 
-**Stack dialog and the SLA calendar styling (items 8, 9)** — ACTIVE
-- Where: [board](workstreams.md)
-- Decisions and ADRs: none
-- Commits (0):
-  - none yet
+**Stack dialog and the SLA calendar styling (items 8, 9)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-028-stack-dialog-and-the-sla-calendar-styling-items-8-9)
+- Decisions and ADRs: [D-064](#d-064)
+- Commits (1):
+  - `00e5c76` feat(web): merge nth-stack, the Stack dialog and a warm SLA calendar (overnight items 9, 8) (2026-11-28)
 
 ### W-029
 
-**Agent tooling: read-only role in the stack, pinned MCP, runbook (item 17a)** — ACTIVE
-- Where: [board](workstreams.md)
-- Decisions and ADRs: [D-066](#d-066), [D-068](#d-068), [D-069](#d-069)
-- Commits (2):
+**Agent tooling: read-only role in the stack, pinned MCP, runbook (item 17a)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-029-agent-tooling-read-only-role-in-the-stack-pinned-mcp-runbook-item-17a)
+- Decisions and ADRs: [D-064](#d-064), [D-066](#d-066), [D-068](#d-068), [D-069](#d-069)
+- Commits (3):
+  - `66604db` feat(infra): merge nth-tooling, read-only role in the stack, pinned MCP, runbook (17a) (2026-11-28)
   - `8765f5d` docs(spine): W-025..W-038 for tonight, D-068 and D-069, fleet contracts archived (2026-11-28)
   - `0517bd4` docs(spine): tick 17a on the recreated stack, hot-state for the integrator role (2026-11-28)
 
 ### W-030
 
-**Console forms: select, date picker, Fill with an example (item 5)** — ACTIVE
-- Where: [board](workstreams.md)
+**Console forms: select, date picker, Fill with an example (item 5)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-030-console-forms-select-date-picker-fill-with-an-example-item-5)
 - Decisions and ADRs: [D-064](#d-064), [D-071](#d-071)
 - Commits (15):
   - `1e3d63d` feat(web): merge nth-forms, console select, date picker and Fill with an example (item 5) (2026-11-28)
@@ -565,28 +570,31 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest
 
 ### W-031
 
-**Intake import: spreadsheet, inbox and WhatsApp file imports to drafts (item 11a)** — ACTIVE
-- Where: [board](workstreams.md)
+**Intake import: spreadsheet, inbox and WhatsApp file imports to drafts (item 11a)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-031-intake-import-spreadsheet-inbox-and-whatsapp-file-imports-to-drafts-item-11a)
 - Decisions and ADRs: [D-064](#d-064), [D-074](#d-074), [D-077](#d-077)
-- Commits (4):
+- Commits (6):
   - `f967355` feat(api): merge nth-import, spreadsheet, inbox and WhatsApp file imports to reviewed drafts (item 11a) (2026-11-28)
   - `3a6fb56` docs(spine): tick 11a, D-074 file imports to reviewed drafts, retire nth-import (2026-11-28)
   - `afc6fe9` docs(plans): 11a, the lane's second full suite was green (2026-11-28)
+  - `615f0d1` docs(docs): merge nth-legacydoc, legacy-sync adapter design over the import module (2026-11-28)
+  - `4d51e03` feat(web): merge nth-importui (W-040 owner asks) (2026-11-28)
   - `9a85ca5` docs(spine): D-077 legacy sync stays a design, backlog #012, scaling and offline section (2026-11-28)
 
 ### W-032
 
-**Search hardening on Meilisearch (item 10)** — ACTIVE
-- Where: [board](workstreams.md)
+**Search hardening on Meilisearch (item 10)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-032-search-hardening-on-meilisearch-item-10)
 - Decisions and ADRs: [D-063](#d-063), [D-064](#d-064), [D-072](#d-072), [D-073](#d-073)
-- Commits (2):
+- Commits (3):
   - `aa401bc` feat(api): merge nth-searchx, claims search hardening on Meilisearch (item 10) (2026-11-28)
   - `650b2c4` docs(spine): tick 10, D-072 and D-073 for search, retire nth-searchx (2026-11-28)
+  - `252902d` feat(web): merge nth-searchui (W-040 owner asks) (2026-11-28)
 
 ### W-033
 
-**Demo fixes: matrix checks, track line, claimant wording, /modules glitches (items 3a, 7a, 7b, 11f)** — ACTIVE
-- Where: [board](workstreams.md)
+**Demo fixes: matrix checks, track line, claimant wording, /modules glitches (items 3a, 7a, 7b, 11f)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-033-demo-fixes-matrix-checks-track-line-claimant-wording-modules-glitches-items-3a-7a-7b-11f)
 - Decisions and ADRs: [D-064](#d-064)
 - Commits (5):
   - `3149854` fix(web): merge nth-fixes, matrix checks, track line, claimant wording, /modules (3a, 7a, 7b, 11f) (2026-11-28)
@@ -597,8 +605,8 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest
 
 ### W-034
 
-**Settlement and decision letters as PDF (item 11b)** — ACTIVE
-- Where: [board](workstreams.md)
+**Settlement and decision letters as PDF (item 11b)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-034-settlement-and-decision-letters-as-pdf-item-11b)
 - Decisions and ADRs: [D-064](#d-064), [D-070](#d-070)
 - Commits (3):
   - `59e1ad6` feat(api): merge nth-pdf, sample settlement and decision letters as PDF (item 11b) (2026-11-28)
@@ -607,8 +615,8 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest
 
 ### W-035
 
-**Under-the-hood coverage on every page (item 11e)** — ACTIVE
-- Where: [board](workstreams.md)
+**Under-the-hood coverage on every page (item 11e)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-035-under-the-hood-coverage-on-every-page-item-11e)
 - Decisions and ADRs: [D-064](#d-064)
 - Commits (6):
   - `60e978c` feat(web): merge nth-hooda, hood flow model, row tooltip fix, audit and platform pages (11e A) (2026-11-28)
@@ -620,16 +628,19 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest
 
 ### W-036
 
-**Decision timeline generated from the docs (item 11d)** — ACTIVE
-- Where: [board](workstreams.md)
-- Decisions and ADRs: [D-066](#d-066), [D-068](#d-068), [D-069](#d-069)
-- Commits (1):
+**Decision timeline generated from the docs (item 11d)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-036-decision-timeline-generated-from-the-docs-item-11d)
+- Decisions and ADRs: [D-064](#d-064), [D-066](#d-066), [D-067](#d-067), [D-068](#d-068), [D-069](#d-069)
+- Commits (4):
+  - `2e0ecbf` feat(web): merge nth-decisions, the decision timeline generated from the docs (item 11d) (2026-11-28)
   - `8765f5d` docs(spine): W-025..W-038 for tonight, D-068 and D-069, fleet contracts archived (2026-11-28)
+  - `d4b7c35` feat(web): merge nth-changelog, Decisions becomes the Changelog with versioning explained (item 21) (2026-11-28)
+  - `4cf1826` fix(build): the changelog generator works with no Unreleased entries (2026-11-28)
 
 ### W-037
 
-**Paid and settled figure on Team and exposure (item 11c, backlog #009)** — ACTIVE
-- Where: [board](workstreams.md)
+**Paid and settled figure on Team and exposure (item 11c, backlog #009)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-037-paid-and-settled-figure-on-team-and-exposure-item-11c-backlog-009)
 - Decisions and ADRs: [D-066](#d-066), [D-068](#d-068), [D-069](#d-069)
 - Commits (3):
   - `8765f5d` docs(spine): W-025..W-038 for tonight, D-068 and D-069, fleet contracts archived (2026-11-28)
@@ -638,16 +649,20 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest
 
 ### W-038
 
-**Submission-morning polish lanes before the overnight list (money, prelude, onboard, readme, claimsearch, shellfix)** — ACTIVE
-- Where: [board](workstreams.md)
-- Decisions and ADRs: none
-- Commits (0):
-  - none yet
+**Submission-morning polish lanes before the overnight list (money, prelude, onboard, readme, claimsearch, shellfix)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-038-submission-morning-polish-lanes-before-the-overnight-list-money-prelude-onboard-readme-claimsearch-shellfix)
+- Decisions and ADRs: [D-063](#d-063), [D-064](#d-064)
+- Commits (5):
+  - `133c962` Merge branch 'nth-claimsearch': header search finds claims, scoped to the caller (2026-11-28)
+  - `37ae182` Merge branch 'nth-money' (2026-11-28)
+  - `e609089` Merge branch 'nth-prelude' (2026-11-28)
+  - `4345366` Merge branch 'nth-onboard' (2026-11-28)
+  - `be23504` Merge branch 'nth-readme' (2026-11-28)
 
 ### W-039
 
-**Structure refactor after the D-064 lanes: slice folders, IOptions, Worker host (backlog #010, items 12-14)** — ACTIVE
-- Where: [board](workstreams.md)
+**Structure refactor after the D-064 lanes: slice folders, IOptions, Worker host (backlog #010, items 12-14)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-039-structure-refactor-after-the-d-064-lanes-slice-folders-ioptions-worker-host-backlog-010-items-12-14)
 - Decisions and ADRs: [D-064](#d-064), [D-075](#d-075), [D-076](#d-076), [D-078](#d-078)
 - Commits (7):
   - `2544cb6` docs(spine): W-039 for the structure refactor, nth-refactor ledger row (2026-11-28)
@@ -660,8 +675,8 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest
 
 ### W-040
 
-**Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit** — ACTIVE
-- Where: [board](workstreams.md)
+**Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-040-owner-asks-at-1126-tour-search-bar-import-ui-changelog-explained-overrides-the-score-grouping-user-edit)
 - Decisions and ADRs: [D-064](#d-064), [D-066](#d-066), [D-067](#d-067), [D-072](#d-072), [D-074](#d-074), [D-080](#d-080)
 - Commits (31):
   - `8c4ce09` docs(spine): W-040 and ledger rows for the 11:26 owner asks (2026-11-28)
@@ -698,10 +713,10 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest
 
 ### W-041
 
-**Load testing and caching: k6 scenarios, HybridCache (owner ask 11:30)** — ACTIVE
-- Where: [board](workstreams.md)
-- Decisions and ADRs: [D-064](#d-064), [D-079](#d-079), [D-081](#d-081)
-- Commits (17):
+**Load testing and caching: k6 scenarios, HybridCache (owner ask 11:30)** — CLOSED
+- Where: [project log entry](project-log.md#2026-11-28--closed-w-041-load-testing-and-caching-k6-scenarios-hybridcache-owner-ask-1130)
+- Decisions and ADRs: [D-064](#d-064), [D-066](#d-066), [D-079](#d-079), [D-081](#d-081)
+- Commits (18):
   - `7b93ac8` docs(spine): tick 19 and 20, 22 restyle, W-041 for k6 and HybridCache, ledger rows (2026-11-28)
   - `06639d7` feat(build): merge nth-k6, k6 smoke, load and stampede scenarios with percentile reports (item 26) (2026-11-28)
   - `e429245` docs(plans): tick 26, retire nth-k6 (2026-11-28)
@@ -719,6 +734,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest
   - `fe7845a` feat(infra): merge nth-hybridcache, HybridCache for GET /me with tag invalidation (item 27) (2026-11-28)
   - `d353661` docs(spine): tick 27, D-081 HybridCache for /me, retire nth-hybridcache (2026-11-28)
   - `c3a0c3f` docs(docs): README counts after HybridCache, honest k6 wording in D-081 (2026-11-28)
+  - `313b2cd` docs(spine): v0.0.3, W-025..W-041 closed, D-066 outcome, journal, traceability (2026-11-28)
 
 ## ADRs
 
@@ -1489,7 +1505,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest
 
 **Claims search on Meilisearch (one feature past the freeze)** — accepted — [decisions.md](decisions.md#d-063--claims-search-on-meilisearch-one-feature-past-the-freeze--2026-11-27)
 - ADR: none
-- Workstreams: [W-022](#w-022), [W-032](#w-032)
+- Workstreams: [W-022](#w-022), [W-032](#w-032), [W-038](#w-038)
 - Cited in commit Refs:
   - `9192ec9` docs(spine): D-063 claims search past the freeze; two lanes (2026-11-27)
   - `56e472c` feat(search): header search finds claims, scoped to the caller (2026-11-28)
@@ -1505,7 +1521,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest
 
 **Submission-morning asks past the freeze: shell polish, USD view, add users, onboarding** — accepted — [decisions.md](decisions.md#d-064--submission-morning-asks-past-the-freeze-shell-polish-usd-view-add-users-onboarding--2026-11-28)
 - ADR: none
-- Workstreams: [W-022](#w-022), [W-025](#w-025), [W-030](#w-030), [W-031](#w-031), [W-032](#w-032), [W-033](#w-033), [W-034](#w-034), [W-035](#w-035), [W-039](#w-039), [W-040](#w-040), [W-041](#w-041)
+- Workstreams: [W-022](#w-022), [W-025](#w-025), [W-026](#w-026), [W-027](#w-027), [W-028](#w-028), [W-029](#w-029), [W-030](#w-030), [W-031](#w-031), [W-032](#w-032), [W-033](#w-033), [W-034](#w-034), [W-035](#w-035), [W-036](#w-036), [W-038](#w-038), [W-039](#w-039), [W-040](#w-040), [W-041](#w-041)
 - Cited in commit Refs:
   - `f5389da` docs(spine): D-064 submission-morning asks past the freeze; three lanes (2026-11-28)
   - `8e58809` docs(docs): rewrite README in the product-README layout (2026-11-28)
@@ -1698,7 +1714,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest
 
 **Dispatcher, integrator and contract-bound builder lanes replace the single overnight lead** — accepted — [decisions.md](decisions.md#d-066--dispatcher-integrator-and-contract-bound-builder-lanes-replace-the-single-overnight-lead--2026-11-28)
 - ADR: none
-- Workstreams: [W-022](#w-022), [W-029](#w-029), [W-036](#w-036), [W-037](#w-037), [W-040](#w-040)
+- Workstreams: [W-022](#w-022), [W-029](#w-029), [W-036](#w-036), [W-037](#w-037), [W-040](#w-040), [W-041](#w-041)
 - Cited in commit Refs:
   - `3fe71c2` docs(spine): D-066 dispatcher, integrator and nine contract-bound lanes (2026-11-28)
   - `2e0ecbf` feat(web): merge nth-decisions, the decision timeline generated from the docs (item 11d) (2026-11-28)
@@ -1714,17 +1730,19 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest
   - `d692bac` docs(spine): hot-state at 11:50 with the dispatcher handoff folded in (2026-11-28)
   - `f1f7ee5` docs(docs): DEMO step 15 and a Software factory section (owner ask 12:10) (2026-11-28)
   - `a8d8596` docs(docs): DEMO step 15 maps Dex Horthy's factory slide to the repo (owner ask 12:11) (2026-11-28)
+  - `313b2cd` docs(spine): v0.0.3, W-025..W-041 closed, D-066 outcome, journal, traceability (2026-11-28)
 
 ### D-067
 
 **The decision timeline page is generated from the docs, never hand-copied** — accepted — [decisions.md](decisions.md#d-067--the-decision-timeline-page-is-generated-from-the-docs-never-hand-copied--2026-11-28)
 - ADR: none
-- Workstreams: [W-022](#w-022), [W-040](#w-040)
+- Workstreams: [W-022](#w-022), [W-036](#w-036), [W-040](#w-040)
 - Cited in commit Refs:
   - `ed39e82` docs(spine): D-067 the decision timeline is generated, regenerated JSON (2026-11-28)
   - `762997b` docs(plans): tick 11d, retire nth-decisions (2026-11-28)
   - `d9f6e5a` docs(ai): merge nth-decisions lane status (2026-11-28)
   - `d4b7c35` feat(web): merge nth-changelog, Decisions becomes the Changelog with versioning explained (item 21) (2026-11-28)
+  - `4cf1826` fix(build): the changelog generator works with no Unreleased entries (2026-11-28)
 
 ### D-068
 
@@ -1840,7 +1858,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest
 
 **Editing a user is PUT with If-Match, not an upsert; a self-lockout guard** — accepted — [decisions.md](decisions.md#d-080--editing-a-user-is-put-with-if-match-not-an-upsert-a-self-lockout-guard--2026-11-28)
 - ADR: none
-- Workstreams: [W-040](#w-040)
+- Workstreams: [W-025](#w-025), [W-040](#w-040)
 - Cited in commit Refs:
   - `cfb6e75` docs(spine): tick 25, D-080 edit users, retire nth-useredit (2026-11-28)
   - `7554d00` docs(spine): D-080 states the token limit after deactivation (2026-11-28)
@@ -1862,6 +1880,8 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `313b2cd` | docs(spine): v0.0.3, W-025..W-041 closed, D-066 outcome, journal, traceability | 2026-11-28 | [D-066](#d-066), [W-041](#w-041) |
+| `4cf1826` | fix(build): the changelog generator works with no Unreleased entries | 2026-11-28 | [W-036](#w-036), [D-067](#d-067) |
 | `3b903ba` | docs(spine): D-080 cites the editfix merge sha | 2026-11-28 | [D-080](#d-080) |
 | `cd515ac` | docs(spine): tick 30, D-080 says fixed, retire nth-editfix | 2026-11-28 | [W-040](#w-040), [D-080](#d-080) |
 | `fd74c0e` | fix(api): merge nth-editfix, a group-only user can be saved from Edit (item 30) | 2026-11-28 | [W-040](#w-040), [D-080](#d-080) |
