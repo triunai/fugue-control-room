@@ -106,7 +106,7 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
       :5431 with the limiter raised, throwaway pg :55531). OWNERS Addendum 11.
 - [ ] 27. nth-hybridcache (W-041, pending dispatch after nth-refactor merges): Microsoft.Extensions.Caching.Hybrid with stampede
       protection; hard stop 12:50, else defer with a D-row.
-- [ ] 28. nth-brunoci (FIX, W-041): CI api-contract run was red (127 requests, 12 failed: 429 at sign-in, then 401s); the collection
+- [x] 28. (merge 766ff6f at f89c523; bruno/ only; on the demo stack after an api restart (fresh limiter, as in CI) the full `bru run --env compose` passes 127/127 requests, 153/153 tests) nth-brunoci (FIX, W-041): CI api-contract run was red (127 requests, 12 failed: 429 at sign-in, then 401s); the collection
       caches one token per account per run, the limiter stays on. Wrap gate: full `bru run --env compose` green.
 - [ ] 29. nth-kafkafix (FIX, tests only, dispatched 12:00 as the critical path, READY or BLOCKED by 12:35; if BLOCKED a known-issue D-row and the dispatcher decides the push at 12:45; never --no-verify): KafkaPublisherTests' no-broker test crashes the test host
       (librdkafka -> 127.0.0.1:1) on this machine, so the full suite does not finish in one run; known issue if not fixed by 13:45.
