@@ -1,5 +1,6 @@
 using FluentResults;
 using FluentValidation;
+using Fugue.Application.Caching;
 using Fugue.Application.Features.Groups.Models;
 using Fugue.Application.Features.Groups.Repos;
 using Fugue.Domain.Abstractions;
@@ -20,12 +21,24 @@ public sealed class AddGroupMemberValidator : AbstractValidator<AddGroupMemberCo
     }
 }
 
-public sealed class AddGroupMemberHandler(IGroupAdmin groups, ICurrentUser currentUser) : ICommandHandler<AddGroupMemberCommand, Result>
+public sealed class AddGroupMemberHandler(IGroupAdmin groups, ICurrentUser currentUser, IPermissionCacheInvalidator permissionCache)
+    : ICommandHandler<AddGroupMemberCommand, Result>
 {
-    public async ValueTask<Result> Handle(AddGroupMemberCommand command, CancellationToken cancellationToken) =>
-        currentUser.UserId == command.UserId.Value
-            ? Result.Fail(GroupErrors.SelfTarget())
-            : await groups.AddMemberAsync(command.GroupCode.Trim().ToUpperInvariant(), command.UserId, cancellationToken);
+    public async ValueTask<Result> Handle(AddGroupMemberCommand command, CancellationToken cancellationToken)
+    {
+        if (currentUser.UserId == command.UserId.Value)
+        {
+            return Result.Fail(GroupErrors.SelfTarget());
+        }
+
+        Result result = await groups.AddMemberAsync(command.GroupCode.Trim().ToUpperInvariant(), command.UserId, cancellationToken);
+        if (result.IsSuccess)
+        {
+            await permissionCache.UserChangedAsync(command.UserId);
+        }
+
+        return result;
+    }
 }
 
 /// <summary>Contract.</summary>
@@ -40,10 +53,22 @@ public sealed class RemoveGroupMemberValidator : AbstractValidator<RemoveGroupMe
     }
 }
 
-public sealed class RemoveGroupMemberHandler(IGroupAdmin groups, ICurrentUser currentUser) : ICommandHandler<RemoveGroupMemberCommand, Result>
+public sealed class RemoveGroupMemberHandler(IGroupAdmin groups, ICurrentUser currentUser, IPermissionCacheInvalidator permissionCache)
+    : ICommandHandler<RemoveGroupMemberCommand, Result>
 {
-    public async ValueTask<Result> Handle(RemoveGroupMemberCommand command, CancellationToken cancellationToken) =>
-        currentUser.UserId == command.UserId.Value
-            ? Result.Fail(GroupErrors.SelfTarget())
-            : await groups.RemoveMemberAsync(command.GroupCode.Trim().ToUpperInvariant(), command.UserId, cancellationToken);
+    public async ValueTask<Result> Handle(RemoveGroupMemberCommand command, CancellationToken cancellationToken)
+    {
+        if (currentUser.UserId == command.UserId.Value)
+        {
+            return Result.Fail(GroupErrors.SelfTarget());
+        }
+
+        Result result = await groups.RemoveMemberAsync(command.GroupCode.Trim().ToUpperInvariant(), command.UserId, cancellationToken);
+        if (result.IsSuccess)
+        {
+            await permissionCache.UserChangedAsync(command.UserId);
+        }
+
+        return result;
+    }
 }

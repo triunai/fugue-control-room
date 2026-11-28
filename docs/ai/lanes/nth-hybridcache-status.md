@@ -1,7 +1,7 @@
 # Lane nth-hybridcache status (owner ask: HybridCache + k6 "after"; Refs D-064)
 
 ## Commits
-- slice 1: feat(api): HybridCache wiring, L1 only, with the /me cache port and its invalidator
+- `1b56beb` slice 1: feat(api): HybridCache wiring, L1 only, with the /me cache port and its invalidator
 - slice 2: feat(api): cache GET /me per user and invalidate it on permission writes
 
 ## Gates (copied from output)

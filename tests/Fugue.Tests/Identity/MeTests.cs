@@ -141,6 +141,31 @@ public sealed class MeTests(PostgresFixture db)
     }
 
     [Fact]
+    public async Task A_cached_me_is_fresh_after_an_override_or_group_write_and_never_shows_another_users_entry()
+    {
+        (string email, UserId user) = await db.NewUserAsync([RoleCodes.SelfService]);
+        using HttpClient admin = db.ClientAs(DevUsers.Admin);
+        using HttpClient client = db.ClientAs(email);
+        using HttpClient other = db.ClientAs(DevUsers.Self);
+
+        MeDto before = await Me(client); // cached now
+        Assert.DoesNotContain(Permissions.AuditRead, before.Permissions);
+        MeDto otherMe = await Me(other);
+        Assert.Equal(DevUsers.Self, otherMe.Email); // scoped by the caller: never the entry cached a moment ago for someone else
+        Assert.Equal(user, (await Me(client)).UserId);
+
+        HttpResponseMessage set = await admin.PutAsJsonAsync($"/api/v1/overrides/{user}/{Permissions.AuditRead}", new { isAllowed = true });
+        Assert.Equal(HttpStatusCode.NoContent, set.StatusCode);
+        Assert.Contains(Permissions.AuditRead, (await Me(client)).Permissions); // the override write invalidated perm:user:{id}
+
+        Assert.Equal(HttpStatusCode.NoContent, (await admin.PutAsync($"/api/v1/groups/SUPPORT/members/{user}", null)).StatusCode);
+        MeDto grouped = await Me(client);
+        Assert.Equal(["SUPPORT"], grouped.Groups); // the group write invalidated it too
+        Assert.Contains(RoleCodes.Staff, grouped.Roles);
+        Assert.DoesNotContain(Permissions.AuditRead, (await Me(other)).Permissions); // the other user's entry was untouched and stays theirs
+    }
+
+    [Fact]
     public async Task A_users_tenant_comes_from_the_verified_claim_source()
     {
         var tenantId = TenantId.New();
