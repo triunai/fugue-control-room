@@ -93,6 +93,7 @@ class Highlighted {
         [attr.aria-label]="'Search'"
         autocomplete="off"
         data-testid="global-search"
+        data-tour="search"
         [value]="q()"
         (focus)="focused()"
         (input)="typed($any($event.target).value)"
