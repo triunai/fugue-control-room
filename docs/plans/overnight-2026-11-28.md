@@ -101,7 +101,7 @@ one-line ClaimSearchHitDto comment fix. Then the integrator's 13:00-14:00 fixes 
 Run 12 + 13 only if every feature lane has merged by ~10:30, else defer with a D-row. 14 (Worker host) is a deferral candidate.
 - [ ] 12. (lane nth-refactor from afc6fe9, W-039; base full suite 849 + Arch 37 at push 6, 3a6fb56) Per-slice folders `Commands/ Queries/ Models/ Repos/ Helpers/` + DI extension; namespaces follow folders (IDE fix or
       `dotnet format analyzers --diagnostics IDE0130`); full suite.
-- [ ] 13. (D-076: dispatched only if 12 merges by 11:00, else deferred) Remaining hardcoded values to IOptions (page sizes kept in step with validators, webhook replay window, SLA days).
+- [-] 13. (DEFERRED by D-076: item 12 had not merged by 11:00; its 09:13 suite stalled while the host slept, failure mode 36) Remaining hardcoded values to IOptions (page sizes kept in step with validators, webhook replay window, SLA days).
 - [-] 14. (DEFERRED by D-075 at 09:15: two hours lost to the OrbStack hang, 10:00 gate; stays backlog #010 part 3) `Fugue.Worker` host for the four BackgroundServices + a building-blocks project for pipeline behaviours; ArchTests.
 - [-] 15. (DEFERRED by D-076, 10:14: machine asleep on battery, failure mode 36) Optional: audit page "Sign-ins" tab over `access_audit`; reword the `[NoAudit]` comment on LoginCommand.
 
