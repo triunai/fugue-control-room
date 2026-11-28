@@ -1,7 +1,8 @@
 # Lane nth-kafkafix status (Refs D-064)
 
 ## Commits
-- fix(messaging): the no-broker Kafka test relays only its own outbox row (this commit, with this status file)
+- fix(messaging): the no-broker Kafka test relays only its own outbox row (`7e50a5b`)
+- docs(messaging): nth-kafkafix lane status with the full-suite counts (this commit)
 
 ## Root cause (evidence)
 - During a live full run (another lane's, 12:01), a read-only query on its Testcontainers Postgres showed
@@ -21,10 +22,14 @@
 - `dotnet build`: 0 Warning(s), 0 Error(s)
 - `dotnet format --verify-no-changes`: exit 0
 - Messaging: `Passed!  - Failed: 0, Passed: 2, Skipped: 0, Total: 2, Duration: 8 s - Fugue.Tests.dll (net8.0)`
-- Full suite under the lock: see the lane report.
+- Full suite under the lock, run 1 (12:09:36-12:11:09, `--blame-crash --blame-hang-timeout 5m`):
+  `Passed!  - Failed: 0, Passed: 37, Skipped: 0, Total: 37 - Fugue.ArchTests.dll`
+  `Passed!  - Failed: 0, Passed: 849, Skipped: 0, Total: 849, Duration: 1 m 30 s - Fugue.Tests.dll`
+- Full suite under the lock, run 2 (12:11:24-12:12:54): `Total tests: 37 Passed: 37`, `Total tests: 849 Passed: 849`;
+  `Passed ...With_no_broker_the_outbox_row_is_not_marked_dispatched_and_is_retried_later [3 s]`
 
 ## Shared files changed
 - None outside `tests/Fugue.Tests/Messaging/**` and this file. Product code unchanged.
 
 ## Next
-- Full suite under the lock, then report.
+- None: lane READY.
