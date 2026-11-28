@@ -6,6 +6,7 @@ import type { ImportFileDto, ImportSource } from '../../api/generated/model';
 import { isApiProblem } from '../../core/http/problem';
 import { ToastStore } from '../../core/ui/toast.store';
 import { StampPipe } from '../../ui/format';
+import { Icon, type IconName } from '../../ui/icon';
 import { ClaimStatusPill } from '../claims/claim-bits';
 import { MARKETS } from '../claims/claims-logic';
 import { ImportApi, importKeys } from './import.api';
@@ -35,7 +36,7 @@ import {
 @Component({
   selector: 'fg-import-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, ClaimStatusPill, StampPipe],
+  imports: [RouterLink, ClaimStatusPill, StampPipe, Icon],
   styleUrl: './import.css',
   template: `
     <div class="page">
@@ -49,26 +50,35 @@ import {
         </div>
       </header>
 
-      <div class="banner banner-info" role="note" data-testid="import-honest">
+      <div class="imp-note-line" role="note" data-testid="import-honest">
+        <fg-icon name="info" />
         <span>
-          <span class="banner-title">File imports, not live connectors.</span>
-          You upload files; the console calls no outside service. The inbox upload stands in for a Microsoft Graph or
-          Gmail connector, the chat upload for WhatsApp Business. The same row, email or chat is never imported twice.
+          <strong>File imports, not live connectors.</strong>
+          You upload files; the console calls no outside service. Each source below stands in for a connector. The same
+          row, email or chat is never imported twice.
         </span>
       </div>
 
-      <div class="tabs" role="tablist" aria-label="Import source">
+      <div class="imp-sources" role="tablist" aria-label="Import source">
         @for (s of sources; track s.id) {
           <button
             type="button"
-            class="tab"
+            class="imp-source"
             role="tab"
             [id]="'imp-tab-' + s.id"
             [attr.aria-selected]="source() === s.id"
             [attr.aria-controls]="'imp-panel'"
+            [attr.tabindex]="source() === s.id ? 0 : -1"
+            [attr.data-testid]="'import-source-' + s.id"
             (click)="choose(s.id)"
+            (keydown)="arrow($event)"
           >
-            {{ s.label }}
+            <span class="imp-source-icon"><fg-icon [name]="s.icon" /></span>
+            <span class="imp-source-text">
+              <span class="imp-source-name">{{ s.label }}</span>
+              <span class="imp-source-blurb">{{ s.blurb }}</span>
+              <span class="imp-source-sub">Stands in for {{ s.standsInFor }}</span>
+            </span>
           </button>
         }
       </div>
@@ -79,19 +89,51 @@ import {
         role="tabpanel"
         [attr.aria-labelledby]="'imp-tab-' + source()"
       >
-        <div>
-          <label class="label" for="imp-file">{{ current().label }} file ({{ current().file }})</label>
+        <div
+          class="imp-drop"
+          [class.imp-drop-over]="dragging()"
+          [class.imp-drop-busy]="!!busy()"
+          (dragover)="dragOver($event)"
+          (dragleave)="dragging.set(false)"
+          (drop)="drop($event)"
+          data-testid="import-drop"
+        >
+          <fg-icon name="upload" />
+          <p class="imp-drop-title">Drop your {{ current().file }} here</p>
+          <p class="imp-small text-muted">or</p>
+          <button type="button" class="btn" (click)="browse.click()" [disabled]="!!busy()">Choose a file</button>
+          <p class="imp-small text-muted">Accepts {{ current().accept.split(',').join(', ') }}</p>
           <input
+            #browse
             id="imp-file"
-            class="input"
+            class="sr-only"
             type="file"
+            tabindex="-1"
+            aria-label="{{ current().label }} file ({{ current().file }})"
             [accept]="current().accept"
             (change)="pick($event)"
             [disabled]="busy()"
             data-testid="import-file"
           />
-          <span class="field-hint">{{ current().howTo }} Stands in for {{ current().standsInFor }}.</span>
         </div>
+        <p class="imp-small text-muted imp-howto">{{ current().howTo }}</p>
+        @if (picked(); as p) {
+          <div class="imp-chip" data-testid="import-chip">
+            <fg-icon name="file" />
+            <span class="mono">{{ p.name }}</span>
+            <span class="text-muted">{{ size(p.size) }}</span>
+            <button type="button" class="imp-chip-x" (click)="clear()" [disabled]="!!busy()" aria-label="Remove file">
+              <fg-icon name="close" />
+            </button>
+          </div>
+        }
+        <p class="imp-small imp-samples" data-testid="import-samples">
+          <fg-icon name="download" />
+          <span>Try it with a sample:</span>
+          @for (sm of current().samples; track sm.href) {
+            <a class="mono" [href]="sm.href" download>{{ sm.label }}</a>
+          }
+        </p>
         @if (busy() === 'read') {
           <p class="text-muted" role="status">Reading the file…</p>
         }
@@ -360,9 +402,11 @@ import {
                       <a [routerLink]="['/claims', r.claimId]" class="mono">{{ r.claimNumber }}</a>
                     </td>
                     <td><fg-claim-status [status]="r.status" /></td>
-                    <td>{{ sourceLabel(r.source) }}</td>
                     <td>
-                      {{ r.fileName }} <span class="sub">{{ r.item }}</span>
+                      <span class="imp-src"><fg-icon [name]="sourceIcon(r.source)" />{{ sourceLabel(r.source) }}</span>
+                    </td>
+                    <td>
+                      <span class="chip mono">{{ r.fileName }}</span> <span class="sub">{{ r.item }}</span>
                     </td>
                     <td>{{ r.importedBy }}</td>
                     <td>{{ r.importedAt | stamp }}</td>
@@ -392,6 +436,8 @@ export class ImportPage {
   protected readonly drafts = signal<DraftRow[]>([]);
   protected readonly busy = signal<'read' | 'check' | 'create' | null>(null);
   protected readonly uploadError = signal<string | null>(null);
+  protected readonly picked = signal<{ name: string; size: number } | null>(null);
+  protected readonly dragging = signal(false);
   protected readonly summary = computed(() => summarise(this.drafts()));
 
   protected readonly recent = injectQuery(() => ({
@@ -409,11 +455,69 @@ export class ImportPage {
     this.reset();
   }
 
-  protected async pick(event: Event): Promise<void> {
+  /** Left/Right (and Home/End) move between the source tabs; only the selected tab is in the Tab order. */
+  protected arrow(event: KeyboardEvent): void {
+    const keys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
+    if (!keys.includes(event.key) || this.busy()) return;
+    event.preventDefault();
+    const at = SOURCES.findIndex((s) => s.id === this.source());
+    const last = SOURCES.length - 1;
+    const next =
+      event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? last
+          : ['ArrowRight', 'ArrowDown'].includes(event.key)
+            ? (at + 1) % SOURCES.length
+            : (at + last) % SOURCES.length;
+    this.choose(SOURCES[next].id);
+    (event.currentTarget as HTMLElement).parentElement?.querySelectorAll<HTMLElement>('[role=tab]')[next]?.focus();
+  }
+
+  protected pick(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const picked = input.files?.[0];
+    return this.readPicked(picked, () => (input.value = ''));
+  }
+
+  protected dragOver(event: DragEvent): void {
+    event.preventDefault();
+    if (!this.busy()) this.dragging.set(true);
+  }
+
+  protected drop(event: DragEvent): void {
+    event.preventDefault();
+    this.dragging.set(false);
+    if (this.busy()) return;
+    const dropped = event.dataTransfer?.files?.[0];
+    if (!dropped) return;
+    const accepted = this.current().accept.split(',');
+    if (!accepted.some((ext) => dropped.name.toLowerCase().endsWith(ext))) {
+      this.reset();
+      this.uploadError.set(
+        `${dropped.name} is not a ${this.current().file} file for the ${this.current().label} source.`,
+      );
+      return;
+    }
+    void this.readPicked(dropped);
+  }
+
+  protected clear(): void {
+    if (!this.busy()) this.reset();
+  }
+
+  protected size(bytes: number): string {
+    return bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  protected sourceIcon(source: ImportSource): IconName {
+    return SOURCES.find((s) => s.id === source)?.icon ?? 'file';
+  }
+
+  private async readPicked(picked: File | undefined, done?: () => void): Promise<void> {
     if (!picked) return;
     this.reset();
+    this.picked.set({ name: picked.name, size: picked.size });
     this.busy.set('read');
     try {
       const file = await this.api.readFile(this.source(), picked);
@@ -428,7 +532,7 @@ export class ImportPage {
       this.uploadError.set(problemText(e));
     } finally {
       this.busy.set(null);
-      input.value = '';
+      done?.();
     }
   }
 
@@ -540,6 +644,7 @@ export class ImportPage {
     this.file.set(null);
     this.drafts.set([]);
     this.uploadError.set(null);
+    this.picked.set(null);
   }
 }
 

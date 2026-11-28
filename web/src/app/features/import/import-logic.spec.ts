@@ -1,6 +1,7 @@
 import type { ImportCheckDto, ImportFileDto } from '../../api/generated/model';
 import {
   DraftRow,
+  SOURCES,
   createBody,
   draftsFromFile,
   editValue,
@@ -160,5 +161,26 @@ describe('import logic', () => {
     expect(d.note).toBe('WhatsApp chat export ...');
     expect(d.hints).toHaveLength(1);
     expect(toInput(d)).toMatchObject({ line: null, incidentLocation: null, market: 'SG' });
+  });
+});
+
+describe('SOURCES', () => {
+  it('gives every source an icon, a blurb and at least one sample file served from public/samples/import', () => {
+    for (const s of SOURCES) {
+      expect(s.icon).toBeTruthy();
+      expect(s.blurb).toBeTruthy();
+      expect(s.samples.length).toBeGreaterThan(0);
+      for (const sm of s.samples) expect(sm.href).toMatch(/^samples\/import\//);
+    }
+  });
+
+  it('every sample is accepted by its own source', () => {
+    for (const s of SOURCES) {
+      const accepted = s.accept.split(',');
+      for (const sm of s.samples) {
+        const name = decodeURIComponent(sm.href).toLowerCase();
+        expect(accepted.some((ext) => name.endsWith(ext))).toBe(true);
+      }
+    }
   });
 });

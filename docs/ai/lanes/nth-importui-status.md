@@ -2,7 +2,16 @@
 
 ## Commits
 - slice 1: sample files under `web/public/samples/import/` (byte copies of `tests/Fugue.Tests/Import/Fixtures/*`) and six icon names in `web/src/app/ui/icon.ts` (added only: inbox, chat, upload, file, download, close).
-- slice 2: page UI (see below), spec, this file updated.
+- `ef5961d` slice 1: samples and icon names.
+- slice 2: `import-page.ts`, `import.css`, `import-logic.ts` (+ `SOURCES` icon/blurb/samples), spec. Three source cards (tablist, roving tabindex, arrow keys),
+  styled drop zone (drag-and-drop, keyboard-reachable Choose a file button, accepted types, wrong-type rejection), file chip with remove,
+  per-source sample links, lighter inline honest note, recent table with source icon and mono file chip (claim number already linked).
+
+## Gates (copied from output)
+- `npm run lint`: All files pass linting.
+- `npm test`: 58 files, 370 tests passed (2 new in import-logic.spec.ts).
+- `npm run build`: Initial total 513.50 kB raw / 132.16 kB gzip.
+- Headless (dev server :4423 proxied to :8080, staff): 5 sample downloads ok, keyboard path, drop, wrong-type reject, create, recent link, 0 console errors.
 
 ## Shared files changed (exactly)
 - `web/src/app/ui/icon.ts`: six names added to `IconName` and `PATHS`; nothing existing edited.

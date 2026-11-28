@@ -8,4 +8,4 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
 | `nth-refactor` | `.worktrees/nth-refactor` | afc6fe9 | nth-refactor (Opus), relay-dispatched | W-039 | item 12: per-slice folders + DI extensions, EXCLUSIVE on src/ and tests/ |
-| `nth-importui` | `.worktrees/nth-importui` | ddd2ded | nth-importui (Sonnet) | - | owner: Import page redesign (web only): slice 1/2 committed; next: page UI |
+| `nth-importui` | `.worktrees/nth-importui` | ddd2ded | nth-importui (Sonnet) | - | owner: Import page redesign (web only): slice 2/2 committed (page UI, spec); report written |
