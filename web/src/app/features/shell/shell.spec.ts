@@ -135,4 +135,16 @@ describe('Shell stack dialog', () => {
     await settle(fixture);
     expect(dialog()).toBeNull();
   });
+
+  it('labels the env pill with the runtime and the API version', () => {
+    const fixture = render();
+    expect(pill(fixture.nativeElement as HTMLElement).textContent?.replace(/\s+/g, ' ').trim()).toBe('dev · .NET 8 · API v1');
+  });
+
+  it('Help opens the module guide dialog', async () => {
+    const fixture = render();
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('[data-testid="help"]')!.click();
+    await settle(fixture);
+    expect(document.querySelector('[data-testid="help-dialog"]')).not.toBeNull();
+  });
 });

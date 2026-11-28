@@ -34,7 +34,7 @@ export const STACK: readonly StackGroup[] = [
       { name: 'Mediator (source generated)', version: '3.0' },
       { name: 'FluentValidation', version: '12.2' },
       { name: 'Serilog', version: '9.0', note: 'structured logs' },
-      { name: 'Confluent.Kafka', version: '2.16', note: 'events on Redpanda' },
+      { name: 'Confluent.Kafka', version: '2.16', note: 'optional adapter, OFF: claim events go out through the outbox as signed webhooks' },
       { name: 'Meilisearch client', version: '0.20', note: 'server v1.12' },
       { name: 'xUnit + Testcontainers', version: '2.9 / 4.17' },
     ],

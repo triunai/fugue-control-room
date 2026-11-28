@@ -11,9 +11,9 @@ import { deriveCrumbs } from './breadcrumbs';
 import { GlobalSearch } from './global-search';
 import { searchVisible } from './global-search-logic';
 import { HelpButton } from './help-button';
-import { tourKeyFor } from './tour-steps';
 import { NavProgress } from './nav-progress';
 import { Overlays } from '../../ui/overlays';
+import { HelpDialog } from './help-dialog';
 import { StackDialog } from './stack-dialog';
 import { WelcomeDialog } from './welcome-dialog';
 import { Sidebar } from './sidebar';
@@ -76,9 +76,9 @@ export class Shell {
     this.overlays.modal(StackDialog, undefined, { width: 'min(600px, calc(100vw - 2rem))' });
   }
 
-  /** Help: the tour of the page on screen. */
+  /** Help: a guide to the app by module; its "Tour this page" button starts the tour of the page on screen. */
   protected help(): void {
-    void this.tour.start(tourKeyFor(this.router.url));
+    this.overlays.modal(HelpDialog, undefined, { width: 'min(680px, calc(100vw - 2rem))' });
   }
 
   /** The route-change entrance: the page content fades in and rises a few pixels. The first page does not animate. */
