@@ -8,4 +8,3 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
 | `nth-refactor` | `.worktrees/nth-refactor` | afc6fe9 | nth-refactor (Opus), relay-dispatched | W-039 | item 12: per-slice folders + DI extensions, EXCLUSIVE on src/ and tests/ |
-| `nth-k6` | `.worktrees/nth-k6` | ddd2ded | nth-k6 (Sonnet), relay-dispatched | W-041 | item 26: k6 load scenarios, percentile report, compare overlay, runbook; no src/ |
