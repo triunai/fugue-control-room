@@ -10,3 +10,4 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | `nth-useredit` | `.worktrees/nth-useredit` | 8e0993b | nth-useredit (relay-dispatched) | W-040 | item 25: edit users (PUT /users/{id}, If-Match), show-password toggle, add/edit gap audit; hard stop 12:50 |
 | `nth-hybridcache` | `.worktrees/nth-hybridcache` | 8e0993b | nth-hybridcache (relay-dispatched) | W-041 | item 27: HybridCache with stampede protection on hot reads; hard stop 12:50 |
 | `nth-brunoci` | `.worktrees/nth-brunoci` | 8e0993b | nth-brunoci (relay-dispatched) | W-041 | FIX: Bruno collection signs in once per account per run so the CI run stays under the sign-in limit |
+| `nth-kafkafix` | `.worktrees/nth-kafkafix` | 8e0993b | nth-kafkafix (Opus, relay-dispatched) | W-041 | item 29: Kafka no-broker test crashes the test host; proof = one full-suite run that finishes; READY or BLOCKED by 12:35 |
