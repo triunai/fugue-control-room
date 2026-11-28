@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 41 workstreams, 15 ADRs, 81 decisions, 593 commits (14 unlinked). Newest commit indexed: `0da54a0`.
+Counts: 41 workstreams, 15 ADRs, 81 decisions, 594 commits (14 unlinked). Newest commit indexed: `a47840a`.
 
 ## Workstreams
 
@@ -678,8 +678,8 @@ Counts: 41 workstreams, 15 ADRs, 81 decisions, 593 commits (14 unlinked). Newest
 
 **Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit** — CLOSED
 - Where: [project log entry](project-log.md#2026-11-28--closed-w-040-owner-asks-at-1126-tour-search-bar-import-ui-changelog-explained-overrides-the-score-grouping-user-edit)
-- Decisions and ADRs: [ADR-015](#adr-015), [D-064](#d-064), [D-066](#d-066), [D-067](#d-067), [D-072](#d-072), [D-074](#d-074), [D-080](#d-080)
-- Commits (47):
+- Decisions and ADRs: [ADR-015](#adr-015), [D-064](#d-064), [D-066](#d-066), [D-067](#d-067), [D-068](#d-068), [D-072](#d-072), [D-074](#d-074), [D-080](#d-080)
+- Commits (48):
   - `8c4ce09` docs(spine): W-040 and ledger rows for the 11:26 owner asks (2026-11-28)
   - `5b6cc96` feat(web): merge nth-overrides, the override formula explained on Users & access (item 23) (2026-11-28)
   - `35f5cb6` docs(plans): tick 23, retire nth-overrides (2026-11-28)
@@ -727,6 +727,7 @@ Counts: 41 workstreams, 15 ADRs, 81 decisions, 593 commits (14 unlinked). Newest
   - `b1c092d` docs(plans): nth-sinkfix ledger row (2026-11-28)
   - `234b944` fix(web): merge nth-sinkfix, the dev sink tab moves a claim instead of creating a customer (2026-11-28)
   - `0da54a0` docs(spine): CHANGELOG post-tag line gains sinkfix and ADR-015, traceability (2026-11-28)
+  - `a47840a` docs(docs): DEMO step 15 says how agents read the data safely (2026-11-28)
 
 ### W-041
 
@@ -1793,10 +1794,11 @@ Counts: 41 workstreams, 15 ADRs, 81 decisions, 593 commits (14 unlinked). Newest
 
 **The compose Postgres creates the read-only role; the MCP server is pinned** — accepted — [decisions.md](decisions.md#d-068--the-compose-postgres-creates-the-read-only-role-the-mcp-server-is-pinned--2026-11-28)
 - ADR: none
-- Workstreams: [W-029](#w-029), [W-036](#w-036), [W-037](#w-037)
+- Workstreams: [W-029](#w-029), [W-036](#w-036), [W-037](#w-037), [W-040](#w-040)
 - Cited in commit Refs:
   - `8765f5d` docs(spine): W-025..W-038 for tonight, D-068 and D-069, fleet contracts archived (2026-11-28)
   - `0517bd4` docs(spine): tick 17a on the recreated stack, hot-state for the integrator role (2026-11-28)
+  - `a47840a` docs(docs): DEMO step 15 says how agents read the data safely (2026-11-28)
 
 ### D-069
 
@@ -1926,6 +1928,7 @@ Counts: 41 workstreams, 15 ADRs, 81 decisions, 593 commits (14 unlinked). Newest
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `a47840a` | docs(docs): DEMO step 15 says how agents read the data safely | 2026-11-28 | [W-040](#w-040), [D-068](#d-068) |
 | `0da54a0` | docs(spine): CHANGELOG post-tag line gains sinkfix and ADR-015, traceability | 2026-11-28 | [W-040](#w-040), [ADR-015](#adr-015) |
 | `234b944` | fix(web): merge nth-sinkfix, the dev sink tab moves a claim instead of creating a customer | 2026-11-28 | [W-040](#w-040) |
 | `10188bd` | fix(web): the sink tab matches its claim.* subscription | 2026-11-28 | [D-064](#d-064) |
