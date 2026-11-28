@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 41 workstreams, 15 ADRs, 81 decisions, 595 commits (14 unlinked). Newest commit indexed: `d29db40`.
+Counts: 41 workstreams, 15 ADRs, 81 decisions, 596 commits (14 unlinked). Newest commit indexed: `a3b8af3`.
 
 ## Workstreams
 
@@ -679,7 +679,7 @@ Counts: 41 workstreams, 15 ADRs, 81 decisions, 595 commits (14 unlinked). Newest
 **Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit** — CLOSED
 - Where: [project log entry](project-log.md#2026-11-28--closed-w-040-owner-asks-at-1126-tour-search-bar-import-ui-changelog-explained-overrides-the-score-grouping-user-edit)
 - Decisions and ADRs: [ADR-015](#adr-015), [D-064](#d-064), [D-066](#d-066), [D-067](#d-067), [D-068](#d-068), [D-072](#d-072), [D-074](#d-074), [D-080](#d-080)
-- Commits (49):
+- Commits (50):
   - `8c4ce09` docs(spine): W-040 and ledger rows for the 11:26 owner asks (2026-11-28)
   - `5b6cc96` feat(web): merge nth-overrides, the override formula explained on Users & access (item 23) (2026-11-28)
   - `35f5cb6` docs(plans): tick 23, retire nth-overrides (2026-11-28)
@@ -729,6 +729,7 @@ Counts: 41 workstreams, 15 ADRs, 81 decisions, 595 commits (14 unlinked). Newest
   - `0da54a0` docs(spine): CHANGELOG post-tag line gains sinkfix and ADR-015, traceability (2026-11-28)
   - `a47840a` docs(docs): DEMO step 15 says how agents read the data safely (2026-11-28)
   - `d29db40` docs(docs): DEMO step 15 draws the factory in Dex Horthy's shape with the hygiene loop (2026-11-28)
+  - `a3b8af3` docs(web): Fugue explained gains the factory diagram with the hygiene loop (2026-11-28)
 
 ### W-041
 
@@ -1777,6 +1778,7 @@ Counts: 41 workstreams, 15 ADRs, 81 decisions, 595 commits (14 unlinked). Newest
   - `e0b7504` fix(web): breathing room between the Next step bar and its text (2026-11-28)
   - `213ccec` docs(spine): post-tag fixes line in v0.0.3, hot-state at 13:50 (2026-11-28)
   - `d29db40` docs(docs): DEMO step 15 draws the factory in Dex Horthy's shape with the hygiene loop (2026-11-28)
+  - `a3b8af3` docs(web): Fugue explained gains the factory diagram with the hygiene loop (2026-11-28)
 
 ### D-067
 
@@ -1930,6 +1932,7 @@ Counts: 41 workstreams, 15 ADRs, 81 decisions, 595 commits (14 unlinked). Newest
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `a3b8af3` | docs(web): Fugue explained gains the factory diagram with the hygiene loop | 2026-11-28 | [W-040](#w-040), [D-066](#d-066) |
 | `d29db40` | docs(docs): DEMO step 15 draws the factory in Dex Horthy's shape with the hygiene loop | 2026-11-28 | [W-040](#w-040), [D-066](#d-066) |
 | `a47840a` | docs(docs): DEMO step 15 says how agents read the data safely | 2026-11-28 | [W-040](#w-040), [D-068](#d-068) |
 | `0da54a0` | docs(spine): CHANGELOG post-tag line gains sinkfix and ADR-015, traceability | 2026-11-28 | [W-040](#w-040), [ADR-015](#adr-015) |
