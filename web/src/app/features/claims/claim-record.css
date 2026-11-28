@@ -168,6 +168,7 @@
   flex-direction: column;
   gap: 0.6rem;
   border-left: 4px solid var(--accent);
+  padding-left: 1.25rem;
 }
 .next-card.tone-warn {
   border-left-color: var(--warn);
