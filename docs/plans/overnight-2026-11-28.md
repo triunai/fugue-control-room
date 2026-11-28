@@ -96,8 +96,8 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
 - [ ] 18. nth-tour: the admin tour covers the core brief (claim flow).
 - [ ] 19. nth-searchui: a more obvious search bar and a first-use explainer with Meilisearch links; honest: keyword full-text, not hybrid (no embedder).
 - [ ] 20. nth-importui: Import page redesign (icons, drop zone, sample-file links).
-- [ ] 21. nth-changelog: Decisions renamed Changelog (/changelog, /decisions redirects); versioning via commits, W, D, ADRs and CHANGELOG entries.
-- [ ] 22. nth-explained: the owner's "Fugue, Explained" artifact in docs/explained + web/public/explained + one Help link.
+- [x] 21. (merge d4b7c35, W-040; JSON regenerated in the merge (76 D-rows, 22 closed W, 1 release); web 369 tests, scripts 89; on :8080 /decisions -> /changelog, nav says Changelog, "How versioning works here" panel, 0 errors) nth-changelog: Decisions renamed Changelog (/changelog, /decisions redirects); versioning via commits, W, D, ADRs and CHANGELOG entries.
+- [x] 22. (merge 3bf7d4e, W-040; vendors mermaid 11.16.1 under web/public/_runtime; on :8080 Help -> /explained/index.html, 200, "Fugue, explained", 6 diagrams render, 0 errors) nth-explained: the owner's "Fugue, Explained" artifact in docs/explained + web/public/explained + one Help link.
 - [x] 23. (merge 5b6cc96, W-040; formula checked by the lane against UserAccessReader.cs:11-15 and ADR-008; web 368 tests; on :8080 as admin "How overrides work" expands to the formula, 0 errors) nth-overrides: explain the override formula on Users & access (temporary vendor or contractor access).
 - [ ] 24. nth-scorefix: The Score groups one request's N audit rows by command instead of N API calls.
 - [ ] 25. nth-useredit (src/, after nth-refactor merges): edit users via PUT /users/{id} with If-Match, a show-password toggle, an entity add/edit gap audit.
