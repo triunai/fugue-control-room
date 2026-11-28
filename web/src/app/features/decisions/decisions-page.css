@@ -127,6 +127,7 @@
   font-size: 0.9rem;
 }
 .how-steps {
+  list-style: decimal;
   margin: 0;
   padding-left: 1.25rem;
   max-width: 80ch;

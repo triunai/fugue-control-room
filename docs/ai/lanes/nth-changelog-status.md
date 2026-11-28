@@ -2,10 +2,13 @@
 
 ## Commits
 - slice 1: generator parses CHANGELOG.md release notes and closed work items; `gen:changelog` script (`gen:decisions` kept as alias)
+- slice 3: fix empty timeline when filtered to release notes; list numbering and spacing in the explainer
 - slice 2: web: Decisions page becomes Changelog (`/changelog`, `/decisions` redirects), how-versioning-works explainer
 
 ## Gates
-See the final report; filled in at slice 2.
+- web: lint clean; `npm test` 58 files, 369 tests passed; `npm run build` complete (Initial total 513.28 kB / 132.04 kB)
+- scripts: `node --test scripts/gen-decisions.test.mjs` 6 pass, 0 fail
+- headless (4424 proxied to the demo API): redirect, nav, explainer, versions, closed items, filters, 0 console errors
 
 ## Shared files changed exactly
 - `web/src/app/app.routes.ts`: route `decisions` renamed `changelog`; one `redirectTo` line for `decisions`.
@@ -16,4 +19,4 @@ See the final report; filled in at slice 2.
 - No row for this lane exists in `docs/branch-ledger.md`, so none was edited.
 
 ## Next
-Headless proof and report.
+Done; see the report.

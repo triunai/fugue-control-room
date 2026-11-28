@@ -32,13 +32,11 @@
         <code>docs/adr/</code>. Each sits under the release that was current on its date.
       </li>
       <li>
-        <strong>Both ways.</strong> <code>docs/traceability.md</code> links commits, work items and decisions in both
+        <strong>Both ways.</strong> The index <code>docs/traceability.md</code> links commits, work items and decisions in both
         directions, so you can start from a line of code or from a decision and reach the other.
       </li>
     </ol>
-    <p class="how-note">
-      <em>Unreleased</em> is work dated after the latest tag. The next release is cut from it.
-    </p>
+    <p class="how-note"><em>Unreleased</em> is work dated after the latest tag. The next release is cut from it.</p>
   </section>
 
   <div class="filters">
@@ -120,32 +118,32 @@
       }
       @if (g.entries.length) {
         <h3 class="sub">Decisions and ADRs</h3>
+        <ol class="timeline">
+          @for (e of g.entries; track e.id) {
+            <li class="entry">
+              <span class="dot" aria-hidden="true"></span>
+              <div class="head">
+                <span class="pill mono" [class.pill-acc]="e.kind === 'ADR'" [class.pill-muted]="e.kind === 'D'">{{
+                  e.id
+                }}</span>
+                <a class="title" [href]="href(e)" target="_blank" rel="noopener noreferrer">{{ e.title }}</a>
+                <time class="date" [attr.datetime]="e.date">{{ e.date }}</time>
+              </div>
+              @if (e.summary) {
+                <p class="summary">{{ e.summary }}</p>
+              }
+              <p class="meta">
+                @if (e.status) {
+                  <span>{{ e.status }}</span>
+                }
+                @if (e.adr) {
+                  <span>promoted to {{ e.adr }}</span>
+                }
+              </p>
+            </li>
+          }
+        </ol>
       }
-      <ol class="timeline">
-        @for (e of g.entries; track e.id) {
-          <li class="entry">
-            <span class="dot" aria-hidden="true"></span>
-            <div class="head">
-              <span class="pill mono" [class.pill-acc]="e.kind === 'ADR'" [class.pill-muted]="e.kind === 'D'">{{
-                e.id
-              }}</span>
-              <a class="title" [href]="href(e)" target="_blank" rel="noopener noreferrer">{{ e.title }}</a>
-              <time class="date" [attr.datetime]="e.date">{{ e.date }}</time>
-            </div>
-            @if (e.summary) {
-              <p class="summary">{{ e.summary }}</p>
-            }
-            <p class="meta">
-              @if (e.status) {
-                <span>{{ e.status }}</span>
-              }
-              @if (e.adr) {
-                <span>promoted to {{ e.adr }}</span>
-              }
-            </p>
-          </li>
-        }
-      </ol>
     </section>
   } @empty {
     <div class="panel panel-pad">Nothing matches that filter.</div>
