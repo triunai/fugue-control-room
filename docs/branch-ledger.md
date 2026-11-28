@@ -7,4 +7,3 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | Branch | Worktree path | Base sha | Owner (lane) | W id | Status |
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
-| `nth-hybridcache` | `.worktrees/nth-hybridcache` | 8e0993b | nth-hybridcache (relay-dispatched) | W-041 | item 27: HybridCache with stampede protection on hot reads; hard stop 12:50 |

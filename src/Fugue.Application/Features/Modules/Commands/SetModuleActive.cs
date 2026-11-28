@@ -1,5 +1,6 @@
 using FluentResults;
 using FluentValidation;
+using Fugue.Application.Caching;
 using Fugue.Application.Features.Modules.Models;
 using Fugue.Application.Features.Modules.Repos;
 using Fugue.Domain.Identity;
@@ -15,7 +16,7 @@ public sealed class SetModuleActiveValidator : AbstractValidator<SetModuleActive
     public SetModuleActiveValidator() => RuleFor(x => x.Code).NotEmpty().MaximumLength(64);
 }
 
-public sealed class SetModuleActiveHandler(IModuleRegistry registry) : ICommandHandler<SetModuleActiveCommand, Result<ModuleDto>>
+public sealed class SetModuleActiveHandler(IModuleRegistry registry, IPermissionCacheInvalidator permissionCache) : ICommandHandler<SetModuleActiveCommand, Result<ModuleDto>>
 {
     public async ValueTask<Result<ModuleDto>> Handle(SetModuleActiveCommand command, CancellationToken cancellationToken)
     {
@@ -30,6 +31,13 @@ public sealed class SetModuleActiveHandler(IModuleRegistry registry) : ICommandH
             return Result.Fail<ModuleDto>(ModuleErrors.SystemProtected());
         }
 
-        return await registry.SetActiveAsync(code, command.Active, expected, cancellationToken);
+        // A module switch changes every user's effective permissions and module list.
+        Result<ModuleDto> result = await registry.SetActiveAsync(code, command.Active, expected, cancellationToken);
+        if (result.IsSuccess)
+        {
+            await permissionCache.AllChangedAsync();
+        }
+
+        return result;
     }
 }

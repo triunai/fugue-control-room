@@ -3,6 +3,7 @@ using Fugue.Application.Features.Claims.Repos;
 using Fugue.Application.Features.Customers.Repos;
 using Fugue.Domain.Abstractions;
 using Fugue.Infrastructure.Audit;
+using Fugue.Infrastructure.Caching;
 using Fugue.Infrastructure.Idempotency;
 using Fugue.Infrastructure.Identity;
 using Fugue.Infrastructure.Messaging;
@@ -16,6 +17,7 @@ using Fugue.Infrastructure.Search;
 using Fugue.Infrastructure.Webhooks;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -191,6 +193,15 @@ public static class DependencyInjection
         services.AddScoped<Fugue.Application.Features.Roles.Repos.IRoleCatalog, RoleCatalog>();
         services.AddScoped<IGrantAuditWriter, GrantAuditWriter>();
         services.AddScoped<IIdentitySeeder, IdentitySeeder>();
+
+        // HybridCache, L1 only (no Redis in compose, so no L2): the /me answer per user, tag-invalidated by permission writes.
+        services.AddOptions<CacheOptions>().Bind(configuration.GetSection(CacheOptions.Section)).ValidateOnStart();
+        services.AddSingleton<IValidateOptions<CacheOptions>, CacheOptionsValidator>();
+        services.AddOptions<MemoryCacheOptions>().Configure<IOptions<CacheOptions>>((memory, cache) => memory.SizeLimit = cache.Value.L1SizeLimitBytes);
+        services.AddHybridCache();
+        services.AddSingleton<PermissionCache>();
+        services.AddSingleton<Fugue.Application.Features.Me.Repos.IMeCache>(sp => sp.GetRequiredService<PermissionCache>());
+        services.AddSingleton<Fugue.Application.Caching.IPermissionCacheInvalidator>(sp => sp.GetRequiredService<PermissionCache>());
         return services;
     }
 }

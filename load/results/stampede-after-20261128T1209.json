@@ -1,0 +1,185 @@
+{
+  "schema": 1,
+  "scenario": "stampede",
+  "label": "after cache (/me), repeat",
+  "startedAt": "2026-11-28T04:09:12.155Z",
+  "durationSec": 24.615281,
+  "target": "http://localhost:5233",
+  "k6Version": "v2.4.0",
+  "env": {
+    "note": "Load profile: sign-in limiter raised, API + Postgres + Meilisearch + k6 on one laptop. HybridCache on (/me only, TTL 30 s), nth-hybridcache 856d24c. Repeat run."
+  },
+  "limits": {
+    "p95": 300,
+    "p99": 800,
+    "failRate": 0.01
+  },
+  "totals": {
+    "requests": 3000,
+    "rps": 122.684333210649,
+    "failedRate": 0,
+    "checksRate": 1,
+    "droppedIterations": 0,
+    "peakRps": 1000
+  },
+  "thresholds": [
+    {
+      "metric": "http_reqs{endpoint:claims_search}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{phase:run}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{phase:run}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{phase:run}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{endpoint:claims_list}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{endpoint:me}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_search}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_search}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:me}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:me}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{phase:run}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{endpoint:me}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_list}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_list}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{endpoint:claims_search}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "checks",
+      "expr": "rate>0.99",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{endpoint:claims_list}",
+      "expr": "rate<0.01",
+      "ok": true
+    }
+  ],
+  "overall": {
+    "min": 2.414,
+    "avg": 49.99007299999998,
+    "p50": 35.566500000000005,
+    "p90": 80.8486,
+    "p95": 210.79375,
+    "p99": 234.61633999999998,
+    "max": 431.608
+  },
+  "endpoints": {
+    "me": {
+      "count": 1000,
+      "failRate": 0,
+      "min": 2.414,
+      "avg": 33.507836,
+      "p50": 22.286,
+      "p90": 32.799,
+      "p95": 212.34159999999994,
+      "p99": 225.88343,
+      "max": 227.513
+    },
+    "claims_list": {
+      "count": 1000,
+      "failRate": 0,
+      "min": 3.141,
+      "avg": 54.19841900000008,
+      "p50": 34.732,
+      "p90": 206.74290000000002,
+      "p95": 228.3208,
+      "p99": 241.6857,
+      "max": 431.608
+    },
+    "claims_search": {
+      "count": 1000,
+      "failRate": 0,
+      "min": 23.779,
+      "avg": 62.263963999999994,
+      "p50": 59.798,
+      "p90": 82.37950000000001,
+      "p95": 90.37634999999999,
+      "p99": 105.75389,
+      "max": 215.712
+    }
+  },
+  "timeline": {
+    "widthSec": 1,
+    "points": [
+      {
+        "t": 0,
+        "p50": 22.284,
+        "p95": 212.273,
+        "p99": 225.88,
+        "rps": 1000,
+        "err": 0
+      },
+      {
+        "t": 12,
+        "p50": 34.731,
+        "p95": 228.305,
+        "p99": 241.685,
+        "rps": 1000,
+        "err": 0
+      },
+      {
+        "t": 24,
+        "p50": 59.783,
+        "p95": 90.365,
+        "p99": 105.748,
+        "rps": 1000,
+        "err": 0
+      }
+    ]
+  }
+}
