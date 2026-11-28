@@ -8,7 +8,9 @@ Uniform slice layout in `src/Fugue.Application/Features/<Feature>/`: `Commands/`
 - `01cdd6b` refactor(application): identity slices into Models and Repos folders
 - `8280750` refactor(application): remaining slices into Models, Repos and Helpers folders
 - `b7355af` docs(application): slice README describes the uniform folder layout
-- slice 5: web hood path strings for the moved files (this commit; OWNERS Addendum 9)
+- `3646d54` fix(web): hood notes follow the moved Helpers paths (OWNERS Addendum 9)
+- `d66cc2f` merge of main cc5f135 (no src/tests change on main since afc6fe9)
+- final: this status update
 
 ## Gates (copied from output)
 - `dotnet build`: 0 Warning(s), 0 Error(s)
@@ -39,7 +41,7 @@ Uniform slice layout in `src/Fugue.Application/Features/<Feature>/`: `Commands/`
   moving them into `Features/Auth/Repos` would make Abstractions depend on a feature slice.
 
 ## Next slice
-- full suite under the lock; report.
+- none: READY for merge.
 - `Import/Parsing/` and `Webhooks/Sink/` were extra sub-folders: parsers to `Import/Helpers`, `ImportTypes.cs` to
   `Import/Models`; the dev sink's requests (`DevWebhookSinkAdmin.cs`, `ReceiveDevWebhook.cs`) to `Webhooks/Commands`
   (they are `IRequest`, never audited; the admin file also holds the sink list read, kept whole per D-055) and
@@ -48,3 +50,9 @@ Uniform slice layout in `src/Fugue.Application/Features/<Feature>/`: `Commands/`
   --verify-no-changes --include src/Fugue.Application/` exit 0; with one namespace broken on purpose it exits 2.
 - slice 5 (web): `npm run lint` All files pass linting; `npm test` Test Files 58 passed, Tests 368 passed; before the path
   fix `hood-notes.spec.ts` had 10 failed / 45 passed, after it 55/55.
+- after merging main cc5f135: web `npm run lint` All files pass linting; `npm test` 58 files, 380 tests passed;
+  `dotnet build` 0 Warning(s) 0 Error(s); `dotnet format --verify-no-changes` exit 0.
+- full suite under the lock, 11:43 (Docker _ping OK, engine time = host time, on battery): ArchTests 37/37; Fugue.Tests
+  766 passed / 0 failed, then the test host crashed in `KafkaPublisherTests.With_no_broker_the_outbox_row_is_not_marked_dispatched_and_is_retried_later`
+  (librdkafka connect to 127.0.0.1:1). The same crash at the same point reproduces on main 38db5bd without this branch.
+  Completed in two runs under the lock: Messaging alone 2/2, everything else 847/847 -> 849/849 + 37/37, matching base.
