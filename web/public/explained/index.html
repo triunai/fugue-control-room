@@ -116,6 +116,7 @@ ol.steps li { margin-bottom: 6px; }
   <a href="#ai">Built with AI</a>
   <div class="eyebrow group">Use it</div>
   <a href="#run">Running it</a>
+  <a href="#factory">The factory</a>
   <a href="#status">Status at v0.0.3</a>
 </nav>
 
@@ -425,6 +426,86 @@ open http://localhost:5081/swagger <span class="cm"># the API and its contract</
     <tr><td class="num">7700</td><td>Meilisearch (audit search)</td></tr>
   </table></div>
   <p class="cap">A <b>migrate</b> container applies the schema and exits before the API starts; the API never changes the schema itself. Kafka is optional: <code>EVENTS_PUBLISHER=Both docker compose --profile kafka up -d --build</code>.</p>
+</section>
+
+<section class="ch" id="factory">
+  <div class="eyebrow">The software factory</div>
+  <h2>The factory in Dex Horthy's shape, with our hygiene loop</h2>
+  <p class="plain">The same picture as DEMO step 15: asks and CI reds become plan items, a dispatcher writes lane contracts, each lane builds in its own worktree under the repo's gates, an integrator verifies against git and merges behind the full suite, and a hygiene loop (ledger row retired, worktree pruned, work item closed into the changelog, traceability regenerated, hot-state overwritten) keeps 35+ lanes from rotting the repo. Shape after Dex Horthy's "Agentic Software Factory" slide (12-Factor-Factories, AI Engineer).</p>
+  <div class="diagram"><pre class="mermaid">
+flowchart TB
+  subgraph IN["1. Inputs"]
+    ASK["owner asks"]
+    RED["CI red, incidents: Bruno 429, Kafka stall"]
+  end
+  subgraph TODO["Stuff to do"]
+    PLAN["docs/plans/overnight-2026-11-28.md + docs/workstreams.md + docs/state-backlog.md"]
+  end
+  subgraph ORCH["2. Orchestration"]
+    DISP["dispatcher: lane contracts, OWNERS map routes files, model routing"]
+    INTEG["integrator: merges, pushes, writes the spine"]
+  end
+  subgraph HARN["3. Harness"]
+    RULES["HEADER + OWNERS rules, AGENTS.md, CLAUDE.md"]
+    GATES["lefthook: refs-trailer, commit-link-check, fix-has-test, secrets-scan, test-integrity, prune-check, adr-check, ledger-check"]
+    LOCK["suite lock"]
+  end
+  subgraph SAND["4. Sandbox"]
+    WT["git worktree + branch per lane, own ports, throwaway Postgres"]
+  end
+  subgraph MODEL["5. Model"]
+    MOD["Opus: API, migrations, security; Sonnet: UI, docs; Haiku: research"]
+  end
+  subgraph TEST["6. Testing"]
+    AUTO["xUnit + Testcontainers, NetArchTest, Bruno, Vitest, k6, Stryker, PICT"]
+    AGENT["headless Playwright per lane, 4-persona smoke"]
+  end
+  subgraph REV["7. Review"]
+    VERIFY["dispatcher verifies against git: sha, diff inside OWNERS"]
+    BASE["base checks on main without the branch"]
+    HUMAN["owner review and asks"]
+  end
+  subgraph SHIP["8. Integrate and ship"]
+    MERGE["local merge, no GitHub PR"]
+    PREPUSH["pre-push full suite: stack-check"]
+    CI["GitHub Actions: backend, scripts, web, api-contract"]
+    PUB["push + tag"]
+    PROD["demo stack on :8080"]
+  end
+  subgraph HYG["9. Hygiene loop"]
+    LEDGER["retire the branch-ledger row"]
+    PRUNE["prune worktree + branch"]
+    CLOSE["close-workstream.mjs: W closed into CHANGELOG + project-log"]
+    TRACE["trace-index.mjs regenerates traceability"]
+    HOT["hot-state overwritten"]
+  end
+  ASK --&gt; PLAN
+  RED --&gt; PLAN
+  PLAN --&gt; DISP
+  DISP --&gt; WT
+  RULES --&gt; WT
+  MOD --&gt; WT
+  WT --&gt; AUTO
+  WT --&gt; AGENT
+  AUTO --&gt; VERIFY
+  AGENT --&gt; VERIFY
+  VERIFY --&gt; INTEG
+  BASE --&gt; INTEG
+  HUMAN --&gt; PLAN
+  INTEG --&gt; MERGE
+  GATES --&gt; MERGE
+  LOCK --&gt; PREPUSH
+  MERGE --&gt; PREPUSH
+  PREPUSH --&gt; PUB
+  PUB --&gt; CI
+  CI -- red --&gt; PLAN
+  PUB --&gt; PROD
+  MERGE --&gt; LEDGER
+  LEDGER --&gt; PRUNE
+  PRUNE --&gt; CLOSE
+  CLOSE --&gt; TRACE
+  TRACE --&gt; HOT
+</pre></div>
 </section>
 
 <section class="ch" id="status">
