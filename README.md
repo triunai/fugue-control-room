@@ -6,7 +6,7 @@
 ![Angular 22](https://img.shields.io/badge/Angular-22-DD0031)
 ![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-336791)
 ![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED)
-![Tests](https://img.shields.io/badge/xUnit-858%20listed-brightgreen)
+![Tests](https://img.shields.io/badge/xUnit-864%20listed-brightgreen)
 ![Release](https://img.shields.io/badge/release-v0.0.2-blue)
 
 A claims platform for motor and property claims across six APAC markets (SG, MY, TH, HK, ID, PH): a .NET 8 API and one Angular console for claimants, claims officers, managers and admins. It is a take-home build, so it says plainly what it does and does not do.
@@ -119,6 +119,7 @@ flowchart TB
 - **A transactional outbox.** State, timeline row, audit row and event commit together or not at all. Events leave through signed webhooks; a Kafka publisher is optional and off by default.
 - **An append-only audit trail.** Field-level diffs, failure rows for rejected commands, and no way to write to it through the API.
 - **Search that degrades honestly.** Keyword full-text search (Meilisearch: typo tolerance, synonyms, highlights) backs audit search and claim search (claim number, policy number, place, description, claimant name). It is keyword search, not semantic or vector search. Claim search applies the caller's scope itself. When the engine is down the endpoint answers 503, not an empty list.
+- **HybridCache (L1, in-process) on `GET /me` only.** Tag invalidation after group, override, module and user edits; permission checks are never cached (every request re-reads access). In a k6 stampede on one laptop, `/me` p95 went from 382 to 241 ms (repeat 212), so its threshold now passes; this says nothing about the uncached endpoints (D-081).
 - **Excel in the console.** A reserve sheet and a claim assessment worksheet (Univer) with Save to Excel.
 - **An SLA calendar** (FullCalendar, lazy-loaded).
 - **Team and exposure, per currency.** Per officer: open load, oldest claim, decisions in 7 and 30 days, median days to decision. Exposure per market, line and currency; there is no grand total, because SGD plus IDR needs a rate and a rate date.
@@ -259,9 +260,9 @@ npm ci && (cd bruno/fugue && npx bru run --env compose)   # API regression suite
 
 | Suite | Count | Runs against |
 |---|---|---|
-| `Fugue.Tests` (xUnit) | 858 listed | a real Postgres 17 (Testcontainers) or the full HTTP host, plus in-process tests of the state machine, validators and mapping |
+| `Fugue.Tests` (xUnit) | 864 listed | a real Postgres 17 (Testcontainers) or the full HTTP host, plus in-process tests of the state machine, validators and mapping |
 | `Fugue.ArchTests` (NetArchTest) | 37 passed | layering, one-line controllers, every action declares a permission; baselines may only shrink |
-| Bruno | 127 requests, 153 of 153 tests passed | `npx bru run --env compose` from `bruno/fugue` against the demo stack (after an api restart, so the sign-in limiter starts fresh, as in CI): every guard (404, 409, 412, 428, 422) over HTTP. Use the `compose` environment for the Docker stack; `local` points the webhook sink at a host port the container cannot reach (failure mode 28) |
+| Bruno | 130 requests, 156 of 156 tests passed | `npx bru run --env compose` from `bruno/fugue` against the demo stack (after an api restart, so the sign-in limiter starts fresh, as in CI): every guard (404, 409, 412, 428, 422) over HTTP. Use the `compose` environment for the Docker stack; `local` points the webhook sink at a host port the container cannot reach (failure mode 28) |
 | Console (Vitest) | 388 tests in 58 files, all passed | `cd web && npm test` |
 | Console e2e (Playwright) | 23 listed, in 9 files | `web/e2e/`, against the running stack |
 
