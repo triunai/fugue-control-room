@@ -6,7 +6,7 @@
   ],
   "counts": {
     "adrs": 14,
-    "decisions": 77,
+    "decisions": 78,
     "releases": 1,
     "closed": 22
   },
@@ -17,6 +17,16 @@
       "notes": [],
       "closed": [],
       "entries": [
+        {
+          "kind": "D",
+          "id": "D-078",
+          "title": "One folder layout per slice: Commands, Queries, Models, Repos, Helpers",
+          "date": "2026-11-28",
+          "summary": "Features/<Feature>/ holds Commands/, Queries/, Models/ (DTOs, outcomes, errors), Repos/ (the slice's ports with their records) and Helpers/ (pure rules such as ClaimFlow, ClaimScope); namespaces follow folders; ports…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-078--one-folder-layout-per-slice-commands-queries-models-repos-helpers--2026-11-28"
+        },
         {
           "kind": "D",
           "id": "D-077",

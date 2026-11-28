@@ -19,14 +19,17 @@ Vertical slices inside a clean-architecture 4-project layout:
 ### Slice shape
 
 ```
-Fugue.Application/Features/<Feature>/I<Feature>Repository.cs
 Fugue.Application/Features/<Feature>/Commands/<Verb><Noun>.cs   (also Queries/)
+Fugue.Application/Features/<Feature>/Models/      DTOs, outcomes, errors
+Fugue.Application/Features/<Feature>/Repos/       the slice's ports (I*Repository, I*Store, I*Reader, I*Admin)
+Fugue.Application/Features/<Feature>/Helpers/     pure rules and parsers (ClaimFlow, ClaimScope, *Rules)
     public sealed record <Verb><Noun>Command(...) : ICommand<Result<T>>   // contract
     <Verb><Noun>Validator : AbstractValidator<<Verb><Noun>Command>
     <Verb><Noun>Handler                                                   // business logic, calls the feature repo, returns FluentResults
 Fugue.Infrastructure/Persistence/<Feature>/                              repository implementations
 Fugue.Api/Controllers/<Feature>Controller.cs                             one-liner actions
 ```
+Namespaces follow folders; ports used by several slices stay in `Application/Abstractions/` (D-078).
 
 Pipeline behaviors (`Fugue.Application/Common/Behaviors`, registered in `Program.cs` via Mediator `PipelineBehaviors`): `LoggingBehavior` (outermost; name, elapsed, outcome, error codes; never payloads), then `AuditBehavior` (failed commands write one `audit_log` failure row; successes are written by the SaveChanges interceptor in the same transaction; ADR-010), then `ValidationBehavior` (all `IValidator<T>`, aggregated into one `FugueErrors.Validation`, camelCase field keys). Both require `TResponse : ResultBase, new()`, i.e. handlers return FluentResults.
 

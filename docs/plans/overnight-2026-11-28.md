@@ -115,7 +115,7 @@ nth-options (Sonnet) item 13; (3) 11g after 13, optional, behind the same 12:00 
 13 only if time allows before 12:00, else defer; (6) about 12:00 nth-readme (Sonnet) item 11 from the final main, plus the
 one-line ClaimSearchHitDto comment fix. Then the integrator's 13:00-14:00 fixes window and the 14:00 wrap (16, 17).
 Run 12 + 13 only if every feature lane has merged by ~10:30, else defer with a D-row. 14 (Worker host) is a deferral candidate.
-- [ ] 12. (lane nth-refactor from afc6fe9, W-039; base full suite 849 + Arch 37 at push 6, 3a6fb56) Per-slice folders `Commands/ Queries/ Models/ Repos/ Helpers/` + DI extension; namespaces follow folders (IDE fix or
+- [x] 12. (merge 8e0993b at c618248, W-039, D-078: 58 renames, namespaces follow folders, OpenAPI byte-identical, build 0 warnings, format clean, 3 moved files spot-checked (namespace line only), web = 17 hood path strings; suite 849 + 37 from two runs under the lock because KafkaPublisherTests' no-broker test crashes the test host on this machine today, on main too) Per-slice folders `Commands/ Queries/ Models/ Repos/ Helpers/` + DI extension; namespaces follow folders (IDE fix or
       `dotnet format analyzers --diagnostics IDE0130`); full suite.
 - [-] 13. (DEFERRED by D-076: item 12 had not merged by 11:00; its 09:13 suite stalled while the host slept, failure mode 36) Remaining hardcoded values to IOptions (page sizes kept in step with validators, webhook replay window, SLA days).
 - [-] 14. (DEFERRED by D-075 at 09:15: two hours lost to the OrbStack hang, 10:00 gate; stays backlog #010 part 3) `Fugue.Worker` host for the four BackgroundServices + a building-blocks project for pipeline behaviours; ArchTests.

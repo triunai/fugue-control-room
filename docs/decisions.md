@@ -77,6 +77,16 @@ Capture a decision THE SAME TURN it is made, as a D entry. Promote it to an ADR 
 
 The ADR files stay the home of architecture reasoning; a D entry below is the short why plus the link. Trailer ids a commit may cite: `W-NNN` (`docs/workstreams.md`), `D-NNN` (this file), `ADR-NNN` (`docs/adr/`).
 
+## D-078 — One folder layout per slice: Commands, Queries, Models, Repos, Helpers — 2026-11-28
+WS: WS-39
+Context: backlog #010 item 1 (owner, 02:45): every vertical slice should read the same way.
+Decision: `Features/<Feature>/` holds `Commands/`, `Queries/`, `Models/` (DTOs, outcomes, errors), `Repos/` (the slice's ports with their records) and `Helpers/` (pure rules such as `ClaimFlow`, `ClaimScope`); namespaces follow folders; ports used by several slices stay in `Application/Abstractions/` (`IAuthPorts`); no per-slice DI extension, because none was needed (Infrastructure wires the ports, Mediator handlers are source-generated). Merged in 8e0993b (W-039, lane nth-refactor): 58 renames, OpenAPI snapshot byte-identical, the full suite count unchanged (849 + 37).
+Why: a reviewer finds any file by its role, in every slice the same way.
+Consequences: items 2-3 of #010 stay open (D-075, D-076). Dated history docs keep their old paths on purpose.
+Who: owner (asked), AI (lane nth-refactor)
+Status: accepted
+Promote: no
+
 ## D-077 — Legacy sync stays a design; the built path is file import — 2026-11-28
 WS: WS-31
 Context: the owner asked (11:30) for a way to bring existing legacy data in so the platform is backward compatible, with the import module as the central adapter; lane nth-legacydoc wrote `docs/design/legacy-sync.md` (merged 615f0d1).
