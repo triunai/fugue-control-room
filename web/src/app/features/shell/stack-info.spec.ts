@@ -24,4 +24,10 @@ describe('stack info', () => {
     const names = STACK.flatMap((g) => g.items.map((i) => i.name));
     expect(new Set(names).size).toBe(names.length);
   });
+
+  it('shows Kafka as an optional adapter that is off, not as a running broker', () => {
+    const note = find('Confluent.Kafka')?.note ?? '';
+    expect(note).toContain('OFF');
+    expect(note).not.toContain('events on Redpanda');
+  });
 });
