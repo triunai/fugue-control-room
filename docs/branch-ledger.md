@@ -7,3 +7,5 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | Branch | Worktree path | Base sha | Owner (lane) | W id | Status |
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
+| `nth-nextpad` | `.worktrees/nth-nextpad` | 149975a | nth-nextpad (Sonnet), relay-dispatched | W-040 | owner fix 13:41: Next step card padding next to its coloured bar |
+| `nth-helpguide` | `.worktrees/nth-helpguide` | 3a35d90 | nth-helpguide (Sonnet), relay-dispatched | W-040 | owner asks 13:48: Help as a guide by role and module; Kafka labelled an optional adapter, off; chip reads dev · .NET 8 · API v1; hard stop 14:30 |
