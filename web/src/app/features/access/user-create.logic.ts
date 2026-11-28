@@ -1,5 +1,5 @@
 import { AbstractControl, ValidationErrors } from '@angular/forms';
-import type { CreateUserRequest } from '../../api/generated/model';
+import type { CreateUserRequest, UpdateUserRequest } from '../../api/generated/model';
 import { ApiProblem } from '../../core/http/problem';
 
 /** The API's initial-password policy (CreateUserValidator): 12 to 128 characters. */
@@ -31,13 +31,29 @@ export function toCreateUserRequest(v: CreateUserForm): CreateUserRequest {
   return { email: v.email.trim(), displayName: v.displayName.trim(), password: v.password, roles: [...v.roles] }; // secrets-scan:ignore
 }
 
-/** Where a refused create belongs in the form: a field and its message, or null for a toast. */
+/** The edit body: trimmed name, the active flag and the full role set. Email and password are never part of an edit. */
+export function toUpdateUserRequest(v: { displayName: string; isActive: boolean; roles: string[] }): UpdateUserRequest {
+  return { displayName: v.displayName.trim(), isActive: v.isActive, roles: [...v.roles] };
+}
+
+/** A 412 on edit: someone saved this user after you opened it. */
+export function isStaleEdit(problem: ApiProblem): boolean {
+  return problem.status === 412;
+}
+
+/** Where a refused create or edit belongs in the form: a field and its message, or null for a toast. */
 export function placeProblem(problem: ApiProblem): { field: 'email' | 'roles'; message: string } | null {
   if (problem.status === 409 && problem.code === 'user.email_taken') {
     return { field: 'email', message: 'A user with this email already exists.' };
   }
   if (problem.status === 403 && problem.code === 'user.role_escalation') {
     return { field: 'roles', message: problem.detail ?? 'You cannot assign a role that grants more than you hold.' };
+  }
+  if (problem.status === 409 && problem.code === 'user.self_lockout') {
+    return {
+      field: 'roles',
+      message: 'You cannot deactivate yourself or remove your own last role that manages users.',
+    };
   }
   return null;
 }

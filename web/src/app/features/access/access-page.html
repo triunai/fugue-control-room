@@ -48,6 +48,7 @@
             <th scope="col">Roles</th>
             <th scope="col">Groups</th>
             <th scope="col">Created</th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody>
@@ -82,10 +83,23 @@
                 </div>
               </td>
               <td class="text-muted">{{ u.createdAt | stamp }}</td>
+              <td class="text-right">
+                <button
+                  *hasPermission="'USERS_MANAGE'"
+                  type="button"
+                  class="btn btn-quiet"
+                  data-testid="edit-user"
+                  [attr.aria-label]="'Edit ' + u.email"
+                  (click)="editUser(u, $event)"
+                  (keydown.enter)="$event.stopPropagation()"
+                >
+                  Edit
+                </button>
+              </td>
             </tr>
           } @empty {
             <tr>
-              <td colspan="6" class="text-muted">No users match.</td>
+              <td colspan="7" class="text-muted">No users match.</td>
             </tr>
           }
         </tbody>

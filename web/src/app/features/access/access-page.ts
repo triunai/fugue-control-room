@@ -132,6 +132,12 @@ export class AccessPage {
     this.overlays.drawer<UserCreateDrawer, null, UserDto | false>(UserCreateDrawer, null);
   }
 
+  /** The same drawer in edit mode, prefilled from the row; it saves with the row's version and refreshes the list. */
+  protected editUser(u: UserDto, event: Event): void {
+    event.stopPropagation(); // the row click picks the user for overrides; Edit should only open the drawer
+    this.overlays.drawer<UserCreateDrawer, UserDto, UserDto | false>(UserCreateDrawer, u);
+  }
+
   protected pickUser(u: UserDto): void {
     this.pick(u.id, u.displayName || u.email);
   }

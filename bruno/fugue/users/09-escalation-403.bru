@@ -1,0 +1,45 @@
+meta {
+  name: A delegated users manager cannot add ADMIN on edit: 403 user.role_escalation
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/api/v1/users/{{editUserId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+script:pre-request {
+  // Give the user from 07 USERS_MANAGE through an allow override, sign in as them, create a STAFF user, then try to add ADMIN to it.
+  const base = bru.getEnvVar("baseUrl");
+  const admin = { "Content-Type": "application/json", Authorization: "Bearer " + bru.getVar("token") };
+  await bru.sendRequest({
+    method: "PUT", url: base + "/api/v1/overrides/" + bru.getVar("editUserId") + "/USERS_MANAGE", headers: admin,
+    data: { isAllowed: true, reason: "bruno: delegated users manager", expiresAt: null },
+  });
+  const signIn = await bru.sendRequest({
+    method: "POST", url: base + "/api/v1/auth/token", headers: { "Content-Type": "application/json" },
+    data: { email: bru.getVar("editUserEmail"), password: bru.getVar("editUserPw") }, // secrets-scan:ignore
+  });
+  const delegated = { "Content-Type": "application/json", Authorization: "Bearer " + signIn.data.accessToken };
+  const target = await bru.sendRequest({
+    method: "POST", url: base + "/api/v1/users", headers: delegated,
+    data: { email: "bruno-target-" + Date.now() + "@fugue.test", displayName: "Target", password: "Bruno-Target-" + Date.now(), roles: ["STAFF"] }, // secrets-scan:ignore
+  });
+  req.setUrl(base + "/api/v1/users/" + target.data.id);
+  req.setHeader("Authorization", "Bearer " + signIn.data.accessToken);
+  req.setHeader("If-Match", target.headers.etag);
+  req.setBody({ displayName: "Target", isActive: true, roles: ["STAFF", "ADMIN"] });
+}
+
+tests {
+  test("403 problem with the role_escalation code", function () {
+    expect(res.status).to.equal(403);
+    expect(res.body.code).to.equal("user.role_escalation");
+  });
+}

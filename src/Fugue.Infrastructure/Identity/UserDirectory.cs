@@ -44,13 +44,19 @@ internal sealed class UserDirectory(FugueDbContext db) : IUserDirectory
         var groups = await db.GroupMembers.AsNoTracking().Where(m => ids.Contains(m.UserId))
             .Join(db.Groups, m => m.GroupId, g => g.Id, (m, g) => new { m.UserId, g.Code })
             .ToListAsync(ct);
+        Guid[] keys = [.. ids.Select(i => i.Value)];
+        Dictionary<Guid, long> versions = (await db.Database.SqlQueryRaw<VersionRow>(SqlScripts.Get("identity/user-versions"), new NpgsqlParameter("ids", keys)).ToListAsync(ct))
+            .ToDictionary(v => v.Id, v => v.Version);
 
         return page.Select(u => new UserDto(
             u.Id, u.Email, u.DisplayName, u.IsActive,
             [.. roles.Where(r => r.UserId == u.Id).Select(r => r.Code).Order(StringComparer.Ordinal)],
             [.. groups.Where(g => g.UserId == u.Id).Select(g => g.Code).Order(StringComparer.Ordinal)],
-            u.CreatedAt)).ToList();
+            u.CreatedAt,
+            versions[u.Id.Value])).ToList();
     }
+
+    private sealed record VersionRow(Guid Id, long Version);
 
     private static string EscapeLike(string value) =>
         value.Replace("\\", "\\\\", StringComparison.Ordinal)

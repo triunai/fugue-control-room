@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Fugue.Api.Controllers;
 
-/// <summary>Users: the admin console directory and user creation. Never returns a password hash or any credential field.</summary>
+/// <summary>Users: the admin console directory, user creation and user edit. Never returns a password hash or any credential field.</summary>
 [Module(ModuleCodes.Identity)]
 public sealed class UsersController : ApiControllerBase
 {
@@ -25,7 +25,7 @@ public sealed class UsersController : ApiControllerBase
     public Task<ActionResult<IReadOnlyList<UserDto>>> List([FromQuery] UserListFilter filter, CancellationToken ct) =>
         SendPaged(filter.ToQuery(), ct);
 
-    /// <summary>Get one user (same shape as a list row). An unknown or deleted user is 404.</summary>
+    /// <summary>Get one user (same shape as a list row), with its <c>ETag</c>. An unknown or deleted user is 404.</summary>
     [HttpGet("{id}")]
     [HasPermission(Permissions.UsersView)]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
@@ -46,4 +46,20 @@ public sealed class UsersController : ApiControllerBase
     [ProblemResponse(StatusCodes.Status409Conflict, "user.email_taken")]
     public Task<ActionResult<UserDto>> Create(CreateUserRequest body, CancellationToken ct) =>
         SendCreated(new CreateUserCommand(body.Email, body.DisplayName, body.Password, body.Roles), nameof(Get), u => new { id = u.Id }, ct);
+
+    /// <summary>
+    /// Edit a user: display name, active flag and the full set of direct roles (the email and the password are not editable). Needs `If-Match`
+    /// with the ETag from a read (428 without it, 412 `user.version_mismatch` when the user changed since). A role ADDED here follows the create
+    /// rule (403 `user.role_escalation`); editing yourself cannot deactivate you or drop your last direct USERS_MANAGE role (409
+    /// `user.self_lockout`). Every role added or removed is written to grant_audit in the same transaction.
+    /// </summary>
+    [HttpPut("{id}")]
+    [HasPermission(Permissions.UsersManage)]
+    [IfMatch]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProblemResponse(StatusCodes.Status403Forbidden, "user.role_escalation")]
+    [ProblemResponse(StatusCodes.Status404NotFound, "user.not_found")]
+    [ProblemResponse(StatusCodes.Status409Conflict, "user.self_lockout")]
+    public Task<ActionResult<UserDto>> Update(UserId id, UpdateUserRequest body, CancellationToken ct) =>
+        Send(new UpdateUserCommand(id, body.DisplayName, body.IsActive, body.Roles, IfMatchVersion), ct);
 }
