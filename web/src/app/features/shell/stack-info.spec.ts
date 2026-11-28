@@ -30,4 +30,15 @@ describe('stack info', () => {
     expect(note).toContain('OFF');
     expect(note).not.toContain('events on Redpanda');
   });
+
+  it('states the real data-access and mapping split, and the in-house and quality sections', () => {
+    expect(find('Dapper')?.note).toContain('writes');
+    expect(find('EF Core + Npgsql')?.note).toContain('reads');
+    expect(find('Mapping')?.note).toContain('no mapper library');
+    expect(find('FluentResults')).toBeDefined();
+    expect(find('Http.Resilience (Polly v8)')?.note).toContain('outbox is the retry authority');
+    expect(STACK.map((g) => g.title)).toEqual(expect.arrayContaining(['Built in-house', 'Quality and delivery']));
+    expect(pkg.dependencies['driver.js']).toMatch(/^1\.14/);
+    expect(find('driver.js')?.version).toBe('1.14');
+  });
 });

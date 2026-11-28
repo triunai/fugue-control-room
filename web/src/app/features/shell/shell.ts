@@ -73,7 +73,7 @@ export class Shell {
 
   /** The env pill: what the app is built on. Focus returns to the pill on close. */
   protected openStack(): void {
-    this.overlays.modal(StackDialog, undefined, { width: 'min(600px, calc(100vw - 2rem))' });
+    this.overlays.modal(StackDialog, undefined, { width: 'min(720px, calc(100vw - 2rem))' });
   }
 
   /** Help: a guide to the app by module; its "Tour this page" button starts the tour of the page on screen. */

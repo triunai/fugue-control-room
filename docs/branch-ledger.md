@@ -7,5 +7,4 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | Branch | Worktree path | Base sha | Owner (lane) | W id | Status |
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
-| `nth-helpguide` | `.worktrees/nth-helpguide` | 3a35d90 | nth-helpguide (Sonnet), relay-dispatched | W-040 | owner asks 13:48: Help as a guide by role and module; Kafka labelled an optional adapter, off; chip reads dev · .NET 8 · API v1; hard stop 14:30 |
 | `nth-notifydoc` | `.worktrees/nth-notifydoc` | 0fd072f | nth-notifydoc (Sonnet), relay-dispatched | W-040 | owner ask: docs/design/notifications.md (n8n MVP on signed webhooks, then a notifications worker: WhatsApp Cloud API, Resend) + a link from the explained row |
