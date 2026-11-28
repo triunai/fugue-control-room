@@ -272,6 +272,36 @@ describe('Edit user drawer', () => {
     expect(close).toHaveBeenCalledWith(saved);
   });
 
+  it('lets a group-only user be saved with no direct role, says where access comes from', async () => {
+    const groupOnly: UserDto = { ...existing, roles: [], groups: ['SUPPORT'] };
+    const saved = { ...groupOnly, displayName: 'New Name', version: 42 };
+    const { root, close, update, settle, type, submit } = setup(() => Promise.resolve(saved), groupOnly);
+    await settle();
+    expect(root.textContent).toContain('Access comes from group SUPPORT');
+    type('nu-name', 'New Name');
+
+    submit();
+    await settle();
+
+    expect(update).toHaveBeenCalledWith(existing.id, { displayName: 'New Name', isActive: true, roles: [] }, 41);
+    expect(close).toHaveBeenCalledWith(saved);
+  });
+
+  it('still refuses no role when the user has no group', async () => {
+    const { root, update, settle, submit } = setup(() => Promise.resolve(existing), {
+      ...existing,
+      roles: [],
+      groups: [],
+    });
+    await settle();
+
+    submit();
+    await settle();
+
+    expect(update).not.toHaveBeenCalled();
+    expect(root.textContent).toContain('Pick at least one role.');
+  });
+
   it('on 412 says someone else changed it, stays open, and Reload refills and edits against the new version', async () => {
     const answers: unknown[] = [problem(412, 'user.version_mismatch')];
     const { root, close, update, read, settle, submit } = setup(() =>

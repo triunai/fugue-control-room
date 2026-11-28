@@ -1,5 +1,5 @@
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { injectMutation, injectQuery, QueryClient } from '@tanstack/angular-query';
 import { AccessApi } from '../../api/access.api';
@@ -149,6 +149,8 @@ export class UserCreateDrawer {
   }
 
   private prefill(user: UserDto): void {
+    // Same rule as the API: no direct role is fine while a group keeps the user's access.
+    this.form.controls.roles.setValidators(user.groups.length ? [] : [atLeastOneRole]);
     this.form.patchValue({
       email: user.email,
       displayName: user.displayName,
@@ -156,6 +158,9 @@ export class UserCreateDrawer {
       isActive: user.isActive,
     });
   }
+
+  /** Edit mode: the groups the user's access also comes from, for the hint under the roles. */
+  protected readonly groupsLabel = computed(() => this.editing()?.groups.join(', ') ?? '');
 
   protected hasRole(code: string): boolean {
     return this.form.controls.roles.value.includes(code);

@@ -26,4 +26,8 @@ public static class UserErrors
     /// <summary>An administrator editing themselves cannot deactivate the account or drop the last direct role that lets them manage users.</summary>
     public static FugueError SelfLockout() =>
         FugueErrors.Conflict("user.self_lockout", "You cannot deactivate yourself or remove your own last role that grants USERS_MANAGE.");
+
+    /// <summary>An edit that would leave the user with no direct role and no active group.</summary>
+    public static FugueError NoAccess() =>
+        FugueErrors.Validation(new Dictionary<string, string[]> { ["roles"] = ["Pick at least one role: this user has no active group to give them access."] });
 }

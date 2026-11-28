@@ -42,7 +42,7 @@ internal sealed class UserDirectory(FugueDbContext db) : IUserDirectory
             .Join(db.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => new { ur.UserId, r.Code })
             .ToListAsync(ct);
         var groups = await db.GroupMembers.AsNoTracking().Where(m => ids.Contains(m.UserId))
-            .Join(db.Groups, m => m.GroupId, g => g.Id, (m, g) => new { m.UserId, g.Code })
+            .Join(db.Groups.Where(g => g.IsActive), m => m.GroupId, g => g.Id, (m, g) => new { m.UserId, g.Code })
             .ToListAsync(ct);
         Guid[] keys = [.. ids.Select(i => i.Value)];
         Dictionary<Guid, long> versions = (await db.Database.SqlQueryRaw<VersionRow>(SqlScripts.Get("identity/user-versions"), new NpgsqlParameter("ids", keys)).ToListAsync(ct))

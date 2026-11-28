@@ -111,4 +111,23 @@ public sealed class UserEditTests(PostgresFixture db)
         Assert.Equal("user.role_escalation", await CodeAsync(escalation));
         Assert.Equal(0, await CountAsync("SELECT count(*) FROM grant_audit WHERE target_user_id = @u AND reason = 'user updated'", target.Id.Value));
     }
+
+    [Fact]
+    public async Task A_group_only_user_can_be_renamed_with_no_direct_role_but_a_user_with_neither_cannot()
+    {
+        using HttpClient admin = db.ClientAs(DevUsers.Admin);
+        (_, Fugue.Domain.Ids.UserId id) = await db.NewUserAsync([RoleCodes.Staff]);
+        Assert.Equal(HttpStatusCode.NoContent, (await admin.PutAsync($"/api/v1/groups/SUPPORT/members/{id}", null)).StatusCode);
+
+        // With no direct role the user still has the group: the rename is saved and the roles stay empty.
+        HttpResponseMessage grouped = await admin.SendAsync(Put(id.Value, (await admin.GetAsync($"/api/v1/users/{id}")).Headers.ETag!.Tag, new { displayName = "Renamed", isActive = true, roles = Array.Empty<string>() }));
+        Assert.Equal(HttpStatusCode.OK, grouped.StatusCode);
+        UserDto after = (await grouped.Content.ReadFromJsonAsync<UserDto>())!;
+        Assert.Equal(("Renamed", 0, 1), (after.DisplayName, after.Roles.Count, after.Groups.Count));
+
+        // Leave the group: no role and no group is the lock-out the guard exists for.
+        Assert.Equal(HttpStatusCode.NoContent, (await admin.DeleteAsync($"/api/v1/groups/SUPPORT/members/{id}")).StatusCode);
+        HttpResponseMessage bare = await admin.SendAsync(Put(id.Value, (await admin.GetAsync($"/api/v1/users/{id}")).Headers.ETag!.Tag, new { displayName = "Renamed", isActive = true, roles = Array.Empty<string>() }));
+        Assert.Equal(HttpStatusCode.BadRequest, bare.StatusCode);
+    }
 }
