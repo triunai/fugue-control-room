@@ -51,6 +51,8 @@ export const EMPTY_CLAIM_FILTER: ClaimFilter = { status: '', assigned: 'any', ma
 export const claimKeys = {
   all: ['claims'] as const,
   list: (f: ClaimFilter) => ['claims', 'list', f] as const,
+  /** An infinite (paged) list needs its own key: sharing `list` with a plain query hands it data without `pages`. */
+  listPaged: (f: ClaimFilter) => ['claims', 'list', f, 'paged'] as const,
   counts: (f: Omit<ClaimFilter, 'status'>) => ['claims', 'counts', f] as const,
   search: (q: string) => ['claims', 'search', q] as const,
   one: (id: string) => ['claims', 'one', id] as const,
@@ -111,7 +113,9 @@ export class ClaimsApi {
 
   /** Typo-tolerant full-text search (D-063); the server scopes it to the caller's own claims unless they hold CLAIMS_ALL. 503 `search.unavailable` when the engine is off. */
   search(q: string, limit = 20): Promise<ClaimSearchResultDto> {
-    return firstValueFrom(this.http.get<ClaimSearchResultDto>(`${this.base}/search`, { params: params({ q: q.trim(), limit }) }));
+    return firstValueFrom(
+      this.http.get<ClaimSearchResultDto>(`${this.base}/search`, { params: params({ q: q.trim(), limit }) }),
+    );
   }
 
   get(id: string): Promise<ClaimDto> {

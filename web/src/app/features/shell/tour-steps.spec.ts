@@ -1,4 +1,12 @@
-import { PAGE_TOURS, personaOf, stepsFor, shouldAutoplay, suppressTourFromUrl, tourKeyFor, tourSuppressed } from './tour-steps';
+import {
+  PAGE_TOURS,
+  personaOf,
+  stepsFor,
+  shouldAutoplay,
+  suppressTourFromUrl,
+  tourKeyFor,
+  tourSuppressed,
+} from './tour-steps';
 
 const grant =
   (...codes: string[]) =>
@@ -16,22 +24,50 @@ describe('personaOf', () => {
 });
 
 describe('stepsFor', () => {
-  it('opens every tour on the permission-driven navigation', () => {
-    for (const p of ['claimant', 'officer', 'manager', 'admin', 'member'] as const) {
+  it('opens every tour except admin on the permission-driven navigation', () => {
+    for (const p of ['claimant', 'officer', 'manager', 'member'] as const) {
       expect(stepsFor(p)[0].selector).toBe('[data-tour="nav"]');
     }
+  });
+
+  it('walks the admin through the core claim flow in order, platform last', () => {
+    const t = stepsFor('admin').map((s) => s.title);
+    const order = [
+      'A claimant reports an incident',
+      'My claims: only their own',
+      'The claim timeline',
+      'The claims queue',
+      'An officer picks up, asks, decides',
+      'A manager settles',
+      'Team and exposure per currency',
+      'Built from your permissions',
+      'The audit log',
+      'Module toggles',
+      'Access',
+    ];
+    const at = order.map((x) => t.indexOf(x));
+    expect(at.every((i) => i >= 0)).toBe(true);
+    expect([...at].sort((a, b) => a - b)).toEqual(at);
+  });
+
+  it('gives the claimant only claimant steps, no platform pages', () => {
+    const steps = stepsFor('claimant');
+    const paths = steps.flatMap((s) => (s.page && 'path' in s.page ? [s.page.path] : []));
+    expect(paths).toEqual(['/claims/new', '/claims/mine']);
+    expect(steps.map((s) => s.title)).not.toContain('The audit log');
   });
 
   it('covers the points each persona is meant to show', () => {
     const titles = (p: Parameters<typeof stepsFor>[0]) => stepsFor(p).map((s) => s.title);
     expect(titles('claimant')).toEqual(
-      expect.arrayContaining(['Report an incident', 'The timeline', 'Answer the question']),
+      expect.arrayContaining(['A claimant reports an incident', 'The claim timeline', 'The claimant answers']),
     );
     expect(titles('officer')).toEqual(
-      expect.arrayContaining(['The queue at a glance', 'Tabs and filters', 'Only the actions valid for the status']),
+      expect.arrayContaining(['The claims queue', 'Tabs and filters', 'An officer picks up, asks, decides']),
     );
-    expect(titles('manager')).toEqual(expect.arrayContaining(['Exposure per currency', 'Why there is no grand total']));
-    expect(titles('admin')).toEqual(expect.arrayContaining(['The audit log', 'Module toggles', 'Access']));
+    expect(titles('manager')).toEqual(
+      expect.arrayContaining(['A manager settles', 'Team and exposure per currency', 'Why there is no grand total']),
+    );
   });
 
   it('keeps copy short: a title and at most two sentences per step', () => {

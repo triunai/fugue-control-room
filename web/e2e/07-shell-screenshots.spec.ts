@@ -11,7 +11,7 @@ async function startTour(page: Page): Promise<void> {
 
 /** Press Next until the popover shows `title`. */
 async function tourTo(page: Page, title: string): Promise<void> {
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 25; i++) {
     if ((await page.locator('.driver-popover-title').textContent()) === title) break;
     await page.locator('.driver-popover-next-btn').click();
     await page.waitForTimeout(400);
@@ -67,8 +67,8 @@ test.describe('reviewer tour', () => {
   });
 
   const personas: [string, string, string][] = [
-    ['self@fugue.test', 'The timeline', 'tour-claimant'],
-    ['staff@fugue.test', 'Only the actions valid for the status', 'tour-officer'],
+    ['self@fugue.test', 'The claim timeline', 'tour-claimant'],
+    ['staff@fugue.test', 'An officer picks up, asks, decides', 'tour-officer'],
     ['manager@fugue.test', 'Why there is no grand total', 'tour-manager'],
     ['admin@fugue.test', 'Roles and permissions', 'tour-admin'],
   ];

@@ -8,7 +8,6 @@ import {
   TourStep,
   personaOf,
   shouldAutoplay,
-  tourKeyFor,
   stepsFor,
   tourSeenKey,
   tourSuppressed,
@@ -79,7 +78,7 @@ export class TourService {
   /** The welcome was taken (start the landing tour) or skipped; either way it never shows again for this user. */
   closeWelcome(takeTour: boolean): void {
     this.welcomeOpen.set(false);
-    if (takeTour) setTimeout(() => void this.start(tourKeyFor(this.router.url)), 150);
+    if (takeTour) setTimeout(() => void this.start(PERSONA_TOUR), 150);
   }
 
   private markWelcomeSeen(): void {
@@ -166,7 +165,9 @@ export class TourService {
       if (path !== page.path) await this.router.navigateByUrl(page.path);
       return;
     }
-    if (CLAIM_URL.test(path)) return;
+    // Already on a claim: stay only if it is the kind this step wants (its status shows in the page text).
+    if (CLAIM_URL.test(path) && (!page.prefer || page.prefer.test(document.querySelector('main')?.textContent ?? '')))
+      return;
     await this.router.navigateByUrl(page.claimFrom);
     await waitFor('main a[href^="/claims/"]');
     const links = [...document.querySelectorAll<HTMLAnchorElement>('main a[href^="/claims/"]')].filter((a) =>

@@ -123,7 +123,7 @@ export class MyClaimsPage {
 
   private readonly live = livePoll();
   protected readonly query = injectInfiniteQuery(() => ({
-    queryKey: claimKeys.list(EMPTY_CLAIM_FILTER),
+    queryKey: claimKeys.listPaged(EMPTY_CLAIM_FILTER),
     queryFn: ({ pageParam }) => this.api.list(EMPTY_CLAIM_FILTER, pageParam),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
