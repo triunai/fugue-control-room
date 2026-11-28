@@ -261,7 +261,7 @@ npm ci && (cd bruno/fugue && npx bru run --env compose)   # API regression suite
 |---|---|---|
 | `Fugue.Tests` (xUnit) | 858 listed | a real Postgres 17 (Testcontainers) or the full HTTP host, plus in-process tests of the state machine, validators and mapping |
 | `Fugue.ArchTests` (NetArchTest) | 37 passed | layering, one-line controllers, every action declares a permission; baselines may only shrink |
-| Bruno | 127 requests; 148 of 153 tests passed in one run | `bru run --env local` against the demo stack on :8080: every guard (404, 409, 412, 428, 422) over HTTP. The 5 misses were demo-data state, not the code (a renamed officer, a webhook poll that had not settled) |
+| Bruno | 127 requests, 153 of 153 tests passed | `npx bru run --env compose` from `bruno/fugue` against the demo stack (after an api restart, so the sign-in limiter starts fresh, as in CI): every guard (404, 409, 412, 428, 422) over HTTP. Use the `compose` environment for the Docker stack; `local` points the webhook sink at a host port the container cannot reach (failure mode 28) |
 | Console (Vitest) | 388 tests in 58 files, all passed | `cd web && npm test` |
 | Console e2e (Playwright) | 23 listed, in 9 files | `web/e2e/`, against the running stack |
 

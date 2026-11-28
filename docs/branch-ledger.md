@@ -8,4 +8,3 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
 | `nth-hybridcache` | `.worktrees/nth-hybridcache` | 8e0993b | nth-hybridcache (relay-dispatched) | W-041 | item 27: HybridCache with stampede protection on hot reads; hard stop 12:50 |
-| `nth-readme2` | `.worktrees/nth-readme2` | 7adb4d9 | nth-readme2 (Sonnet), relay-dispatched | W-040 | item 11: README counts and links from final main, keyword full-text wording, ClaimSearchHitDto comment fix |
