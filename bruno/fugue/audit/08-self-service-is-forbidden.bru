@@ -15,13 +15,22 @@ auth:bearer {
 }
 
 script:pre-request {
-  const res = await bru.sendRequest({
-    method: "POST",
-    url: bru.getEnvVar("baseUrl") + "/api/v1/auth/token",
-    headers: { "Content-Type": "application/json" },
-    data: { email: bru.getEnvVar("selfEmail"), password: bru.getEnvVar("devPw") }, // secrets-scan:ignore
-  });
-  bru.setVar("selfToken", res.data.accessToken);
+  async function login(email) {
+    // One token per account per run: reuse it while it is younger than 10 minutes (the sign-in limiter stays on).
+    const key = "tok_" + email.replace("@", "_at_");
+    if (bru.getVar(key) && Date.now() - Number(bru.getVar(key + "_at") || 0) < 10 * 60 * 1000) return bru.getVar(key);
+    const res = await bru.sendRequest({
+      method: "POST",
+      url: bru.getEnvVar("baseUrl") + "/api/v1/auth/token",
+      headers: { "Content-Type": "application/json" },
+      data: { email: email, password: bru.getEnvVar("devPw") }, // secrets-scan:ignore
+    });
+    bru.setVar(key, res.data.accessToken);
+    bru.setVar(key + "_at", String(Date.now()));
+    return res.data.accessToken;
+  }
+  const token = await login(bru.getEnvVar("selfEmail"));
+  bru.setVar("selfToken", token);
 }
 
 tests {

@@ -6,7 +6,7 @@
   ],
   "counts": {
     "adrs": 14,
-    "decisions": 77,
+    "decisions": 79,
     "releases": 1,
     "closed": 22
   },
@@ -17,6 +17,26 @@
       "notes": [],
       "closed": [],
       "entries": [
+        {
+          "kind": "D",
+          "id": "D-079",
+          "title": "Known issue recorded: a broker outage makes one relay cycle long and lock-holding",
+          "date": "2026-11-28",
+          "summary": "Record the production behaviour behind it as a known issue (backlog #013), not a fix before the cut-off: with the broker down a cycle is serial: up to Webhooks:Dispatcher:BatchSize rows (default 20…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-079--known-issue-recorded-a-broker-outage-makes-one-relay-cycle-long-and-lock-holding--2026-11-28"
+        },
+        {
+          "kind": "D",
+          "id": "D-078",
+          "title": "One folder layout per slice: Commands, Queries, Models, Repos, Helpers",
+          "date": "2026-11-28",
+          "summary": "Features/<Feature>/ holds Commands/, Queries/, Models/ (DTOs, outcomes, errors), Repos/ (the slice's ports with their records) and Helpers/ (pure rules such as ClaimFlow, ClaimScope); namespaces follow folders; ports…",
+          "status": "accepted",
+          "adr": null,
+          "path": "docs/decisions.md#d-078--one-folder-layout-per-slice-commands-queries-models-repos-helpers--2026-11-28"
+        },
         {
           "kind": "D",
           "id": "D-077",

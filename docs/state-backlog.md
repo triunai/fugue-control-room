@@ -19,7 +19,7 @@ Three owner suggestions, planned together and NOT started:
 2. IOptions for what is still hardcoded. Already options-bound (12 classes, 22 files): CORS, audit, auth, rate limits, dispatcher, publisher, idempotency, Kafka, Meilisearch, password, persistence, webhooks. Still constants: list page sizes (`DefaultLimit`/`MaxLimit` in 8 queries; part of the API contract, so options must keep the validator in step), the webhook replay window (5 min), the dev sink body cap, SLA day counts (pickup 2, decision 14, answer 7, settle 7; mirrored in the web `sla.ts`).
 3. Runners and cross-cutting code as their own projects: the four `BackgroundService`s (`OutboxDispatcherService`, `ClaimIndexer`, `AuditIndexer`, `IdempotencyPurgeService`) into a `Fugue.Worker` host (the API stops hosting them; compose gets a `worker` service), and the Mediator pipeline behaviours and shared primitives (`Application/Common`) into a building-blocks project. ArchTests gain the new layer rules.
 One mechanical commit per item, each behind the full suite; Size M each.
-Status 2026-11-28: item 1 = overnight item 12 (lane nth-refactor), item 2 = overnight item 13, DEFERRED by D-076 (still open here); item 3 (Worker host + building blocks) DEFERRED by D-075, still open here.
+Status 2026-11-28: item 1 DONE (8e0993b, D-078), item 2 = overnight item 13, DEFERRED by D-076 (still open here); item 3 (Worker host + building blocks) DEFERRED by D-075, still open here.
 
 ### #011 — `outbox_messages.correlation_id` has no index (The Score query scans)
 WS: WS-22
@@ -28,6 +28,10 @@ WS: WS-22
 ### #012 — KIV: legacy sync adapter over the import module
 WS: WS-31
 Design only: `docs/design/legacy-sync.md` (anti-corruption adapter, idempotent upserts keyed by legacy id, backfill then incremental, reconciliation; section 9 covers scaling and offline sync). The built path today is file import (D-074). Size L. Close when a legacy source and its owner exist; D-077.
+
+### #013 — Known issue: with the broker down, one Kafka relay cycle is serial inside one transaction
+WS: WS-41
+With Kafka unreachable, a relay cycle sends up to `Webhooks:Dispatcher:BatchSize` rows (default 20), each waiting `Events:Kafka:MessageTimeoutMs` (default 10 s), all inside ONE transaction that holds the row locks: about 3.3 minutes per cycle with the defaults, longer with a larger configured batch. Found through a flaky test (nth-kafkafix, merge 1082413: the harness clock at 2040 made every leftover row due; 227 rows took about 11 minutes). Not fixed before the cut-off. Size S. Close by stopping the batch after the first transport failure (leave the rest pending), or by giving the relay a cycle deadline; D-079.
 
 ## Done or retired (kept for history; 2026-11-28 03:30 prune, overnight lead)
 

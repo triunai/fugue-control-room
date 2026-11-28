@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Confluent.Kafka;
+using Fugue.Infrastructure.Webhooks;
 using Fugue.Tests.Persistence;
 using Fugue.Tests.Webhooks;
 using Testcontainers.Redpanda;
@@ -79,10 +80,14 @@ public sealed class KafkaPublisherTests(PostgresFixture db) : IAsyncLifetime
     public async Task With_no_broker_the_outbox_row_is_not_marked_dispatched_and_is_retried_later()
     {
         await using WebhookHarness h = await StartAsync("127.0.0.1:1");
+        // Rows other tests left pending are due at T0 too. With no broker each one waits the full message timeout in ONE relay transaction (a full run
+        // leaves 200+, so the cycle ran for over 10 minutes), so they get what a working relay gives them: dispatched. Only this test's row goes to the dead broker.
+        await h.SqlAsync("UPDATE outbox_messages SET status = 'dispatched' WHERE status = 'pending' AND next_attempt_at <= @t", ("t", h.T0));
         Guid message = await h.AddMessageAsync(NewType(), "CLM-down");
 
-        await h.Dispatcher.RunOnceAsync(default);
+        DispatchSummary summary = await h.Dispatcher.RunOnceAsync(default);
 
+        Assert.Equal(1, summary.Relayed);
         Assert.Equal("pending", await h.ScalarAsync<string>("SELECT status FROM outbox_messages WHERE id = @i", ("i", message)));
         Assert.Equal(1, await h.ScalarAsync<int>("SELECT attempts FROM outbox_messages WHERE id = @i", ("i", message)));
         Assert.Contains("ProduceException", await h.ScalarAsync<string>("SELECT last_error FROM outbox_messages WHERE id = @i", ("i", message)));
