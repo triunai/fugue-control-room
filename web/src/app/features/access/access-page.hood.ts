@@ -39,8 +39,8 @@ export const ACCESS_HOOD: HoodNote = {
   ],
   how: [
     'Reads users, groups and roles; changes go to PUT or DELETE /overrides/{userId}/{permission}, needing OVERRIDES_MANAGE.',
-    'Changing an existing override needs If-Match (ETag = row version); a stale one is 412, a missing one 428.',
-    'Effective permissions are one SQL statement: role grants plus allow overrides, minus unexpired deny overrides.',
+    'Effective = (role ∪ group-role ∪ allow overrides) − deny overrides − off modules, in one SQL statement.',
+    'An override with Until is temporary access (a vendor, a contractor): it stops counting once Until passes.',
     'You cannot change your own overrides (409); the override and its grant-audit row commit together.',
   ],
   adrs: [
