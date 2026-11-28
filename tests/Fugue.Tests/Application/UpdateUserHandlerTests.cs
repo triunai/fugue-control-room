@@ -30,7 +30,7 @@ public sealed class UpdateUserHandlerTests
     private static (UpdateUserHandler Handler, FakeAdmin Admin) Build(UserDto? existing, Guid callerId, params string[] callerPermissions)
     {
         var admin = new FakeAdmin();
-        var handler = new UpdateUserHandler(admin, new FakeDirectory(existing), new FakeRoles([Admin, Staff, UserAdmin]), new FakeCaller(callerId, callerPermissions));
+        var handler = new UpdateUserHandler(admin, new FakeDirectory(existing), new FakeRoles([Admin, Staff, UserAdmin]), new FakeCaller(callerId, callerPermissions), new NoCache());
         return (handler, admin);
     }
 
@@ -167,5 +167,12 @@ public sealed class UpdateUserHandlerTests
         public bool IsAuthenticated => true;
 
         public bool HasPermission(string code) => permissions.Contains(code, StringComparer.Ordinal);
+    }
+
+    private sealed class NoCache : Fugue.Application.Caching.IPermissionCacheInvalidator
+    {
+        public ValueTask UserChangedAsync(UserId userId) => ValueTask.CompletedTask;
+
+        public ValueTask AllChangedAsync() => ValueTask.CompletedTask;
     }
 }

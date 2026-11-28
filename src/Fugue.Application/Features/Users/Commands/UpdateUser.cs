@@ -1,6 +1,7 @@
 using FluentResults;
 using FluentValidation;
 using Fugue.Application.Abstractions;
+using Fugue.Application.Caching;
 using Fugue.Application.Features.Roles.Models;
 using Fugue.Application.Features.Roles.Repos;
 using Fugue.Application.Features.Users.Models;
@@ -30,7 +31,8 @@ public sealed class UpdateUserValidator : AbstractValidator<UpdateUserCommand>
     }
 }
 
-public sealed class UpdateUserHandler(IUserAdmin admin, IUserDirectory directory, IRoleCatalog roles, ICurrentUser currentUser)
+public sealed class UpdateUserHandler(
+    IUserAdmin admin, IUserDirectory directory, IRoleCatalog roles, ICurrentUser currentUser, IPermissionCacheInvalidator permissionCache)
     : ICommandHandler<UpdateUserCommand, Result<UserDto>>
 {
     public async ValueTask<Result<UserDto>> Handle(UpdateUserCommand command, CancellationToken cancellationToken)
@@ -73,6 +75,7 @@ public sealed class UpdateUserHandler(IUserAdmin admin, IUserDirectory directory
             return Result.Fail<UserDto>(saved.Errors);
         }
 
+        await permissionCache.UserChangedAsync(command.Id); // roles, name or active flag changed: the cached /me is stale
         return await directory.GetAsync(command.Id, cancellationToken) is { } dto ? Result.Ok(dto) : Result.Fail<UserDto>(UserErrors.NotFound(command.Id));
     }
 

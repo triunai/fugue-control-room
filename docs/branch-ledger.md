@@ -8,5 +8,5 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
 | `nth-useredit` | `.worktrees/nth-useredit` | 8e0993b | nth-useredit (relay-dispatched) | W-040 | item 25: edit users (PUT /users/{id}, If-Match), show-password toggle, add/edit gap audit; hard stop 12:50 |
-| `nth-hybridcache` | `.worktrees/nth-hybridcache` | 8e0993b | nth-hybridcache (relay-dispatched) | W-041 | item 27: HybridCache with stampede protection on hot reads; hard stop 12:50 |
+| `nth-hybridcache` | `.worktrees/nth-hybridcache` | 8e0993b | nth-hybridcache (relay-dispatched) | W-041 | item 27: READY - /me HybridCache + tag invalidation (groups, overrides, modules, user edit); k6 /me p95 382->241 ms; claims cache deferred |
 | `nth-readme2` | `.worktrees/nth-readme2` | 7adb4d9 | nth-readme2 (Sonnet), relay-dispatched | W-040 | item 11: README counts and links from final main, keyword full-text wording, ClaimSearchHitDto comment fix |

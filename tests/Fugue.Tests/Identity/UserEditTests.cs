@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Fugue.Application.Features.Me.Models;
 using Fugue.Application.Features.Users.Models;
 using Fugue.Domain.Identity;
 using Fugue.Tests.Persistence;
@@ -41,6 +42,21 @@ public sealed class UserEditTests(PostgresFixture db)
 
     private static async Task<string> CodeAsync(HttpResponseMessage response) =>
         JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement.GetProperty("code").GetString()!;
+
+    [Fact]
+    public async Task A_role_edit_makes_the_edited_users_next_me_fresh()
+    {
+        using HttpClient admin = db.ClientAs(DevUsers.Admin);
+        (string email, Fugue.Domain.Ids.UserId id) = await db.NewUserAsync([RoleCodes.Staff]); // signs in with the dev password
+        UserDto user = (await admin.GetFromJsonAsync<UserDto>($"/api/v1/users/{id}"))!;
+        using HttpClient client = db.ClientAs(email);
+        Assert.Equal([RoleCodes.Staff], (await client.GetFromJsonAsync<MeDto>("/api/v1/me"))!.Roles); // cached now
+
+        HttpResponseMessage edited = await admin.SendAsync(Put(user.Id.Value, (await admin.GetAsync($"/api/v1/users/{user.Id}")).Headers.ETag!.Tag, new { displayName = user.DisplayName, isActive = true, roles = new[] { RoleCodes.Manager } }));
+        Assert.Equal(HttpStatusCode.OK, edited.StatusCode);
+
+        Assert.Equal([RoleCodes.Manager], (await client.GetFromJsonAsync<MeDto>("/api/v1/me"))!.Roles);
+    }
 
     [Fact]
     public async Task Admin_edits_name_and_roles_with_if_match_and_a_stale_or_missing_etag_changes_nothing()

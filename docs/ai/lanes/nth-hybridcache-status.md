@@ -3,7 +3,7 @@
 ## Commits
 - `1b56beb` slice 1: feat(api): HybridCache wiring, L1 only, with the /me cache port and its invalidator
 - `856d24c` slice 2: feat(api): cache GET /me per user and invalidate it on permission writes
-- slice 5: test(load): stampede "after" runs with the /me cache and the before/after overlay
+- `00d3a35` slice 5: test(load): stampede "after" runs with the /me cache and the before/after overlay
 
 ## Gates (copied from output)
 - `dotnet build`: 0 Warning(s), 0 Error(s)
@@ -44,5 +44,8 @@ The uncached endpoints got slower in the after runs: same code, so this is machi
 fleet running), not the cache. The setup() warm-up call primes /me, so the k6 wave reads a warm entry; cold-key coalescing
 is proven by the unit test (200 concurrent misses, loader runs once), not by k6.
 
-## Next
-- Merge main after nth-useredit merges and add one invalidation call to its user-update handler.
+- Full suite (lock, head 5501f11): Fugue.Tests Passed 854 Failed 0 (12 m 47 s); ArchTests Passed 37.
+- After merging main (useredit): UpdateUser invalidates perm:user:{id}; targeted Users+Me+cache run Passed 36 Failed 0;
+  with that line removed `A_role_edit_makes_the_edited_users_next_me_fresh` fails (`Collections differ`).
+- Slice 3 (claims read cache) skipped at the go/no-go: claims_list already met its thresholds, and the key/invalidation
+  surface is the leak risk the contract calls a FAIL. Proposed as a deferred D-row in the lane report.
