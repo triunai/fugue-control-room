@@ -100,8 +100,8 @@ export const routes: Routes = [
       {
         path: 'claims/import',
         canActivate: [permissionGuard],
-        data: { permission: 'CLAIMS_HANDLE', section: 'Claims', breadcrumb: 'Import' },
-        title: 'Import · Fugue Console',
+        data: { permission: 'CLAIMS_HANDLE', section: 'Claims', breadcrumb: 'Import legacy claims' },
+        title: 'Import legacy claims · Fugue Console',
         loadComponent: () => import('./features/import/import-page').then((m) => m.ImportPage),
       },
       {
