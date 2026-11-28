@@ -1,0 +1,209 @@
+{
+  "schema": 1,
+  "scenario": "stampede",
+  "label": "repeat run",
+  "startedAt": "2026-11-28T03:44:35.157Z",
+  "durationSec": 24.60087,
+  "target": "http://localhost:5431",
+  "k6Version": "v2.4.0",
+  "env": {
+    "note": "Load profile: sign-in limiter raised, API + Postgres + k6 on one laptop."
+  },
+  "limits": {
+    "p95": 300,
+    "p99": 800,
+    "failRate": 0.01
+  },
+  "totals": {
+    "requests": 3000,
+    "rps": 123.31976815883586,
+    "failedRate": 0,
+    "checksRate": 1,
+    "droppedIterations": 0,
+    "peakRps": 971
+  },
+  "thresholds": [
+    {
+      "metric": "http_req_duration{endpoint:me}",
+      "expr": "p(95)<300",
+      "ok": false
+    },
+    {
+      "metric": "http_req_duration{endpoint:me}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{phase:run}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{phase:run}",
+      "expr": "p(95)<300",
+      "ok": false
+    },
+    {
+      "metric": "http_req_duration{phase:run}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{endpoint:me}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "checks",
+      "expr": "rate>0.99",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{endpoint:claims_search}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{phase:run}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{endpoint:claims_search}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_list}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_list}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_search}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_search}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{endpoint:claims_list}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{endpoint:claims_list}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{endpoint:me}",
+      "expr": "count>=0",
+      "ok": true
+    }
+  ],
+  "overall": {
+    "min": 3.166,
+    "avg": 96.43477166666666,
+    "p50": 59.3565,
+    "p90": 192.5609,
+    "p95": 322.536,
+    "p99": 392.834359999999,
+    "max": 733.522
+  },
+  "endpoints": {
+    "me": {
+      "count": 1000,
+      "failRate": 0,
+      "min": 6.683,
+      "avg": 174.80370600000012,
+      "p50": 154.793,
+      "p90": 348.01160000000004,
+      "p95": 365.92625,
+      "p99": 524.6348999999999,
+      "max": 733.522
+    },
+    "claims_list": {
+      "count": 1000,
+      "failRate": 0,
+      "min": 3.166,
+      "avg": 63.581219000000004,
+      "p50": 58.7325,
+      "p90": 72.20450000000001,
+      "p95": 80.3021,
+      "p99": 255.81324,
+      "max": 270.945
+    },
+    "claims_search": {
+      "count": 1000,
+      "failRate": 0,
+      "min": 3.856,
+      "avg": 50.91938999999997,
+      "p50": 50.209500000000006,
+      "p90": 63.592600000000004,
+      "p95": 68.16199999999999,
+      "p99": 76.68865,
+      "max": 217.276
+    }
+  },
+  "timeline": {
+    "widthSec": 1,
+    "points": [
+      {
+        "t": 0,
+        "p50": 156.157,
+        "p95": 365.908,
+        "p99": 533.238,
+        "rps": 971,
+        "err": 0
+      },
+      {
+        "t": 1,
+        "p50": 8.374,
+        "p95": 431.103,
+        "p99": 431.681,
+        "rps": 29,
+        "err": 0
+      },
+      {
+        "t": 11,
+        "p50": 50.053,
+        "p95": 67.21,
+        "p99": 73.431,
+        "rps": 348,
+        "err": 0
+      },
+      {
+        "t": 12,
+        "p50": 62.213,
+        "p95": 240.642,
+        "p99": 258.627,
+        "rps": 652,
+        "err": 0
+      },
+      {
+        "t": 23,
+        "p50": 45.079,
+        "p95": 63.936,
+        "p99": 70.634,
+        "rps": 383,
+        "err": 0
+      },
+      {
+        "t": 24,
+        "p50": 52.231,
+        "p95": 71.119,
+        "p99": 204.708,
+        "rps": 617,
+        "err": 0
+      }
+    ]
+  }
+}
