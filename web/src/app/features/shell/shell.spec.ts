@@ -135,4 +135,11 @@ describe('Shell stack dialog', () => {
     await settle(fixture);
     expect(dialog()).toBeNull();
   });
+
+  it('Help opens the module guide dialog', async () => {
+    const fixture = render();
+    (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('[data-testid="help"]')!.click();
+    await settle(fixture);
+    expect(document.querySelector('[data-testid="help-dialog"]')).not.toBeNull();
+  });
 });
