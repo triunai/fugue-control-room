@@ -73,6 +73,85 @@ Shown from the presenter's machine, not committed: the slide is Dex Horthy's (@d
 | Rollout, deployment | Push to origin and a version tag; the demo stack on :8080. NO hosted deployment yet (gap) |
 | Prod, users | The four personas on the demo stack |
 
+### The factory in Dex Horthy's shape, with our hygiene loop
+
+```mermaid
+flowchart TB
+  subgraph IN["1. Inputs"]
+    ASK["owner asks"]
+    RED["CI red, incidents: Bruno 429, Kafka stall"]
+  end
+  subgraph TODO["Stuff to do"]
+    PLAN["docs/plans/overnight-2026-11-28.md + docs/workstreams.md + docs/state-backlog.md"]
+  end
+  subgraph ORCH["2. Orchestration"]
+    DISP["dispatcher: lane contracts, OWNERS map routes files, model routing"]
+    INTEG["integrator: merges, pushes, writes the spine"]
+  end
+  subgraph HARN["3. Harness"]
+    RULES["HEADER + OWNERS rules, AGENTS.md, CLAUDE.md"]
+    GATES["lefthook: refs-trailer, commit-link-check, fix-has-test, secrets-scan, test-integrity, prune-check, adr-check, ledger-check"]
+    LOCK["suite lock"]
+  end
+  subgraph SAND["4. Sandbox"]
+    WT["git worktree + branch per lane, own ports, throwaway Postgres"]
+  end
+  subgraph MODEL["5. Model"]
+    MOD["Opus: API, migrations, security; Sonnet: UI, docs; Haiku: research"]
+  end
+  subgraph TEST["6. Testing"]
+    AUTO["xUnit + Testcontainers, NetArchTest, Bruno, Vitest, k6, Stryker, PICT"]
+    AGENT["headless Playwright per lane, 4-persona smoke"]
+  end
+  subgraph REV["7. Review"]
+    VERIFY["dispatcher verifies against git: sha, diff inside OWNERS"]
+    BASE["base checks on main without the branch"]
+    HUMAN["owner review and asks"]
+  end
+  subgraph SHIP["8. Integrate and ship"]
+    MERGE["local merge, no GitHub PR"]
+    PREPUSH["pre-push full suite: stack-check"]
+    CI["GitHub Actions: backend, scripts, web, api-contract"]
+    PUB["push + tag"]
+    PROD["demo stack on :8080"]
+  end
+  subgraph HYG["9. Hygiene loop"]
+    LEDGER["retire the branch-ledger row"]
+    PRUNE["prune worktree + branch"]
+    CLOSE["close-workstream.mjs: W closed into CHANGELOG + project-log"]
+    TRACE["trace-index.mjs regenerates traceability"]
+    HOT["hot-state overwritten"]
+  end
+  ASK --> PLAN
+  RED --> PLAN
+  PLAN --> DISP
+  DISP --> WT
+  RULES --> WT
+  MOD --> WT
+  WT --> AUTO
+  WT --> AGENT
+  AUTO --> VERIFY
+  AGENT --> VERIFY
+  VERIFY --> INTEG
+  BASE --> INTEG
+  HUMAN --> PLAN
+  INTEG --> MERGE
+  GATES --> MERGE
+  LOCK --> PREPUSH
+  MERGE --> PREPUSH
+  PREPUSH --> PUB
+  PUB --> CI
+  CI -- red --> PLAN
+  PUB --> PROD
+  MERGE --> LEDGER
+  LEDGER --> PRUNE
+  PRUNE --> CLOSE
+  CLOSE --> TRACE
+  TRACE --> HOT
+```
+
+The hygiene loop is what kept 35+ lanes from rotting the repo: every lane is born as a ledger row and dies as one (`scripts/spine/ledger-check.sh` flags a row with no worktree or a worktree with no row), its worktree and branch are removed only when `git log main..<branch>` is empty, and `prune-check` warns about finished threads left on the board. `close-workstream.mjs` turns a finished W row into a dated CHANGELOG and project-log entry with its merge shas, `refs-trailer` and `commit-link-check` make every commit cite a W, D or ADR that resolves, and `trace-index.mjs` regenerates `docs/traceability.md` from those trailers so any line of code leads back to its decision. `adr-check` keeps ADRs and D-rows linked both ways; hot-state is overwritten, never appended, so the next session resumes from one page.
+
 Two live examples from 2026-11-28:
 - **nth-brunoci**: the owner pasted a red CI `api-contract` run (115 of 127 requests passed: the collection signed in more often than the 20-per-minute limiter allows, then got 401s). A fix lane made the collection sign in once per account per run with the limiter still on; 127 of 127 passed on the demo stack; merged in 766ff6f.
 - **nth-kafkafix**: the refactor lane's base check found that the Kafka "no broker" test relays every leftover outbox row to a dead address, stalling or crashing a full run; a tests-only fix lane made the test relay only its own row (merged 1082413), and the full suite went from over 12 minutes to 1 m 30 s in one run. Behind the flaky test sat a real production risk, now a recorded known issue (D-079, backlog #013): with the broker down one relay cycle is serial inside one transaction.
