@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ClaimsApi, EMPTY_CLAIM_FILTER } from './claims.api';
+import { ClaimsApi, EMPTY_CLAIM_FILTER, claimKeys } from './claims.api';
 
 function setup() {
   TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
@@ -59,5 +59,13 @@ describe('ClaimsApi', () => {
     expect(out.Submitted).toEqual({ n: 2, more: false });
     expect(out.UnderReview).toEqual({ n: 1, more: true });
     expect(out.Settled).toEqual({ n: 0, more: false });
+  });
+});
+
+describe('claimKeys', () => {
+  it('gives a paged (infinite) list a key apart from the plain list, so Home and My claims cannot share a cache entry', () => {
+    expect(claimKeys.listPaged(EMPTY_CLAIM_FILTER)).not.toEqual(claimKeys.list(EMPTY_CLAIM_FILTER));
+    // still under the list prefix, so invalidating ['claims', 'list'] reaches it
+    expect(claimKeys.listPaged(EMPTY_CLAIM_FILTER).slice(0, 2)).toEqual(['claims', 'list']);
   });
 });

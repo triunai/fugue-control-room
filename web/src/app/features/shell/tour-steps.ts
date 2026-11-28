@@ -71,7 +71,7 @@ const QUEUE: TourStep[] = [
 const HANDLE: TourStep[] = [
   {
     page: { claimFrom: '/claims/queue', prefer: /submitted/i },
-    selector: '.actions',
+    selector: '[data-tour="claim-actions"]',
     title: 'An officer picks up, asks, decides',
     description:
       'Pick up, request info, set a reserve, then approve or reject: only the actions valid for the status show. A stale tab gets a 412 instead of an overwrite.',
@@ -84,25 +84,25 @@ const HANDLE: TourStep[] = [
 ];
 const SETTLE: TourStep = {
   page: { claimFrom: '/claims/queue', prefer: /approved/i },
-  selector: '.actions',
+  selector: '[data-tour="claim-actions"]',
   title: 'A manager settles',
   description: 'An approved claim is settled by a manager, which closes it and records the paid amount.',
 };
 const TEAM: TourStep[] = [
   {
     page: { path: '/claims/team' },
-    selector: '[data-testid="exposure-totals"]',
+    selector: '[data-tour="exposure-totals"]',
     title: 'Team and exposure per currency',
     description: 'One total for each currency, taken from the claims as they stand now.',
   },
   {
-    selector: '[data-testid="exposure-summary"]',
+    selector: '[data-tour="exposure-note"]',
     title: 'Why there is no grand total',
     description: 'Adding PHP to THB needs an exchange rate and a date; without them the sum would be a made-up number.',
   },
   {
     page: { path: '/claims/team' },
-    selector: '[data-testid="workload-kpis"]',
+    selector: '[data-tour="team-workload"]',
     title: 'Workload',
     description: 'Unassigned claims and what each officer carries, to spot an overloaded queue.',
   },
