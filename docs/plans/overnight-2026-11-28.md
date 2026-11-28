@@ -108,7 +108,7 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
       protection; hard stop 12:50, else defer with a D-row.
 - [x] 28. (merge 766ff6f at f89c523; bruno/ only; on the demo stack after an api restart (fresh limiter, as in CI) the full `bru run --env compose` passes 127/127 requests, 153/153 tests) nth-brunoci (FIX, W-041): CI api-contract run was red (127 requests, 12 failed: 429 at sign-in, then 401s); the collection
       caches one token per account per run, the limiter stays on. Wrap gate: full `bru run --env compose` green.
-- [ ] 29. nth-kafkafix (FIX, tests only, dispatched 12:00 as the critical path, READY or BLOCKED by 12:35; if BLOCKED a known-issue D-row and the dispatcher decides the push at 12:45; never --no-verify): KafkaPublisherTests' no-broker test crashes the test host
+- [x] 29. (merge 1082413 at 275b9e5, W-041: the no-broker test now relays only its own outbox row instead of every leftover due row (about 227 in a full run, 3 s timeout each, one transaction); injection: the old relay-all form fails the new assertion (expected 1, actual 2); lane full suite in ONE run 849/849 + 37/37 in 1 m 30 s (was over 12 min)) nth-kafkafix (FIX, tests only, dispatched 12:00 as the critical path, READY or BLOCKED by 12:35; if BLOCKED a known-issue D-row and the dispatcher decides the push at 12:45; never --no-verify): KafkaPublisherTests' no-broker test crashes the test host
       (librdkafka -> 127.0.0.1:1) on this machine, so the full suite does not finish in one run; known issue if not fixed by 13:45.
 README refresh (11) slides to about 12:30.
 
