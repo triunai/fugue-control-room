@@ -49,3 +49,14 @@ describe('nav groups', () => {
     expect(groups[0].label).toBe('Claims');
   });
 });
+
+describe('Fugue, explained', () => {
+  it('is an external nav item every persona sees, claimant included', () => {
+    const none = () => false;
+    const item = visibleGroups(none)
+      .flatMap((g) => g.items)
+      .find((i) => i.label === 'Fugue, explained');
+    expect(item).toMatchObject({ path: '/explained/index.html', external: true });
+    expect(item?.permission).toBeUndefined();
+  });
+});

@@ -64,7 +64,7 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
 - [x] 11f. (merges 3149854 + 42a314a, nth-fixes, W-033; on :8080 03:53 admin: Claims cell "default (on)", AUDIT off -> cells "—" and 0 audit calls in 6 s, on -> 6 refetches; 0 console errors (the 6 audit 404s on switching off are gone); web 311 tests) /modules glitches (owner 03:19, admin, AUDIT off then on): "Last changed" for Claims stuck on "…"; a stray dark tooltip
       "/audit?limit&entityType&entityId" over the page header; the hood panel polls GET /audit while AUDIT is off (404 run): stop
       polling when the module is off. Headless: toggle AUDIT off and on, 0 console errors.
-- [ ] 11g. Optional, slack only: one-line description tooltip per permission chip on My profile, from the permission catalog if it
+- [-] 11g. (DEFERRED by D-076: needs an src/ DTO field; machine unreliable) Optional, slack only: one-line description tooltip per permission chip on My profile, from the permission catalog if it
       already has descriptions; never invent provenance (role vs override), /me does not return it. Profile page otherwise stays.
 - [x] 11a. (merge f967355, nth-import, W-031, D-074. Migration gate: 20261127194749_AddClaimImports orders after AddUsersManagePermission, new table only (CHECKs, RESTRICT FKs, unique claim), Down drops it, ClaimImportsMigrationRollbackTests in ImportApiTests.cs, catalog row 13, `has-pending-model-changes`: none. Lane run 1 809/810, the one red its own idempotent-creates pin, fixed in code (cc90cc1: import create not [Idempotent], the ledger makes a retry 409); run 2 at cc90cc1 finished green after the merge decision: Fugue.Tests 810/810, Arch 37/37; the pre-push suite on the merged tree is the final gate. Staff-only via CLAIMS_HANDLE, audited as import.create, one domain method Claim.RecordImport; house-rule miss noted: 2754f2b was staged with `add -A <paths>` (lane-only files). On merged main: build 0 warnings, OpenAPI regen in the merge, Import + OpenApi + Idempotency 135/135, web 368 tests, `bru run import --env compose` 11/11 (13 tests); headless on :8080 (lane script, tour off): 22 PASS - xlsx 3 created then 0 ready on re-upload (3 imported before), csv rules, mbox routed to HK by domain, eml MY, chat with transcript note, claimant has no Import entry and /claims/import -> /unavailable, 0 console errors; 1 FAIL is the count (7 not 6) because the Bruno import run had added one) Intake import module (brief: "claimants submit by phone or email", staff work "from shared inboxes and
       spreadsheets"). Staff-only page "Import" with three sources, all producing DRAFT claims a person reviews before they
@@ -92,6 +92,22 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
       story; linked from README and runbook 00; a D-row. Verify every command on the RECREATED clean stack, plus the full
       `cd bruno/fugue && npx bru run --env compose` green (restart api first, failure mode 25). Tick with counts.
 
+## P1b — owner asks at 11:26 (W-040, web-only lanes from ddd2ded, READY by 12:30; merge order: refactor, useredit, web lanes)
+- [ ] 18. nth-tour: the admin tour covers the core brief (claim flow).
+- [x] 19. (merge 252902d, W-040; spec pins no "hybrid"; on :8080 as staff first focus shows the explainer with 2 Meilisearch links and no "hybrid", "SG motor" 8 hits with highlights, 0 errors) nth-searchui: a more obvious search bar and a first-use explainer with Meilisearch links; honest: keyword full-text, not hybrid (no embedder).
+- [x] 20. (merge 4d51e03 at f1bc899, W-040; nav reads "Import legacy claims", 2 sample-file links (claims.csv downloads), 0 errors) nth-importui: Import page redesign (icons, drop zone, sample-file links).
+- [x] 21. (merge d4b7c35, W-040; JSON regenerated in the merge (76 D-rows, 22 closed W, 1 release); web 369 tests, scripts 89; on :8080 /decisions -> /changelog, nav says Changelog, "How versioning works here" panel, 0 errors) nth-changelog: Decisions renamed Changelog (/changelog, /decisions redirects); versioning via commits, W, D, ADRs and CHANGELOG entries.
+- [x] 22. (merge 3bf7d4e, restyle + MIT NOTICE merged by sha 4ced87c (805a298), W-040; light and dark both render 6 diagrams (bg #fbf8f1 / #1c1f26); nav entry merged c4c89cd (e5163e0; sidebar supports external links): visible as admin and as self, opens /explained/index.html in a new tab, 0 errors; web 380 tests; vendors mermaid 11.16.1 under web/public/_runtime; on :8080 Help -> /explained/index.html, 200, "Fugue, explained", 6 diagrams render, 0 errors) nth-explained: the owner's "Fugue, Explained" artifact in docs/explained + web/public/explained + one Help link.
+- [x] 23. (merge 5b6cc96, W-040; formula checked by the lane against UserAccessReader.cs:11-15 and ADR-008; web 368 tests; on :8080 as admin "How overrides work" expands to the formula, 0 errors) nth-overrides: explain the override formula on Users & access (temporary vendor or contractor access).
+- [x] 24. (merge 055d763, W-040; web 374 tests; on :8080 a users.create request with 2 audit rows (User + UserRole) now draws 2 steps / 2 bars (was 4: one API + one Handler per row), 0 errors) nth-scorefix: The Score groups one request's N audit rows by command instead of N API calls.
+- [ ] 25. nth-useredit (src/, after nth-refactor merges): edit users via PUT /users/{id} with If-Match, a show-password toggle, an entity add/edit gap audit.
+- [ ] 26. nth-k6 (W-041, from ddd2ded, owner ask 11:30): k6 smoke/load/stampede scenarios under load/, a self-contained HTML percentile
+      report (p50/p90/p95/p99), a compare.html overlay of two runs, docs/runbooks/load-testing.md, a README link; NO src/ (own API on
+      :5431 with the limiter raised, throwaway pg :55531). OWNERS Addendum 11.
+- [ ] 27. nth-hybridcache (W-041, pending dispatch after nth-refactor merges): Microsoft.Extensions.Caching.Hybrid with stampede
+      protection; hard stop 12:50, else defer with a D-row.
+README refresh (11) slides to about 12:30.
+
 ## P2 — after the lanes merge (backlog #010)
 P2 ORDER (relay 05:13, all features in by about 05:30, so 12-13 GO): (1) nth-refactor (Opus) item 12, ALONE on src/ and tests/
 (nothing runs in parallel: 11g needs an src/ change because no DTO exposes permissions.description); (2) after 12 merges,
@@ -99,11 +115,11 @@ nth-options (Sonnet) item 13; (3) 11g after 13, optional, behind the same 12:00 
 13 only if time allows before 12:00, else defer; (6) about 12:00 nth-readme (Sonnet) item 11 from the final main, plus the
 one-line ClaimSearchHitDto comment fix. Then the integrator's 13:00-14:00 fixes window and the 14:00 wrap (16, 17).
 Run 12 + 13 only if every feature lane has merged by ~10:30, else defer with a D-row. 14 (Worker host) is a deferral candidate.
-- [ ] 12. Per-slice folders `Commands/ Queries/ Models/ Repos/ Helpers/` + DI extension; namespaces follow folders (IDE fix or
+- [ ] 12. (lane nth-refactor from afc6fe9, W-039; base full suite 849 + Arch 37 at push 6, 3a6fb56) Per-slice folders `Commands/ Queries/ Models/ Repos/ Helpers/` + DI extension; namespaces follow folders (IDE fix or
       `dotnet format analyzers --diagnostics IDE0130`); full suite.
-- [ ] 13. Remaining hardcoded values to IOptions (page sizes kept in step with validators, webhook replay window, SLA days).
-- [ ] 14. `Fugue.Worker` host for the four BackgroundServices + a building-blocks project for pipeline behaviours; ArchTests.
-- [ ] 15. Optional: audit page "Sign-ins" tab over `access_audit`; reword the `[NoAudit]` comment on LoginCommand.
+- [-] 13. (DEFERRED by D-076: item 12 had not merged by 11:00; its 09:13 suite stalled while the host slept, failure mode 36) Remaining hardcoded values to IOptions (page sizes kept in step with validators, webhook replay window, SLA days).
+- [-] 14. (DEFERRED by D-075 at 09:15: two hours lost to the OrbStack hang, 10:00 gate; stays backlog #010 part 3) `Fugue.Worker` host for the four BackgroundServices + a building-blocks project for pipeline behaviours; ArchTests.
+- [-] 15. (DEFERRED by D-076, 10:14: machine asleep on battery, failure mode 36) Optional: audit page "Sign-ins" tab over `access_audit`; reword the `[NoAudit]` comment on LoginCommand.
 
 ## P3 — wrap (by 14:00)
 - [ ] 16. CHANGELOG v0.0.3 + tag covering ALL of 11-28 (D-063..D-065+, ADR-014, every merged nth lane), a docs/project-log.md entry

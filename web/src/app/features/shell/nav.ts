@@ -4,6 +4,8 @@ export interface NavItem {
   /** Permission CODE(S) (any of). Absent: always visible. */
   permission?: string | string[];
   icon: string;
+  /** Opens a static page outside the app (new tab); `path` is then a plain URL, never a route. */
+  external?: boolean;
 }
 
 export interface NavGroup {
@@ -50,7 +52,7 @@ export const NAV: NavGroup[] = [
         icon: 'M2.5 2.5h11v11h-11zM2.5 6.5h11M2.5 10h11M7 2.5v11',
       },
       {
-        label: 'Import',
+        label: 'Import legacy claims',
         path: '/claims/import',
         permission: 'CLAIMS_HANDLE',
         icon: 'M8 2.5v7M5 6.5l3 3 3-3M3 10.5v3h10v-3',
@@ -95,10 +97,16 @@ export const NAV: NavGroup[] = [
         icon: 'M2.5 2.5h4.5v4.5H2.5zM9 2.5h4.5v4.5H9zM2.5 9h4.5v4.5H2.5zM9 9h4.5v4.5H9z',
       },
       {
-        label: 'Decisions',
-        path: '/decisions',
+        label: 'Changelog',
+        path: '/changelog',
         permission: ['CLAIMS_ALL', 'MODULES_VIEW'],
         icon: 'M8 2.5v11M8 5.5H3.5M8 10.5h4.5M2.5 5.5h2M11.5 10.5h2',
+      },
+      {
+        label: 'Fugue, explained',
+        path: '/explained/index.html',
+        external: true,
+        icon: 'M4 2.5h8v11H4zM6 5.5h4M6 8h4M6 10.5h2.5',
       },
       {
         label: 'Webhooks',

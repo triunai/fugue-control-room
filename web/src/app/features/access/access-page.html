@@ -123,6 +123,28 @@
         </form>
       </div>
 
+      <details class="ov-explain panel-pad border-b border-line">
+        <summary class="font-semibold">How overrides work</summary>
+        <p class="ov-formula mono text-sm">
+          effective = (role grants ∪ group-role grants ∪ allow overrides) − deny overrides − switched-off modules
+        </p>
+        <ul class="ov-points text-sm text-muted">
+          <li>
+            <strong>Deny wins.</strong> An unexpired deny removes a permission even if a role or an allow grants it.
+          </li>
+          <li>
+            <strong>Until makes it temporary.</strong> For a vendor, contractor or auditor who needs access for days:
+            grant it with a reason and an expiry instead of creating a new role. After Until it stops counting.
+          </li>
+          <li>
+            <strong>Every override is audited</strong> with its reason, and replacing one checks its version first.
+          </li>
+        </ul>
+        <a class="text-sm" [href]="explainerUrl" target="_blank" rel="noopener"
+          >Source: ADR-008, auth and identity model</a
+        >
+      </details>
+
       @if (!userId()) {
         <fg-empty-state title="Choose a user" body="Pick someone from the list above, or paste a user id." />
       } @else {
@@ -186,6 +208,7 @@
               <div class="field">
                 <label class="label" for="ov-until">Until <span class="font-normal">(optional)</span></label>
                 <fg-date inputId="ov-until" formControlName="expiresAt" [withTime]="true" />
+                <span class="text-sm text-muted">Leave empty for no expiry; set it for temporary access.</span>
               </div>
               <div class="field col-span-full">
                 <label class="label" for="ov-reason">Reason</label>

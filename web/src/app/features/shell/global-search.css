@@ -1,7 +1,7 @@
 :host {
   display: block;
   flex: 0 1 26rem;
-  min-width: 12rem;
+  min-width: 18rem;
 }
 .gs {
   position: relative;
@@ -11,20 +11,106 @@
   font: inherit;
   font-size: 0.875rem;
   color: var(--text);
-  background: var(--surface2);
-  border: 1.5px solid var(--line);
+  background: var(--surface);
+  border: 1.5px solid var(--muted);
   border-radius: 999px;
-  padding: 0.35rem 6.5rem 0.35rem 0.9rem;
+  padding: 0.45rem 10.5rem 0.45rem 2.3rem;
+}
+.gs-input:hover {
+  border-color: var(--accent-text);
+}
+.gs-icon {
+  position: absolute;
+  left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+.gs-tools {
+  position: absolute;
+  right: 0.45rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.gs-kbd {
+  font: inherit;
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0.18rem 0.4rem;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.gs-help {
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  width: 1.3rem;
+  height: 1.3rem;
+  padding: 0;
+  color: var(--accent-text);
+  background: none;
+  border: 1.5px solid var(--accent-text);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.gs-help:hover,
+.gs-help[aria-expanded='true'] {
+  background: var(--accent-soft);
+}
+.gs-help:focus-visible,
+.gs-intro a:focus-visible,
+.gs-intro-ok:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+.gs-intro {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  padding: 0.8rem 0.9rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--surface2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-overlay);
+}
+.gs-intro p {
+  margin: 0 0 0.5rem;
+}
+.gs-intro-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.gs-intro a {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+.gs-intro-ok {
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.8rem;
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  border: 0;
+  border-radius: var(--radius-control);
+  cursor: pointer;
 }
 .gs-input:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 1px;
 }
 .gs-badge {
-  position: absolute;
-  right: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--accent-text);

@@ -19,10 +19,15 @@ Three owner suggestions, planned together and NOT started:
 2. IOptions for what is still hardcoded. Already options-bound (12 classes, 22 files): CORS, audit, auth, rate limits, dispatcher, publisher, idempotency, Kafka, Meilisearch, password, persistence, webhooks. Still constants: list page sizes (`DefaultLimit`/`MaxLimit` in 8 queries; part of the API contract, so options must keep the validator in step), the webhook replay window (5 min), the dev sink body cap, SLA day counts (pickup 2, decision 14, answer 7, settle 7; mirrored in the web `sla.ts`).
 3. Runners and cross-cutting code as their own projects: the four `BackgroundService`s (`OutboxDispatcherService`, `ClaimIndexer`, `AuditIndexer`, `IdempotencyPurgeService`) into a `Fugue.Worker` host (the API stops hosting them; compose gets a `worker` service), and the Mediator pipeline behaviours and shared primitives (`Application/Common`) into a building-blocks project. ArchTests gain the new layer rules.
 One mechanical commit per item, each behind the full suite; Size M each.
+Status 2026-11-28: item 1 = overnight item 12 (lane nth-refactor), item 2 = overnight item 13, DEFERRED by D-076 (still open here); item 3 (Worker host + building blocks) DEFERRED by D-075, still open here.
 
 ### #011 — `outbox_messages.correlation_id` has no index (The Score query scans)
 WS: WS-22
 `GET /audit/trace/{correlationId}` (nth-score, merge dacfb06) reads `Sql/audit/trace.sql`; its outbox leg filters `outbox_messages.correlation_id`, which has no index, so that part scans the table (audit_log's leg is fine). Harmless at demo volume. Size S. Close with a migration adding a btree index on `outbox_messages(correlation_id)` through the migration QA gate and catalog row; not on submission day (migrations are a critical seam).
+
+### #012 — KIV: legacy sync adapter over the import module
+WS: WS-31
+Design only: `docs/design/legacy-sync.md` (anti-corruption adapter, idempotent upserts keyed by legacy id, backfill then incremental, reconciliation; section 9 covers scaling and offline sync). The built path today is file import (D-074). Size L. Close when a legacy source and its owner exist; D-077.
 
 ## Done or retired (kept for history; 2026-11-28 03:30 prune, overnight lead)
 

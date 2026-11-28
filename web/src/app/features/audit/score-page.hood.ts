@@ -33,7 +33,7 @@ export const SCORE_HOOD: HoodNote = {
     },
     {
       layer: 'web',
-      text: 'score-layout puts each voice in its lane (API, Handler / Audit, Event, Webhook) on a linear axis and joins the steps.',
+      text: 'score-layout groups the per-entity audit rows of a request into one step and lanes it with its events and deliveries.',
       path: 'web/src/app/features/audit/score-layout.ts',
     },
   ],

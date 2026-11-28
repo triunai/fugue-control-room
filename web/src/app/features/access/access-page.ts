@@ -20,6 +20,7 @@ import { RefChip } from '../../ui/ref-chip';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
 import { DatePicker } from '../../ui/date-picker';
 import { Select, SelectOption } from '../../ui/select';
+import { hoodUrl } from '../hood/hood-note';
 import { RolesMatrix } from './roles-matrix';
 import { UserCreateDrawer } from './user-create-drawer';
 
@@ -52,6 +53,7 @@ export class AccessPage {
   private readonly overlays = inject(Overlays);
   protected readonly access = inject(AccessService);
 
+  protected readonly explainerUrl = hoodUrl('docs/adr/ADR-008-auth-and-identity-model.md');
   protected readonly codeOptions: SelectOption[] = PERMISSION_CODES.map((c) => ({ value: c, label: c }));
   protected readonly effectOptions: SelectOption[] = [
     { value: 'deny', label: 'Deny' },

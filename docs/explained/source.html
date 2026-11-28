@@ -1,0 +1,520 @@
+<!-- Source: https://claude.ai/artifact/3qwUeyZAqatz2249F5ueME (version 1795783792-77b3), fetched 2026-11-28; verbatim, not edited. -->
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Fugue, Explained</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column with a sticky chapter rail on wide screens; each chapter = a plain-words summary, one picture, the real code or table. Palette = the Fugue Console's "Vellum" tokens (D-045), so the page and the product read as one thing. */
+:root {
+  --bg: #f3eee3;
+  --surface: #fbf8f1;
+  --line: #ddd4c2;
+  --text: #1e1b16;
+  --muted: #6e675a;
+  --accent: #22406b;
+  --accent-soft: rgba(34, 64, 107, 0.09);
+  --ok: #33653f;
+  --warn: #7a540c;
+  --err: #97302a;
+  --code-bg: #efe8da;
+  --font-display: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
+  --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15171c; --surface: #1c1f26; --line: #2f343e; --text: #e9e4d8; --muted: #a39d90;
+    --accent: #8fb0e0; --accent-soft: rgba(143, 176, 224, 0.12); --ok: #8cc79a; --warn: #e0b45c; --err: #ec8f86; --code-bg: #22262e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15171c; --surface: #1c1f26; --line: #2f343e; --text: #e9e4d8; --muted: #a39d90;
+  --accent: #8fb0e0; --accent-soft: rgba(143, 176, 224, 0.12); --ok: #8cc79a; --warn: #e0b45c; --err: #ec8f86; --code-bg: #22262e;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--text); font: 16px/1.6 var(--font-ui);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 48px; }
+nav.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; padding-top: 40px; font-size: 13.5px; }
+nav.rail a { display: block; color: var(--muted); text-decoration: none; padding: 4px 0 4px 12px; border-left: 2px solid var(--line); }
+nav.rail a:hover, nav.rail a:focus-visible { color: var(--accent); border-left-color: var(--accent); outline: none; }
+nav.rail .group { margin: 14px 0 6px; }
+main { min-width: 0; }
+header.hero { padding: 48px 0 28px; border-bottom: 1px solid var(--line); }
+.eyebrow { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 600; font-size: clamp(44px, 7vw, 72px); line-height: 1.02; margin: 10px 0 14px; letter-spacing: -0.01em; text-wrap: balance; }
+h2 { font-family: var(--font-display); font-weight: 600; font-size: clamp(30px, 4vw, 38px); line-height: 1.1; margin: 0 0 6px; text-wrap: balance; }
+h3 { font-size: 15px; font-weight: 600; margin: 22px 0 8px; }
+p { margin: 0 0 12px; max-width: 68ch; }
+a { color: var(--accent); }
+.lede { font-size: 19px; color: var(--muted); max-width: 62ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.chip { font: 500 12.5px var(--font-mono); padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--text); }
+.chip.rel { border-color: var(--accent); color: var(--accent); }
+section.ch { padding: 44px 0 8px; border-bottom: 1px solid var(--line); scroll-margin-top: 16px; }
+.plain { font-size: 17px; border-left: 3px solid var(--accent); padding: 2px 0 2px 16px; margin: 12px 0 18px; max-width: 66ch; }
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: 18px; margin: 16px 0; overflow-x: auto; }
+.diagram pre.mermaid { margin: 0; background: transparent; text-align: center; font-size: 14px; }
+.cap { font-size: 13px; color: var(--muted); margin-top: 8px; }
+pre.code { font: 13px/1.55 var(--font-mono); background: var(--code-bg); border-radius: 9px; padding: 14px 16px; overflow-x: auto; margin: 10px 0 16px; }
+code { font-family: var(--font-mono); font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre.code code { background: none; padding: 0; font-size: inherit; }
+.k { color: var(--accent); font-weight: 500; }
+.cm { color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 14px 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: 14px 16px; min-width: 0; }
+.card h4 { margin: 0 0 6px; font-size: 14px; }
+.card p { font-size: 14.5px; margin: 0; color: var(--muted); }
+.tablewrap { overflow-x: auto; margin: 12px 0 18px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.pill.ok { color: var(--ok); background: color-mix(in oklab, var(--ok) 14%, transparent); }
+.pill.warn { color: var(--warn); background: color-mix(in oklab, var(--warn) 16%, transparent); }
+.pill.no { color: var(--muted); background: color-mix(in oklab, var(--muted) 14%, transparent); }
+ol.steps { padding-left: 20px; margin: 8px 0 14px; max-width: 68ch; }
+ol.steps li { margin-bottom: 6px; }
+@media (max-width: 860px) {
+  .wrap { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  nav.rail { display: none; }
+  .grid2 { grid-template-columns: minmax(0, 1fr); }
+}
+</style>
+
+<div class="wrap">
+<nav class="rail" aria-label="Chapters">
+  <div class="eyebrow group">The claims platform</div>
+  <a href="#brief">The brief, answered</a>
+  <a href="#boundaries">Service boundaries</a>
+  <a href="#claim">The claim</a>
+  <a href="#who">Who sees what</a>
+  <a href="#collide">Edits that collide</a>
+  <a href="#retry">Duplicate submits</a>
+  <a href="#rest-kafka">REST or Kafka</a>
+  <a href="#exposure">Workload and exposure</a>
+  <div class="eyebrow group">How it is built</div>
+  <a href="#layers">Layers and slices</a>
+  <a href="#request">A request's journey</a>
+  <a href="#errors">Errors</a>
+  <a href="#audit">Audit</a>
+  <a href="#console">The console</a>
+  <a href="#tests">Tests</a>
+  <a href="#ai">Built with AI</a>
+  <div class="eyebrow group">Use it</div>
+  <a href="#run">Running it</a>
+  <a href="#status">Status at v0.0.2</a>
+</nav>
+
+<main>
+<header class="hero">
+  <div class="eyebrow">Fugue · .NET 8 API + Angular console · v0.0.2</div>
+  <h1>Fugue, explained</h1>
+  <p class="lede">A claims platform for motor and property claims across six APAC markets. Claimants report an incident, follow their claim and answer questions. Claims officers pick up, assess and decide. Managers see workload and outstanding liability, per currency. One API, one Angular app for everyone.</p>
+  <div class="chips">
+    <span class="chip rel">v0.0.2 · 27 Nov 2026</span><span class="chip">ASP.NET Core MVC</span><span class="chip">Mediator (source-gen)</span><span class="chip">FluentValidation + FluentResults</span><span class="chip">EF Core + Dapper</span><span class="chip">Postgres 17</span><span class="chip">Transactional outbox</span><span class="chip">Angular 22</span><span class="chip">TanStack Query</span><span class="chip">xUnit + Testcontainers</span>
+  </div>
+  <p class="cap" style="margin-top:14px">Code: <a href="https://github.com/triunai/fugue-control-room" target="_blank" rel="noopener noreferrer">github.com/triunai/fugue-control-room</a>. The timed build is the range between git tags <code>claims-window-start</code> and <code>claims-window-end</code>; the scaffold under it (auth, audit, outbox, idempotency) came first and is disclosed in the README.</p>
+</header>
+
+<section class="ch" id="brief">
+  <div class="eyebrow">The brief, answered</div>
+  <h2>Every ask, and where it lives</h2>
+  <p class="plain">The brief names three groups and what each must be able to do. Each row below is a screen you can open and an API route with tests behind it.</p>
+  <div class="tablewrap"><table>
+    <tr><th>The brief asks</th><th>Where it is built</th></tr>
+    <tr><td>Claimants report an incident</td><td>Report an incident (market, line, policy, date, what happened). <code>POST /claims</code> with a required Idempotency-Key, so a double click files one claim.</td></tr>
+    <tr><td>…track their claim</td><td>My claims and the claim record: a two-track banner (Handling: reported, picked up, decided, closed; Payout: reserved, approved, paid) and a plain-words timeline. It refreshes on its own every 15 s.</td></tr>
+    <tr><td>…provide more information when asked</td><td>The landing page opens on the claim that needs them ("We need one answer from you"); they answer in place. At most one open question per claim, enforced by the database.</td></tr>
+    <tr><td>…receive decisions</td><td>The decision, its reason and the approved amount appear on the claim and its timeline within one refresh. Each decision is also an event (<code>claim.decided.v1</code>) for a notification service.</td></tr>
+    <tr><td>Staff pick up incoming claims</td><td>Claims queue, oldest first; My work shows what needs action, what to pick up next and what waits on the claimant.</td></tr>
+    <tr><td>…review, assess, progress to settlement or rejection</td><td>The claim record's next-step card says what blocks a decision and why. Assessment worksheet and reserve sheet (both open in Excel), request info, approve or reject, settle (manager).</td></tr>
+    <tr><td>…see the team's workload and performance</td><td>Team and exposure: per officer the open load, oldest claim, decisions in 7 and 30 days, median days to decision; unassigned claims; age bands.</td></tr>
+    <tr><td>Managers: a real-time picture of outstanding claims and liability</td><td>Exposure per market, line and currency (reserve on open claims, approved not yet paid), open claims with no reserve, each cell opening the matching claims. Live SQL, refreshed every 15 s.</td></tr>
+    <tr><td>Both user types in one Angular app</td><td>One console; the landing, navigation and buttons come from the permission codes in <code>GET /me</code>, never from role names.</td></tr>
+  </table></div>
+</section>
+
+<section class="ch" id="boundaries">
+  <div class="eyebrow">Service boundaries</div>
+  <h2>One deployable; the transaction is the boundary</h2>
+  <p class="plain">A claim's new state, its timeline row, its audit row and its outbox event must commit together or not at all. Inside one process that is one database transaction, so claims stay one module in one deployable. Anything that only reacts to a claim (notifications, payments, finance reporting) gets events and can become its own service without a distributed transaction.</p>
+  <div class="diagram"><pre class="mermaid">
+flowchart LR
+  SPA([Angular app · claimant, officer, manager]) -- "REST, synchronous" --> CL
+  SPA -- REST --> RP
+  subgraph APP["One deployable, one Postgres"]
+    ID[Identity and access · JWT, permissions from /me]
+    CL[Claims · aggregate, state machine, timeline, questions]
+    RP[Reporting · workload, exposure]
+    AU[(Audit log · append-only)]
+    OB[(Outbox)]
+  end
+  CL -- same transaction --> AU
+  CL -- same transaction --> OB
+  RP -. reads live claim rows .-> CL
+  OB -. "async, at least once" .-> PUB{{IEventPublisher}}
+  PUB -. signed webhooks .-> EXT([Notifications, payments, finance])
+  PUB -. "Kafka (optional), key = claim id" .-> EXT
+  </pre></div>
+  <div class="tablewrap"><table>
+    <tr><th>Would become a service</th><th>Order</th><th>What drives the split</th></tr>
+    <tr><td>Notifications (SMS, email on <code>claim.*</code>)</td><td>first</td><td>Already async; a provider outage must never fail a claim.</td></tr>
+    <tr><td>Exposure and workload reporting</td><td>second</td><td>Read-only, different consumers (finance) and scale; becomes a projection fed by claim events.</td></tr>
+    <tr><td>Payments and settlement</td><td>third</td><td>Talks to an external system; needs a saga and its own outbox.</td></tr>
+    <tr><td>Claims core with identity</td><td>stays</td><td>State, timeline, audit and event commit atomically.</td></tr>
+  </table></div>
+  <p class="cap">The contract between the app and the API is owned by the backend: the OpenAPI document is generated from the controllers, pinned by a committed snapshot that a test regenerates, and the Angular client is generated from it.</p>
+</section>
+
+<section class="ch" id="claim">
+  <div class="eyebrow">The claim</div>
+  <h2>A guarded state machine</h2>
+  <p class="plain">A claim has a number the claimant quotes (<code>CLM-SG-2026-000001</code>), a market whose currency is fixed (SG SGD, MY MYR, TH THB, HK HKD, ID IDR, PH PHP), a line (Motor or Property), the claimant, the assigned officer, the incident, and money in minor units. Every move is a method on the claim that returns a result; an illegal move changes nothing and answers 409.</p>
+  <div class="diagram"><pre class="mermaid">
+stateDiagram-v2
+    [*] --> Submitted: submit (claimant)
+    Submitted --> UnderReview: pick up (officer)
+    UnderReview --> InfoRequested: request info
+    InfoRequested --> UnderReview: answer (claimant)
+    UnderReview --> Approved: approve (needs a reserve)
+    UnderReview --> Rejected: reject (with a reason)
+    Approved --> Settled: settle (manager)
+    Rejected --> [*]
+    Settled --> [*]
+  </pre></div>
+  <h3>The guard, in the aggregate</h3>
+<pre class="code"><code><span class="cm">// src/Fugue.Domain/Claims/Claim.cs (pick up)</span>
+<span class="k">if</span> (Status != ClaimStatus.Submitted)
+{
+    <span class="k">return</span> Result.Fail(InvalidTransition(ClaimStatus.UnderReview));
+}</code></pre>
+  <div class="tablewrap"><table>
+    <tr><th>Move</th><th>Permission</th><th>Also checked</th><th>Event</th></tr>
+    <tr><td>Submit</td><td><code>CLAIMS_SUBMIT</code></td><td>the claimant is the caller, never a body field</td><td><code>claim.submitted.v1</code></td></tr>
+    <tr><td>Pick up</td><td><code>CLAIMS_HANDLE</code></td><td>assigns the caller</td><td><code>claim.assigned.v1</code></td></tr>
+    <tr><td>Reserve, ask, decide</td><td><code>CLAIMS_HANDLE</code></td><td>the assigned officer, or a manager</td><td><code>claim.reserve.set.v1</code>, <code>claim.info.requested.v1</code>, <code>claim.decided.v1</code></td></tr>
+    <tr><td>Answer a question</td><td><code>CLAIMS_RESPOND</code></td><td>the claim must be the caller's own</td><td><code>claim.info.provided.v1</code></td></tr>
+    <tr><td>Settle</td><td><code>CLAIMS_SETTLE</code></td><td>Approved only</td><td><code>claim.settled.v1</code></td></tr>
+  </table></div>
+  <p class="cap">Approving needs a reserve and an amount with 0 &lt; amount ≤ reserve. Policy, party and payment are references, not tables: the policy system owns cover, and payment belongs to the settlement consumer.</p>
+</section>
+
+<section class="ch" id="who">
+  <div class="eyebrow">Who sees what</div>
+  <h2>A claimant sees their own claims, and nothing else</h2>
+  <p class="plain">Every read and every command loads the claim through one scope filter. A claim outside your scope answers 404, exactly like a claim that does not exist, so ids reveal nothing. The reserve (the insurer's internal estimate) and the officer's name never reach the claimant; staff actions read as "Claims team".</p>
+  <div class="tablewrap"><table>
+    <tr><th>Persona</th><th>Seeded account</th><th>Lands on</th></tr>
+    <tr><td>Claimant</td><td><code>self@fugue.test</code></td><td>The claim that needs them; their claims and both tracks</td></tr>
+    <tr><td>Claims officer</td><td><code>staff@fugue.test</code></td><td>My work: needs my action, pick up next, waiting on the claimant</td></tr>
+    <tr><td>Manager</td><td><code>manager@fugue.test</code></td><td>To settle; Team and exposure</td></tr>
+    <tr><td>Admin</td><td><code>admin@fugue.test</code></td><td>Users and the roles × permissions matrix, audit log with search, modules, webhooks</td></tr>
+  </table></div>
+  <p class="cap">All use the development-only password <code>Fugue-Dev-Passw0rd!</code>. Authorization is enforced once, at the HTTP edge (<code>[HasPermission]</code> on every action, pinned by an architecture test); permissions are read fresh on every request, so a revoked role takes effect on the next call.</p>
+</section>
+
+<section class="ch" id="collide">
+  <div class="eyebrow">Edits that collide</div>
+  <h2>Two officers act on the same claim</h2>
+  <p class="plain">Every claim row has a version (Postgres <code>xmin</code>), sent as the ETag. Every action after submit must send it back as <code>If-Match</code>. Missing is 428; stale is 412, checked before the state machine runs, so the slower officer is told to reload instead of getting a business error about a state they never saw.</p>
+  <div class="diagram"><pre class="mermaid">
+sequenceDiagram
+  participant A as Officer A
+  participant B as Officer B
+  participant API as Fugue API
+  A->>API: GET /claims/{id}
+  API-->>A: 200, ETag "7"
+  B->>API: GET /claims/{id}
+  API-->>B: 200, ETag "7"
+  B->>API: POST approve, If-Match "7"
+  API-->>B: 200, ETag "8"
+  A->>API: POST reject, If-Match "7"
+  API-->>A: 412 claim.version_mismatch
+  Note over A: Banner: "Changed since you opened it" · Reload
+  </pre></div>
+<pre class="code"><code><span class="cm">// src/Fugue.Application/Features/Claims/ClaimFlow.cs</span>
+<span class="k">if</span> (expectedVersion <span class="k">is not</span> { } expected)
+{
+    <span class="k">return</span> Result.Fail&lt;ClaimDto&gt;(ClaimErrors.IfMatchRequired());      <span class="cm">// 428</span>
+}
+<span class="cm">…</span>
+<span class="k">if</span> (claim.RowVersion != expected)
+{
+    <span class="k">return</span> Result.Fail&lt;ClaimDto&gt;(ClaimErrors.VersionMismatch());      <span class="cm">// 412</span>
+}</code></pre>
+  <p class="cap">The save also carries <code>WHERE xmin = @expected</code>, for a write that lands between load and save. One move commits the claim row, the timeline row, the question, the audit row and the outbox event together.</p>
+</section>
+
+<section class="ch" id="retry">
+  <div class="eyebrow">Duplicate submits</div>
+  <h2>Press "Submit" twice, get one claim</h2>
+  <p class="plain">A claimant on a bad connection cannot know whether a submit worked. Submit requires an <code>Idempotency-Key</code>: a retry with the same key replays the first answer instead of filing a second claim, and the same key with a different body is refused. A duplicate claim is real harm, so on this route the key is required, not optional.</p>
+  <div class="diagram"><pre class="mermaid">
+flowchart TB
+  REQ["POST /claims · Idempotency-Key: k1"] --> CL{Key k1 for this user}
+  CL -->|new| RUN[Run the command] --> OK{2xx?}
+  OK -->|yes| ST[Store the response] --> RES[201 Created]
+  OK -->|"no (4xx)"| FREE[Free the key] --> ERR[4xx]
+  CL -->|done, same body| REP["Replay the 201 · Idempotent-Replayed: true"]
+  CL -->|done, different body| U422[422 key reused]
+  CL -->|no key| U400[400 idempotency.key_required]
+  </pre></div>
+</section>
+
+<section class="ch" id="rest-kafka">
+  <div class="eyebrow">REST or Kafka</div>
+  <h2>Commands are REST; every state change is also an event</h2>
+  <p class="plain">A claimant submitting or an officer approving needs the answer now: accepted, 409 with the reason, or 412 because someone else got there first. REST gives that verdict in the same round trip. Everything other systems need to know leaves as an event through the transactional outbox, so no event is lost and none is sent for a change that rolled back.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Operation</th><th>How</th><th>Why</th></tr>
+    <tr><td>Submit, pick up, reserve, ask, answer, decide, settle</td><td>REST command</td><td>The caller needs the guard's verdict now (201/200, 409, 412, 428, 400).</td></tr>
+    <tr><td>Queue, claim record, timeline, counts, workload, exposure</td><td>REST query</td><td>Read your own write; keyset paging; as fresh as the last commit.</td></tr>
+    <tr><td><code>claim.*.v1</code> events</td><td>Outbox, async, at least once</td><td>Notify the claimant, project exposure, pay, score fraud; none of these may fail or slow the claim.</td></tr>
+    <tr><td>Partner or telematics intake at volume (not built)</td><td>Kafka in front of the same command</td><td>Nobody waits for a human answer; a consumer validates and calls the command behind its own authorizer.</td></tr>
+  </table></div>
+  <div class="grid2">
+    <div class="card"><h4>Signed webhooks (default)</h4><p>A background dispatcher sends each event as a POST signed with HMAC-SHA256, retries with backoff and jitter, and dead-letters after its budget. Receivers dedupe on the event id.</p></div>
+    <div class="card"><h4>Kafka (optional, off by default)</h4><p>The same outbox can also publish to Kafka: one topic per event family, key = claim id so each claim's events stay in order, idempotent producer with acks=all, and the relay marks an event sent only after the broker acknowledges it.</p></div>
+  </div>
+</section>
+
+<section class="ch" id="exposure">
+  <div class="eyebrow">Workload and exposure</div>
+  <h2>Outstanding liability, never summed across currencies</h2>
+  <p class="plain">Exposure is reported per market, line and currency: the outstanding reserve on open claims and the approved amount not yet paid. There is no grand total, because adding SGD to IDR is meaningless without a rate and a rate date, and choosing those is a finance decision. Money is a <code>bigint</code> of minor units plus the ISO currency code, never a float.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Report</th><th>Answers</th></tr>
+    <tr><td>Workload (<code>GET /claims/workload</code>)</td><td>Per officer: open claims by status, the oldest open one, decisions in the last 7 and 30 days, median days from submit to decision; unassigned claims; open claims in age bands 0-2, 3-7, 8-14, 15+ days.</td></tr>
+    <tr><td>Exposure (<code>GET /claims/exposure</code>)</td><td>Per market, line and currency: open count, outstanding reserve, approved not settled, open claims without a reserve (they cannot count toward exposure until an officer sets one). Each cell opens the matching claims in the queue.</td></tr>
+  </table></div>
+  <p class="cap">Both are plain SQL over live rows, refreshed every 15 seconds in the console and whenever the window regains focus. At scale they become projections fed by the claim events the outbox already emits.</p>
+</section>
+
+<section class="ch" id="layers">
+  <div class="eyebrow">Layers and slices</div>
+  <h2>Onion rules, organised by feature</h2>
+  <p class="plain">Four projects, dependencies pointing inward only: the domain knows nothing about the web or the database, and the application layer never references ASP.NET Core. Inside that, each use case is one file holding its command, validator and handler. Controllers are one line per action. Architecture tests fail the build if any of this is broken.</p>
+  <div class="diagram"><pre class="mermaid">
+flowchart TB
+  API["Fugue.Api · controllers (one line each), middleware, auth"]
+  INF["Fugue.Infrastructure · DbContext, repositories, SqlExecutor, audit, outbox"]
+  APP["Fugue.Application · one file per use case: command + validator + handler"]
+  DOM["Fugue.Domain · Claim aggregate, typed ids, FugueError, ErrorType"]
+  API --> APP
+  API --> INF
+  INF --> APP
+  APP --> DOM
+  INF --> DOM
+  </pre></div>
+  <div class="grid2">
+    <div class="card"><h4>Written once, applied to every slice</h4><p>Logging, audit and validation run as mediator pipeline behaviors; correlation ids, auth, module switches and rate limits as middleware. A new feature cannot forget them.</p></div>
+    <div class="card"><h4>Reads and writes</h4><p>EF Core for reads (no tracking, keyset paging) and version-checked updates; Dapper for inserts and set-based SQL, always inside EF's own transaction.</p></div>
+  </div>
+</section>
+
+<section class="ch" id="request">
+  <div class="eyebrow">A request's journey</div>
+  <h2>From the wire to the database and back</h2>
+  <p class="plain">Every request passes the same checkpoints in the same order. By the time it reaches a handler it has a correlation id, a verified user, a permitted action and valid input.</p>
+  <div class="diagram"><pre class="mermaid">
+flowchart LR
+  subgraph HTTP["HTTP pipeline"]
+    direction TB
+    c1[Correlation id] --> c2[Request log] --> c3[Exception handler] --> c4[CORS] --> c5[Authentication · JWT] --> c6[Module gate] --> c7[Rate limiter] --> c8[Authorization · HasPermission]
+  end
+  subgraph MED["Mediator pipeline"]
+    direction TB
+    m1[Logging] --> m2[Audit] --> m3[Validation]
+  end
+  c8 --> CT[Controller · one line] --> m1
+  m3 --> H[Handler] --> RP[Repository] --> DB[(Postgres)]
+  </pre></div>
+</section>
+
+<section class="ch" id="errors">
+  <div class="eyebrow">Errors</div>
+  <h2>Typed failures, one shape on the wire</h2>
+  <p class="plain">Handlers never throw for expected problems. They return a typed failure with a stable code; one table maps the type to an HTTP status, and every error leaves as RFC 9457 <code>application/problem+json</code> with the correlation id in it.</p>
+  <div class="tablewrap"><table>
+    <tr><th>ErrorType</th><th>Status</th><th>Example code</th></tr>
+    <tr><td>Validation</td><td class="num">400</td><td><code>validation</code> with a field map; <code>idempotency.key_required</code></td></tr>
+    <tr><td>NotFound</td><td class="num">404</td><td><code>claim.not_found</code> (also for a claim outside your scope)</td></tr>
+    <tr><td>Conflict</td><td class="num">409</td><td><code>claim.invalid_transition</code>, <code>claim.not_assigned_to_you</code>, <code>claim.reserve_required</code></td></tr>
+    <tr><td>PreconditionFailed</td><td class="num">412</td><td><code>claim.version_mismatch</code></td></tr>
+    <tr><td>Unprocessable</td><td class="num">422</td><td>same Idempotency-Key, different body</td></tr>
+    <tr><td>PreconditionRequired</td><td class="num">428</td><td><code>claim.if_match_required</code></td></tr>
+  </table></div>
+</section>
+
+<section class="ch" id="audit">
+  <div class="eyebrow">Audit</div>
+  <h2>Three records, three audiences</h2>
+  <p class="plain">The claimant reads the timeline. Staff and admins read the audit log: who changed which field from what to what, under which correlation id. Other systems read events. All three are written in the same transaction as the change, and both the timeline and the audit log refuse UPDATE, DELETE and TRUNCATE at the database.</p>
+  <div class="grid2">
+    <div class="card"><h4>Audit log</h4><p>Field-level diffs, never sampled, sensitive fields masked; a failed command leaves one failure row. Searchable in the console (Meilisearch, fed from the append-only log; the plain filtered log still works if search is down).</p></div>
+    <div class="card"><h4>Access and grant audit</h4><p>Sign-ins, refreshes, 401s (capped per IP), 403s and switched-off modules; every role, group and override change.</p></div>
+  </div>
+</section>
+
+<section class="ch" id="console">
+  <div class="eyebrow">The console</div>
+  <h2>One Angular app for every persona</h2>
+  <p class="plain">Each persona lands on the page that answers "what should I do now". The claim record puts the two tracks on top, a next-step card that names what blocks a decision, and one primary action. Screens refetch every 15 seconds and on focus, paused while a form is open, so the claim and its ETag do not change under a half-filled form.</p>
+  <div class="grid2">
+    <div class="card"><h4>Under the hood</h4><p>A side panel on every page shows its live API calls (status, timing, If-Match, ETag, Idempotency-Key), how the API handles that screen, each guard with the backend code that enforces it, the tests that cover it, and the ADRs behind it.</p></div>
+    <div class="card"><h4>Spreadsheet bridge</h4><p>A reserve sheet and a claim assessment worksheet for staff who work in spreadsheets, both with Open in Excel. Saving goes through the same guarded API commands, one per row.</p></div>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th>Concern</th><th>What the code uses</th></tr>
+    <tr><td>Framework</td><td>Angular 22: standalone components, signals, OnPush, every screen a lazy route</td></tr>
+    <tr><td>Server state</td><td>TanStack Query; live polling with pause-while-editing</td></tr>
+    <tr><td>HTTP</td><td>Interceptors in a fixed order: correlation id, bearer with one shared refresh, If-Match on writes, typed RFC 9457 problems</td></tr>
+    <tr><td>API types</td><td>Generated from the committed OpenAPI file; a test fails if the contract drifts</td></tr>
+  </table></div>
+</section>
+
+<section class="ch" id="tests">
+  <div class="eyebrow">Tests</div>
+  <h2>The invariants the code cannot argue with</h2>
+  <p class="plain">Most of the code was written by AI agents, so the tests are the specification they must satisfy. Each one pins a rule of the domain, such as "a stale ETag is 412 and nothing is written", "outside your scope is 404, never 403", or "exposure is never summed across currencies". They are deterministic on purpose: a real database instead of mocks of it, time-dependent rules on a fake clock. A red test means the code drifted, and the git hooks run them before every push.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Suite</th><th>Size at v0.0.2</th><th>Runs against</th></tr>
+    <tr><td>Backend (xUnit)</td><td class="num">740 cases</td><td>374 test methods on a real Postgres 17 (Testcontainers) or the full HTTP host; 115 in-process (state machine, validators, mapping)</td></tr>
+    <tr><td>Architecture (NetArchTest)</td><td class="num">37</td><td>Layering, one-line controllers, every action declares a permission</td></tr>
+    <tr><td>API (Bruno)</td><td class="num">101 requests · 123 tests</td><td>Every guard over HTTP against the Docker stack</td></tr>
+    <tr><td>Console (Vitest)</td><td class="num">218</td><td>Logic and components</td></tr>
+    <tr><td>Console end to end (Playwright)</td><td class="num">20</td><td>Report to settlement in a real browser</td></tr>
+  </table></div>
+</section>
+
+<section class="ch" id="ai">
+  <div class="eyebrow">Built with AI</div>
+  <h2>Directed, challenged, and checked by machines</h2>
+  <p class="plain">A lead agent planned and split the work into parallel lanes, each in its own git worktree; every lane was merged only after its gates passed again on the combined code. Reviews came from a different model family, and an independent reviewer judged the product against the brief. The working journal records what was asked, what the AI proposed, and what was accepted, challenged or overridden.</p>
+  <div class="grid2">
+    <div class="card"><h4>Gates that do not depend on trust</h4><p>Commit: secrets scan, formatting. Commit message: conventional commits, a decision or thread reference. Push: build and the full test suite. A command guard blocks force pushes and skipped hooks.</p></div>
+    <div class="card"><h4>Where to read it</h4><p><code>docs/ai-journal.md</code> (the journal), <code>docs/decisions.md</code> and <code>docs/adr/</code> (why), <code>docs/failure-modes.md</code> (traps hit and their fixes), <code>docs/reviews/</code> (the independent reviews).</p></div>
+  </div>
+</section>
+
+<section class="ch" id="run">
+  <div class="eyebrow">Running it</div>
+  <h2>One command</h2>
+<pre class="code"><code>cp .env.example .env               <span class="cm"># then fill the two generated secrets (README quickstart)</span>
+docker compose up -d --build       <span class="cm"># postgres, migrate + seed, api, meilisearch, console</span>
+open http://localhost:8080         <span class="cm"># pick a seeded account on the sign-in page</span>
+open http://localhost:5081/swagger <span class="cm"># the API and its contract</span></code></pre>
+  <div class="tablewrap"><table>
+    <tr><th>Port</th><th>What</th></tr>
+    <tr><td class="num">8080</td><td>Console (nginx), passes <code>/api</code> to the API</td></tr>
+    <tr><td class="num">5081</td><td>API directly (Swagger in Development)</td></tr>
+    <tr><td class="num">7700</td><td>Meilisearch (audit search)</td></tr>
+  </table></div>
+  <p class="cap">A <b>migrate</b> container applies the schema and exits before the API starts; the API never changes the schema itself. Kafka is optional: <code>EVENTS_PUBLISHER=Both docker compose --profile kafka up -d --build</code>.</p>
+</section>
+
+<section class="ch" id="status">
+  <div class="eyebrow">Status at v0.0.2</div>
+  <h2>What is built, and what is not</h2>
+  <div class="tablewrap"><table>
+    <tr><th>Area</th><th>State</th></tr>
+    <tr><td>Claims: submit, pick up, reserve, ask and answer, approve or reject, settle; timeline; scope; ETag and idempotency guards</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>Workload and exposure per currency, with drill-down to the claims</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>Console: persona landings, claim record with next step, Team and exposure, reserve sheet and worksheet, SLA calendar, Under the hood</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>Identity: JWT with rotating refresh tokens, roles, groups, overrides, module switches</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>Append-only audit with search; transactional outbox with signed webhooks</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>Kafka publisher behind the event port</td><td><span class="pill warn">Optional</span> off by default</td></tr>
+    <tr><td>Notifications to the claimant outside the app; attachments; a settlement saga with payment retries</td><td><span class="pill no">Not built</span> events exist, consumers do not</td></tr>
+    <tr><td>Market-scoped officers; push to the browser (server-sent events); a CI run on a remote</td><td><span class="pill no">Not built</span></td></tr>
+  </table></div>
+  <p class="cap">Verified for v0.0.2: build with 0 warnings; 37 architecture tests and 740 backend tests on real Postgres; Bruno 101 requests and 123 tests on the Docker stack; 218 console tests; and the console loaded in a browser, signed in and after a reload, with no console errors.</p>
+</section>
+</main>
+</div>
+
+<!--claude-mermaid-runtime-begin:3477-->
+<style>.mermaid-diagram{margin-block:4px}.mermaid-diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}</style>
+<script src="/_runtime/mermaid-11.16.1.min.js"></script>
+<script>(function(){
+var CFG={"palettes":{"light":{"surface":"#f4efe4","text":"#42392e","line":"#8a7f6d","border":"#7a6c52","bg":"#fffdf8"},"dark":{"surface":"#262b34","text":"#f2f3f5","line":"#a8adb8","border":"#9aa4b8","bg":"#1f232b"}}};
+if(typeof mermaid==='undefined')return;
+var pres=Array.prototype.slice.call(document.querySelectorAll('pre.mermaid')).filter(function(p){if(p.hasAttribute('data-claude-mermaid-claimed'))return false;p.setAttribute('data-claude-mermaid-claimed','1');return true;});
+if(!pres.length)return;
+var mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+var root=document.documentElement;
+var items=pres.map(function(pre){
+var mount=document.createElement('div');mount.className='mermaid-diagram';
+return {pre:pre,mount:mount,src:pre.textContent||''};
+});
+var seq=0;
+var renderGen=0;
+var lastKey='';
+function pageBg(fallback){
+var els=[document.body,document.documentElement];
+for(var i=0;i<els.length;i++){
+var c=els[i]&&getComputedStyle(els[i]).backgroundColor;
+if(c&&c!=='transparent'&&c!=='rgba(0, 0, 0, 0)')return c;
+}
+return fallback;
+}
+function render(){
+var theme=root.getAttribute('data-theme');
+var dark=theme==='dark'||(!!(mq&&mq.matches)&&theme!=='light');
+var pal=dark?CFG.palettes.dark:CFG.palettes.light;
+var bg=pageBg(pal.bg);
+var key=(dark?'d':'l')+'|'+bg;
+if(key===lastKey)return;
+lastKey=key;
+var gen=++renderGen;
+var font=getComputedStyle(document.body).fontFamily||'sans-serif';
+var nat={useMaxWidth:false};
+mermaid.initialize({
+startOnLoad:false,securityLevel:'strict',theme:'base',
+flowchart:nat,sequence:nat,er:nat,state:nat,class:nat,pie:nat,
+gantt:nat,journey:nat,timeline:nat,gitGraph:nat,mindmap:nat,xyChart:nat,
+quadrantChart:nat,sankey:nat,c4:nat,requirement:nat,block:nat,
+packet:nat,kanban:nat,architecture:nat,radar:nat,
+themeVariables:{background:bg,mainBkg:pal.surface,primaryColor:pal.surface,
+primaryTextColor:pal.text,lineColor:pal.line,primaryBorderColor:pal.border,
+nodeBorder:pal.border,clusterBorder:pal.border,edgeLabelBackground:bg,
+clusterBkg:'rgba(127,127,127,0.07)',titleColor:pal.text,
+darkMode:dark,rowOdd:bg,rowEven:'rgba(127,127,127,0.07)',
+attributeBackgroundColorOdd:bg,attributeBackgroundColorEven:'rgba(127,127,127,0.07)',
+fontSize:'16px',fontFamily:font},
+themeCSS:'.node rect, .node circle, .node polygon, .node path, .cluster rect { stroke-width: 2px; }'
+});
+items.forEach(function(it){
+var id='claude-mermaid-'+seq++;
+mermaid.render(id,it.src).then(function(r){
+if(gen!==renderGen)return;
+var prev=it.pre.previousElementSibling;
+if(prev&&prev.className==='mermaid-diagram'&&prev!==it.mount)return;
+it.mount.innerHTML=r.svg;
+if(!it.mount.parentNode)it.pre.parentNode.insertBefore(it.mount,it.pre);
+it.pre.style.display='none';
+},function(){
+var scratch=document.getElementById(id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+scratch=document.getElementById('d'+id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+if(gen!==renderGen)return;
+if(it.mount.parentNode)it.mount.parentNode.removeChild(it.mount);
+it.pre.style.display='';
+});
+});
+}
+render();
+if(mq&&mq.addEventListener)mq.addEventListener('change',render);
+if(typeof MutationObserver!=='undefined')new MutationObserver(render).observe(root,{attributes:true,attributeFilter:['data-theme']});
+})();</script>
+<!--claude-mermaid-runtime-end-->
+
+</body></html>

@@ -99,6 +99,24 @@ Status: merged before 03:09; closes at the wrap.
 Resume: integrator merges and verifies; close with `scripts/spine/close-workstream.mjs` at the wrap (item 16).
 Refs: D-063, D-064; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/`
 
+### WS-39 — Structure refactor after the D-064 lanes: slice folders, IOptions, Worker host (backlog #010, items 12-14) — 🟢 ACTIVE (2026-11-28)
+ID: W-039
+Status: item 12 lane nth-refactor live from afc6fe9 (exclusive on src/ and tests/); 13 nth-options after it; 14 gated at 10:00.
+Resume: integrator merges and verifies (OpenAPI byte-identical, full-suite count equal to base 849 + 37, moves and usings only); close at the wrap.
+Refs: D-064, D-066; backlog #010; `docs/plans/overnight-2026-11-28.md` P2; contracts in `docs/ai/briefs/fleet-2026-11-28/`
+
+### WS-40 — Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit — 🟢 ACTIVE (2026-11-28)
+ID: W-040
+Status: seven web-only lanes from ddd2ded (nth-tour, nth-searchui, nth-importui, nth-changelog, nth-explained, nth-overrides, nth-scorefix), READY by 12:30; nth-useredit (src/) queued after nth-refactor.
+Resume: integrator merges as READY arrives (refactor, then useredit, then the web lanes); feature cut-off 13:00; close at the wrap.
+Refs: D-064, D-066; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/` (OWNERS Addendum 10)
+
+### WS-41 — Load testing and caching: k6 scenarios, HybridCache (owner ask 11:30) — 🟢 ACTIVE (2026-11-28)
+ID: W-041
+Status: lane nth-k6 live (item 26, no src/); nth-hybridcache pending dispatch after the refactor (item 27, hard stop 12:50).
+Resume: integrator merges on READY; close or defer at the wrap.
+Refs: D-064, D-066; `docs/plans/overnight-2026-11-28.md` items 26-27; contracts in `docs/ai/briefs/fleet-2026-11-28/` (OWNERS Addendum 11)
+
 ### WS-23 — API versioning with Sunset, HybridCache, OpenTelemetry — ⏸ PARKED (2026-11-27)
 ID: W-023
 Status: follow-up of W-007 (closed). Not built: a v2 example with `Deprecation`/`Sunset` on v1, HybridCache on the `/me` permission lookup, OpenTelemetry traces.

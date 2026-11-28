@@ -100,8 +100,8 @@ export const routes: Routes = [
       {
         path: 'claims/import',
         canActivate: [permissionGuard],
-        data: { permission: 'CLAIMS_HANDLE', section: 'Claims', breadcrumb: 'Import' },
-        title: 'Import · Fugue Console',
+        data: { permission: 'CLAIMS_HANDLE', section: 'Claims', breadcrumb: 'Import legacy claims' },
+        title: 'Import legacy claims · Fugue Console',
         loadComponent: () => import('./features/import/import-page').then((m) => m.ImportPage),
       },
       {
@@ -166,12 +166,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/modules/modules-page').then((m) => m.ModulesPage),
       },
       {
-        path: 'decisions',
+        path: 'changelog',
         canActivate: [permissionGuard],
-        data: { permission: ['CLAIMS_ALL', 'MODULES_VIEW'], section: 'Platform', breadcrumb: 'Decisions' },
-        title: 'Decisions · Fugue Console',
+        data: { permission: ['CLAIMS_ALL', 'MODULES_VIEW'], section: 'Platform', breadcrumb: 'Changelog' },
+        title: 'Changelog · Fugue Console',
         loadComponent: () => import('./features/decisions/decisions-page').then((m) => m.DecisionsPage),
       },
+      { path: 'decisions', redirectTo: 'changelog', pathMatch: 'full' },
       {
         path: 'webhooks',
         canActivate: [permissionGuard],

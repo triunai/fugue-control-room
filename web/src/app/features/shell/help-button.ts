@@ -5,6 +5,7 @@ import { ChangeDetectionStrategy, Component, output } from '@angular/core';
   selector: 'fg-help-button',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <a class="explained" href="/explained/index.html" target="_blank" rel="noopener" data-testid="explained-link" title="Fugue, explained: the whole system on one page (opens in a new tab)">Fugue, explained</a>
     <button type="button" class="help-pill" data-testid="help" data-tour="help" title="Explain this page" (click)="pressed.emit()">
       <svg viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true">
         <circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.4" />
@@ -20,6 +21,21 @@ import { ChangeDetectionStrategy, Component, output } from '@angular/core';
     </button>
   `,
   styles: `
+    :host {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .explained {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .explained:hover {
+      color: var(--text);
+      text-decoration: underline;
+    }
     .help-pill {
       display: inline-flex;
       align-items: center;

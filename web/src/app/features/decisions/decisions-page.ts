@@ -21,6 +21,7 @@ export class DecisionsPage {
 
   protected readonly kinds: readonly { value: KindFilter; label: string }[] = [
     { value: 'all', label: 'All' },
+    { value: 'notes', label: 'Release notes' },
     { value: 'adr', label: 'ADRs' },
     { value: 'd', label: 'Decisions' },
   ];

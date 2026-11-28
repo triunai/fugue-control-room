@@ -27,7 +27,7 @@
         <fg-ref-chip label="correlation" [value]="t.correlationId" maxWidth="40ch" />
         <span class="pill" [class]="pill(t.status)">{{ t.status }}</span>
         <span class="text-sm text-muted">
-          {{ l.steps.length }} steps over {{ ms(l.spanMs) }}, from {{ t.startedAt | stamp }}
+          {{ summary(l.counts) }} over {{ ms(l.spanMs) }}, from {{ t.startedAt | stamp }}
         </span>
       </section>
 
@@ -39,7 +39,7 @@
           aria-labelledby="score-title"
           aria-describedby="score-steps"
         >
-          <title id="score-title">Timeline of {{ l.steps.length }} steps over {{ ms(l.spanMs) }}</title>
+          <title id="score-title">Timeline of {{ summary(l.counts) }} over {{ ms(l.spanMs) }}</title>
           @for (lane of l.lanes; track lane.id; let odd = $odd) {
             @if (odd) {
               <rect class="lane-band" x="0" [attr.y]="lane.y - 20" [attr.width]="l.width" height="40" />
@@ -101,6 +101,24 @@
               <span class="mono">{{ s.title }}</span>
               @if (s.detail) {
                 <span class="text-sm text-muted">{{ s.detail }}</span>
+              }
+              @if (s.rowSummary; as rs) {
+                <details class="step-rows">
+                  <summary class="text-sm text-muted">{{ rs }}</summary>
+                  <ul class="step-row-list">
+                    @for (r of s.rows; track r.id) {
+                      <li class="text-sm">
+                        <span class="mono">{{ r.entityType ?? 'unknown entity' }}</span>
+                        @if (r.entityId) {
+                          <span class="text-muted mono">{{ r.entityId }}</span>
+                        }
+                        @if (r.tone !== 'ok') {
+                          <span class="text-muted">({{ r.status }})</span>
+                        }
+                      </li>
+                    }
+                  </ul>
+                </details>
               }
             </span>
             <span class="step-status text-sm">{{ s.status }}</span>

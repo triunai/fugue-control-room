@@ -7,6 +7,7 @@ import type {
   ImportSheetDto,
   ImportSource,
 } from '../../api/generated/model';
+import type { IconName } from '../../ui/icon';
 
 /** The claim fields a draft carries, as raw text the reviewer can edit (the server normalises and checks them). */
 export interface DraftValues {
@@ -46,6 +47,9 @@ export const SOURCES: readonly {
   file: string;
   standsInFor: string;
   howTo: string;
+  icon: IconName;
+  blurb: string;
+  samples: readonly { label: string; href: string }[];
 }[] = [
   {
     id: 'Spreadsheet',
@@ -54,6 +58,12 @@ export const SOURCES: readonly {
     file: '.csv or .xlsx',
     standsInFor: 'a shared claims workbook',
     howTo: 'One claim per row, a header row first. You map the columns before anything is checked.',
+    icon: 'excel',
+    blurb: 'A shared claims workbook, one claim per row.',
+    samples: [
+      { label: 'claims.csv', href: 'samples/import/claims.csv' },
+      { label: 'claims.xlsx', href: 'samples/import/claims.xlsx' },
+    ],
   },
   {
     id: 'Email',
@@ -63,6 +73,12 @@ export const SOURCES: readonly {
     standsInFor: 'a Microsoft Graph or Gmail inbox connector',
     howTo:
       'Save a message as .eml, or export a folder as .mbox. The sender domain picks the market (Import:MarketByDomain).',
+    icon: 'inbox',
+    blurb: 'A Microsoft Graph or Gmail shared inbox, one email per claim.',
+    samples: [
+      { label: 'break-in.eml', href: 'samples/import/break-in.eml' },
+      { label: 'inbox.mbox', href: 'samples/import/inbox.mbox' },
+    ],
   },
   {
     id: 'WhatsApp',
@@ -71,6 +87,14 @@ export const SOURCES: readonly {
     file: 'chat export .txt',
     standsInFor: 'a WhatsApp Business connector',
     howTo: 'In the chat, More > Export chat > Without media. The transcript is attached to the claim as a note.',
+    icon: 'chat',
+    blurb: 'A WhatsApp Business chat, one conversation per claim.',
+    samples: [
+      {
+        label: 'WhatsApp chat.txt',
+        href: 'samples/import/WhatsApp%20Chat%20with%20%2B65%209123%204567.txt',
+      },
+    ],
   },
 ];
 
