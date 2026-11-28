@@ -7,15 +7,156 @@
   "counts": {
     "adrs": 14,
     "decisions": 81,
-    "releases": 1,
-    "closed": 22
+    "releases": 2,
+    "closed": 39
   },
   "groups": [
     {
-      "version": "Unreleased",
-      "date": null,
-      "notes": [],
-      "closed": [],
+      "version": "v0.0.3",
+      "date": "2026-11-28",
+      "notes": [
+        {
+          "label": "Release",
+          "text": "the overnight and submission-morning lanes (D-064 to D-081), built by a dispatcher, an integrator and contract-bound lanes (D-066). Tag v0.0.3."
+        },
+        {
+          "label": "Features",
+          "text": "admin creates and edits users; The Score (one request as a timeline); console select and date controls with Fill with an example; Import legacy claims (file imports to reviewed drafts, migration 13); claims search hardening; sample PDF letters; Under the hood on every page; the Changelog page; paid figure on Team and exposure; Fugue, explained; the admin tour on the claim flow; HybridCache on GET /me; k6 load scenarios; read-only Postgres role and MCP for agents; per-slice folder layout."
+        },
+        {
+          "label": "Fixes",
+          "text": "Bruno collection under the CI sign-in limit; Kafka no-broker test stall (suite 12 min to 1.5 min); calendar ResizeObserver console error; /modules audit calls while AUDIT is off; group-only user edit."
+        },
+        {
+          "label": "",
+          "text": "Verification on the recreated stack (13:05): Fugue.Tests 864 + ArchTests 37 at the last pre-push, web 390 (Vitest), Bruno 131 requests / 157 tests (compose), four personas with zero console errors, read-only role and MCP refuse writes."
+        },
+        {
+          "label": "Deferred",
+          "text": "item 13 IOptions and items 15, 11g (D-076); item 14 Worker host (D-075). Known issues: D-079 (relay cycle with the broker down), D-080 (an access token stays valid for its 15 minutes after deactivation)."
+        }
+      ],
+      "closed": [
+        {
+          "id": "W-041",
+          "title": "Load testing and caching: k6 scenarios, HybridCache (owner ask 11:30)",
+          "date": "2026-11-28",
+          "outcome": "k6 smoke, load and stampede scenarios with percentile reports; HybridCache on GET /me (stampede p95 382 to about 241 ms); the Bruno collection stays under the sign-in limit in CI; the Kafka no-broker test relays only its own row (suite 12 min to 1.5 min).",
+          "commits": 17
+        },
+        {
+          "id": "W-040",
+          "title": "Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit",
+          "date": "2026-11-28",
+          "outcome": "Owner asks at 11:26: overrides formula explained, Fugue explained page and nav entry, the admin tour walks the claim flow, The Score grouping, Import legacy claims page, a clearer search bar, the Changelog, README refresh, user edit.",
+          "commits": 31
+        },
+        {
+          "id": "W-039",
+          "title": "Structure refactor after the D-064 lanes: slice folders, IOptions, Worker host (backlog #010, items 12-14)",
+          "date": "2026-11-28",
+          "outcome": "Every slice uses Commands, Queries, Models, Repos and Helpers folders with namespaces following folders; OpenAPI byte-identical, suite count unchanged.",
+          "commits": 7
+        },
+        {
+          "id": "W-038",
+          "title": "Submission-morning polish lanes before the overnight list (money, prelude, onboard, readme, claimsearch, shellfix)",
+          "date": "2026-11-28",
+          "outcome": "Submission-morning polish lanes before the overnight list: indicative USD view, prelude, onboarding tour, README, claims search, shell fixes.",
+          "commits": 5
+        },
+        {
+          "id": "W-037",
+          "title": "Paid and settled figure on Team and exposure (item 11c, backlog #009)",
+          "date": "2026-11-28",
+          "outcome": "Team and exposure shows the paid (settled) count and sum per market and in the totals; the rest of panel backlog #009 answered or cut.",
+          "commits": 3
+        },
+        {
+          "id": "W-036",
+          "title": "Decision timeline generated from the docs (item 11d)",
+          "date": "2026-11-28",
+          "outcome": "The Changelog page (was Decisions): ADRs, D-rows and release notes generated from the repo docs, with how versioning works.",
+          "commits": 3
+        },
+        {
+          "id": "W-035",
+          "title": "Under-the-hood coverage on every page (item 11e)",
+          "date": "2026-11-28",
+          "outcome": "Under the hood on every page: a flow (request to handler to DB, outbox and audit), decisions and live calls; the floating request tooltip is attached to its row.",
+          "commits": 6
+        },
+        {
+          "id": "W-034",
+          "title": "Settlement and decision letters as PDF (item 11b)",
+          "date": "2026-11-28",
+          "outcome": "Sample settlement and decision letters as PDF from a hand-written PDF writer with no dependency, scoped like the claim (404 outside scope).",
+          "commits": 3
+        },
+        {
+          "id": "W-033",
+          "title": "Demo fixes: matrix checks, track line, claimant wording, /modules glitches (items 3a, 7a, 7b, 11f)",
+          "date": "2026-11-28",
+          "outcome": "Demo fixes: roles matrix check icons, the banner track line stops at its last node, claimant wording in How a claim moves, /modules Last changed and no audit calls while AUDIT is off.",
+          "commits": 5
+        },
+        {
+          "id": "W-032",
+          "title": "Search hardening on Meilisearch (item 10)",
+          "date": "2026-11-28",
+          "outcome": "Claims search answers like an officer expects (market and line synonyms, every word must match, exact numbers as phrases, highlights and facets, settings applied only when they differ); a clearer search bar with an honest keyword full-text explainer.",
+          "commits": 3
+        },
+        {
+          "id": "W-031",
+          "title": "Intake import: spreadsheet, inbox and WhatsApp file imports to drafts (item 11a)",
+          "date": "2026-11-28",
+          "outcome": "Import legacy claims: spreadsheet, inbox and WhatsApp file imports become reviewed drafts, idempotent by a claim_imports ledger (migration 13); legacy sync kept as a design.",
+          "commits": 6
+        },
+        {
+          "id": "W-030",
+          "title": "Console forms: select, date picker, Fill with an example (item 5)",
+          "date": "2026-11-28",
+          "outcome": "Console forms: fg-select and fg-date (with a time mode) replace every native select and date control; Fill with an example on the forms; queue filters and the calendar day jump on console controls; the calendar's ResizeObserver console notice is gone.",
+          "commits": 15
+        },
+        {
+          "id": "W-029",
+          "title": "Agent tooling: read-only role in the stack, pinned MCP, runbook (item 17a)",
+          "date": "2026-11-28",
+          "outcome": "The compose Postgres creates the read-only role on a fresh volume; the read-only MCP is pinned and works; agent-tooling runbook; verified on a recreated stack (writes refused by the role and by restricted mode).",
+          "commits": 3
+        },
+        {
+          "id": "W-028",
+          "title": "Stack dialog and the SLA calendar styling (items 8, 9)",
+          "date": "2026-11-28",
+          "outcome": "The env pill opens a Stack dialog with the real versions (PostgreSQL 17, UUID v7 ids from the API); the SLA calendar is styled in console tokens.",
+          "commits": 1
+        },
+        {
+          "id": "W-027",
+          "title": "Claim page workbook, Save to Excel, next-step copy, track explainers (items 6, 7)",
+          "date": "2026-11-28",
+          "outcome": "Claim page: the assessment worksheet looks like a workbook with Export (CSV) and Save to Excel; plain next-step copy; step popovers and a How a claim moves dialog.",
+          "commits": 1
+        },
+        {
+          "id": "W-026",
+          "title": "The Score, one correlation id as a timeline (item 4)",
+          "date": "2026-11-28",
+          "outcome": "The Score: GET /audit/trace/{correlationId} reads one request's audit, outbox and delivery rows and the console draws them as a timeline; one request's audit rows are grouped into one step.",
+          "commits": 3
+        },
+        {
+          "id": "W-025",
+          "title": "Admin creates users (overnight item 3)",
+          "date": "2026-11-28",
+          "outcome": "Administrators create users with an initial password and roles (POST /users, USERS_MANAGE, no role escalation) and edit them (PUT /users/{id} with If-Match, self-lockout guard); a group-only user can be saved from Edit. Bruno-created users are claimants, not staff.",
+          "commits": 5
+        }
+      ],
       "entries": [
         {
           "kind": "D",

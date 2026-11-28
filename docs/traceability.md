@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 24 workstreams, 13 ADRs, 62 decisions, 297 commits (8 unlinked). Newest commit indexed: `13e9c29`.
+Counts: 41 workstreams, 14 ADRs, 81 decisions, 561 commits (14 unlinked). Newest commit indexed: `3b903ba`.
 
 ## Workstreams
 
@@ -498,6 +498,228 @@ Counts: 24 workstreams, 13 ADRs, 62 decisions, 297 commits (8 unlinked). Newest 
   - `268c1e2` Merge branch 'nth-claimui' round 3: tour targets and past questions (2026-11-27)
   - `985805c` feat(web): expandable hood guards with real backend code, API notes, visible scroll (2026-11-27)
 
+### W-025
+
+**Admin creates users (overnight item 3)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-064](#d-064)
+- Commits (2):
+  - `92be068` test(api): merge nth-brunofix, Bruno-created users are claimants, not staff (2026-11-28)
+  - `3c477d3` docs(spine): nth-brunofix merged and retired, hot-state trap note (2026-11-28)
+
+### W-026
+
+**The Score, one correlation id as a timeline (item 4)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-069](#d-069)
+- Commits (2):
+  - `f323559` docs(plans): tick 11c and 4a, retire nth-paid (2026-11-28)
+  - `055d763` fix(web): merge nth-scorefix, The Score groups one request's audit rows by command (item 24) (2026-11-28)
+
+### W-027
+
+**Claim page workbook, Save to Excel, next-step copy, track explainers (items 6, 7)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: none
+- Commits (0):
+  - none yet
+
+### W-028
+
+**Stack dialog and the SLA calendar styling (items 8, 9)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: none
+- Commits (0):
+  - none yet
+
+### W-029
+
+**Agent tooling: read-only role in the stack, pinned MCP, runbook (item 17a)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-066](#d-066), [D-068](#d-068), [D-069](#d-069)
+- Commits (2):
+  - `8765f5d` docs(spine): W-025..W-038 for tonight, D-068 and D-069, fleet contracts archived (2026-11-28)
+  - `0517bd4` docs(spine): tick 17a on the recreated stack, hot-state for the integrator role (2026-11-28)
+
+### W-030
+
+**Console forms: select, date picker, Fill with an example (item 5)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-064](#d-064), [D-071](#d-071)
+- Commits (15):
+  - `1e3d63d` feat(web): merge nth-forms, console select, date picker and Fill with an example (item 5) (2026-11-28)
+  - `ea3d79c` docs(plans): tick 5, retire nth-forms, ledger row for nth-hoodflow (2026-11-28)
+  - `0835680` docs(plans): tick 11e and item 5's live submit, retire nth-hoodflow, nth-formsfix row (2026-11-28)
+  - `9ceceab` docs(plans): nth-datetime ledger row, item 5 follow-ups (2026-11-28)
+  - `047e565` feat(web): merge nth-datetime, fg-date time mode for overrides and audit filters (item 5) (2026-11-28)
+  - `cb8c13f` docs(plans): nth-datetime merged and checked, retire it (2026-11-28)
+  - `56fd002` docs(plans): item 5, the audit From filter cuts mid-day (2026-11-28)
+  - `5f7985e` fix(web): merge nth-formsfix, queue filters and calendar day jump on console controls, e2e locator (item 5) (2026-11-28)
+  - `ac70cb4` docs(plans): item 5 complete with nth-formsfix, retire it (2026-11-28)
+  - `db0eb20` docs(plans): nth-formsfix worktree recreated from main for slice 3 (2026-11-28)
+  - `029e926` docs(plans): 17b calendar console error, nth-calfix row, nth-formsfix retired again (2026-11-28)
+  - `3de8f49` fix(web): merge nth-calfix, no ResizeObserver console error on the SLA calendar (17b) (2026-11-28)
+  - `4dd58e1` docs(plans): tick 17b, retire nth-calfix (2026-11-28)
+  - `a36df90` docs(spine): D-071 the ErrorHandler drops one benign notice, 17b live toggle check (2026-11-28)
+  - `81422de` docs(spine): D-071 names the FullCalendar version (2026-11-28)
+
+### W-031
+
+**Intake import: spreadsheet, inbox and WhatsApp file imports to drafts (item 11a)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-064](#d-064), [D-074](#d-074), [D-077](#d-077)
+- Commits (4):
+  - `f967355` feat(api): merge nth-import, spreadsheet, inbox and WhatsApp file imports to reviewed drafts (item 11a) (2026-11-28)
+  - `3a6fb56` docs(spine): tick 11a, D-074 file imports to reviewed drafts, retire nth-import (2026-11-28)
+  - `afc6fe9` docs(plans): 11a, the lane's second full suite was green (2026-11-28)
+  - `9a85ca5` docs(spine): D-077 legacy sync stays a design, backlog #012, scaling and offline section (2026-11-28)
+
+### W-032
+
+**Search hardening on Meilisearch (item 10)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-063](#d-063), [D-064](#d-064), [D-072](#d-072), [D-073](#d-073)
+- Commits (2):
+  - `aa401bc` feat(api): merge nth-searchx, claims search hardening on Meilisearch (item 10) (2026-11-28)
+  - `650b2c4` docs(spine): tick 10, D-072 and D-073 for search, retire nth-searchx (2026-11-28)
+
+### W-033
+
+**Demo fixes: matrix checks, track line, claimant wording, /modules glitches (items 3a, 7a, 7b, 11f)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-064](#d-064)
+- Commits (5):
+  - `3149854` fix(web): merge nth-fixes, matrix checks, track line, claimant wording, /modules (3a, 7a, 7b, 11f) (2026-11-28)
+  - `9989f7c` docs(plans): tick 3a, 7a, 7b; 11f back to nth-fixes for the audit 404s on toggle (2026-11-28)
+  - `42a314a` fix(web): merge nth-fixes follow-up, no audit refetch when AUDIT is switched off (11f) (2026-11-28)
+  - `4c42edc` docs(plans): tick 11f, 7b seen live, retire nth-fixes (2026-11-28)
+  - `a4c2b88` docs(plans): correct the 11f and 7b check times (2026-11-28)
+
+### W-034
+
+**Settlement and decision letters as PDF (item 11b)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-064](#d-064), [D-070](#d-070)
+- Commits (3):
+  - `59e1ad6` feat(api): merge nth-pdf, sample settlement and decision letters as PDF (item 11b) (2026-11-28)
+  - `a7ab882` docs(spine): tick 11b, D-070 sample letters without a PDF dependency, retire nth-pdf (2026-11-28)
+  - `c27b57c` docs(plans): 11b claimant checks and the Latin-1 known limit (2026-11-28)
+
+### W-035
+
+**Under-the-hood coverage on every page (item 11e)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-064](#d-064)
+- Commits (6):
+  - `60e978c` feat(web): merge nth-hooda, hood flow model, row tooltip fix, audit and platform pages (11e A) (2026-11-28)
+  - `a4df949` feat(web): merge nth-hoodb, claims-area hood notes (11e B) (2026-11-28)
+  - `c191a05` docs(plans): 11e parts A and B merged, flow steps for the claims area still open (2026-11-28)
+  - `ea3d79c` docs(plans): tick 5, retire nth-forms, ledger row for nth-hoodflow (2026-11-28)
+  - `8ed5cce` feat(web): merge nth-hoodflow, flow steps on the claims-area hood notes (11e) (2026-11-28)
+  - `0835680` docs(plans): tick 11e and item 5's live submit, retire nth-hoodflow, nth-formsfix row (2026-11-28)
+
+### W-036
+
+**Decision timeline generated from the docs (item 11d)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-066](#d-066), [D-068](#d-068), [D-069](#d-069)
+- Commits (1):
+  - `8765f5d` docs(spine): W-025..W-038 for tonight, D-068 and D-069, fleet contracts archived (2026-11-28)
+
+### W-037
+
+**Paid and settled figure on Team and exposure (item 11c, backlog #009)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-066](#d-066), [D-068](#d-068), [D-069](#d-069)
+- Commits (3):
+  - `8765f5d` docs(spine): W-025..W-038 for tonight, D-068 and D-069, fleet contracts archived (2026-11-28)
+  - `bceb4e5` feat(api): merge nth-paid, paid and settled figures on Team and exposure (item 11c) (2026-11-28)
+  - `f323559` docs(plans): tick 11c and 4a, retire nth-paid (2026-11-28)
+
+### W-038
+
+**Submission-morning polish lanes before the overnight list (money, prelude, onboard, readme, claimsearch, shellfix)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: none
+- Commits (0):
+  - none yet
+
+### W-039
+
+**Structure refactor after the D-064 lanes: slice folders, IOptions, Worker host (backlog #010, items 12-14)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-064](#d-064), [D-075](#d-075), [D-076](#d-076), [D-078](#d-078)
+- Commits (7):
+  - `2544cb6` docs(spine): W-039 for the structure refactor, nth-refactor ledger row (2026-11-28)
+  - `89977f2` docs(spine): D-075 defers item 14, backlog #010 part 3 stays open (2026-11-28)
+  - `a66442d` docs(spine): failure mode 36 is host sleep on battery, D-076 defers 15 and 11g (2026-11-28)
+  - `cd9ecd3` docs(plans): item 13 deferred, the refactor missed the 11:00 condition (2026-11-28)
+  - `ddd2ded` docs(plans): backlog #010 part 2 stays open after D-076 (2026-11-28)
+  - `8e0993b` refactor(application): merge nth-refactor, one folder layout per slice (item 12) (2026-11-28)
+  - `c77f8db` docs(spine): tick 12, D-078 slice layout, Slice shape in CLAUDE.md and ARCHITECTURE.md (2026-11-28)
+
+### W-040
+
+**Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-064](#d-064), [D-066](#d-066), [D-067](#d-067), [D-072](#d-072), [D-074](#d-074), [D-080](#d-080)
+- Commits (31):
+  - `8c4ce09` docs(spine): W-040 and ledger rows for the 11:26 owner asks (2026-11-28)
+  - `5b6cc96` feat(web): merge nth-overrides, the override formula explained on Users & access (item 23) (2026-11-28)
+  - `35f5cb6` docs(plans): tick 23, retire nth-overrides (2026-11-28)
+  - `615f0d1` docs(docs): merge nth-legacydoc, legacy-sync adapter design over the import module (2026-11-28)
+  - `d4b7c35` feat(web): merge nth-changelog, Decisions becomes the Changelog with versioning explained (item 21) (2026-11-28)
+  - `3bf7d4e` docs(web): merge nth-explained, the Fugue, Explained page linked from Help (item 22) (2026-11-28)
+  - `b55270a` docs(plans): tick 21 and 22, retire nth-changelog and nth-explained (2026-11-28)
+  - `055d763` fix(web): merge nth-scorefix, The Score groups one request's audit rows by command (item 24) (2026-11-28)
+  - `a945500` docs(plans): tick 24, retire nth-scorefix (2026-11-28)
+  - `a12c101` feat(web): merge nth-explained (W-040 owner asks) (2026-11-28)
+  - `252902d` feat(web): merge nth-searchui (W-040 owner asks) (2026-11-28)
+  - `4d51e03` feat(web): merge nth-importui (W-040 owner asks) (2026-11-28)
+  - `4ced87c` docs(web): merge nth-explained restyle 805a298, the explained page in the console look (2026-11-28)
+  - `7b93ac8` docs(spine): tick 19 and 20, 22 restyle, W-041 for k6 and HybridCache, ledger rows (2026-11-28)
+  - `c4c89cd` feat(web): merge nth-explained nav entry, Fugue, explained in the sidebar (item 22) (2026-11-28)
+  - `cc5f135` docs(plans): item 22 nav entry merged, retire nth-explained (2026-11-28)
+  - `cdbbecf` feat(web): merge nth-tour, the admin tour walks the core claim flow (item 18) (2026-11-28)
+  - `7a2d434` docs(plans): tick 18, retire nth-tour (2026-11-28)
+  - `2547202` docs(plans): ledger rows for useredit, hybridcache and brunoci, items 28 and 29 (2026-11-28)
+  - `f1f7ee5` docs(docs): DEMO step 15 and a Software factory section (owner ask 12:10) (2026-11-28)
+  - `a8d8596` docs(docs): DEMO step 15 maps Dex Horthy's factory slide to the repo (owner ask 12:11) (2026-11-28)
+  - `84efaaf` docs(docs): DEMO names the Kafka test stall correctly (2026-11-28)
+  - `66db90a` docs(plans): nth-readme2 ledger row, item 11 mapped (2026-11-28)
+  - `c7b1234` feat(api): merge nth-useredit, administrators edit users with If-Match (item 25) (2026-11-28)
+  - `cfb6e75` docs(spine): tick 25, D-080 edit users, retire nth-useredit (2026-11-28)
+  - `7554d00` docs(spine): D-080 states the token limit after deactivation (2026-11-28)
+  - `38cefb2` docs(plans): item 30, the group-only edit defect (2026-11-28)
+  - `b4a4376` docs(docs): merge nth-readme2, README counts and links from final main, search comment fix (item 11) (2026-11-28)
+  - `0b6773f` docs(docs): README Bruno row cites the verified compose run, tick 11 (2026-11-28)
+  - `fd74c0e` fix(api): merge nth-editfix, a group-only user can be saved from Edit (item 30) (2026-11-28)
+  - `cd515ac` docs(spine): tick 30, D-080 says fixed, retire nth-editfix (2026-11-28)
+
+### W-041
+
+**Load testing and caching: k6 scenarios, HybridCache (owner ask 11:30)** — ACTIVE
+- Where: [board](workstreams.md)
+- Decisions and ADRs: [D-064](#d-064), [D-079](#d-079), [D-081](#d-081)
+- Commits (17):
+  - `7b93ac8` docs(spine): tick 19 and 20, 22 restyle, W-041 for k6 and HybridCache, ledger rows (2026-11-28)
+  - `06639d7` feat(build): merge nth-k6, k6 smoke, load and stampede scenarios with percentile reports (item 26) (2026-11-28)
+  - `e429245` docs(plans): tick 26, retire nth-k6 (2026-11-28)
+  - `38db5bd` docs(plans): item 26 records the stampede p95 miss as the cache baseline (2026-11-28)
+  - `2547202` docs(plans): ledger rows for useredit, hybridcache and brunoci, items 28 and 29 (2026-11-28)
+  - `fca8620` docs(plans): nth-kafkafix dispatched as the critical path (2026-11-28)
+  - `766ff6f` test(api): merge nth-brunoci, one sign-in per account per Bruno run (item 28) (2026-11-28)
+  - `2a98aac` docs(plans): tick 28, retire nth-brunoci (2026-11-28)
+  - `1082413` fix(tests): merge nth-kafkafix, the no-broker Kafka test relays only its own outbox row (item 29) (2026-11-28)
+  - `9e455e4` docs(plans): tick 29, DEMO cites the Kafka fix, retire nth-kafkafix (2026-11-28)
+  - `719d968` docs(spine): D-079 and backlog #013, the broker-down relay cycle as a known issue (2026-11-28)
+  - `1948015` docs(spine): failure mode 37, a relaying test must settle leftover due rows first (2026-11-28)
+  - `0e9d56f` docs(spine): D-079 and #013 corrected, the default relay batch is 20 (2026-11-28)
+  - `7adb4d9` docs(spine): D-079 cites the harness override and the hang-kill repro (2026-11-28)
+  - `fe7845a` feat(infra): merge nth-hybridcache, HybridCache for GET /me with tag invalidation (item 27) (2026-11-28)
+  - `d353661` docs(spine): tick 27, D-081 HybridCache for /me, retire nth-hybridcache (2026-11-28)
+  - `c3a0c3f` docs(docs): README counts after HybridCache, honest k6 wording in D-081 (2026-11-28)
+
 ## ADRs
 
 ### ADR-001
@@ -653,6 +875,15 @@ Counts: 24 workstreams, 13 ADRs, 62 decisions, 297 commits (8 unlinked). Newest 
   - `d0eee32` docs(reviews): file the Codex diff review of the idempotency store (2026-11-27)
 - Workstreams: [W-007](#w-007), [W-018](#w-018), [W-020](#w-020)
 - Decisions: [D-050](#d-050)
+
+### ADR-014
+
+**Owner-steered parallel lanes, verified before merge, run overnight under a loop** — accepted — [`ADR-014-owner-steered-parallel-lanes.md`](adr/ADR-014-owner-steered-parallel-lanes.md)
+- Introduced by: `5788007` docs(spine): ADR-014 and D-065, the overnight task list, hot-state and seed prompt (2026-11-28)
+- Amended by: none
+- Cited in commit Refs: none
+- Workstreams: none
+- Decisions: [D-065](#d-065)
 
 ## Decisions
 
@@ -1245,11 +1476,650 @@ Counts: 24 workstreams, 13 ADRs, 62 decisions, 297 commits (8 unlinked). Newest 
   - `f011781` fix(web): webhooks copy names claim.* and customer.* events (2026-11-27)
   - `03448e5` Merge branch 'nth-airtight': panel review web fixes (2026-11-27)
   - `13e9c29` docs(spine): release v0.0.2 and wrap; fresh-database demo path (2026-11-27)
+  - `21379cc` docs(docs): CLAIMS.md matches what shipped after the window (2026-11-27)
+  - `c29a7ba` fix(web): one owner for page padding, shell wrapper no longer doubles it (2026-11-27)
+  - `869592f` feat(web): market flag beside the market name on team exposure and claim header (2026-11-27)
+  - `52f723b` docs(web): shellfix screenshots (2026-11-27)
+  - `854af54` Merge branch 'nth-shellfix': one page-padding owner, market flags (2026-11-27)
+  - `9b34432` build(infra): one command for a reviewer, start.sh (2026-11-27)
+  - `4254133` fix(web): top bar and sidebar are one frame (2026-11-28)
+  - `dd2a8d9` fix(web): the shell is one frame with the page in a rounded card (2026-11-28)
+
+### D-063
+
+**Claims search on Meilisearch (one feature past the freeze)** — accepted — [decisions.md](decisions.md#d-063--claims-search-on-meilisearch-one-feature-past-the-freeze--2026-11-27)
+- ADR: none
+- Workstreams: [W-022](#w-022), [W-032](#w-032)
+- Cited in commit Refs:
+  - `9192ec9` docs(spine): D-063 claims search past the freeze; two lanes (2026-11-27)
+  - `56e472c` feat(search): header search finds claims, scoped to the caller (2026-11-28)
+  - `28cc6b1` fix(test): claim search reindex test owns its clock (2026-11-28)
+  - `36d1fb6` docs(spine): failure mode 35, the shared test clock (2026-11-28)
+  - `75ce4f4` fix(test): assert the reindexed status, not the indexer's row count (2026-11-28)
+  - `133c962` Merge branch 'nth-claimsearch': header search finds claims, scoped to the caller (2026-11-28)
+  - `dabed16` docs(spine): claims search merged, frame fix, lanes retired, hot-state (2026-11-28)
+  - `444ef90` fix(test): claim search test queries match only its own claim (2026-11-28)
+  - `aa401bc` feat(api): merge nth-searchx, claims search hardening on Meilisearch (item 10) (2026-11-28)
+
+### D-064
+
+**Submission-morning asks past the freeze: shell polish, USD view, add users, onboarding** — accepted — [decisions.md](decisions.md#d-064--submission-morning-asks-past-the-freeze-shell-polish-usd-view-add-users-onboarding--2026-11-28)
+- ADR: none
+- Workstreams: [W-022](#w-022), [W-025](#w-025), [W-030](#w-030), [W-031](#w-031), [W-032](#w-032), [W-033](#w-033), [W-034](#w-034), [W-035](#w-035), [W-039](#w-039), [W-040](#w-040), [W-041](#w-041)
+- Cited in commit Refs:
+  - `f5389da` docs(spine): D-064 submission-morning asks past the freeze; three lanes (2026-11-28)
+  - `8e58809` docs(docs): rewrite README in the product-README layout (2026-11-28)
+  - `4ccfe50` feat(web): indicative USD view with bar and donut charts on team page (2026-11-28)
+  - `e4e750f` feat(web): first-visit welcome and autoplayed landing tour per user (2026-11-28)
+  - `20d6a8c` feat(web): sign-in Prelude, a fugal animation of one request (2026-11-28)
+  - `0af1800` feat(web): the SLA calendar day opens a drawer with the week and the work (2026-11-28)
+  - `c10f7eb` feat(web): the reserve workbook has sheet tabs and a live By currency sheet (2026-11-28)
+  - `fb10684` fix(web): no box inside the page card; refactor plan as backlog #010 (2026-11-28)
+  - `37ae182` Merge branch 'nth-money' (2026-11-28)
+  - `e609089` Merge branch 'nth-prelude' (2026-11-28)
+  - `4345366` Merge branch 'nth-onboard' (2026-11-28)
+  - `be23504` Merge branch 'nth-readme' (2026-11-28)
+  - `65dc2d5` fix(web): a tab opened before a redeploy reloads instead of a dead click (2026-11-28)
+  - `8d63b1d` fix(web): Pick up on the landing opens the claim it picked up (2026-11-28)
+  - `cda483c` docs(spine): say what nth- lane names mean; retire four merged lane rows (2026-11-28)
+  - `2ba4e19` fix(web): the first-visit welcome can never freeze the page (2026-11-28)
+  - `3dcdb02` feat(web): the workbooks look like the console, not a default grid (2026-11-28)
+  - `86a0e15` docs(research): Meilisearch settings research for search hardening (2026-11-28)
+  - `7ebbeb0` feat(api): GET /audit/trace/{correlationId}, the stored rows of one request (2026-11-28)
+  - `4a95058` fix(tests): audit search by actor allows partial matches after full ones (2026-11-28)
+  - `7309d5b` feat(web): The Score, one correlation id as a timeline from real rows (2026-11-28)
+  - `6ffe7f3` docs(plans): ledger rows for nth-claimpage and nth-stack, overnight items 6-9 (2026-11-28)
+  - `a2d9122` feat(web): assessment worksheet as a workbook, Export CSV, Save to Excel with icons (2026-11-28)
+  - `b55cf2a` feat(web): plain next-step copy, track step popovers and a How a claim moves modal (2026-11-28)
+  - `ddb29ce` feat(web): env pill opens a Stack dialog (2026-11-28)
+  - `f480e5d` style(web): rounded, warm SLA calendar in console tokens (2026-11-28)
+  - `7228e3d` feat(api): administrators create users with an initial password and roles (2026-11-28)
+  - `00e5c76` feat(web): merge nth-stack, the Stack dialog and a warm SLA calendar (overnight items 9, 8) (2026-11-28)
+  - `0439df5` feat(web): merge nth-claimpage, the workbook worksheet and plain claim-page copy (overnight items 6, 7) (2026-11-28)
+  - `a88ed12` feat(web): Add user drawer on Users and access (2026-11-28)
+  - `30e4ac1` docs(plans): tick items 6-9, README says Save to Excel, retire two lanes (2026-11-28)
+  - `e182dbb` feat(api): merge nth-uam, administrators create users (overnight item 3) (2026-11-28)
+  - `dacfb06` feat(web): merge nth-score, The Score per-correlation inspector (overnight item 4) (2026-11-28)
+  - `32946b6` docs(plans): tick items 3 and 4, retire nth-uam and nth-score (2026-11-28)
+  - `add9f6f` docs(plans): correct the verification times on items 3 and 6 (2026-11-28)
+  - `79dbc0d` docs(plans): every relay ask since 03:12 on the overnight list, backlog pruned (2026-11-28)
+  - `592b29a` docs(plans): tick 1b, both Home buttons land on the claim (stale tab) (2026-11-28)
+  - `3fe71c2` docs(spine): D-066 dispatcher, integrator and nine contract-bound lanes (2026-11-28)
+  - `cfc198b` feat(web): generate the decision timeline data from the repo docs (2026-11-28)
+  - `75f7107` docs(plans): tick 3b, the new users Bruno requests pass on the demo stack (2026-11-28)
+  - `a180ca5` docs(plans): backlog #011, the outbox correlation id index for The Score (2026-11-28)
+  - `a181da0` feat(web): under-the-hood notes for the reserve sheet, SLA calendar and assessment (2026-11-28)
+  - `51d9617` feat(web): queue note gains the search test, D-063 and the ADR-006 read path (2026-11-28)
+  - `573e0af` feat(db): compose creates the fugue_readonly role on a fresh volume (2026-11-28)
+  - `b80dba3` feat(web): decisions timeline page, route and nav entry (2026-11-28)
+  - `2e0ecbf` feat(web): merge nth-decisions, the decision timeline generated from the docs (item 11d) (2026-11-28)
+  - `3ab5f5e` docs(runbooks): agent-tooling demo script, linked from README and runbook 00 (2026-11-28)
+  - `da7b6f8` docs(ai): nth-decisions lane status (2026-11-28)
+  - `21276e0` feat(web): fg-select, an accessible select-only combobox on the CDK overlay (2026-11-28)
+  - `642be56` docs(ai): nth-tooling lane status and branch ledger row (2026-11-28)
+  - `37db1d0` docs(ai): nth-hoodb lane status (2026-11-28)
+  - `7b6b3ca` feat(web): hood flow steps and a call-path tip attached to its row (2026-11-28)
+  - `056ea6b` feat(api): sample claim letter template and PDF writer (2026-11-28)
+  - `9d9ea50` feat(web): fg-date, a typed date field with a keyboard calendar popover (2026-11-28)
+  - `1df1cb0` feat(web): audit log hood note to the flow standard, and The Score's note (2026-11-28)
+  - `66604db` feat(infra): merge nth-tooling, read-only role in the stack, pinned MCP, runbook (17a) (2026-11-28)
+  - `82545f6` fix(web): granted cells in the roles matrix are check icons (2026-11-28)
+  - `ea91049` fix(web): record banner step track ends at its last node (2026-11-28)
+  - `50858c3` fix(web): modules Last changed never spins, no audit calls while AUDIT is off (2026-11-28)
+  - `3342fcf` fix(web): claimants see Assessed, not Reserved, in How a claim moves (2026-11-28)
+  - `bb6f0e1` feat(api): GET /claims/{id}/letter downloads the sample letter (2026-11-28)
+  - `7c2ad8a` feat(api): claims index settings applied idempotently, market names, synonyms (2026-11-28)
+  - `d673859` test(web): pin the step track line rule, add nth-fixes lane status (2026-11-28)
+  - `174c311` feat(api): paid (settled) count and sum on the exposure rows and totals (2026-11-28)
+  - `8398c82` feat(web): hood notes for modules, webhooks, customers and my profile (2026-11-28)
+  - `a23a31d` feat(api): OpenAPI snapshot, generated client and a Bruno request for paid exposure (2026-11-28)
+  - `3149854` fix(web): merge nth-fixes, matrix checks, track line, claimant wording, /modules (3a, 7a, 7b, 11f) (2026-11-28)
+  - `b6e2263` feat(web): console select and date controls in the report, overrides and audit forms (2026-11-28)
+  - `8b0679c` feat(web): settlement or decision letter button on the claim header (2026-11-28)
+  - `69fa7ba` docs(ai): nth-hooda lane status with the headless proof (2026-11-28)
+  - `1121233` feat(api): file readers for intake imports (spreadsheet, inbox, WhatsApp) (2026-11-28)
+  - `4ee1d1e` feat(web): team page shows paid (settled) per market and line next to the exposure (2026-11-28)
+  - `fe102f5` feat(api): exact claim and policy numbers, every word must match, highlights, facets (2026-11-28)
+  - `9989f7c` docs(plans): tick 3a, 7a, 7b; 11f back to nth-fixes for the audit 404s on toggle (2026-11-28)
+  - `60e978c` feat(web): merge nth-hooda, hood flow model, row tooltip fix, audit and platform pages (11e A) (2026-11-28)
+  - `a4df949` feat(web): merge nth-hoodb, claims-area hood notes (11e B) (2026-11-28)
+  - `c983fac` fix(web): no audit 404s when AUDIT is switched off on /modules (2026-11-28)
+  - `c191a05` docs(plans): 11e parts A and B merged, flow steps for the claims area still open (2026-11-28)
+  - `42a314a` fix(web): merge nth-fixes follow-up, no audit refetch when AUDIT is switched off (11f) (2026-11-28)
+  - `77feee8` fix(api): claim documents no longer store an empty _formatted field (2026-11-28)
+  - `2754f2b` feat(api): import endpoints, claim_imports idempotency ledger, audited creates (2026-11-28)
+  - `58762fc` feat(web): Fill with an example on every form, from one sample-data file (2026-11-28)
+  - `84ac925` feat(web): what-happens flows for report, claim detail and assessment notes (2026-11-28)
+  - `cb2685f` feat(web): what-happens flows for home, queue, my claims, team, sheet and calendar notes (2026-11-28)
+  - `4c42edc` docs(plans): tick 11f, 7b seen live, retire nth-fixes (2026-11-28)
+  - `1e3d63d` feat(web): merge nth-forms, console select, date picker and Fill with an example (item 5) (2026-11-28)
+  - `f3efa50` test(web): make the next-step card locators exact (2026-11-28)
+  - `ea3d79c` docs(plans): tick 5, retire nth-forms, ledger row for nth-hoodflow (2026-11-28)
+  - `8ed5cce` feat(web): merge nth-hoodflow, flow steps on the claims-area hood notes (11e) (2026-11-28)
+  - `7b8f548` feat(web): header claim hits show why they matched and the match counts (2026-11-28)
+  - `79f44e5` feat(web): fg-date opt-in time mode (withTime) (2026-11-28)
+  - `0835680` docs(plans): tick 11e and item 5's live submit, retire nth-hoodflow, nth-formsfix row (2026-11-28)
+  - `a14f0c1` feat(web): use fg-date with time for access Until and audit From/To (2026-11-28)
+  - `9ceceab` docs(plans): nth-datetime ledger row, item 5 follow-ups (2026-11-28)
+  - `a1dde21` docs(lanes): nth-datetime status, headless proof (2026-11-28)
+  - `047e565` feat(web): merge nth-datetime, fg-date time mode for overrides and audit filters (item 5) (2026-11-28)
+  - `efd03bd` feat(web): Import page for spreadsheet, inbox and WhatsApp file imports (2026-11-28)
+  - `cb8c13f` docs(plans): nth-datetime merged and checked, retire it (2026-11-28)
+  - `90ec746` docs(ai): nth-pdf lane status, full suite green (2026-11-28)
+  - `59e1ad6` feat(api): merge nth-pdf, sample settlement and decision letters as PDF (item 11b) (2026-11-28)
+  - `d29a410` test(api): Bruno requests for the import endpoints (2026-11-28)
+  - `6db3049` test(web): claims e2e uses the next-step test id and waits for the search index (2026-11-28)
+  - `4af48e6` feat(web): queue Market and Line filters and the calendar day jump use the console controls (2026-11-28)
+  - `5f7985e` fix(web): merge nth-formsfix, queue filters and calendar day jump on console controls, e2e locator (item 5) (2026-11-28)
+  - `ac70cb4` docs(plans): item 5 complete with nth-formsfix, retire it (2026-11-28)
+  - `029e926` docs(plans): 17b calendar console error, nth-calfix row, nth-formsfix retired again (2026-11-28)
+  - `01f21d3` fix(web): no ResizeObserver console error on the SLA calendar (2026-11-28)
+  - `3de8f49` fix(web): merge nth-calfix, no ResizeObserver console error on the SLA calendar (17b) (2026-11-28)
+  - `4dd58e1` docs(plans): tick 17b, retire nth-calfix (2026-11-28)
+  - `ecc90c9` docs(ai): nth-paid status with the full suite result (2026-11-28)
+  - `bd2155d` docs(ai): nth-searchx status with the full-suite result (2026-11-28)
+  - `cc90cc1` fix(api): import create is not [Idempotent]; the import ledger is its idempotency (2026-11-28)
+  - `aa401bc` feat(api): merge nth-searchx, claims search hardening on Meilisearch (item 10) (2026-11-28)
+  - `7e8e357` test(bruno): users suite creates a self-service user, not a staff officer (2026-11-28)
+  - `92be068` test(api): merge nth-brunofix, Bruno-created users are claimants, not staff (2026-11-28)
+  - `e7995a2` docs(plans): P2 order after the feature lanes (2026-11-28)
+  - `ff4deb2` docs(plans): 11g moves after item 13, nothing runs beside the refactor (2026-11-28)
+  - `f967355` feat(api): merge nth-import, spreadsheet, inbox and WhatsApp file imports to reviewed drafts (item 11a) (2026-11-28)
+  - `2544cb6` docs(spine): W-039 for the structure refactor, nth-refactor ledger row (2026-11-28)
+  - `ce87b25` refactor(application): Claims slice into Models, Repos and Helpers folders (2026-11-28)
+  - `01cdd6b` refactor(application): identity slices into Models and Repos folders (2026-11-28)
+  - `8280750` refactor(application): remaining slices into Models, Repos and Helpers folders (2026-11-28)
+  - `b7355af` docs(application): slice README describes the uniform folder layout (2026-11-28)
+  - `3646d54` fix(web): hood notes follow the moved Helpers paths (2026-11-28)
+  - `8c4ce09` docs(spine): W-040 and ledger rows for the 11:26 owner asks (2026-11-28)
+  - `e3b2aef` fix(web): group one request's audit rows into one step on The Score (2026-11-28)
+  - `6ad6b55` feat(scripts): changelog data carries CHANGELOG release notes and closed work items (2026-11-28)
+  - `a715607` feat(web): Decisions becomes the Changelog, with a versioning explainer (2026-11-28)
+  - `3083345` feat(web): explain the override formula on the access page (2026-11-28)
+  - `5b6cc96` feat(web): merge nth-overrides, the override formula explained on Users & access (item 23) (2026-11-28)
+  - `968a25c` fix(web): no empty timeline under the Release notes filter (2026-11-28)
+  - `d541b9c` docs: add Fugue, Explained page and link it from README and the Help pill (2026-11-28)
+  - `3ff96bc` style(web): align the step mark to the top of an expanded step (2026-11-28)
+  - `3bf7d4e` docs(web): merge nth-explained, the Fugue, Explained page linked from Help (item 22) (2026-11-28)
+  - `73d16d5` fix(web): keep The Score hood note within the flow text limit (2026-11-28)
+  - `db5e449` fix(web): repair the quote in The Score hood note (2026-11-28)
+  - `364784a` docs: restyle Fugue, Explained in the console look (2026-11-28)
+  - `805a298` docs: add MIT notice for the vendored mermaid file (2026-11-28)
+  - `ef5961d` feat(web): sample import files and icon names for the import page (2026-11-28)
+  - `f94ce0b` feat(web): redesign the import page with source cards and a drop zone (2026-11-28)
+  - `49f1c39` feat(web): tour walks the core claim flow first, platform last for admin (2026-11-28)
+  - `34479cc` feat(web): obvious header search with a first-use Meilisearch explainer (2026-11-28)
+  - `f1bc899` feat(web): rename Import to Import legacy claims (2026-11-28)
+  - `a61920e` docs: add MIT notice for the vendored mermaid file (2026-11-28)
+  - `a12c101` feat(web): merge nth-explained (W-040 owner asks) (2026-11-28)
+  - `252902d` feat(web): merge nth-searchui (W-040 owner asks) (2026-11-28)
+  - `4d51e03` feat(web): merge nth-importui (W-040 owner asks) (2026-11-28)
+  - `e5163e0` feat(web): Fugue, explained as a sidebar item for every persona (2026-11-28)
+  - `4ced87c` docs(web): merge nth-explained restyle 805a298, the explained page in the console look (2026-11-28)
+  - `4161156` fix(web): separate cache key for the paged My claims list (2026-11-28)
+  - `c4c89cd` feat(web): merge nth-explained nav entry, Fugue, explained in the sidebar (item 22) (2026-11-28)
+  - `cdbbecf` feat(web): merge nth-tour, the admin tour walks the core claim flow (item 18) (2026-11-28)
+  - `c51e558` feat(load): k6 smoke, load and stampede scenarios with percentile reports (2026-11-28)
+  - `06639d7` feat(build): merge nth-k6, k6 smoke, load and stampede scenarios with percentile reports (item 26) (2026-11-28)
+  - `c618248` docs(application): nth-refactor lane status with the final suite counts (2026-11-28)
+  - `8e0993b` refactor(application): merge nth-refactor, one folder layout per slice (item 12) (2026-11-28)
+  - `1b56beb` feat(api): HybridCache wiring, L1 only, with the /me cache port and its invalidator (2026-11-28)
+  - `856d24c` feat(api): cache GET /me per user and invalidate it on permission writes (2026-11-28)
+  - `7e50a5b` fix(messaging): the no-broker Kafka test relays only its own outbox row (2026-11-28)
+  - `340cc55` feat(api): edit a user with PUT /users/{id} and If-Match (2026-11-28)
+  - `f89c523` fix(bruno): reuse one token per account per run (2026-11-28)
+  - `766ff6f` test(api): merge nth-brunoci, one sign-in per account per Bruno run (item 28) (2026-11-28)
+  - `00d3a35` test(api): stampede "after" runs with the /me cache and the before/after overlay (2026-11-28)
+  - `275b9e5` docs(messaging): nth-kafkafix lane status with the full-suite counts (2026-11-28)
+  - `3db1fb9` feat(web): edit users from the access table, show/hide the initial password (2026-11-28)
+  - `1082413` fix(tests): merge nth-kafkafix, the no-broker Kafka test relays only its own outbox row (item 29) (2026-11-28)
+  - `97efc00` docs(ai): nth-useredit lane status with the full suite counts (2026-11-28)
+  - `9960e56` docs(api): ClaimantName on a search hit is returned to every caller (2026-11-28)
+  - `c7b1234` feat(api): merge nth-useredit, administrators edit users with If-Match (item 25) (2026-11-28)
+  - `1f87a75` docs(spine): merge main into nth-readme2 (2026-11-28)
+  - `e3ed0a7` docs(readme): refresh counts, links and search wording from this lane's runs (2026-11-28)
+  - `d018843` feat(api): a user edit drops that user's cached /me (2026-11-28)
+  - `fe7845a` feat(infra): merge nth-hybridcache, HybridCache for GET /me with tag invalidation (item 27) (2026-11-28)
+  - `8ff2363` fix(api): edit allows no direct role when the user keeps access through a group (2026-11-28)
+  - `1141f56` fix(web): edit drawer accepts no direct role for a user kept by a group (2026-11-28)
+
+### D-065
+
+**Owner-steered parallel lanes, verified before merge, run overnight under a loop** — accepted — [decisions.md](decisions.md#d-065--owner-steered-parallel-lanes-verified-before-merge-run-overnight-under-a-loop--2026-11-28)
+- ADR: [ADR-014](adr/ADR-014-owner-steered-parallel-lanes.md)
+- Workstreams: [W-022](#w-022)
+- Cited in commit Refs:
+  - `5788007` docs(spine): ADR-014 and D-065, the overnight task list, hot-state and seed prompt (2026-11-28)
+  - `7a8c77e` docs(plans): import module, PDF letters and the open backlog on the overnight list (2026-11-28)
+  - `f566bb0` docs(plans): tick item 1, the welcome no longer freezes the nav (2026-11-28)
+  - `78a0169` docs(spine): lead wrap at 03:10, overnight run handed to a fresh lead (2026-11-28)
+
+### D-066
+
+**Dispatcher, integrator and contract-bound builder lanes replace the single overnight lead** — accepted — [decisions.md](decisions.md#d-066--dispatcher-integrator-and-contract-bound-builder-lanes-replace-the-single-overnight-lead--2026-11-28)
+- ADR: none
+- Workstreams: [W-022](#w-022), [W-029](#w-029), [W-036](#w-036), [W-037](#w-037), [W-040](#w-040)
+- Cited in commit Refs:
+  - `3fe71c2` docs(spine): D-066 dispatcher, integrator and nine contract-bound lanes (2026-11-28)
+  - `2e0ecbf` feat(web): merge nth-decisions, the decision timeline generated from the docs (item 11d) (2026-11-28)
+  - `f3d7637` docs(web): regenerate the decision timeline with D-066 (2026-11-28)
+  - `ed39e82` docs(spine): D-067 the decision timeline is generated, regenerated JSON (2026-11-28)
+  - `66604db` feat(infra): merge nth-tooling, read-only role in the stack, pinned MCP, runbook (17a) (2026-11-28)
+  - `8765f5d` docs(spine): W-025..W-038 for tonight, D-068 and D-069, fleet contracts archived (2026-11-28)
+  - `0517bd4` docs(spine): tick 17a on the recreated stack, hot-state for the integrator role (2026-11-28)
+  - `38348a3` docs(spine): hot-state at 04:43, integrator status (2026-11-28)
+  - `e7995a2` docs(plans): P2 order after the feature lanes (2026-11-28)
+  - `82cb252` docs(spine): failure mode 36, a hung OrbStack daemon stalls Testcontainers suites (2026-11-28)
+  - `72361fc` docs(spine): failure mode 36 gets the hang window and the restart commands (2026-11-28)
+  - `d692bac` docs(spine): hot-state at 11:50 with the dispatcher handoff folded in (2026-11-28)
+  - `f1f7ee5` docs(docs): DEMO step 15 and a Software factory section (owner ask 12:10) (2026-11-28)
+  - `a8d8596` docs(docs): DEMO step 15 maps Dex Horthy's factory slide to the repo (owner ask 12:11) (2026-11-28)
+
+### D-067
+
+**The decision timeline page is generated from the docs, never hand-copied** — accepted — [decisions.md](decisions.md#d-067--the-decision-timeline-page-is-generated-from-the-docs-never-hand-copied--2026-11-28)
+- ADR: none
+- Workstreams: [W-022](#w-022), [W-040](#w-040)
+- Cited in commit Refs:
+  - `ed39e82` docs(spine): D-067 the decision timeline is generated, regenerated JSON (2026-11-28)
+  - `762997b` docs(plans): tick 11d, retire nth-decisions (2026-11-28)
+  - `d9f6e5a` docs(ai): merge nth-decisions lane status (2026-11-28)
+  - `d4b7c35` feat(web): merge nth-changelog, Decisions becomes the Changelog with versioning explained (item 21) (2026-11-28)
+
+### D-068
+
+**The compose Postgres creates the read-only role; the MCP server is pinned** — accepted — [decisions.md](decisions.md#d-068--the-compose-postgres-creates-the-read-only-role-the-mcp-server-is-pinned--2026-11-28)
+- ADR: none
+- Workstreams: [W-029](#w-029), [W-036](#w-036), [W-037](#w-037)
+- Cited in commit Refs:
+  - `8765f5d` docs(spine): W-025..W-038 for tonight, D-068 and D-069, fleet contracts archived (2026-11-28)
+  - `0517bd4` docs(spine): tick 17a on the recreated stack, hot-state for the integrator role (2026-11-28)
+
+### D-069
+
+**Backlog #009 split: paid figure built, outside notification cut, the rest answered** — accepted — [decisions.md](decisions.md#d-069--backlog-009-split-paid-figure-built-outside-notification-cut-the-rest-answered--2026-11-28)
+- ADR: none
+- Workstreams: [W-026](#w-026), [W-029](#w-029), [W-036](#w-036), [W-037](#w-037)
+- Cited in commit Refs:
+  - `8765f5d` docs(spine): W-025..W-038 for tonight, D-068 and D-069, fleet contracts archived (2026-11-28)
+  - `bceb4e5` feat(api): merge nth-paid, paid and settled figures on Team and exposure (item 11c) (2026-11-28)
+  - `f323559` docs(plans): tick 11c and 4a, retire nth-paid (2026-11-28)
+
+### D-070
+
+**Sample claim letters come from a hand-written PDF writer, no PDF dependency** — accepted — [decisions.md](decisions.md#d-070--sample-claim-letters-come-from-a-hand-written-pdf-writer-no-pdf-dependency--2026-11-28)
+- ADR: none
+- Workstreams: [W-034](#w-034)
+- Cited in commit Refs:
+  - `a7ab882` docs(spine): tick 11b, D-070 sample letters without a PDF dependency, retire nth-pdf (2026-11-28)
+  - `c27b57c` docs(plans): 11b claimant checks and the Latin-1 known limit (2026-11-28)
+
+### D-071
+
+**The global ErrorHandler drops exactly one benign browser notice, ResizeObserver loop** — accepted — [decisions.md](decisions.md#d-071--the-global-errorhandler-drops-exactly-one-benign-browser-notice-resizeobserver-loop--2026-11-28)
+- ADR: none
+- Workstreams: [W-030](#w-030)
+- Cited in commit Refs:
+  - `a36df90` docs(spine): D-071 the ErrorHandler drops one benign notice, 17b live toggle check (2026-11-28)
+  - `81422de` docs(spine): D-071 names the FullCalendar version (2026-11-28)
+
+### D-072
+
+**Claims search answers like an officer expects** — accepted — [decisions.md](decisions.md#d-072--claims-search-answers-like-an-officer-expects--2026-11-28)
+- ADR: none
+- Workstreams: [W-032](#w-032), [W-040](#w-040)
+- Cited in commit Refs:
+  - `650b2c4` docs(spine): tick 10, D-072 and D-073 for search, retire nth-searchx (2026-11-28)
+  - `b4a4376` docs(docs): merge nth-readme2, README counts and links from final main, search comment fix (item 11) (2026-11-28)
+
+### D-073
+
+**Header search stays claims and audit; users and customers are not indexed** — accepted — [decisions.md](decisions.md#d-073--header-search-stays-claims-and-audit-users-and-customers-are-not-indexed--2026-11-28)
+- ADR: none
+- Workstreams: [W-032](#w-032)
+- Cited in commit Refs:
+  - `650b2c4` docs(spine): tick 10, D-072 and D-073 for search, retire nth-searchx (2026-11-28)
+
+### D-074
+
+**Intake import is file imports reviewed into drafts, not live connectors** — accepted — [decisions.md](decisions.md#d-074--intake-import-is-file-imports-reviewed-into-drafts-not-live-connectors--2026-11-28)
+- ADR: none
+- Workstreams: [W-031](#w-031), [W-040](#w-040)
+- Cited in commit Refs:
+  - `3a6fb56` docs(spine): tick 11a, D-074 file imports to reviewed drafts, retire nth-import (2026-11-28)
+  - `afc6fe9` docs(plans): 11a, the lane's second full suite was green (2026-11-28)
+  - `7ad0622` docs(design): legacy-sync adapter design over the import module (2026-11-28)
+  - `615f0d1` docs(docs): merge nth-legacydoc, legacy-sync adapter design over the import module (2026-11-28)
+
+### D-075
+
+**Item 14 deferred: the Worker host and building-blocks split stay in the backlog** — accepted — [decisions.md](decisions.md#d-075--item-14-deferred-the-worker-host-and-building-blocks-split-stay-in-the-backlog--2026-11-28)
+- ADR: none
+- Workstreams: [W-039](#w-039)
+- Cited in commit Refs:
+  - `89977f2` docs(spine): D-075 defers item 14, backlog #010 part 3 stays open (2026-11-28)
+
+### D-076
+
+**Items 15 and 11g deferred; item 13 only if the refactor merges by 11:00** — accepted — [decisions.md](decisions.md#d-076--items-15-and-11g-deferred-item-13-only-if-the-refactor-merges-by-1100--2026-11-28)
+- ADR: none
+- Workstreams: [W-039](#w-039)
+- Cited in commit Refs:
+  - `a66442d` docs(spine): failure mode 36 is host sleep on battery, D-076 defers 15 and 11g (2026-11-28)
+  - `cd9ecd3` docs(plans): item 13 deferred, the refactor missed the 11:00 condition (2026-11-28)
+  - `ddd2ded` docs(plans): backlog #010 part 2 stays open after D-076 (2026-11-28)
+
+### D-077
+
+**Legacy sync stays a design; the built path is file import** — accepted — [decisions.md](decisions.md#d-077--legacy-sync-stays-a-design-the-built-path-is-file-import--2026-11-28)
+- ADR: none
+- Workstreams: [W-031](#w-031)
+- Cited in commit Refs:
+  - `9a85ca5` docs(spine): D-077 legacy sync stays a design, backlog #012, scaling and offline section (2026-11-28)
+
+### D-078
+
+**One folder layout per slice: Commands, Queries, Models, Repos, Helpers** — accepted — [decisions.md](decisions.md#d-078--one-folder-layout-per-slice-commands-queries-models-repos-helpers--2026-11-28)
+- ADR: none
+- Workstreams: [W-039](#w-039)
+- Cited in commit Refs:
+  - `c77f8db` docs(spine): tick 12, D-078 slice layout, Slice shape in CLAUDE.md and ARCHITECTURE.md (2026-11-28)
+
+### D-079
+
+**Known issue recorded: a broker outage makes one relay cycle long and lock-holding** — accepted — [decisions.md](decisions.md#d-079--known-issue-recorded-a-broker-outage-makes-one-relay-cycle-long-and-lock-holding--2026-11-28)
+- ADR: none
+- Workstreams: [W-041](#w-041)
+- Cited in commit Refs:
+  - `719d968` docs(spine): D-079 and backlog #013, the broker-down relay cycle as a known issue (2026-11-28)
+  - `1948015` docs(spine): failure mode 37, a relaying test must settle leftover due rows first (2026-11-28)
+  - `0e9d56f` docs(spine): D-079 and #013 corrected, the default relay batch is 20 (2026-11-28)
+  - `7adb4d9` docs(spine): D-079 cites the harness override and the hang-kill repro (2026-11-28)
+
+### D-080
+
+**Editing a user is PUT with If-Match, not an upsert; a self-lockout guard** — accepted — [decisions.md](decisions.md#d-080--editing-a-user-is-put-with-if-match-not-an-upsert-a-self-lockout-guard--2026-11-28)
+- ADR: none
+- Workstreams: [W-040](#w-040)
+- Cited in commit Refs:
+  - `cfb6e75` docs(spine): tick 25, D-080 edit users, retire nth-useredit (2026-11-28)
+  - `7554d00` docs(spine): D-080 states the token limit after deactivation (2026-11-28)
+  - `38cefb2` docs(plans): item 30, the group-only edit defect (2026-11-28)
+  - `fd74c0e` fix(api): merge nth-editfix, a group-only user can be saved from Edit (item 30) (2026-11-28)
+  - `cd515ac` docs(spine): tick 30, D-080 says fixed, retire nth-editfix (2026-11-28)
+  - `3b903ba` docs(spine): D-080 cites the editfix merge sha (2026-11-28)
+
+### D-081
+
+**HybridCache for GET /me, invalidated by tags; enforcement stays uncached** — accepted — [decisions.md](decisions.md#d-081--hybridcache-for-get-me-invalidated-by-tags-enforcement-stays-uncached--2026-11-28)
+- ADR: none
+- Workstreams: [W-041](#w-041)
+- Cited in commit Refs:
+  - `d353661` docs(spine): tick 27, D-081 HybridCache for /me, retire nth-hybridcache (2026-11-28)
+  - `c3a0c3f` docs(docs): README counts after HybridCache, honest k6 wording in D-081 (2026-11-28)
 
 ## Commit to ids
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `3b903ba` | docs(spine): D-080 cites the editfix merge sha | 2026-11-28 | [D-080](#d-080) |
+| `cd515ac` | docs(spine): tick 30, D-080 says fixed, retire nth-editfix | 2026-11-28 | [W-040](#w-040), [D-080](#d-080) |
+| `fd74c0e` | fix(api): merge nth-editfix, a group-only user can be saved from Edit (item 30) | 2026-11-28 | [W-040](#w-040), [D-080](#d-080) |
+| `1141f56` | fix(web): edit drawer accepts no direct role for a user kept by a group | 2026-11-28 | [D-064](#d-064) |
+| `c3a0c3f` | docs(docs): README counts after HybridCache, honest k6 wording in D-081 | 2026-11-28 | [W-041](#w-041), [D-081](#d-081) |
+| `8ff2363` | fix(api): edit allows no direct role when the user keeps access through a group | 2026-11-28 | [D-064](#d-064) |
+| `d353661` | docs(spine): tick 27, D-081 HybridCache for /me, retire nth-hybridcache | 2026-11-28 | [W-041](#w-041), [D-081](#d-081) |
+| `fe7845a` | feat(infra): merge nth-hybridcache, HybridCache for GET /me with tag invalidation (item 27) | 2026-11-28 | [W-041](#w-041), [D-064](#d-064) |
+| `d018843` | feat(api): a user edit drops that user's cached /me | 2026-11-28 | [D-064](#d-064) |
+| `0b6773f` | docs(docs): README Bruno row cites the verified compose run, tick 11 | 2026-11-28 | [W-040](#w-040) |
+| `b4a4376` | docs(docs): merge nth-readme2, README counts and links from final main, search comment fix (item 11) | 2026-11-28 | [W-040](#w-040), [D-072](#d-072) |
+| `e3ed0a7` | docs(readme): refresh counts, links and search wording from this lane's runs | 2026-11-28 | [D-064](#d-064) |
+| `38cefb2` | docs(plans): item 30, the group-only edit defect | 2026-11-28 | [W-040](#w-040), [D-080](#d-080) |
+| `7554d00` | docs(spine): D-080 states the token limit after deactivation | 2026-11-28 | [W-040](#w-040), [D-080](#d-080) |
+| `cfb6e75` | docs(spine): tick 25, D-080 edit users, retire nth-useredit | 2026-11-28 | [W-040](#w-040), [D-080](#d-080) |
+| `1f87a75` | docs(spine): merge main into nth-readme2 | 2026-11-28 | [D-064](#d-064) |
+| `c7b1234` | feat(api): merge nth-useredit, administrators edit users with If-Match (item 25) | 2026-11-28 | [W-040](#w-040), [D-064](#d-064) |
+| `9960e56` | docs(api): ClaimantName on a search hit is returned to every caller | 2026-11-28 | [D-064](#d-064) |
+| `97efc00` | docs(ai): nth-useredit lane status with the full suite counts | 2026-11-28 | [D-064](#d-064) |
+| `66db90a` | docs(plans): nth-readme2 ledger row, item 11 mapped | 2026-11-28 | [W-040](#w-040) |
+| `7adb4d9` | docs(spine): D-079 cites the harness override and the hang-kill repro | 2026-11-28 | [W-041](#w-041), [D-079](#d-079) |
+| `0e9d56f` | docs(spine): D-079 and #013 corrected, the default relay batch is 20 | 2026-11-28 | [W-041](#w-041), [D-079](#d-079) |
+| `1948015` | docs(spine): failure mode 37, a relaying test must settle leftover due rows first | 2026-11-28 | [W-041](#w-041), [D-079](#d-079) |
+| `719d968` | docs(spine): D-079 and backlog #013, the broker-down relay cycle as a known issue | 2026-11-28 | [W-041](#w-041), [D-079](#d-079) |
+| `9e455e4` | docs(plans): tick 29, DEMO cites the Kafka fix, retire nth-kafkafix | 2026-11-28 | [W-041](#w-041) |
+| `1082413` | fix(tests): merge nth-kafkafix, the no-broker Kafka test relays only its own outbox row (item 29) | 2026-11-28 | [W-041](#w-041), [D-064](#d-064) |
+| `3db1fb9` | feat(web): edit users from the access table, show/hide the initial password | 2026-11-28 | [D-064](#d-064) |
+| `275b9e5` | docs(messaging): nth-kafkafix lane status with the full-suite counts | 2026-11-28 | [D-064](#d-064) |
+| `84efaaf` | docs(docs): DEMO names the Kafka test stall correctly | 2026-11-28 | [W-040](#w-040) |
+| `a8d8596` | docs(docs): DEMO step 15 maps Dex Horthy's factory slide to the repo (owner ask 12:11) | 2026-11-28 | [W-040](#w-040), [D-066](#d-066) |
+| `f1f7ee5` | docs(docs): DEMO step 15 and a Software factory section (owner ask 12:10) | 2026-11-28 | [W-040](#w-040), [D-066](#d-066) |
+| `00d3a35` | test(api): stampede "after" runs with the /me cache and the before/after overlay | 2026-11-28 | [D-064](#d-064) |
+| `2a98aac` | docs(plans): tick 28, retire nth-brunoci | 2026-11-28 | [W-041](#w-041) |
+| `766ff6f` | test(api): merge nth-brunoci, one sign-in per account per Bruno run (item 28) | 2026-11-28 | [W-041](#w-041), [D-064](#d-064) |
+| `f89c523` | fix(bruno): reuse one token per account per run | 2026-11-28 | [D-064](#d-064) |
+| `340cc55` | feat(api): edit a user with PUT /users/{id} and If-Match | 2026-11-28 | [D-064](#d-064) |
+| `7e50a5b` | fix(messaging): the no-broker Kafka test relays only its own outbox row | 2026-11-28 | [D-064](#d-064) |
+| `856d24c` | feat(api): cache GET /me per user and invalidate it on permission writes | 2026-11-28 | [D-064](#d-064) |
+| `1b56beb` | feat(api): HybridCache wiring, L1 only, with the /me cache port and its invalidator | 2026-11-28 | [D-064](#d-064) |
+| `fca8620` | docs(plans): nth-kafkafix dispatched as the critical path | 2026-11-28 | [W-041](#w-041) |
+| `2547202` | docs(plans): ledger rows for useredit, hybridcache and brunoci, items 28 and 29 | 2026-11-28 | [W-040](#w-040), [W-041](#w-041) |
+| `c77f8db` | docs(spine): tick 12, D-078 slice layout, Slice shape in CLAUDE.md and ARCHITECTURE.md | 2026-11-28 | [W-039](#w-039), [D-078](#d-078) |
+| `8e0993b` | refactor(application): merge nth-refactor, one folder layout per slice (item 12) | 2026-11-28 | [W-039](#w-039), [D-064](#d-064) |
+| `c618248` | docs(application): nth-refactor lane status with the final suite counts | 2026-11-28 | [D-064](#d-064) |
+| `38db5bd` | docs(plans): item 26 records the stampede p95 miss as the cache baseline | 2026-11-28 | [W-041](#w-041) |
+| `e429245` | docs(plans): tick 26, retire nth-k6 | 2026-11-28 | [W-041](#w-041) |
+| `06639d7` | feat(build): merge nth-k6, k6 smoke, load and stampede scenarios with percentile reports (item 26) | 2026-11-28 | [W-041](#w-041), [D-064](#d-064) |
+| `7a2d434` | docs(plans): tick 18, retire nth-tour | 2026-11-28 | [W-040](#w-040) |
+| `c51e558` | feat(load): k6 smoke, load and stampede scenarios with percentile reports | 2026-11-28 | [D-064](#d-064) |
+| `cdbbecf` | feat(web): merge nth-tour, the admin tour walks the core claim flow (item 18) | 2026-11-28 | [W-040](#w-040), [D-064](#d-064) |
+| `cc5f135` | docs(plans): item 22 nav entry merged, retire nth-explained | 2026-11-28 | [W-040](#w-040) |
+| `c4c89cd` | feat(web): merge nth-explained nav entry, Fugue, explained in the sidebar (item 22) | 2026-11-28 | [W-040](#w-040), [D-064](#d-064) |
+| `9a85ca5` | docs(spine): D-077 legacy sync stays a design, backlog #012, scaling and offline section | 2026-11-28 | [W-031](#w-031), [D-077](#d-077) |
+| `4161156` | fix(web): separate cache key for the paged My claims list | 2026-11-28 | [D-064](#d-064) |
+| `7b93ac8` | docs(spine): tick 19 and 20, 22 restyle, W-041 for k6 and HybridCache, ledger rows | 2026-11-28 | [W-040](#w-040), [W-041](#w-041) |
+| `4ced87c` | docs(web): merge nth-explained restyle 805a298, the explained page in the console look | 2026-11-28 | [W-040](#w-040), [D-064](#d-064) |
+| `e5163e0` | feat(web): Fugue, explained as a sidebar item for every persona | 2026-11-28 | [D-064](#d-064) |
+| `4d51e03` | feat(web): merge nth-importui (W-040 owner asks) | 2026-11-28 | [W-040](#w-040), [D-064](#d-064) |
+| `252902d` | feat(web): merge nth-searchui (W-040 owner asks) | 2026-11-28 | [W-040](#w-040), [D-064](#d-064) |
+| `a12c101` | feat(web): merge nth-explained (W-040 owner asks) | 2026-11-28 | [W-040](#w-040), [D-064](#d-064) |
+| `a945500` | docs(plans): tick 24, retire nth-scorefix | 2026-11-28 | [W-040](#w-040) |
+| `055d763` | fix(web): merge nth-scorefix, The Score groups one request's audit rows by command (item 24) | 2026-11-28 | [W-040](#w-040), [W-026](#w-026) |
+| `a61920e` | docs: add MIT notice for the vendored mermaid file | 2026-11-28 | [D-064](#d-064) |
+| `d692bac` | docs(spine): hot-state at 11:50 with the dispatcher handoff folded in | 2026-11-28 | [D-066](#d-066) |
+| `f1bc899` | feat(web): rename Import to Import legacy claims | 2026-11-28 | [D-064](#d-064) |
+| `b55270a` | docs(plans): tick 21 and 22, retire nth-changelog and nth-explained | 2026-11-28 | [W-040](#w-040) |
+| `34479cc` | feat(web): obvious header search with a first-use Meilisearch explainer | 2026-11-28 | [D-064](#d-064) |
+| `49f1c39` | feat(web): tour walks the core claim flow first, platform last for admin | 2026-11-28 | [D-064](#d-064) |
+| `f94ce0b` | feat(web): redesign the import page with source cards and a drop zone | 2026-11-28 | [D-064](#d-064) |
+| `ef5961d` | feat(web): sample import files and icon names for the import page | 2026-11-28 | [D-064](#d-064) |
+| `805a298` | docs: add MIT notice for the vendored mermaid file | 2026-11-28 | [D-064](#d-064) |
+| `364784a` | docs: restyle Fugue, Explained in the console look | 2026-11-28 | [D-064](#d-064) |
+| `db5e449` | fix(web): repair the quote in The Score hood note | 2026-11-28 | [D-064](#d-064) |
+| `73d16d5` | fix(web): keep The Score hood note within the flow text limit | 2026-11-28 | [D-064](#d-064) |
+| `3bf7d4e` | docs(web): merge nth-explained, the Fugue, Explained page linked from Help (item 22) | 2026-11-28 | [W-040](#w-040), [D-064](#d-064) |
+| `d4b7c35` | feat(web): merge nth-changelog, Decisions becomes the Changelog with versioning explained (item 21) | 2026-11-28 | [W-040](#w-040), [D-067](#d-067) |
+| `3ff96bc` | style(web): align the step mark to the top of an expanded step | 2026-11-28 | [D-064](#d-064) |
+| `615f0d1` | docs(docs): merge nth-legacydoc, legacy-sync adapter design over the import module | 2026-11-28 | [W-040](#w-040), [D-074](#d-074) |
+| `d541b9c` | docs: add Fugue, Explained page and link it from README and the Help pill | 2026-11-28 | [D-064](#d-064) |
+| `968a25c` | fix(web): no empty timeline under the Release notes filter | 2026-11-28 | [D-064](#d-064) |
+| `35f5cb6` | docs(plans): tick 23, retire nth-overrides | 2026-11-28 | [W-040](#w-040) |
+| `7ad0622` | docs(design): legacy-sync adapter design over the import module | 2026-11-28 | [D-074](#d-074) |
+| `5b6cc96` | feat(web): merge nth-overrides, the override formula explained on Users & access (item 23) | 2026-11-28 | [W-040](#w-040), [D-064](#d-064) |
+| `3083345` | feat(web): explain the override formula on the access page | 2026-11-28 | [D-064](#d-064) |
+| `a715607` | feat(web): Decisions becomes the Changelog, with a versioning explainer | 2026-11-28 | [D-064](#d-064) |
+| `6ad6b55` | feat(scripts): changelog data carries CHANGELOG release notes and closed work items | 2026-11-28 | [D-064](#d-064) |
+| `e3b2aef` | fix(web): group one request's audit rows into one step on The Score | 2026-11-28 | [D-064](#d-064) |
+| `8c4ce09` | docs(spine): W-040 and ledger rows for the 11:26 owner asks | 2026-11-28 | [W-040](#w-040), [D-064](#d-064) |
+| `3646d54` | fix(web): hood notes follow the moved Helpers paths | 2026-11-28 | [D-064](#d-064) |
+| `ddd2ded` | docs(plans): backlog #010 part 2 stays open after D-076 | 2026-11-28 | [W-039](#w-039), [D-076](#d-076) |
+| `cd9ecd3` | docs(plans): item 13 deferred, the refactor missed the 11:00 condition | 2026-11-28 | [W-039](#w-039), [D-076](#d-076) |
+| `a66442d` | docs(spine): failure mode 36 is host sleep on battery, D-076 defers 15 and 11g | 2026-11-28 | [W-039](#w-039), [D-076](#d-076) |
+| `89977f2` | docs(spine): D-075 defers item 14, backlog #010 part 3 stays open | 2026-11-28 | [W-039](#w-039), [D-075](#d-075) |
+| `72361fc` | docs(spine): failure mode 36 gets the hang window and the restart commands | 2026-11-28 | [D-066](#d-066) |
+| `82cb252` | docs(spine): failure mode 36, a hung OrbStack daemon stalls Testcontainers suites | 2026-11-28 | [D-066](#d-066) |
+| `b7355af` | docs(application): slice README describes the uniform folder layout | 2026-11-28 | [D-064](#d-064) |
+| `8280750` | refactor(application): remaining slices into Models, Repos and Helpers folders | 2026-11-28 | [D-064](#d-064) |
+| `01cdd6b` | refactor(application): identity slices into Models and Repos folders | 2026-11-28 | [D-064](#d-064) |
+| `ce87b25` | refactor(application): Claims slice into Models, Repos and Helpers folders | 2026-11-28 | [D-064](#d-064) |
+| `2544cb6` | docs(spine): W-039 for the structure refactor, nth-refactor ledger row | 2026-11-28 | [W-039](#w-039), [D-064](#d-064) |
+| `afc6fe9` | docs(plans): 11a, the lane's second full suite was green | 2026-11-28 | [W-031](#w-031), [D-074](#d-074) |
+| `3a6fb56` | docs(spine): tick 11a, D-074 file imports to reviewed drafts, retire nth-import | 2026-11-28 | [W-031](#w-031), [D-074](#d-074) |
+| `f967355` | feat(api): merge nth-import, spreadsheet, inbox and WhatsApp file imports to reviewed drafts (item 11a) | 2026-11-28 | [W-031](#w-031), [D-064](#d-064) |
+| `ff4deb2` | docs(plans): 11g moves after item 13, nothing runs beside the refactor | 2026-11-28 | [D-064](#d-064) |
+| `e7995a2` | docs(plans): P2 order after the feature lanes | 2026-11-28 | [D-064](#d-064), [D-066](#d-066) |
+| `3c477d3` | docs(spine): nth-brunofix merged and retired, hot-state trap note | 2026-11-28 | [W-025](#w-025) |
+| `92be068` | test(api): merge nth-brunofix, Bruno-created users are claimants, not staff | 2026-11-28 | [W-025](#w-025), [D-064](#d-064) |
+| `650b2c4` | docs(spine): tick 10, D-072 and D-073 for search, retire nth-searchx | 2026-11-28 | [W-032](#w-032), [D-072](#d-072), [D-073](#d-073) |
+| `7e8e357` | test(bruno): users suite creates a self-service user, not a staff officer | 2026-11-28 | [D-064](#d-064) |
+| `aa401bc` | feat(api): merge nth-searchx, claims search hardening on Meilisearch (item 10) | 2026-11-28 | [W-032](#w-032), [D-063](#d-063), [D-064](#d-064) |
+| `38348a3` | docs(spine): hot-state at 04:43, integrator status | 2026-11-28 | [D-066](#d-066) |
+| `f323559` | docs(plans): tick 11c and 4a, retire nth-paid | 2026-11-28 | [W-037](#w-037), [W-026](#w-026), [D-069](#d-069) |
+| `cc90cc1` | fix(api): import create is not [Idempotent]; the import ledger is its idempotency | 2026-11-28 | [D-064](#d-064) |
+| `bceb4e5` | feat(api): merge nth-paid, paid and settled figures on Team and exposure (item 11c) | 2026-11-28 | [W-037](#w-037), [D-069](#d-069) |
+| `bd2155d` | docs(ai): nth-searchx status with the full-suite result | 2026-11-28 | [D-064](#d-064) |
+| `ecc90c9` | docs(ai): nth-paid status with the full suite result | 2026-11-28 | [D-064](#d-064) |
+| `81422de` | docs(spine): D-071 names the FullCalendar version | 2026-11-28 | [W-030](#w-030), [D-071](#d-071) |
+| `a36df90` | docs(spine): D-071 the ErrorHandler drops one benign notice, 17b live toggle check | 2026-11-28 | [W-030](#w-030), [D-071](#d-071) |
+| `4dd58e1` | docs(plans): tick 17b, retire nth-calfix | 2026-11-28 | [W-030](#w-030), [D-064](#d-064) |
+| `3de8f49` | fix(web): merge nth-calfix, no ResizeObserver console error on the SLA calendar (17b) | 2026-11-28 | [W-030](#w-030), [D-064](#d-064) |
+| `01f21d3` | fix(web): no ResizeObserver console error on the SLA calendar | 2026-11-28 | [D-064](#d-064) |
+| `029e926` | docs(plans): 17b calendar console error, nth-calfix row, nth-formsfix retired again | 2026-11-28 | [W-030](#w-030), [D-064](#d-064) |
+| `db0eb20` | docs(plans): nth-formsfix worktree recreated from main for slice 3 | 2026-11-28 | [W-030](#w-030) |
+| `ac70cb4` | docs(plans): item 5 complete with nth-formsfix, retire it | 2026-11-28 | [W-030](#w-030), [D-064](#d-064) |
+| `5f7985e` | fix(web): merge nth-formsfix, queue filters and calendar day jump on console controls, e2e locator (item 5) | 2026-11-28 | [W-030](#w-030), [D-064](#d-064) |
+| `4af48e6` | feat(web): queue Market and Line filters and the calendar day jump use the console controls | 2026-11-28 | [D-064](#d-064) |
+| `6db3049` | test(web): claims e2e uses the next-step test id and waits for the search index | 2026-11-28 | [D-064](#d-064) |
+| `c27b57c` | docs(plans): 11b claimant checks and the Latin-1 known limit | 2026-11-28 | [W-034](#w-034), [D-070](#d-070) |
+| `a7ab882` | docs(spine): tick 11b, D-070 sample letters without a PDF dependency, retire nth-pdf | 2026-11-28 | [W-034](#w-034), [D-070](#d-070) |
+| `d29a410` | test(api): Bruno requests for the import endpoints | 2026-11-28 | [D-064](#d-064) |
+| `59e1ad6` | feat(api): merge nth-pdf, sample settlement and decision letters as PDF (item 11b) | 2026-11-28 | [W-034](#w-034), [D-064](#d-064) |
+| `90ec746` | docs(ai): nth-pdf lane status, full suite green | 2026-11-28 | [D-064](#d-064) |
+| `56fd002` | docs(plans): item 5, the audit From filter cuts mid-day | 2026-11-28 | [W-030](#w-030) |
+| `cb8c13f` | docs(plans): nth-datetime merged and checked, retire it | 2026-11-28 | [W-030](#w-030), [D-064](#d-064) |
+| `efd03bd` | feat(web): Import page for spreadsheet, inbox and WhatsApp file imports | 2026-11-28 | [D-064](#d-064) |
+| `047e565` | feat(web): merge nth-datetime, fg-date time mode for overrides and audit filters (item 5) | 2026-11-28 | [W-030](#w-030), [D-064](#d-064) |
+| `a1dde21` | docs(lanes): nth-datetime status, headless proof | 2026-11-28 | [D-064](#d-064) |
+| `9ceceab` | docs(plans): nth-datetime ledger row, item 5 follow-ups | 2026-11-28 | [W-030](#w-030), [D-064](#d-064) |
+| `a14f0c1` | feat(web): use fg-date with time for access Until and audit From/To | 2026-11-28 | [D-064](#d-064) |
+| `0835680` | docs(plans): tick 11e and item 5's live submit, retire nth-hoodflow, nth-formsfix row | 2026-11-28 | [W-035](#w-035), [W-030](#w-030), [D-064](#d-064) |
+| `79f44e5` | feat(web): fg-date opt-in time mode (withTime) | 2026-11-28 | [D-064](#d-064) |
+| `7b8f548` | feat(web): header claim hits show why they matched and the match counts | 2026-11-28 | [D-064](#d-064) |
+| `8ed5cce` | feat(web): merge nth-hoodflow, flow steps on the claims-area hood notes (11e) | 2026-11-28 | [W-035](#w-035), [D-064](#d-064) |
+| `ea3d79c` | docs(plans): tick 5, retire nth-forms, ledger row for nth-hoodflow | 2026-11-28 | [W-030](#w-030), [W-035](#w-035), [D-064](#d-064) |
+| `f3efa50` | test(web): make the next-step card locators exact | 2026-11-28 | [D-064](#d-064) |
+| `1e3d63d` | feat(web): merge nth-forms, console select, date picker and Fill with an example (item 5) | 2026-11-28 | [W-030](#w-030), [D-064](#d-064) |
+| `a4c2b88` | docs(plans): correct the 11f and 7b check times | 2026-11-28 | [W-033](#w-033) |
+| `4c42edc` | docs(plans): tick 11f, 7b seen live, retire nth-fixes | 2026-11-28 | [W-033](#w-033), [D-064](#d-064) |
+| `cb2685f` | feat(web): what-happens flows for home, queue, my claims, team, sheet and calendar notes | 2026-11-28 | [D-064](#d-064) |
+| `84ac925` | feat(web): what-happens flows for report, claim detail and assessment notes | 2026-11-28 | [D-064](#d-064) |
+| `58762fc` | feat(web): Fill with an example on every form, from one sample-data file | 2026-11-28 | [D-064](#d-064) |
+| `2754f2b` | feat(api): import endpoints, claim_imports idempotency ledger, audited creates | 2026-11-28 | [D-064](#d-064) |
+| `77feee8` | fix(api): claim documents no longer store an empty _formatted field | 2026-11-28 | [D-064](#d-064) |
+| `42a314a` | fix(web): merge nth-fixes follow-up, no audit refetch when AUDIT is switched off (11f) | 2026-11-28 | [W-033](#w-033), [D-064](#d-064) |
+| `c191a05` | docs(plans): 11e parts A and B merged, flow steps for the claims area still open | 2026-11-28 | [W-035](#w-035), [D-064](#d-064) |
+| `c983fac` | fix(web): no audit 404s when AUDIT is switched off on /modules | 2026-11-28 | [D-064](#d-064) |
+| `a4df949` | feat(web): merge nth-hoodb, claims-area hood notes (11e B) | 2026-11-28 | [W-035](#w-035), [D-064](#d-064) |
+| `60e978c` | feat(web): merge nth-hooda, hood flow model, row tooltip fix, audit and platform pages (11e A) | 2026-11-28 | [W-035](#w-035), [D-064](#d-064) |
+| `9989f7c` | docs(plans): tick 3a, 7a, 7b; 11f back to nth-fixes for the audit 404s on toggle | 2026-11-28 | [W-033](#w-033), [D-064](#d-064) |
+| `fe102f5` | feat(api): exact claim and policy numbers, every word must match, highlights, facets | 2026-11-28 | [D-064](#d-064) |
+| `4ee1d1e` | feat(web): team page shows paid (settled) per market and line next to the exposure | 2026-11-28 | [D-064](#d-064) |
+| `1121233` | feat(api): file readers for intake imports (spreadsheet, inbox, WhatsApp) | 2026-11-28 | [D-064](#d-064) |
+| `69fa7ba` | docs(ai): nth-hooda lane status with the headless proof | 2026-11-28 | [D-064](#d-064) |
+| `8b0679c` | feat(web): settlement or decision letter button on the claim header | 2026-11-28 | [D-064](#d-064) |
+| `b6e2263` | feat(web): console select and date controls in the report, overrides and audit forms | 2026-11-28 | [D-064](#d-064) |
+| `3149854` | fix(web): merge nth-fixes, matrix checks, track line, claimant wording, /modules (3a, 7a, 7b, 11f) | 2026-11-28 | [W-033](#w-033), [D-064](#d-064) |
+| `0517bd4` | docs(spine): tick 17a on the recreated stack, hot-state for the integrator role | 2026-11-28 | [W-029](#w-029), [D-068](#d-068), [D-066](#d-066) |
+| `a23a31d` | feat(api): OpenAPI snapshot, generated client and a Bruno request for paid exposure | 2026-11-28 | [D-064](#d-064) |
+| `8398c82` | feat(web): hood notes for modules, webhooks, customers and my profile | 2026-11-28 | [D-064](#d-064) |
+| `174c311` | feat(api): paid (settled) count and sum on the exposure rows and totals | 2026-11-28 | [D-064](#d-064) |
+| `d673859` | test(web): pin the step track line rule, add nth-fixes lane status | 2026-11-28 | [D-064](#d-064) |
+| `7c2ad8a` | feat(api): claims index settings applied idempotently, market names, synonyms | 2026-11-28 | [D-064](#d-064) |
+| `bb6f0e1` | feat(api): GET /claims/{id}/letter downloads the sample letter | 2026-11-28 | [D-064](#d-064) |
+| `3342fcf` | fix(web): claimants see Assessed, not Reserved, in How a claim moves | 2026-11-28 | [D-064](#d-064) |
+| `50858c3` | fix(web): modules Last changed never spins, no audit calls while AUDIT is off | 2026-11-28 | [D-064](#d-064) |
+| `ea91049` | fix(web): record banner step track ends at its last node | 2026-11-28 | [D-064](#d-064) |
+| `82545f6` | fix(web): granted cells in the roles matrix are check icons | 2026-11-28 | [D-064](#d-064) |
+| `8765f5d` | docs(spine): W-025..W-038 for tonight, D-068 and D-069, fleet contracts archived | 2026-11-28 | [W-029](#w-029), [W-036](#w-036), [W-037](#w-037), [D-066](#d-066), [D-068](#d-068), [D-069](#d-069) |
+| `66604db` | feat(infra): merge nth-tooling, read-only role in the stack, pinned MCP, runbook (17a) | 2026-11-28 | [D-064](#d-064), [D-066](#d-066) |
+| `1df1cb0` | feat(web): audit log hood note to the flow standard, and The Score's note | 2026-11-28 | [D-064](#d-064) |
+| `9d9ea50` | feat(web): fg-date, a typed date field with a keyboard calendar popover | 2026-11-28 | [D-064](#d-064) |
+| `d9f6e5a` | docs(ai): merge nth-decisions lane status | 2026-11-28 | [D-067](#d-067) |
+| `762997b` | docs(plans): tick 11d, retire nth-decisions | 2026-11-28 | [D-067](#d-067) |
+| `ed39e82` | docs(spine): D-067 the decision timeline is generated, regenerated JSON | 2026-11-28 | [D-067](#d-067), [D-066](#d-066) |
+| `056ea6b` | feat(api): sample claim letter template and PDF writer | 2026-11-28 | [D-064](#d-064) |
+| `7b6b3ca` | feat(web): hood flow steps and a call-path tip attached to its row | 2026-11-28 | [D-064](#d-064) |
+| `37db1d0` | docs(ai): nth-hoodb lane status | 2026-11-28 | [D-064](#d-064) |
+| `642be56` | docs(ai): nth-tooling lane status and branch ledger row | 2026-11-28 | [D-064](#d-064) |
+| `21276e0` | feat(web): fg-select, an accessible select-only combobox on the CDK overlay | 2026-11-28 | [D-064](#d-064) |
+| `da7b6f8` | docs(ai): nth-decisions lane status | 2026-11-28 | [D-064](#d-064) |
+| `f3d7637` | docs(web): regenerate the decision timeline with D-066 | 2026-11-28 | [D-066](#d-066) |
+| `3ab5f5e` | docs(runbooks): agent-tooling demo script, linked from README and runbook 00 | 2026-11-28 | [D-064](#d-064) |
+| `2e0ecbf` | feat(web): merge nth-decisions, the decision timeline generated from the docs (item 11d) | 2026-11-28 | [D-066](#d-066), [D-064](#d-064) |
+| `b80dba3` | feat(web): decisions timeline page, route and nav entry | 2026-11-28 | [D-064](#d-064) |
+| `573e0af` | feat(db): compose creates the fugue_readonly role on a fresh volume | 2026-11-28 | [D-064](#d-064) |
+| `51d9617` | feat(web): queue note gains the search test, D-063 and the ADR-006 read path | 2026-11-28 | [D-064](#d-064) |
+| `a181da0` | feat(web): under-the-hood notes for the reserve sheet, SLA calendar and assessment | 2026-11-28 | [D-064](#d-064) |
+| `a180ca5` | docs(plans): backlog #011, the outbox correlation id index for The Score | 2026-11-28 | [D-064](#d-064) |
+| `75f7107` | docs(plans): tick 3b, the new users Bruno requests pass on the demo stack | 2026-11-28 | [D-064](#d-064) |
+| `cfc198b` | feat(web): generate the decision timeline data from the repo docs | 2026-11-28 | [D-064](#d-064) |
+| `3fe71c2` | docs(spine): D-066 dispatcher, integrator and nine contract-bound lanes | 2026-11-28 | [D-066](#d-066), [D-064](#d-064) |
+| `592b29a` | docs(plans): tick 1b, both Home buttons land on the claim (stale tab) | 2026-11-28 | [D-064](#d-064) |
+| `79dbc0d` | docs(plans): every relay ask since 03:12 on the overnight list, backlog pruned | 2026-11-28 | [D-064](#d-064) |
+| `add9f6f` | docs(plans): correct the verification times on items 3 and 6 | 2026-11-28 | [D-064](#d-064) |
+| `32946b6` | docs(plans): tick items 3 and 4, retire nth-uam and nth-score | 2026-11-28 | [D-064](#d-064) |
+| `dacfb06` | feat(web): merge nth-score, The Score per-correlation inspector (overnight item 4) | 2026-11-28 | [D-064](#d-064) |
+| `e182dbb` | feat(api): merge nth-uam, administrators create users (overnight item 3) | 2026-11-28 | [D-064](#d-064) |
+| `30e4ac1` | docs(plans): tick items 6-9, README says Save to Excel, retire two lanes | 2026-11-28 | [D-064](#d-064) |
+| `a88ed12` | feat(web): Add user drawer on Users and access | 2026-11-28 | [D-064](#d-064) |
+| `0439df5` | feat(web): merge nth-claimpage, the workbook worksheet and plain claim-page copy (overnight items 6, 7) | 2026-11-28 | [D-064](#d-064) |
+| `00e5c76` | feat(web): merge nth-stack, the Stack dialog and a warm SLA calendar (overnight items 9, 8) | 2026-11-28 | [D-064](#d-064) |
+| `7228e3d` | feat(api): administrators create users with an initial password and roles | 2026-11-28 | [D-064](#d-064) |
+| `f480e5d` | style(web): rounded, warm SLA calendar in console tokens | 2026-11-28 | [D-064](#d-064) |
+| `ddb29ce` | feat(web): env pill opens a Stack dialog | 2026-11-28 | [D-064](#d-064) |
+| `b55cf2a` | feat(web): plain next-step copy, track step popovers and a How a claim moves modal | 2026-11-28 | [D-064](#d-064) |
+| `a2d9122` | feat(web): assessment worksheet as a workbook, Export CSV, Save to Excel with icons | 2026-11-28 | [D-064](#d-064) |
+| `78a0169` | docs(spine): lead wrap at 03:10, overnight run handed to a fresh lead | 2026-11-28 | [D-065](#d-065) |
+| `6ffe7f3` | docs(plans): ledger rows for nth-claimpage and nth-stack, overnight items 6-9 | 2026-11-28 | [D-064](#d-064) |
+| `7309d5b` | feat(web): The Score, one correlation id as a timeline from real rows | 2026-11-28 | [D-064](#d-064) |
+| `f566bb0` | docs(plans): tick item 1, the welcome no longer freezes the nav | 2026-11-28 | [D-065](#d-065) |
+| `4a95058` | fix(tests): audit search by actor allows partial matches after full ones | 2026-11-28 | [D-064](#d-064) |
+| `7ebbeb0` | feat(api): GET /audit/trace/{correlationId}, the stored rows of one request | 2026-11-28 | [D-064](#d-064) |
+| `7a8c77e` | docs(plans): import module, PDF letters and the open backlog on the overnight list | 2026-11-28 | [D-065](#d-065) |
+| `86a0e15` | docs(research): Meilisearch settings research for search hardening | 2026-11-28 | [D-064](#d-064) |
+| `5788007` | docs(spine): ADR-014 and D-065, the overnight task list, hot-state and seed prompt | 2026-11-28 | [D-065](#d-065) |
+| `3dcdb02` | feat(web): the workbooks look like the console, not a default grid | 2026-11-28 | [D-064](#d-064) |
+| `2ba4e19` | fix(web): the first-visit welcome can never freeze the page | 2026-11-28 | [D-064](#d-064) |
+| `cda483c` | docs(spine): say what nth- lane names mean; retire four merged lane rows | 2026-11-28 | [D-064](#d-064) |
+| `8d63b1d` | fix(web): Pick up on the landing opens the claim it picked up | 2026-11-28 | [D-064](#d-064) |
+| `65dc2d5` | fix(web): a tab opened before a redeploy reloads instead of a dead click | 2026-11-28 | [D-064](#d-064) |
+| `be23504` | Merge branch 'nth-readme' | 2026-11-28 | [D-064](#d-064) |
+| `4345366` | Merge branch 'nth-onboard' | 2026-11-28 | [D-064](#d-064) |
+| `e609089` | Merge branch 'nth-prelude' | 2026-11-28 | [D-064](#d-064) |
+| `37ae182` | Merge branch 'nth-money' | 2026-11-28 | [D-064](#d-064) |
+| `fb10684` | fix(web): no box inside the page card; refactor plan as backlog #010 | 2026-11-28 | [D-064](#d-064) |
+| `c10f7eb` | feat(web): the reserve workbook has sheet tabs and a live By currency sheet | 2026-11-28 | [D-064](#d-064) |
+| `0af1800` | feat(web): the SLA calendar day opens a drawer with the week and the work | 2026-11-28 | [D-064](#d-064) |
+| `20d6a8c` | feat(web): sign-in Prelude, a fugal animation of one request | 2026-11-28 | [D-064](#d-064) |
+| `e4e750f` | feat(web): first-visit welcome and autoplayed landing tour per user | 2026-11-28 | [D-064](#d-064) |
+| `4ccfe50` | feat(web): indicative USD view with bar and donut charts on team page | 2026-11-28 | [D-064](#d-064) |
+| `8e58809` | docs(docs): rewrite README in the product-README layout | 2026-11-28 | [D-064](#d-064) |
+| `f5389da` | docs(spine): D-064 submission-morning asks past the freeze; three lanes | 2026-11-28 | [D-064](#d-064) |
+| `dd2a8d9` | fix(web): the shell is one frame with the page in a rounded card | 2026-11-28 | [D-062](#d-062) |
+| `444ef90` | fix(test): claim search test queries match only its own claim | 2026-11-28 | [D-063](#d-063) |
+| `dabed16` | docs(spine): claims search merged, frame fix, lanes retired, hot-state | 2026-11-28 | [D-063](#d-063) |
+| `133c962` | Merge branch 'nth-claimsearch': header search finds claims, scoped to the caller | 2026-11-28 | [D-063](#d-063) |
+| `75ce4f4` | fix(test): assert the reindexed status, not the indexer's row count | 2026-11-28 | [D-063](#d-063) |
+| `4254133` | fix(web): top bar and sidebar are one frame | 2026-11-28 | [D-062](#d-062) |
+| `36d1fb6` | docs(spine): failure mode 35, the shared test clock | 2026-11-28 | [D-063](#d-063) |
+| `28cc6b1` | fix(test): claim search reindex test owns its clock | 2026-11-28 | [D-063](#d-063) |
+| `56e472c` | feat(search): header search finds claims, scoped to the caller | 2026-11-28 | [D-063](#d-063) |
+| `9b34432` | build(infra): one command for a reviewer, start.sh | 2026-11-27 | [D-062](#d-062) |
+| `854af54` | Merge branch 'nth-shellfix': one page-padding owner, market flags | 2026-11-27 | [D-062](#d-062) |
+| `52f723b` | docs(web): shellfix screenshots | 2026-11-27 | [D-062](#d-062) |
+| `869592f` | feat(web): market flag beside the market name on team exposure and claim header | 2026-11-27 | [D-062](#d-062) |
+| `c29a7ba` | fix(web): one owner for page padding, shell wrapper no longer doubles it | 2026-11-27 | [D-062](#d-062) |
+| `21379cc` | docs(docs): CLAIMS.md matches what shipped after the window | 2026-11-27 | [D-062](#d-062) |
+| `9192ec9` | docs(spine): D-063 claims search past the freeze; two lanes | 2026-11-27 | [D-063](#d-063) |
 | `13e9c29` | docs(spine): release v0.0.2 and wrap; fresh-database demo path | 2026-11-27 | [D-062](#d-062) |
 | `03448e5` | Merge branch 'nth-airtight': panel review web fixes | 2026-11-27 | [D-062](#d-062) |
 | `f011781` | fix(web): webhooks copy names claim.* and customer.* events | 2026-11-27 | [D-062](#d-062) |
@@ -1546,6 +2416,12 @@ Commits with no `Refs:` trailer. A project-log entry may still list them.
 
 | Commit | Subject | Date | Listed in log entry |
 |---|---|---|---|
+| `9c7ac92` | Merge branch 'main' into nth-readme2 | 2026-11-28 | - |
+| `6fd0c45` | Merge branch 'main' into nth-hybridcache | 2026-11-28 | - |
+| `3f553a0` | Merge branch 'main' into nth-useredit | 2026-11-28 | - |
+| `5501f11` | Merge branch 'main' into nth-hybridcache | 2026-11-28 | - |
+| `d66cc2f` | Merge branch 'main' into nth-refactor | 2026-11-28 | - |
+| `77f96e6` | Merge branch 'main' into nth-claimsearch | 2026-11-28 | - |
 | `30a5b00` | Merge branch 'main' into nth-hood2 | 2026-11-27 | - |
 | `de9dc73` | docs(docs): nth-quality lane status | 2026-11-27 | - |
 | `8ed061b` | feat(api): bruno regression suite, seed fix, runbooks 03-04 and S2 spine docs | 2026-11-25 | [W-004](#w-004) |

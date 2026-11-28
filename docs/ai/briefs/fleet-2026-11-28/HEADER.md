@@ -100,3 +100,9 @@ If you hit a stop condition, write the report anyway with status BLOCKED and the
 4. Branch ledger: in each slice commit, update ONLY the Status cell of YOUR OWN row in `docs/branch-ledger.md`
    (e.g. `11a: slice 2/4 committed (abc1234) — API endpoints; next: web page`). Touch no other row or line. The integrator
    resolves ledger conflicts at merge by keeping main's file and retiring your row.
+
+## Addendum 2 (dispatcher, 03:54)
+- The demo API on :8080/:5081 has a GENERAL rate limiter (not only sign-in). After many headless page loads it answers 429 on
+  ordinary GETs; it clears in about a minute. A 429 while proxying to the demo is not a code bug: pace your script (one sign-in,
+  fewer reloads), wait 60 s and rerun before concluding anything. The integrator shares this budget.
+- The integrator may recreate the demo stack; if your session or ids vanish, sign in again and re-read ids.

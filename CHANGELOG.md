@@ -4,6 +4,266 @@ Tracks notable changes across migrations, API contracts, and project documentati
 
 > **ADR links.** An entry that reflects a real architectural decision cites it as `(ADR-NNN)`; the ADR lives in `docs/adr/`.
 
+## v0.0.3 — 2026-11-28
+Release: the overnight and submission-morning lanes (D-064 to D-081), built by a dispatcher, an integrator and contract-bound lanes (D-066). Tag `v0.0.3`.
+Features: admin creates and edits users; The Score (one request as a timeline); console select and date controls with Fill with an example; Import legacy claims (file imports to reviewed drafts, migration 13); claims search hardening; sample PDF letters; Under the hood on every page; the Changelog page; paid figure on Team and exposure; Fugue, explained; the admin tour on the claim flow; HybridCache on GET /me; k6 load scenarios; read-only Postgres role and MCP for agents; per-slice folder layout.
+Fixes: Bruno collection under the CI sign-in limit; Kafka no-broker test stall (suite 12 min to 1.5 min); calendar ResizeObserver console error; /modules audit calls while AUDIT is off; group-only user edit.
+Verification on the recreated stack (13:05): Fugue.Tests 864 + ArchTests 37 at the last pre-push, web 390 (Vitest), Bruno 131 requests / 157 tests (compose), four personas with zero console errors, read-only role and MCP refuse writes.
+Deferred: item 13 IOptions and items 15, 11g (D-076); item 14 Worker host (D-075). Known issues: D-079 (relay cycle with the broker down), D-080 (an access token stays valid for its 15 minutes after deactivation).
+
+## 2026-11-28 — Closed W-041: Load testing and caching: k6 scenarios, HybridCache (owner ask 11:30)
+WS: WS-41
+Closed: W-041 (WS-41) Load testing and caching: k6 scenarios, HybridCache (owner ask 11:30)
+Outcome: k6 smoke, load and stampede scenarios with percentile reports; HybridCache on GET /me (stampede p95 382 to about 241 ms); the Bruno collection stays under the sign-in limit in CI; the Kafka no-broker test relays only its own row (suite 12 min to 1.5 min).
+Commits:
+- 06639d7 feat(build): merge nth-k6, k6 smoke, load and stampede scenarios with percentile reports (item 26)
+- fe7845a feat(infra): merge nth-hybridcache, HybridCache for GET /me with tag invalidation (item 27)
+- 766ff6f test(api): merge nth-brunoci, one sign-in per account per Bruno run (item 28)
+- 1082413 fix(tests): merge nth-kafkafix, the no-broker Kafka test relays only its own outbox row (item 29)
+- 7b93ac8 docs(spine): tick 19 and 20, 22 restyle, W-041 for k6 and HybridCache, ledger rows
+- e429245 docs(plans): tick 26, retire nth-k6
+- 38db5bd docs(plans): item 26 records the stampede p95 miss as the cache baseline
+- 2547202 docs(plans): ledger rows for useredit, hybridcache and brunoci, items 28 and 29
+- fca8620 docs(plans): nth-kafkafix dispatched as the critical path
+- 2a98aac docs(plans): tick 28, retire nth-brunoci
+- 9e455e4 docs(plans): tick 29, DEMO cites the Kafka fix, retire nth-kafkafix
+- 719d968 docs(spine): D-079 and backlog #013, the broker-down relay cycle as a known issue
+- 1948015 docs(spine): failure mode 37, a relaying test must settle leftover due rows first
+- 0e9d56f docs(spine): D-079 and #013 corrected, the default relay batch is 20
+- 7adb4d9 docs(spine): D-079 cites the harness override and the hang-kill repro
+- d353661 docs(spine): tick 27, D-081 HybridCache for /me, retire nth-hybridcache
+- c3a0c3f docs(docs): README counts after HybridCache, honest k6 wording in D-081
+Decisions: D-079, D-081, D-064
+Follow-ups: backlog #013 (relay cycle with the broker down)
+
+## 2026-11-28 — Closed W-040: Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit
+WS: WS-40
+Closed: W-040 (WS-40) Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit
+Outcome: Owner asks at 11:26: overrides formula explained, Fugue explained page and nav entry, the admin tour walks the claim flow, The Score grouping, Import legacy claims page, a clearer search bar, the Changelog, README refresh, user edit.
+Commits:
+- 5b6cc96 feat(web): merge nth-overrides, the override formula explained on Users & access (item 23)
+- 3bf7d4e docs(web): merge nth-explained, the Fugue, Explained page linked from Help (item 22)
+- 4ced87c docs(web): merge nth-explained restyle 805a298, the explained page in the console look
+- c4c89cd feat(web): merge nth-explained nav entry, Fugue, explained in the sidebar (item 22)
+- cdbbecf feat(web): merge nth-tour, the admin tour walks the core claim flow (item 18)
+- b4a4376 docs(docs): merge nth-readme2, README counts and links from final main, search comment fix (item 11)
+- 8c4ce09 docs(spine): W-040 and ledger rows for the 11:26 owner asks
+- 35f5cb6 docs(plans): tick 23, retire nth-overrides
+- 615f0d1 docs(docs): merge nth-legacydoc, legacy-sync adapter design over the import module
+- d4b7c35 feat(web): merge nth-changelog, Decisions becomes the Changelog with versioning explained (item 21)
+- b55270a docs(plans): tick 21 and 22, retire nth-changelog and nth-explained
+- 055d763 fix(web): merge nth-scorefix, The Score groups one request's audit rows by command (item 24)
+- a945500 docs(plans): tick 24, retire nth-scorefix
+- a12c101 feat(web): merge nth-explained (W-040 owner asks)
+- 252902d feat(web): merge nth-searchui (W-040 owner asks)
+- 4d51e03 feat(web): merge nth-importui (W-040 owner asks)
+- 7b93ac8 docs(spine): tick 19 and 20, 22 restyle, W-041 for k6 and HybridCache, ledger rows
+- cc5f135 docs(plans): item 22 nav entry merged, retire nth-explained
+- 7a2d434 docs(plans): tick 18, retire nth-tour
+- 2547202 docs(plans): ledger rows for useredit, hybridcache and brunoci, items 28 and 29
+- f1f7ee5 docs(docs): DEMO step 15 and a Software factory section (owner ask 12:10)
+- a8d8596 docs(docs): DEMO step 15 maps Dex Horthy's factory slide to the repo (owner ask 12:11)
+- 84efaaf docs(docs): DEMO names the Kafka test stall correctly
+- 66db90a docs(plans): nth-readme2 ledger row, item 11 mapped
+- c7b1234 feat(api): merge nth-useredit, administrators edit users with If-Match (item 25)
+- cfb6e75 docs(spine): tick 25, D-080 edit users, retire nth-useredit
+- 7554d00 docs(spine): D-080 states the token limit after deactivation
+- 38cefb2 docs(plans): item 30, the group-only edit defect
+- 0b6773f docs(docs): README Bruno row cites the verified compose run, tick 11
+- fd74c0e fix(api): merge nth-editfix, a group-only user can be saved from Edit (item 30)
+- cd515ac docs(spine): tick 30, D-080 says fixed, retire nth-editfix
+Decisions: D-064, D-080, D-072, D-066, D-067, D-074
+Follow-ups: none
+
+## 2026-11-28 — Closed W-039: Structure refactor after the D-064 lanes: slice folders, IOptions, Worker host (backlog #010, items 12-14)
+WS: WS-39
+Closed: W-039 (WS-39) Structure refactor after the D-064 lanes: slice folders, IOptions, Worker host (backlog #010, items 12-14)
+Outcome: Every slice uses Commands, Queries, Models, Repos and Helpers folders with namespaces following folders; OpenAPI byte-identical, suite count unchanged.
+Commits:
+- 8e0993b refactor(application): merge nth-refactor, one folder layout per slice (item 12)
+- 2544cb6 docs(spine): W-039 for the structure refactor, nth-refactor ledger row
+- 89977f2 docs(spine): D-075 defers item 14, backlog #010 part 3 stays open
+- a66442d docs(spine): failure mode 36 is host sleep on battery, D-076 defers 15 and 11g
+- cd9ecd3 docs(plans): item 13 deferred, the refactor missed the 11:00 condition
+- ddd2ded docs(plans): backlog #010 part 2 stays open after D-076
+- c77f8db docs(spine): tick 12, D-078 slice layout, Slice shape in CLAUDE.md and ARCHITECTURE.md
+Decisions: D-078, D-075, D-076, D-064
+Follow-ups: #010 part 2 (IOptions, D-076) and part 3 (Worker host, D-075) stay open
+
+## 2026-11-28 — Closed W-038: Submission-morning polish lanes before the overnight list (money, prelude, onboard, readme, claimsearch, shellfix)
+WS: WS-38
+Closed: W-038 (WS-38) Submission-morning polish lanes before the overnight list (money, prelude, onboard, readme, claimsearch, shellfix)
+Outcome: Submission-morning polish lanes before the overnight list: indicative USD view, prelude, onboarding tour, README, claims search, shell fixes.
+Commits:
+- 37ae182 Merge branch 'nth-money'
+- e609089 Merge branch 'nth-prelude'
+- 4345366 Merge branch 'nth-onboard'
+- be23504 Merge branch 'nth-readme'
+- 133c962 Merge branch 'nth-claimsearch': header search finds claims, scoped to the caller
+Decisions: D-063, D-064
+Follow-ups: none
+
+## 2026-11-28 — Closed W-037: Paid and settled figure on Team and exposure (item 11c, backlog #009)
+WS: WS-37
+Closed: W-037 (WS-37) Paid and settled figure on Team and exposure (item 11c, backlog #009)
+Outcome: Team and exposure shows the paid (settled) count and sum per market and in the totals; the rest of panel backlog #009 answered or cut.
+Commits:
+- bceb4e5 feat(api): merge nth-paid, paid and settled figures on Team and exposure (item 11c)
+- 8765f5d docs(spine): W-025..W-038 for tonight, D-068 and D-069, fleet contracts archived
+- f323559 docs(plans): tick 11c and 4a, retire nth-paid
+Decisions: D-069, D-066, D-068
+Follow-ups: none
+
+## 2026-11-28 — Closed W-036: Decision timeline generated from the docs (item 11d)
+WS: WS-36
+Closed: W-036 (WS-36) Decision timeline generated from the docs (item 11d)
+Outcome: The Changelog page (was Decisions): ADRs, D-rows and release notes generated from the repo docs, with how versioning works.
+Commits:
+- 2e0ecbf feat(web): merge nth-decisions, the decision timeline generated from the docs (item 11d)
+- d4b7c35 feat(web): merge nth-changelog, Decisions becomes the Changelog with versioning explained (item 21)
+- 8765f5d docs(spine): W-025..W-038 for tonight, D-068 and D-069, fleet contracts archived
+Decisions: D-067, D-066, D-068, D-069, D-064
+Follow-ups: none
+
+## 2026-11-28 — Closed W-035: Under-the-hood coverage on every page (item 11e)
+WS: WS-35
+Closed: W-035 (WS-35) Under-the-hood coverage on every page (item 11e)
+Outcome: Under the hood on every page: a flow (request to handler to DB, outbox and audit), decisions and live calls; the floating request tooltip is attached to its row.
+Commits:
+- 60e978c feat(web): merge nth-hooda, hood flow model, row tooltip fix, audit and platform pages (11e A)
+- a4df949 feat(web): merge nth-hoodb, claims-area hood notes (11e B)
+- 8ed5cce feat(web): merge nth-hoodflow, flow steps on the claims-area hood notes (11e)
+- c191a05 docs(plans): 11e parts A and B merged, flow steps for the claims area still open
+- ea3d79c docs(plans): tick 5, retire nth-forms, ledger row for nth-hoodflow
+- 0835680 docs(plans): tick 11e and item 5's live submit, retire nth-hoodflow, nth-formsfix row
+Decisions: D-064
+Follow-ups: none
+
+## 2026-11-28 — Closed W-034: Settlement and decision letters as PDF (item 11b)
+WS: WS-34
+Closed: W-034 (WS-34) Settlement and decision letters as PDF (item 11b)
+Outcome: Sample settlement and decision letters as PDF from a hand-written PDF writer with no dependency, scoped like the claim (404 outside scope).
+Commits:
+- 59e1ad6 feat(api): merge nth-pdf, sample settlement and decision letters as PDF (item 11b)
+- a7ab882 docs(spine): tick 11b, D-070 sample letters without a PDF dependency, retire nth-pdf
+- c27b57c docs(plans): 11b claimant checks and the Latin-1 known limit
+Decisions: D-070, D-064
+Follow-ups: none
+
+## 2026-11-28 — Closed W-033: Demo fixes: matrix checks, track line, claimant wording, /modules glitches (items 3a, 7a, 7b, 11f)
+WS: WS-33
+Closed: W-033 (WS-33) Demo fixes: matrix checks, track line, claimant wording, /modules glitches (items 3a, 7a, 7b, 11f)
+Outcome: Demo fixes: roles matrix check icons, the banner track line stops at its last node, claimant wording in How a claim moves, /modules Last changed and no audit calls while AUDIT is off.
+Commits:
+- 3149854 fix(web): merge nth-fixes, matrix checks, track line, claimant wording, /modules (3a, 7a, 7b, 11f)
+- 42a314a fix(web): merge nth-fixes follow-up, no audit refetch when AUDIT is switched off (11f)
+- 9989f7c docs(plans): tick 3a, 7a, 7b; 11f back to nth-fixes for the audit 404s on toggle
+- 4c42edc docs(plans): tick 11f, 7b seen live, retire nth-fixes
+- a4c2b88 docs(plans): correct the 11f and 7b check times
+Decisions: D-064
+Follow-ups: none
+
+## 2026-11-28 — Closed W-032: Search hardening on Meilisearch (item 10)
+WS: WS-32
+Closed: W-032 (WS-32) Search hardening on Meilisearch (item 10)
+Outcome: Claims search answers like an officer expects (market and line synonyms, every word must match, exact numbers as phrases, highlights and facets, settings applied only when they differ); a clearer search bar with an honest keyword full-text explainer.
+Commits:
+- aa401bc feat(api): merge nth-searchx, claims search hardening on Meilisearch (item 10)
+- 252902d feat(web): merge nth-searchui (W-040 owner asks)
+- 650b2c4 docs(spine): tick 10, D-072 and D-073 for search, retire nth-searchx
+Decisions: D-063, D-072, D-073, D-064
+Follow-ups: Meilisearch v1.13.3+ then disableOnAttributes as a second guard
+
+## 2026-11-28 — Closed W-031: Intake import: spreadsheet, inbox and WhatsApp file imports to drafts (item 11a)
+WS: WS-31
+Closed: W-031 (WS-31) Intake import: spreadsheet, inbox and WhatsApp file imports to drafts (item 11a)
+Outcome: Import legacy claims: spreadsheet, inbox and WhatsApp file imports become reviewed drafts, idempotent by a claim_imports ledger (migration 13); legacy sync kept as a design.
+Commits:
+- f967355 feat(api): merge nth-import, spreadsheet, inbox and WhatsApp file imports to reviewed drafts (item 11a)
+- 4d51e03 feat(web): merge nth-importui (W-040 owner asks)
+- 615f0d1 docs(docs): merge nth-legacydoc, legacy-sync adapter design over the import module
+- 3a6fb56 docs(spine): tick 11a, D-074 file imports to reviewed drafts, retire nth-import
+- afc6fe9 docs(plans): 11a, the lane's second full suite was green
+- 9a85ca5 docs(spine): D-077 legacy sync stays a design, backlog #012, scaling and offline section
+Decisions: D-074, D-077, D-064
+Follow-ups: backlog #012 (legacy sync adapter, KIV)
+
+## 2026-11-28 — Closed W-030: Console forms: select, date picker, Fill with an example (item 5)
+WS: WS-30
+Closed: W-030 (WS-30) Console forms: select, date picker, Fill with an example (item 5)
+Outcome: Console forms: fg-select and fg-date (with a time mode) replace every native select and date control; Fill with an example on the forms; queue filters and the calendar day jump on console controls; the calendar's ResizeObserver console notice is gone.
+Commits:
+- 1e3d63d feat(web): merge nth-forms, console select, date picker and Fill with an example (item 5)
+- 047e565 feat(web): merge nth-datetime, fg-date time mode for overrides and audit filters (item 5)
+- 5f7985e fix(web): merge nth-formsfix, queue filters and calendar day jump on console controls, e2e locator (item 5)
+- 3de8f49 fix(web): merge nth-calfix, no ResizeObserver console error on the SLA calendar (17b)
+- ea3d79c docs(plans): tick 5, retire nth-forms, ledger row for nth-hoodflow
+- 0835680 docs(plans): tick 11e and item 5's live submit, retire nth-hoodflow, nth-formsfix row
+- 9ceceab docs(plans): nth-datetime ledger row, item 5 follow-ups
+- cb8c13f docs(plans): nth-datetime merged and checked, retire it
+- 56fd002 docs(plans): item 5, the audit From filter cuts mid-day
+- ac70cb4 docs(plans): item 5 complete with nth-formsfix, retire it
+- db0eb20 docs(plans): nth-formsfix worktree recreated from main for slice 3
+- 029e926 docs(plans): 17b calendar console error, nth-calfix row, nth-formsfix retired again
+- 4dd58e1 docs(plans): tick 17b, retire nth-calfix
+- a36df90 docs(spine): D-071 the ErrorHandler drops one benign notice, 17b live toggle check
+- 81422de docs(spine): D-071 names the FullCalendar version
+Decisions: D-064, D-071
+Follow-ups: none
+
+## 2026-11-28 — Closed W-029: Agent tooling: read-only role in the stack, pinned MCP, runbook (item 17a)
+WS: WS-29
+Closed: W-029 (WS-29) Agent tooling: read-only role in the stack, pinned MCP, runbook (item 17a)
+Outcome: The compose Postgres creates the read-only role on a fresh volume; the read-only MCP is pinned and works; agent-tooling runbook; verified on a recreated stack (writes refused by the role and by restricted mode).
+Commits:
+- 66604db feat(infra): merge nth-tooling, read-only role in the stack, pinned MCP, runbook (17a)
+- 8765f5d docs(spine): W-025..W-038 for tonight, D-068 and D-069, fleet contracts archived
+- 0517bd4 docs(spine): tick 17a on the recreated stack, hot-state for the integrator role
+Decisions: D-068, D-066, D-069, D-064
+Follow-ups: none
+
+## 2026-11-28 — Closed W-028: Stack dialog and the SLA calendar styling (items 8, 9)
+WS: WS-28
+Closed: W-028 (WS-28) Stack dialog and the SLA calendar styling (items 8, 9)
+Outcome: The env pill opens a Stack dialog with the real versions (PostgreSQL 17, UUID v7 ids from the API); the SLA calendar is styled in console tokens.
+Commits:
+- 00e5c76 feat(web): merge nth-stack, the Stack dialog and a warm SLA calendar (overnight items 9, 8)
+Decisions: D-064
+Follow-ups: none
+
+## 2026-11-28 — Closed W-027: Claim page workbook, Save to Excel, next-step copy, track explainers (items 6, 7)
+WS: WS-27
+Closed: W-027 (WS-27) Claim page workbook, Save to Excel, next-step copy, track explainers (items 6, 7)
+Outcome: Claim page: the assessment worksheet looks like a workbook with Export (CSV) and Save to Excel; plain next-step copy; step popovers and a How a claim moves dialog.
+Commits:
+- 0439df5 feat(web): merge nth-claimpage, the workbook worksheet and plain claim-page copy (overnight items 6, 7)
+Decisions: D-064
+Follow-ups: none
+
+## 2026-11-28 — Closed W-026: The Score, one correlation id as a timeline (item 4)
+WS: WS-26
+Closed: W-026 (WS-26) The Score, one correlation id as a timeline (item 4)
+Outcome: The Score: GET /audit/trace/{correlationId} reads one request's audit, outbox and delivery rows and the console draws them as a timeline; one request's audit rows are grouped into one step.
+Commits:
+- dacfb06 feat(web): merge nth-score, The Score per-correlation inspector (overnight item 4)
+- 055d763 fix(web): merge nth-scorefix, The Score groups one request's audit rows by command (item 24)
+- f323559 docs(plans): tick 11c and 4a, retire nth-paid
+Decisions: D-064, D-069
+Follow-ups: backlog #011 (index on outbox_messages.correlation_id)
+
+## 2026-11-28 — Closed W-025: Admin creates users (overnight item 3)
+WS: WS-25
+Closed: W-025 (WS-25) Admin creates users (overnight item 3)
+Outcome: Administrators create users with an initial password and roles (POST /users, USERS_MANAGE, no role escalation) and edit them (PUT /users/{id} with If-Match, self-lockout guard); a group-only user can be saved from Edit. Bruno-created users are claimants, not staff.
+Commits:
+- e182dbb feat(api): merge nth-uam, administrators create users (overnight item 3)
+- c7b1234 feat(api): merge nth-useredit, administrators edit users with If-Match (item 25)
+- fd74c0e fix(api): merge nth-editfix, a group-only user can be saved from Edit (item 30)
+- 92be068 test(api): merge nth-brunofix, Bruno-created users are claimants, not staff
+- 3c477d3 docs(spine): nth-brunofix merged and retired, hot-state trap note
+Decisions: D-064, D-080
+Follow-ups: none
+
 ## v0.0.2 — 2026-11-27
 Release: the claims platform plus the owner's polish round, frozen for the walkthrough (D-062). Tag `v0.0.2`; the timed claims build is `claims-window-start..claims-window-end`.
 Claims platform: Claim aggregate with a guarded state machine (Submitted, UnderReview, InfoRequested, Approved, Rejected, Settled), claimant timeline and info requests, claimant scope as 404 never 403, If-Match on every action (428/412) checked before the state machine, a required Idempotency-Key on submit (422 on a reused key), status + timeline + audit + outbox in one transaction, claim.* events to signed webhooks and an optional Kafka publisher (off by default), workload, exposure per currency, claim counts and past questions; one Angular console for claimant, officer, manager and admin with persona landings, the two-track claim record with a next-step card, and Team and exposure.
