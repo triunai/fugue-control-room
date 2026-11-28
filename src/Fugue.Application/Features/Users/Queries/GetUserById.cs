@@ -1,5 +1,7 @@
 using FluentResults;
 using FluentValidation;
+using Fugue.Application.Features.Users.Models;
+using Fugue.Application.Features.Users.Repos;
 using Fugue.Domain.Ids;
 using Mediator;
 

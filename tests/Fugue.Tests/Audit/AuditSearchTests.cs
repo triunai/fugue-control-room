@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
-using Fugue.Application.Features.Audit;
+using Fugue.Application.Features.Audit.Repos;
 using Fugue.Domain.Identity;
 using Fugue.Infrastructure.Search;
 using Fugue.Tests.Persistence;

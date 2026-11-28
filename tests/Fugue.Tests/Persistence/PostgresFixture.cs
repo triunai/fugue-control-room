@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using Fugue.Api.Auth;
-using Fugue.Application.Features.Auth;
+using Fugue.Application.Features.Auth.Models;
 using Fugue.Domain.Abstractions;
 using Fugue.Domain.Identity;
 using Fugue.Domain.Ids;

@@ -1,7 +1,7 @@
 using Fugue.Api.Auth;
 using Fugue.Api.Http;
 using Fugue.Application.Abstractions;
-using Fugue.Application.Features.Modules;
+using Fugue.Application.Features.Modules.Repos;
 using Fugue.Domain.Ids;
 
 namespace Fugue.Api.Modules;

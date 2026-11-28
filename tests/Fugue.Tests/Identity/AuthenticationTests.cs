@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Fugue.Api.Auth;
-using Fugue.Application.Features.Auth;
+using Fugue.Application.Features.Auth.Models;
 using Fugue.Domain.Identity;
 using Fugue.Tests.Persistence;
 using Microsoft.AspNetCore.Hosting;

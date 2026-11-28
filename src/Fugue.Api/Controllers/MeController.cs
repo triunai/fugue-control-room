@@ -1,6 +1,6 @@
 using Fugue.Api.Modules;
 using Fugue.Api.OpenApi;
-using Fugue.Application.Features.Me;
+using Fugue.Application.Features.Me.Models;
 using Fugue.Application.Features.Me.Queries;
 using Fugue.Domain.Identity;
 using Microsoft.AspNetCore.Authorization;

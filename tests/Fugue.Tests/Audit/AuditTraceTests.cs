@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Fugue.Application.Features.Audit;
-using Fugue.Application.Features.Claims;
+using Fugue.Application.Features.Audit.Repos;
+using Fugue.Application.Features.Claims.Models;
 using Fugue.Domain.Claims;
 using Fugue.Domain.Identity;
 using Fugue.Tests.Claims;

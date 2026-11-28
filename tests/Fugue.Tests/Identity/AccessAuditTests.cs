@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Fugue.Application.Features.Auth;
+using Fugue.Application.Features.Auth.Models;
 using Fugue.Domain.Identity;
 using Fugue.Tests.Persistence;
 using Npgsql;

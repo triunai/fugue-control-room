@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Fugue.Application.Features.Customers;
+using Fugue.Application.Features.Customers.Models;
 using Fugue.Domain.Customers;
 using Fugue.Domain.Identity;
 using Fugue.Domain.Ids;

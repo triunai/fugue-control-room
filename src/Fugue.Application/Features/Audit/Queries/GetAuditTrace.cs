@@ -1,6 +1,7 @@
 using FluentResults;
 using FluentValidation;
 using Fugue.Application.Abstractions;
+using Fugue.Application.Features.Audit.Repos;
 using Fugue.Domain.Audit;
 using Fugue.Domain.Results;
 using Fugue.Domain.Webhooks;

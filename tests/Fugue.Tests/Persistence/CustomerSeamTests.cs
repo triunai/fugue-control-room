@@ -1,7 +1,9 @@
 using FluentResults;
 using Fugue.Application.Abstractions;
-using Fugue.Application.Features.Customers;
 using Fugue.Application.Features.Customers.Commands;
+using Fugue.Application.Features.Customers.Helpers;
+using Fugue.Application.Features.Customers.Models;
+using Fugue.Application.Features.Customers.Repos;
 using Fugue.Domain.Customers;
 using Fugue.Domain.Results;
 using Fugue.Infrastructure.Persistence.Seeding;

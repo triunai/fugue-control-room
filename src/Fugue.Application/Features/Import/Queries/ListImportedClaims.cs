@@ -1,5 +1,7 @@
 using FluentResults;
 using FluentValidation;
+using Fugue.Application.Features.Import.Models;
+using Fugue.Application.Features.Import.Repos;
 using Mediator;
 
 namespace Fugue.Application.Features.Import.Queries;

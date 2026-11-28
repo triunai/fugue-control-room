@@ -28,7 +28,7 @@ export const RESERVE_SHEET_HOOD: HoodNote = {
       layer: 'handler',
       text:
         'Every row meets the same checks as the claim page: If-Match (428), scope (404), version (412), then the aggregate (409).',
-      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+      path: 'src/Fugue.Application/Features/Claims/Helpers/ClaimFlow.cs',
     },
     {
       layer: 'db',
@@ -79,7 +79,7 @@ export const RESERVE_SHEET_HOOD: HoodNote = {
     {
       status: '409',
       name: 'not your claim',
-      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+      path: 'src/Fugue.Application/Features/Claims/Helpers/ClaimFlow.cs',
       code: `bool allowed = claim.AssignedOfficerId is not { } assigned
     || (user.UserId is { } me && assigned.Value == me)
     || user.HasPermission(Permissions.ClaimsSettle);
@@ -99,7 +99,7 @@ return allowed ? Result.Ok() : Result.Fail(ClaimErrors.NotAssignedToYou());`,
     {
       status: '412',
       name: 'stale',
-      path: 'src/Fugue.Application/Features/Claims/ClaimFlow.cs',
+      path: 'src/Fugue.Application/Features/Claims/Helpers/ClaimFlow.cs',
       code: `if (claim.RowVersion != expected)
 {
     return Result.Fail<ClaimDto>(ClaimErrors.VersionMismatch());

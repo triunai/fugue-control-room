@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Fugue.Application.Features.Roles;
-using Fugue.Application.Features.Users;
+using Fugue.Application.Features.Roles.Models;
+using Fugue.Application.Features.Users.Models;
 using Fugue.Domain.Identity;
 using Fugue.Infrastructure.Persistence;
 using Fugue.Tests.Persistence;

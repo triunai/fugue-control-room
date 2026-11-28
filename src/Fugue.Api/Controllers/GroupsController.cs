@@ -1,8 +1,8 @@
 using Fugue.Api.Auth;
 using Fugue.Api.Modules;
 using Fugue.Api.OpenApi;
-using Fugue.Application.Features.Groups;
 using Fugue.Application.Features.Groups.Commands;
+using Fugue.Application.Features.Groups.Models;
 using Fugue.Application.Features.Groups.Queries;
 using Fugue.Domain.Identity;
 using Fugue.Domain.Ids;

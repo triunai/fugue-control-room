@@ -1,5 +1,7 @@
 using FluentResults;
 using FluentValidation;
+using Fugue.Application.Features.Roles.Models;
+using Fugue.Application.Features.Roles.Repos;
 using Mediator;
 
 namespace Fugue.Application.Features.Roles.Queries;

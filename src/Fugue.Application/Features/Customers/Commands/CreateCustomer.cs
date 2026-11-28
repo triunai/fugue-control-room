@@ -1,5 +1,8 @@
 using FluentResults;
 using FluentValidation;
+using Fugue.Application.Features.Customers.Helpers;
+using Fugue.Application.Features.Customers.Models;
+using Fugue.Application.Features.Customers.Repos;
 using Fugue.Domain.Abstractions;
 using Fugue.Domain.Customers;
 using Fugue.Domain.Ids;

@@ -4,10 +4,17 @@ One folder per feature (a vertical slice). Application code never references ASP
 
 ```
 Features/<Feature>/
-  I<Feature>Repository.cs          the persistence contract this feature needs
   Commands/<Verb><Noun>.cs         state-changing use case
   Queries/<Verb><Noun>.cs          read-only use case
+  Models/                          DTOs, outcomes, errors (<Feature>Dto.cs, <Feature>Errors.cs)
+  Repos/                           the slice's ports: I<Feature>Repository, I*Store, I*Reader, I*Admin (with the records they take or return)
+  Helpers/                         pure rules and parsers (ClaimFlow, ClaimScope, <Feature>Rules)
 ```
+
+A folder exists only when the slice has something for it. Namespaces follow folders
+(`Fugue.Application.Features.Claims.Models`). Ports used by several slices or by Abstractions stay in
+`Application/Abstractions/` (for example `IAuthPorts.cs`). There is no per-slice DI extension: port
+implementations are registered by Infrastructure and Mediator handlers are source-generated.
 
 Each `Commands/` or `Queries/` file holds three types:
 

@@ -1,4 +1,4 @@
-using Fugue.Application.Features.Me;
+using Fugue.Application.Features.Me.Repos;
 using Fugue.Domain.Ids;
 using Fugue.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;

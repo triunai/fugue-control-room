@@ -1,5 +1,6 @@
 using Fugue.Application.Common;
-using Fugue.Application.Features.Users;
+using Fugue.Application.Features.Users.Models;
+using Fugue.Application.Features.Users.Repos;
 using Fugue.Domain.Identity;
 using Fugue.Domain.Ids;
 using Fugue.Infrastructure.Persistence;
