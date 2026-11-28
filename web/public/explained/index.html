@@ -116,16 +116,16 @@ ol.steps li { margin-bottom: 6px; }
   <a href="#ai">Built with AI</a>
   <div class="eyebrow group">Use it</div>
   <a href="#run">Running it</a>
-  <a href="#status">Status at v0.0.2</a>
+  <a href="#status">Status at v0.0.3</a>
 </nav>
 
 <main>
 <header class="hero">
-  <div class="eyebrow">Fugue · .NET 8 API + Angular console · v0.0.2</div>
+  <div class="eyebrow">Fugue · .NET 8 API + Angular console · v0.0.3</div>
   <h1>Fugue, explained</h1>
   <p class="lede">A claims platform for motor and property claims across six APAC markets. Claimants report an incident, follow their claim and answer questions. Claims officers pick up, assess and decide. Managers see workload and outstanding liability, per currency. One API, one Angular app for everyone.</p>
   <div class="chips">
-    <span class="chip rel">v0.0.2 · 27 Nov 2026</span><span class="chip">ASP.NET Core MVC</span><span class="chip">Mediator (source-gen)</span><span class="chip">FluentValidation + FluentResults</span><span class="chip">EF Core + Dapper</span><span class="chip">Postgres 17</span><span class="chip">Transactional outbox</span><span class="chip">Angular 22</span><span class="chip">TanStack Query</span><span class="chip">xUnit + Testcontainers</span>
+    <span class="chip rel">v0.0.3 · 28 Nov 2026</span><span class="chip">ASP.NET Core MVC</span><span class="chip">Mediator (source-gen)</span><span class="chip">FluentValidation + FluentResults</span><span class="chip">EF Core + Dapper</span><span class="chip">Postgres 17</span><span class="chip">Transactional outbox</span><span class="chip">Angular 22</span><span class="chip">TanStack Query</span><span class="chip">xUnit + Testcontainers</span>
   </div>
   <p class="cap" style="margin-top:14px">Code: <a href="https://github.com/triunai/fugue-control-room" target="_blank" rel="noopener noreferrer">github.com/triunai/fugue-control-room</a>. The timed build is the range between git tags <code>claims-window-start</code> and <code>claims-window-end</code>; the scaffold under it (auth, audit, outbox, idempotency) came first and is disclosed in the README.</p>
 </header>
@@ -392,12 +392,12 @@ flowchart LR
   <h2>The invariants the code cannot argue with</h2>
   <p class="plain">Most of the code was written by AI agents, so the tests are the specification they must satisfy. Each one pins a rule of the domain, such as "a stale ETag is 412 and nothing is written", "outside your scope is 404, never 403", or "exposure is never summed across currencies". They are deterministic on purpose: a real database instead of mocks of it, time-dependent rules on a fake clock. A red test means the code drifted, and the git hooks run them before every push.</p>
   <div class="tablewrap"><table>
-    <tr><th>Suite</th><th>Size at v0.0.2</th><th>Runs against</th></tr>
-    <tr><td>Backend (xUnit)</td><td class="num">740 cases</td><td>374 test methods on a real Postgres 17 (Testcontainers) or the full HTTP host; 115 in-process (state machine, validators, mapping)</td></tr>
+    <tr><th>Suite</th><th>Size at v0.0.3</th><th>Runs against</th></tr>
+    <tr><td>Backend (xUnit)</td><td class="num">866 listed</td><td>A real Postgres 17 (Testcontainers) or the full HTTP host, plus in-process tests of the state machine, validators and mapping</td></tr>
     <tr><td>Architecture (NetArchTest)</td><td class="num">37</td><td>Layering, one-line controllers, every action declares a permission</td></tr>
-    <tr><td>API (Bruno)</td><td class="num">101 requests · 123 tests</td><td>Every guard over HTTP against the Docker stack</td></tr>
-    <tr><td>Console (Vitest)</td><td class="num">218</td><td>Logic and components</td></tr>
-    <tr><td>Console end to end (Playwright)</td><td class="num">20</td><td>Report to settlement in a real browser</td></tr>
+    <tr><td>API (Bruno)</td><td class="num">131 requests · 157 tests</td><td>Every guard over HTTP against the Docker stack; also run in CI</td></tr>
+    <tr><td>Console (Vitest)</td><td class="num">390</td><td>Logic and components</td></tr>
+    <tr><td>Console end to end (Playwright)</td><td class="num">23 listed</td><td>Report to settlement in a real browser</td></tr>
   </table></div>
 </section>
 
@@ -428,7 +428,7 @@ open http://localhost:5081/swagger <span class="cm"># the API and its contract</
 </section>
 
 <section class="ch" id="status">
-  <div class="eyebrow">Status at v0.0.2</div>
+  <div class="eyebrow">Status at v0.0.3</div>
   <h2>What is built, and what is not</h2>
   <div class="tablewrap"><table>
     <tr><th>Area</th><th>State</th></tr>
@@ -439,9 +439,16 @@ open http://localhost:5081/swagger <span class="cm"># the API and its contract</
     <tr><td>Append-only audit with search; transactional outbox with signed webhooks</td><td><span class="pill ok">Built</span></td></tr>
     <tr><td>Kafka publisher behind the event port</td><td><span class="pill warn">Optional</span> off by default</td></tr>
     <tr><td>Notifications to the claimant outside the app; attachments; a settlement saga with payment retries</td><td><span class="pill no">Not built</span> events exist, consumers do not</td></tr>
-    <tr><td>Market-scoped officers; push to the browser (server-sent events); a CI run on a remote</td><td><span class="pill no">Not built</span></td></tr>
+    <tr><td>Users: administrators create and edit users, with If-Match</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>Import legacy claims (csv, xlsx, eml, mbox, WhatsApp) into reviewed drafts</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>Settlement letters as PDF</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>Keyword full-text search (Meilisearch): typo tolerance, synonyms, highlights</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>HybridCache (L1, in process) on GET /me only; k6 load and stampede tests with percentile reports</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>CI on GitHub Actions: backend, scripts, web and api-contract (Bruno)</td><td><span class="pill ok">Built</span></td></tr>
+    <tr><td>Market-scoped officers; push to the browser (server-sent events)</td><td><span class="pill no">Not built</span></td></tr>
+    <tr><td>Known issues: D-079 a broker outage makes one relay cycle long; D-080 an access token stays valid for its 15 minutes after deactivation</td><td><span class="pill warn">Known issue</span></td></tr>
   </table></div>
-  <p class="cap">Verified for v0.0.2: build with 0 warnings; 37 architecture tests and 740 backend tests on real Postgres; Bruno 101 requests and 123 tests on the Docker stack; 218 console tests; and the console loaded in a browser, signed in and after a reload, with no console errors.</p>
+  <p class="cap">Verified for v0.0.3: build with 0 warnings; 37 architecture tests and 866 backend tests listed (the final pre-push suite); Bruno 131 requests and 157 tests on the Docker stack; 390 console tests (Vitest); and the console loaded in a browser as four personas with no console errors.</p>
 </section>
 </main>
 </div>

@@ -7,7 +7,7 @@
 ![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-336791)
 ![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED)
 ![Tests](https://img.shields.io/badge/xUnit-866%20listed-brightgreen)
-![Release](https://img.shields.io/badge/release-v0.0.2-blue)
+![Release](https://img.shields.io/badge/release-v0.0.3-blue)
 
 A claims platform for motor and property claims across six APAC markets (SG, MY, TH, HK, ID, PH): a .NET 8 API and one Angular console for claimants, claims officers, managers and admins. It is a take-home build, so it says plainly what it does and does not do.
 
