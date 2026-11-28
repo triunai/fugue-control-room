@@ -1,0 +1,201 @@
+{
+  "schema": 1,
+  "scenario": "stampede",
+  "label": "after cache (/me)",
+  "startedAt": "2026-11-28T04:08:33.075Z",
+  "durationSec": 25.568464,
+  "target": "http://localhost:5233",
+  "k6Version": "v2.4.0",
+  "env": {
+    "note": "Load profile: sign-in limiter raised, API + Postgres + Meilisearch + k6 on one laptop. HybridCache on (/me only, TTL 30 s), nth-hybridcache 856d24c."
+  },
+  "limits": {
+    "p95": 300,
+    "p99": 800,
+    "failRate": 0.01
+  },
+  "totals": {
+    "requests": 3000,
+    "rps": 119.69836013246619,
+    "failedRate": 0,
+    "checksRate": 1,
+    "droppedIterations": 0,
+    "peakRps": 1000
+  },
+  "thresholds": [
+    {
+      "metric": "http_req_duration{endpoint:claims_list}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_list}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{endpoint:claims_search}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "checks",
+      "expr": "rate>0.99",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_search}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:claims_search}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{endpoint:claims_list}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{phase:run}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{phase:run}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{phase:run}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "http_reqs{endpoint:me}",
+      "expr": "count>=0",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:me}",
+      "expr": "p(99)<800",
+      "ok": true
+    },
+    {
+      "metric": "http_req_duration{endpoint:me}",
+      "expr": "p(95)<300",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{phase:run}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{endpoint:claims_search}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{endpoint:me}",
+      "expr": "rate<0.01",
+      "ok": true
+    },
+    {
+      "metric": "http_req_failed{endpoint:claims_list}",
+      "expr": "rate<0.01",
+      "ok": true
+    }
+  ],
+  "overall": {
+    "min": 2.741,
+    "avg": 69.806709,
+    "p50": 49.2755,
+    "p90": 218.8935,
+    "p95": 241.13504999999998,
+    "p99": 269.53461999999996,
+    "max": 1019.557
+  },
+  "endpoints": {
+    "me": {
+      "count": 1000,
+      "failRate": 0,
+      "min": 2.741,
+      "avg": 71.449936,
+      "p50": 49.4665,
+      "p90": 219.4412,
+      "p95": 241.23364999999998,
+      "p99": 267.49946,
+      "max": 385.837
+    },
+    "claims_list": {
+      "count": 1000,
+      "failRate": 0,
+      "min": 2.852,
+      "avg": 75.21418500000007,
+      "p50": 56.522999999999996,
+      "p90": 234.8682,
+      "p95": 250.17689999999996,
+      "p99": 419.41319999999996,
+      "max": 633.167
+    },
+    "claims_search": {
+      "count": 1000,
+      "failRate": 0,
+      "min": 3.116,
+      "avg": 62.756006000000035,
+      "p50": 33.1895,
+      "p90": 214.87900000000002,
+      "p95": 223.86579999999998,
+      "p99": 254.92578999999859,
+      "max": 1019.557
+    }
+  },
+  "timeline": {
+    "widthSec": 1,
+    "points": [
+      {
+        "t": 0,
+        "p50": 49.465,
+        "p95": 241.231,
+        "p99": 267.497,
+        "rps": 1000,
+        "err": 0
+      },
+      {
+        "t": 12,
+        "p50": 56.464,
+        "p95": 250.143,
+        "p99": 419.412,
+        "rps": 1000,
+        "err": 0
+      },
+      {
+        "t": 23,
+        "p50": 37.316,
+        "p95": 41.418,
+        "p99": 41.683,
+        "rps": 35,
+        "err": 0
+      },
+      {
+        "t": 24,
+        "p50": 33.127,
+        "p95": 222.929,
+        "p99": 241.24,
+        "rps": 937,
+        "err": 0
+      },
+      {
+        "t": 25,
+        "p50": 5.092,
+        "p95": 1019.242,
+        "p99": 1019.557,
+        "rps": 28,
+        "err": 0
+      }
+    ]
+  }
+}
