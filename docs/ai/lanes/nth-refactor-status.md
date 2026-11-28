@@ -6,7 +6,8 @@ Uniform slice layout in `src/Fugue.Application/Features/<Feature>/`: `Commands/`
 ## Commits
 - `ce87b25` refactor(application): Claims slice into Models, Repos and Helpers folders
 - `01cdd6b` refactor(application): identity slices into Models and Repos folders
-- slice 3: Audit, Modules, Webhooks, Customers, Import, Letters (this commit; Diagnostics has only Queries/)
+- `8280750` refactor(application): remaining slices into Models, Repos and Helpers folders
+- slice 4: Features/README.md slice layout text (this commit)
 
 ## Gates (copied from output)
 - `dotnet build`: 0 Warning(s), 0 Error(s)
@@ -35,8 +36,11 @@ Uniform slice layout in `src/Fugue.Application/Features/<Feature>/`: `Commands/`
   moving them into `Features/Auth/Repos` would make Abstractions depend on a feature slice.
 
 ## Next slice
-- 4: slice README text; full suite under the lock; report.
+- full suite under the lock; report. Web hood paths (7 `*.hood.ts`) need the patch in
+  `.worktrees/_briefs/reports/nth-refactor-web-paths.patch` at merge (web is outside this lane).
 - `Import/Parsing/` and `Webhooks/Sink/` were extra sub-folders: parsers to `Import/Helpers`, `ImportTypes.cs` to
   `Import/Models`; the dev sink's requests (`DevWebhookSinkAdmin.cs`, `ReceiveDevWebhook.cs`) to `Webhooks/Commands`
   (they are `IRequest`, never audited; the admin file also holds the sink list read, kept whole per D-055) and
   `DevWebhookSinkTypes.cs` (declares the `IDevWebhookSink` port) to `Webhooks/Repos`.
+- IDE0130 (namespace matches folder), enabled only for the check and then restored: `dotnet format style --diagnostics IDE0130
+  --verify-no-changes --include src/Fugue.Application/` exit 0; with one namespace broken on purpose it exits 2.
