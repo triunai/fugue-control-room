@@ -11,4 +11,3 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | `nth-tour` | `.worktrees/nth-tour` | ddd2ded | nth-tour (relay-dispatched) | W-040 | admin tour covers the core claim flow |
 | `nth-searchui` | `.worktrees/nth-searchui` | ddd2ded | nth-searchui (relay-dispatched) | W-040 | obvious search bar + first-use explainer (keyword full-text, not hybrid) |
 | `nth-importui` | `.worktrees/nth-importui` | ddd2ded | nth-importui (relay-dispatched) | W-040 | Import page redesign: icons, drop zone, sample files |
-| `nth-scorefix` | `.worktrees/nth-scorefix` | ddd2ded | nth-scorefix (relay-dispatched) | W-040 | The Score groups one request's audit rows by command |
