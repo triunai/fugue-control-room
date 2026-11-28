@@ -92,6 +92,17 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
       story; linked from README and runbook 00; a D-row. Verify every command on the RECREATED clean stack, plus the full
       `cd bruno/fugue && npx bru run --env compose` green (restart api first, failure mode 25). Tick with counts.
 
+## P1b — owner asks at 11:26 (W-040, web-only lanes from ddd2ded, READY by 12:30; merge order: refactor, useredit, web lanes)
+- [ ] 18. nth-tour: the admin tour covers the core brief (claim flow).
+- [ ] 19. nth-searchui: a more obvious search bar and a first-use explainer with Meilisearch links; honest: keyword full-text, not hybrid (no embedder).
+- [ ] 20. nth-importui: Import page redesign (icons, drop zone, sample-file links).
+- [ ] 21. nth-changelog: Decisions renamed Changelog (/changelog, /decisions redirects); versioning via commits, W, D, ADRs and CHANGELOG entries.
+- [ ] 22. nth-explained: the owner's "Fugue, Explained" artifact in docs/explained + web/public/explained + one Help link.
+- [ ] 23. nth-overrides: explain the override formula on Users & access (temporary vendor or contractor access).
+- [ ] 24. nth-scorefix: The Score groups one request's N audit rows by command instead of N API calls.
+- [ ] 25. nth-useredit (src/, after nth-refactor merges): edit users via PUT /users/{id} with If-Match, a show-password toggle, an entity add/edit gap audit.
+README refresh (11) slides to about 12:30.
+
 ## P2 — after the lanes merge (backlog #010)
 P2 ORDER (relay 05:13, all features in by about 05:30, so 12-13 GO): (1) nth-refactor (Opus) item 12, ALONE on src/ and tests/
 (nothing runs in parallel: 11g needs an src/ change because no DTO exposes permissions.description); (2) after 12 merges,

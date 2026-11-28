@@ -105,6 +105,12 @@ Status: item 12 lane nth-refactor live from afc6fe9 (exclusive on src/ and tests
 Resume: integrator merges and verifies (OpenAPI byte-identical, full-suite count equal to base 849 + 37, moves and usings only); close at the wrap.
 Refs: D-064, D-066; backlog #010; `docs/plans/overnight-2026-11-28.md` P2; contracts in `docs/ai/briefs/fleet-2026-11-28/`
 
+### WS-40 — Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit — 🟢 ACTIVE (2026-11-28)
+ID: W-040
+Status: seven web-only lanes from ddd2ded (nth-tour, nth-searchui, nth-importui, nth-changelog, nth-explained, nth-overrides, nth-scorefix), READY by 12:30; nth-useredit (src/) queued after nth-refactor.
+Resume: integrator merges as READY arrives (refactor, then useredit, then the web lanes); feature cut-off 13:00; close at the wrap.
+Refs: D-064, D-066; `docs/plans/overnight-2026-11-28.md`; contracts in `docs/ai/briefs/fleet-2026-11-28/` (OWNERS Addendum 10)
+
 ### WS-23 — API versioning with Sunset, HybridCache, OpenTelemetry — ⏸ PARKED (2026-11-27)
 ID: W-023
 Status: follow-up of W-007 (closed). Not built: a v2 example with `Deprecation`/`Sunset` on v1, HybridCache on the `/me` permission lookup, OpenTelemetry traces.
