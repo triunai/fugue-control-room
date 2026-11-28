@@ -28,115 +28,129 @@ const NAV_STEP: TourStep = {
     'Every item here is a permission check, never a role name. A claimant, an officer, a manager and an admin get a different console from the same build.',
 };
 
+/** The core brief, in claim order: a claimant reports, an officer works the claim, a manager settles and watches exposure. */
+const REPORT: TourStep = {
+  page: { path: '/claims/new' },
+  selector: 'main h1.page-title',
+  title: 'A claimant reports an incident',
+  description:
+    'One short form. Submitting creates the claim with its number straight away, and a retried request never files it twice.',
+};
+const MINE: TourStep = {
+  page: { path: '/claims/mine' },
+  selector: 'main h1.page-title',
+  title: 'My claims: only their own',
+  description: 'The list is scoped on the server: a claim that is not yours answers 404, so ids cannot be probed.',
+};
+const timeline = (claimFrom: string): TourStep => ({
+  page: { claimFrom, prefer: /info requested/i },
+  selector: '[data-testid="timeline"]',
+  title: 'The claim timeline',
+  description: 'Every status change in plain words, from submitted to settled.',
+});
+const ANSWER: TourStep = {
+  selector: '[data-testid="answer-panel"]',
+  title: 'The claimant answers',
+  description:
+    'When an officer asks for more, the claim waits for the claimant here. Their answer puts it back in review.',
+};
+const QUEUE: TourStep[] = [
+  {
+    page: { path: '/claims/queue' },
+    selector: '[data-testid="kpis"]',
+    title: 'The claims queue',
+    description:
+      'Counts per status, longest-waiting first. Reserves stay in each claim currency and are never added across currencies.',
+  },
+  {
+    selector: '.tabs',
+    title: 'Tabs and filters',
+    description: 'A tab per status with live counts, plus assignee, market and line filters.',
+  },
+];
+const HANDLE: TourStep[] = [
+  {
+    page: { claimFrom: '/claims/queue', prefer: /submitted/i },
+    selector: '.actions',
+    title: 'An officer picks up, asks, decides',
+    description:
+      'Pick up, request info, set a reserve, then approve or reject: only the actions valid for the status show. A stale tab gets a 412 instead of an overwrite.',
+  },
+  {
+    selector: '[data-testid="handling"]',
+    title: 'Reserve and approved amount',
+    description: 'Officer, internal reserve and approved amount, each in the claim currency.',
+  },
+];
+const SETTLE: TourStep = {
+  page: { claimFrom: '/claims/queue', prefer: /approved/i },
+  selector: '.actions',
+  title: 'A manager settles',
+  description: 'An approved claim is settled by a manager, which closes it and records the paid amount.',
+};
+const TEAM: TourStep[] = [
+  {
+    page: { path: '/claims/team' },
+    selector: '[data-testid="exposure-totals"]',
+    title: 'Team and exposure per currency',
+    description: 'One total for each currency, taken from the claims as they stand now.',
+  },
+  {
+    selector: '[data-testid="exposure-summary"]',
+    title: 'Why there is no grand total',
+    description: 'Adding PHP to THB needs an exchange rate and a date; without them the sum would be a made-up number.',
+  },
+  {
+    page: { path: '/claims/team' },
+    selector: '[data-testid="workload-kpis"]',
+    title: 'Workload',
+    description: 'Unassigned claims and what each officer carries, to spot an overloaded queue.',
+  },
+];
+/** Platform steps come last: permissions, audit, modules, access. */
+const PLATFORM: TourStep[] = [
+  NAV_STEP,
+  {
+    page: { path: '/audit' },
+    selector: 'section.timeline.panel',
+    title: 'The audit log',
+    description:
+      'Every write with who, what and the outcome; edits show a field-level diff. Sensitive fields are masked when written.',
+  },
+  {
+    page: { path: '/modules' },
+    selector: 'table.table',
+    title: 'Module toggles',
+    description:
+      'Switch a module off and its permissions drop away and its menu items vanish for everyone, with no deploy.',
+  },
+  {
+    page: { path: '/access' },
+    selector: 'section.panel',
+    title: 'Access',
+    description:
+      'Users, groups and per-user overrides. Permissions are read on every request, so a change lands on the next click.',
+  },
+  {
+    selector: '[data-testid="roles-matrix"]',
+    title: 'Roles and permissions',
+    description:
+      'A read-only grid of what each role grants, by module. A user holds the union of their roles and groups.',
+  },
+];
+
+/** Admin walks the whole claim flow first (steps whose page the account cannot open are skipped), the platform last. */
 const STEPS: Record<Persona, TourStep[]> = {
-  claimant: [
-    {
-      page: { path: '/claims/new' },
-      selector: 'main h1.page-title',
-      title: 'Report an incident',
-      description:
-        'One short form. Submitting creates the claim with its number straight away, and a retried request never files it twice (Idempotency-Key).',
-    },
-    {
-      page: { path: '/claims/mine' },
-      selector: 'main h1.page-title',
-      title: 'Only your own claims',
-      description:
-        'The list is scoped on the server: a claim that is not yours answers 404, so claim ids cannot be probed.',
-    },
-    {
-      page: { claimFrom: '/claims/mine', prefer: /info requested/i },
-      selector: '[data-testid="timeline"]',
-      title: 'The timeline',
-      description: 'Every status change in plain words, from submitted to settled.',
-    },
-    {
-      selector: '[data-testid="answer-panel"]',
-      title: 'Answer the question',
-      description: 'When an officer needs more, the claim waits for you here. Your answer puts it back in review.',
-    },
-  ],
-  officer: [
-    {
-      page: { path: '/claims/queue' },
-      selector: '[data-testid="kpis"]',
-      title: 'The queue at a glance',
-      description:
-        'Counts per status, longest-waiting first. Reserves stay in each claim currency and are never added across currencies.',
-    },
-    {
-      selector: '.tabs',
-      title: 'Tabs and filters',
-      description: 'A tab per status with live counts, plus assignee, market and line filters.',
-    },
-    {
-      page: { claimFrom: '/claims/queue', prefer: /submitted/i },
-      selector: '.actions',
-      title: 'Only the actions valid for the status',
-      description:
-        'A submitted claim can be picked up, an approved one settled. If someone changed the claim since you opened it, the server answers 412 and you see "Changed since you opened it" instead of an overwrite.',
-    },
-    {
-      selector: '[data-testid="handling"]',
-      title: 'Handling',
-      description: 'Officer, internal reserve and approved amount, each in the claim currency.',
-    },
-  ],
-  manager: [
-    {
-      page: { path: '/claims/team' },
-      selector: '[data-testid="exposure-totals"]',
-      title: 'Exposure per currency',
-      description: 'One total for each currency, taken from the claims as they stand now.',
-    },
-    {
-      selector: '[data-testid="exposure-summary"]',
-      title: 'Why there is no grand total',
-      description:
-        'Adding PHP to THB needs an exchange rate and a date; without them the sum would be a made-up number. Each currency stays its own line.',
-    },
-    {
-      page: { path: '/claims/team' },
-      selector: '[data-testid="workload-kpis"]',
-      title: 'Workload',
-      description: 'Unassigned claims and what each officer carries, to spot an overloaded queue.',
-    },
-  ],
-  admin: [
-    {
-      page: { path: '/audit' },
-      selector: 'section.timeline.panel',
-      title: 'The audit log',
-      description:
-        'Every write with who, what and the outcome; edits show a field-level diff. Sensitive fields are masked when written.',
-    },
-    {
-      page: { path: '/modules' },
-      selector: 'table.table',
-      title: 'Module toggles',
-      description:
-        'Switch a module off and its permissions drop away and its menu items vanish for everyone, with no deploy.',
-    },
-    {
-      page: { path: '/access' },
-      selector: 'section.panel',
-      title: 'Access',
-      description:
-        'Users, groups and per-user overrides. Permissions are read on every request, so a change lands on the next click.',
-    },
-    {
-      selector: '[data-testid="roles-matrix"]',
-      title: 'Roles and permissions',
-      description:
-        'A read-only grid of what each role grants, by module. A user holds the union of their roles and groups.',
-    },
-  ],
-  member: [],
+  claimant: [NAV_STEP, REPORT, MINE, timeline('/claims/mine'), ANSWER],
+  officer: [NAV_STEP, ...QUEUE, ...HANDLE],
+  manager: [NAV_STEP, ...QUEUE, ...HANDLE, SETTLE, ...TEAM],
+  admin: [REPORT, MINE, timeline('/claims/queue'), ANSWER, ...QUEUE, ...HANDLE, SETTLE, ...TEAM, ...PLATFORM],
+  member: [NAV_STEP],
 };
 
-/** The steps for a persona, always opening on the permission-driven navigation. */
+/** The steps for a persona. Everyone but admin opens on the permission-driven navigation; admin ends on it. */
 export function stepsFor(persona: Persona): TourStep[] {
-  return [NAV_STEP, ...STEPS[persona]];
+  return STEPS[persona];
 }
 
 /** localStorage key remembering that a persona's tour was shown (finished or dismissed). */
@@ -156,7 +170,8 @@ export const PAGE_TOURS: Record<string, TourStep[]> = {
     {
       selector: '[data-tour="help"]',
       title: 'Help is always here',
-      description: 'Press Help on any page for a short tour of what is on screen. The account menu replays the full tour.',
+      description:
+        'Press Help on any page for a short tour of what is on screen. The account menu replays the full tour.',
     },
   ],
   queue: [

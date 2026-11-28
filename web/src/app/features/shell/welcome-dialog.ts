@@ -31,7 +31,8 @@ import { TourService } from './tour.service';
           </li>
         </ul>
         <p class="welcome-help">
-          Stuck on a page? The <strong>Help</strong> button in the top bar explains the page you are on.
+          The tour follows a claim from report to settlement. Stuck on a page? The <strong>Help</strong> button in the
+          top bar explains the page you are on.
         </p>
         <div class="welcome-actions">
           <button type="button" class="btn btn-quiet" data-testid="welcome-skip" (click)="close($event, false)">
