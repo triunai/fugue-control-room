@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 41 workstreams, 14 ADRs, 81 decisions, 577 commits (14 unlinked). Newest commit indexed: `69afa03`.
+Counts: 41 workstreams, 14 ADRs, 81 decisions, 582 commits (14 unlinked). Newest commit indexed: `16bda87`.
 
 ## Workstreams
 
@@ -678,7 +678,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 577 commits (14 unlinked). Newest
 **Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit** — CLOSED
 - Where: [project log entry](project-log.md#2026-11-28--closed-w-040-owner-asks-at-1126-tour-search-bar-import-ui-changelog-explained-overrides-the-score-grouping-user-edit)
 - Decisions and ADRs: [D-064](#d-064), [D-066](#d-066), [D-067](#d-067), [D-072](#d-072), [D-074](#d-074), [D-080](#d-080)
-- Commits (38):
+- Commits (41):
   - `8c4ce09` docs(spine): W-040 and ledger rows for the 11:26 owner asks (2026-11-28)
   - `5b6cc96` feat(web): merge nth-overrides, the override formula explained on Users & access (item 23) (2026-11-28)
   - `35f5cb6` docs(plans): tick 23, retire nth-overrides (2026-11-28)
@@ -717,6 +717,9 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 577 commits (14 unlinked). Newest
   - `0d36ce7` docs(plans): ledger rows for nth-nextpad and nth-helpguide (2026-11-28)
   - `416a579` fix(web): merge nth-nextpad, the Next step text no longer touches its coloured bar (2026-11-28)
   - `69afa03` feat(web): merge nth-helpguide, Help is a guide by role and module, Kafka shown as an optional adapter (2026-11-28)
+  - `fd820cf` docs(spine): traceability after helpguide, nth-notifydoc ledger row (2026-11-28)
+  - `cd8ca04` docs(web): merge nth-helpguide (e9a335f) (2026-11-28)
+  - `16bda87` docs(web): merge nth-notifydoc (0360095) (2026-11-28)
 
 ### W-041
 
@@ -1710,6 +1713,8 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 577 commits (14 unlinked). Newest
   - `5852287` feat(web): Help opens a guide to the app by module (2026-11-28)
   - `95044e7` fix(web): Kafka shown as an optional adapter that is off; API v1 labelled (2026-11-28)
   - `b79a9a3` fix(web): keep the env chip on one line (2026-11-28)
+  - `e9a335f` feat(web): What Fugue runs on lists the real stack, in-house patterns and quality tooling (2026-11-28)
+  - `0360095` docs(design): notifications, attachments and the settlement saga, design only (2026-11-28)
 
 ### D-065
 
@@ -1896,6 +1901,11 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 577 commits (14 unlinked). Newest
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `16bda87` | docs(web): merge nth-notifydoc (0360095) | 2026-11-28 | [W-040](#w-040) |
+| `cd8ca04` | docs(web): merge nth-helpguide (e9a335f) | 2026-11-28 | [W-040](#w-040) |
+| `0360095` | docs(design): notifications, attachments and the settlement saga, design only | 2026-11-28 | [D-064](#d-064) |
+| `fd820cf` | docs(spine): traceability after helpguide, nth-notifydoc ledger row | 2026-11-28 | [W-040](#w-040) |
+| `e9a335f` | feat(web): What Fugue runs on lists the real stack, in-house patterns and quality tooling | 2026-11-28 | [D-064](#d-064) |
 | `69afa03` | feat(web): merge nth-helpguide, Help is a guide by role and module, Kafka shown as an optional adapter | 2026-11-28 | [W-040](#w-040) |
 | `b79a9a3` | fix(web): keep the env chip on one line | 2026-11-28 | [D-064](#d-064) |
 | `95044e7` | fix(web): Kafka shown as an optional adapter that is off; API v1 labelled | 2026-11-28 | [D-064](#d-064) |
