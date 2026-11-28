@@ -33,7 +33,7 @@ export const SCORE_HOOD: HoodNote = {
     },
     {
       layer: 'web',
-      text: 'score-layout groups a request's per-entity audit rows into one step and lanes it with its events and deliveries.',
+      text: 'score-layout groups the per-entity audit rows of a request into one step and lanes it with its events and deliveries.',
       path: 'web/src/app/features/audit/score-layout.ts',
     },
   ],
