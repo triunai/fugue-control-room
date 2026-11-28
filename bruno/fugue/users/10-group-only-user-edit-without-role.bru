@@ -1,0 +1,64 @@
+meta {
+  name: Edit a group-only user (support@) with no direct role: 200, then restore the name
+  type: http
+  seq: 10
+}
+
+put {
+  url: {{baseUrl}}/api/v1/users/{{groupUserId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {}
+}
+
+script:pre-request {
+  async function login(email) {
+    // One token per account per run: reuse it while it is younger than 10 minutes (the sign-in limiter stays on).
+    const key = "tok_" + email.replace("@", "_at_");
+    if (bru.getVar(key) && Date.now() - Number(bru.getVar(key + "_at") || 0) < 10 * 60 * 1000) return bru.getVar(key);
+    const res = await bru.sendRequest({
+      method: "POST",
+      url: bru.getEnvVar("baseUrl") + "/api/v1/auth/token",
+      headers: { "Content-Type": "application/json" },
+      data: { email: email, password: bru.getEnvVar("devPw") }, // secrets-scan:ignore
+    });
+    bru.setVar(key, res.data.accessToken);
+    bru.setVar(key + "_at", String(Date.now()));
+    return res.data.accessToken;
+  }
+  const token = await login(bru.getEnvVar("adminEmail"));
+  const headers = { "Content-Type": "application/json", Authorization: "Bearer " + token };
+  const list = await bru.sendRequest({ method: "GET", url: bru.getEnvVar("baseUrl") + "/api/v1/users?search=support@fugue.test", headers });
+  const user = list.data.find((u) => u.email === "support@fugue.test");
+  bru.setVar("groupUserId", user.id);
+  bru.setVar("groupUserName", user.displayName);
+  const url = bru.getEnvVar("baseUrl") + "/api/v1/users/" + user.id;
+  const read = await bru.sendRequest({ method: "GET", url, headers });
+  req.setUrl(url);
+  req.setHeader("Authorization", "Bearer " + token);
+  req.setHeader("If-Match", read.headers.etag);
+  req.setBody({ displayName: user.displayName + " (edited)", isActive: true, roles: [] });
+}
+
+script:post-response {
+  // Restore the seeded name so the run leaves the data as it found it.
+  const token = bru.getVar("tok_admin_at_fugue.test");
+  const headers = { "Content-Type": "application/json", Authorization: "Bearer " + token };
+  const url = bru.getEnvVar("baseUrl") + "/api/v1/users/" + bru.getVar("groupUserId");
+  await bru.sendRequest({
+    method: "PUT", url, headers: { ...headers, "If-Match": res.headers.etag },
+    data: { displayName: bru.getVar("groupUserName"), isActive: true, roles: [] },
+  });
+}
+
+tests {
+  test("200, the name changed, no direct role, the group still gives access", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.displayName).to.equal(bru.getVar("groupUserName") + " (edited)");
+    expect(res.body.roles).to.eql([]);
+    expect(res.body.groups).to.include("SUPPORT");
+  });
+}

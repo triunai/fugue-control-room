@@ -9,4 +9,8 @@
 - `UserDirectory` now lists only ACTIVE groups in `UserDto.Groups` (matches what /me grants).
 
 ## Next
-- slice 2/2: drawer validation + hint, spec, Bruno request.
+- slice 2/2 (done): drawer validation + hint, specs (group-only saves; no group refused), Bruno users/10.
+
+## Gates
+- web lint, `npm test` 58 files / 390 tests, build: pass. Bruno users folder: 10/10 on own API.
+- headless: edit support@ on :5235 -> PUT 200, 0 console errors.

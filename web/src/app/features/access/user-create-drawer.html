@@ -121,6 +121,11 @@
         }
         @if (err('roles'); as m) {
           <span id="nu-roles-msg" class="field-error">{{ m }}</span>
+        } @else if (groupsLabel()) {
+          <span id="nu-roles-msg" class="field-hint"
+            >Access comes from group {{ groupsLabel() }}. Direct roles are optional; you can only assign roles whose
+            permissions you hold yourself.</span
+          >
         } @else {
           <span id="nu-roles-msg" class="field-hint"
             >You can only assign roles whose permissions you hold yourself.</span
