@@ -31,6 +31,8 @@ import { STACK } from './stack-info';
   styles: `
     .stack {
       padding: 1.4rem 1.6rem;
+      max-height: calc(100vh - 3rem);
+      overflow-y: auto;
     }
     .stack-title {
       margin: 0 0 0.6rem;
