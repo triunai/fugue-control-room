@@ -98,7 +98,7 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
 - [ ] 20. nth-importui: Import page redesign (icons, drop zone, sample-file links).
 - [ ] 21. nth-changelog: Decisions renamed Changelog (/changelog, /decisions redirects); versioning via commits, W, D, ADRs and CHANGELOG entries.
 - [ ] 22. nth-explained: the owner's "Fugue, Explained" artifact in docs/explained + web/public/explained + one Help link.
-- [ ] 23. nth-overrides: explain the override formula on Users & access (temporary vendor or contractor access).
+- [x] 23. (merge 5b6cc96, W-040; formula checked by the lane against UserAccessReader.cs:11-15 and ADR-008; web 368 tests; on :8080 as admin "How overrides work" expands to the formula, 0 errors) nth-overrides: explain the override formula on Users & access (temporary vendor or contractor access).
 - [ ] 24. nth-scorefix: The Score groups one request's N audit rows by command instead of N API calls.
 - [ ] 25. nth-useredit (src/, after nth-refactor merges): edit users via PUT /users/{id} with If-Match, a show-password toggle, an entity add/edit gap audit.
 README refresh (11) slides to about 12:30.

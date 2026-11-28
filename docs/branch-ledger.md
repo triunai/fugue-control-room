@@ -13,5 +13,4 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | `nth-importui` | `.worktrees/nth-importui` | ddd2ded | nth-importui (relay-dispatched) | W-040 | Import page redesign: icons, drop zone, sample files |
 | `nth-changelog` | `.worktrees/nth-changelog` | ddd2ded | nth-changelog (relay-dispatched) | W-040 | Decisions -> Changelog (/changelog, /decisions redirects), versioning explained |
 | `nth-explained` | `.worktrees/nth-explained` | ddd2ded | nth-explained (relay-dispatched) | W-040 | "Fugue, Explained" in docs/explained + web/public/explained + a Help link |
-| `nth-overrides` | `.worktrees/nth-overrides` | ddd2ded | nth-overrides (relay-dispatched) | W-040 | explain the override formula on Users & access |
 | `nth-scorefix` | `.worktrees/nth-scorefix` | ddd2ded | nth-scorefix (relay-dispatched) | W-040 | The Score groups one request's audit rows by command |
