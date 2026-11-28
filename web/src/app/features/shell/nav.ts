@@ -95,8 +95,8 @@ export const NAV: NavGroup[] = [
         icon: 'M2.5 2.5h4.5v4.5H2.5zM9 2.5h4.5v4.5H9zM2.5 9h4.5v4.5H2.5zM9 9h4.5v4.5H9z',
       },
       {
-        label: 'Decisions',
-        path: '/decisions',
+        label: 'Changelog',
+        path: '/changelog',
         permission: ['CLAIMS_ALL', 'MODULES_VIEW'],
         icon: 'M8 2.5v11M8 5.5H3.5M8 10.5h4.5M2.5 5.5h2M11.5 10.5h2',
       },

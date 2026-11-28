@@ -5,6 +5,8 @@ const GROUPS: DecisionGroup[] = [
   {
     version: 'Unreleased',
     date: null,
+    notes: [],
+    closed: [],
     entries: [
       {
         kind: 'D',
@@ -21,6 +23,8 @@ const GROUPS: DecisionGroup[] = [
   {
     version: 'v0.0.2',
     date: '2026-11-27',
+    notes: [{ label: 'Release', text: 'the claims platform' }],
+    closed: [{ id: 'W-022', title: 'Quality wave', date: '2026-11-27', outcome: 'Landed.', commits: 3 }],
     entries: [
       {
         kind: 'ADR',
@@ -47,11 +51,13 @@ const GROUPS: DecisionGroup[] = [
 ];
 
 describe('filterGroups', () => {
-  it('all keeps everything', () => expect(countEntries(filterGroups(GROUPS, 'all', ''))).toBe(3));
+  it('all keeps everything', () => expect(countEntries(filterGroups(GROUPS, 'all', ''))).toBe(5));
 
   it('ADRs and Decisions chips split by kind and drop emptied groups', () => {
     const adrs = filterGroups(GROUPS, 'adr', '');
     expect(adrs.map((g) => g.version)).toEqual(['v0.0.2']);
+    expect(adrs[0].notes).toEqual([]);
+    expect(adrs[0].closed).toEqual([]);
     expect(adrs[0].entries.map((e) => e.id)).toEqual(['ADR-010']);
     expect(filterGroups(GROUPS, 'd', '').flatMap((g) => g.entries.map((e) => e.id))).toEqual(['D-065', 'D-027']);
   });
@@ -65,6 +71,15 @@ describe('filterGroups', () => {
     expect(filterGroups(GROUPS, 'all', 'd-065')).toHaveLength(1);
     expect(filterGroups(GROUPS, 'all', 'nothing like this')).toEqual([]);
   });
+
+  it('the Release notes chip keeps notes and closed work items only, and the text filter reaches them', () => {
+    const r = filterGroups(GROUPS, 'notes', '');
+    expect(r.map((g) => g.version)).toEqual(['v0.0.2']);
+    expect(r[0].entries).toEqual([]);
+    expect(r[0].notes).toHaveLength(1);
+    expect(filterGroups(GROUPS, 'all', 'w-022')[0].closed).toHaveLength(1);
+    expect(filterGroups(GROUPS, 'all', 'claims platform')[0].entries).toEqual([]);
+  });
 });
 
 describe('the generated data', () => {
@@ -72,6 +87,9 @@ describe('the generated data', () => {
     const entries = (data.groups as DecisionGroup[]).flatMap((g) => g.entries);
     expect(entries.filter((e) => e.kind === 'ADR')).toHaveLength(data.counts.adrs);
     expect(entries.filter((e) => e.kind === 'D')).toHaveLength(data.counts.decisions);
+    const groups = data.groups as unknown as DecisionGroup[];
+    expect(groups.flatMap((g) => g.closed)).toHaveLength(data.counts.closed);
+    expect(groups.flatMap((g) => g.notes).length).toBeGreaterThan(0);
     for (const e of entries) {
       expect(e.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(e.path).toMatch(e.kind === 'ADR' ? /^docs\/adr\/ADR-\d+.*\.md$/ : /^docs\/decisions\.md#d-\d+/);

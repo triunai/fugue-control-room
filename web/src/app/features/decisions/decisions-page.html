@@ -1,13 +1,45 @@
 <div class="page">
   <header class="page-head">
     <div>
-      <h1 class="page-title">Decisions</h1>
+      <h1 class="page-title">Changelog</h1>
       <p class="page-lede">
-        {{ counts.adrs }} ADRs and {{ counts.decisions }} decision entries, newest first, grouped by the release they
-        landed in. Generated from the repository docs; each entry opens its full text.
+        What changed in each release, and why. Generated from the repository docs ({{ counts.releases }} release,
+        {{ counts.closed }} closed work items, {{ counts.adrs }} ADRs, {{ counts.decisions }} decisions); every entry
+        opens its full text on GitHub.
       </p>
     </div>
   </header>
+
+  <section class="panel panel-pad how" aria-labelledby="how-title">
+    <h2 id="how-title" class="how-title">How versioning works here</h2>
+    <p class="how-lede">
+      A version is not a number someone picks. It is a slice of the commit history that reads as
+      <strong>what changed and why</strong>.
+    </p>
+    <ol class="how-steps">
+      <li>
+        <strong>Commits.</strong> Every change lands as a commit. The last paragraph of its message is a
+        <code>Refs:</code> trailer naming the work item (<code>W-NNN</code>) and the decisions (<code>D-NNN</code>)
+        behind it.
+      </li>
+      <li>
+        <strong>Work items.</strong> When a work item closes, <code>CHANGELOG.md</code> records its outcome and its
+        commits. A release (<code>v0.0.2</code>) gathers the items closed up to its date.
+      </li>
+      <li>
+        <strong>Decisions and ADRs.</strong> A decision (<code>D-NNN</code>) is a dated entry in
+        <code>docs/decisions.md</code>; one big enough to outlive its week is promoted to an ADR in
+        <code>docs/adr/</code>. Each sits under the release that was current on its date.
+      </li>
+      <li>
+        <strong>Both ways.</strong> <code>docs/traceability.md</code> links commits, work items and decisions in both
+        directions, so you can start from a line of code or from a decision and reach the other.
+      </li>
+    </ol>
+    <p class="how-note">
+      <em>Unreleased</em> is work dated after the latest tag. The next release is cut from it.
+    </p>
+  </section>
 
   <div class="filters">
     <div class="tabs kinds" role="group" aria-label="Kind">
@@ -24,7 +56,7 @@
       }
     </div>
     <label class="search">
-      <span class="sr-only">Filter decisions</span>
+      <span class="sr-only">Filter the changelog</span>
       <input
         class="input"
         type="search"
@@ -42,6 +74,53 @@
         {{ g.version }}
         <span class="release-date">{{ g.date ?? 'not yet tagged' }}</span>
       </h2>
+      @if (g.notes.length) {
+        <div class="notes">
+          <h3 class="sub">Release notes</h3>
+          <dl class="note-list">
+            @for (n of g.notes; track $index) {
+              <div class="note">
+                @if (n.label) {
+                  <dt>{{ n.label }}</dt>
+                }
+                <dd>{{ n.text }}</dd>
+              </div>
+            }
+          </dl>
+        </div>
+      } @else if (g.version === 'Unreleased') {
+        <p class="empty-note">Nothing is written up in <code>CHANGELOG.md</code> for this release yet.</p>
+      }
+      @if (g.closed.length) {
+        <details class="closed">
+          <summary>
+            <span class="sub">Closed work items</span>
+            <span class="pill pill-muted">{{ g.closed.length }}</span>
+          </summary>
+          <ul class="closed-list">
+            @for (c of g.closed; track c.id) {
+              <li>
+                <div class="head">
+                  <span class="pill mono pill-muted">{{ c.id }}</span>
+                  <span class="closed-title">{{ c.title }}</span>
+                  <time class="date" [attr.datetime]="c.date">{{ c.date }}</time>
+                </div>
+                @if (c.outcome) {
+                  <p class="summary">{{ c.outcome }}</p>
+                }
+                @if (c.commits) {
+                  <p class="meta">
+                    <span>{{ c.commits }} commits listed in CHANGELOG.md</span>
+                  </p>
+                }
+              </li>
+            }
+          </ul>
+        </details>
+      }
+      @if (g.entries.length) {
+        <h3 class="sub">Decisions and ADRs</h3>
+      }
       <ol class="timeline">
         @for (e of g.entries; track e.id) {
           <li class="entry">
