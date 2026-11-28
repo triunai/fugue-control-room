@@ -6,7 +6,7 @@ import { isApiProblem } from '../../core/http/problem';
 import { StampPipe } from '../../ui/format';
 import { RefChip } from '../../ui/ref-chip';
 import { EmptyState, ErrorState, SkeletonRows } from '../../ui/states';
-import { layoutScore } from './score-layout';
+import { layoutScore, type ScoreCounts } from './score-layout';
 
 const STATUS_PILL: Record<string, string> = { complete: 'pill-ok', pending: 'pill-warn', failed: 'pill-err' };
 
@@ -43,6 +43,16 @@ export class ScorePage {
 
   protected pill(status: string): string {
     return STATUS_PILL[status] ?? 'pill-muted';
+  }
+
+  protected summary(c: ScoreCounts): string {
+    const n = (count: number, one: string, many = `${one}s`) => `${count} ${count === 1 ? one : many}`;
+    return [
+      n(c.requests, 'request'),
+      n(c.auditRows, 'audit row'),
+      n(c.events, 'event'),
+      n(c.deliveries, 'webhook delivery', 'webhook deliveries'),
+    ].join(' · ');
   }
 
   protected ms(value: number): string {
