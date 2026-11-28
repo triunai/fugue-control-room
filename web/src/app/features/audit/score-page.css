@@ -80,7 +80,8 @@
 }
 
 .step-mark {
-  align-self: center;
+  align-self: start;
+  padding-top: 0.15rem;
   display: inline-flex;
 }
 
@@ -136,4 +137,17 @@
   .step-ms {
     grid-column: 3;
   }
+}
+
+.step-rows summary {
+  cursor: pointer;
+}
+
+.step-row-list {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0 0 0 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
 }

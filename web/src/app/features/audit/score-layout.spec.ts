@@ -102,4 +102,60 @@ describe('score layout', () => {
     expect(toneOf({ kind: 'delivery', status: 'dead' })).toBe('err');
     expect(toneOf({ kind: 'delivery', status: 'succeeded' })).toBe('ok');
   });
+
+  describe('one request that wrote several audit rows', () => {
+    const create = (i: number, entityType: string, atMs = 16) =>
+      voice({
+        kind: 'command',
+        id: `row-${i}`,
+        atMs,
+        label: 'users.create',
+        detail: 'POST api/v1/users',
+        entityType,
+        entityId: `id-${i}`,
+      });
+    const rows = [create(0, 'User', 0), ...[1, 2, 3, 4].map((i) => create(i, 'UserRole', 16))];
+
+    it('is one API step and one Handler/Audit step naming the entities', () => {
+      const steps = scoreSteps(rows);
+
+      expect(steps.map((s) => s.lane)).toEqual(['api', 'audit']);
+      expect(steps[0].title).toBe('POST api/v1/users');
+      expect(steps[1].title).toBe('users.create');
+      expect(steps[1].rowSummary).toBe('5 rows: User, 4 × UserRole');
+      expect(steps[1].rows).toHaveLength(5);
+      expect([steps[1].startMs, steps[1].endMs]).toEqual([0, 16]);
+      expect(layoutScore(rows).counts).toEqual({ requests: 1, auditRows: 5, events: 0, deliveries: 0 });
+    });
+
+    it('takes the worst status of the group', () => {
+      const steps = scoreSteps([rows[0], { ...rows[1], status: 'failure', errorCode: 'x.y' }]);
+
+      expect(steps.every((s) => s.tone === 'err')).toBe(true);
+      expect(steps[1].detail).toBe('x.y');
+    });
+
+    it('keeps the claim reserve shape: command, event, delivery', () => {
+      const s = scoreSteps(reserve);
+
+      expect(s.map((x) => x.lane)).toEqual(['api', 'audit', 'event', 'webhook']);
+      expect(s[1].rowSummary).toBeNull();
+      expect(layoutScore(reserve).counts).toEqual({ requests: 1, auditRows: 1, events: 1, deliveries: 1 });
+    });
+
+    it('keeps two different actions under one correlation as two steps', () => {
+      const steps = scoreSteps([
+        voice({ kind: 'command', id: 'a', atMs: 0, label: 'claims.submit', detail: 'POST api/v1/claims' }),
+        voice({ kind: 'command', id: 'b', atMs: 5, label: 'claims.assign', detail: 'PUT api/v1/claims/{id}/assign' }),
+      ]);
+
+      expect(steps.map((s) => s.lane)).toEqual(['api', 'audit', 'api', 'audit']);
+    });
+
+    it('keeps the same action far apart in time as two requests', () => {
+      const steps = scoreSteps([create(0, 'User', 0), create(1, 'User', 5000)]);
+
+      expect(steps.filter((s) => s.lane === 'api')).toHaveLength(2);
+    });
+  });
 });
