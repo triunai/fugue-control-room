@@ -2,7 +2,7 @@
 
 OVERWRITTEN at every wrap or pause, never appended; at most 40 lines. After a wrap or days away: read this first, then do "Next action" exactly. History lives in `docs/project-log.md` and `CHANGELOG.md`.
 
-## ▶ RESUME HERE — 2026-11-28 13:20 +08, WRAP (submission 15:00)
+## ▶ RESUME HERE — 2026-11-28 13:10 +08, WRAP (submission 15:00)
 Release v0.0.3 is written in `CHANGELOG.md`; W-025..W-041 are closed in `docs/project-log.md` and `CHANGELOG.md`. The overnight
 plan `docs/plans/overnight-2026-11-28.md` is worked to the end: done or deferred with a D-row (13 IOptions, 15, 11g: D-076;
 14 Worker host: D-075). D-066's outcome line has the counts: 35 lanes merged, 17 work items closed, 10+ pushes behind the full suite.
