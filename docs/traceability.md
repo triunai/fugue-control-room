@@ -5,7 +5,7 @@
 > Links commits, workstreams (W), decisions (D) and ADRs, both ways. Source: `git log` of HEAD (`Refs:` trailers) and the docs as committed.
 > Rules and ids: [`hygiene.md`](../hygiene.md), board [`workstreams.md`](workstreams.md), [`project-log.md`](project-log.md), [`decisions.md`](decisions.md).
 
-Counts: 41 workstreams, 14 ADRs, 81 decisions, 570 commits (14 unlinked). Newest commit indexed: `909c90b`.
+Counts: 41 workstreams, 14 ADRs, 81 decisions, 573 commits (14 unlinked). Newest commit indexed: `416a579`.
 
 ## Workstreams
 
@@ -678,7 +678,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 570 commits (14 unlinked). Newest
 **Owner asks at 11:26: tour, search bar, import UI, changelog, explained, overrides, The Score grouping, user edit** — CLOSED
 - Where: [project log entry](project-log.md#2026-11-28--closed-w-040-owner-asks-at-1126-tour-search-bar-import-ui-changelog-explained-overrides-the-score-grouping-user-edit)
 - Decisions and ADRs: [D-064](#d-064), [D-066](#d-066), [D-067](#d-067), [D-072](#d-072), [D-074](#d-074), [D-080](#d-080)
-- Commits (35):
+- Commits (37):
   - `8c4ce09` docs(spine): W-040 and ledger rows for the 11:26 owner asks (2026-11-28)
   - `5b6cc96` feat(web): merge nth-overrides, the override formula explained on Users & access (item 23) (2026-11-28)
   - `35f5cb6` docs(plans): tick 23, retire nth-overrides (2026-11-28)
@@ -714,6 +714,8 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 570 commits (14 unlinked). Newest
   - `eb48905` chore(web): the console footer reads v0.0.3, README Bruno line from the clean run (2026-11-28)
   - `0688a5e` docs(explained): the explained page and README badge at v0.0.3 (2026-11-28)
   - `909c90b` docs(docs): merge nth-explained3, Fugue explained says v0.0.3 with today's status (2026-11-28)
+  - `0d36ce7` docs(plans): ledger rows for nth-nextpad and nth-helpguide (2026-11-28)
+  - `416a579` fix(web): merge nth-nextpad, the Next step text no longer touches its coloured bar (2026-11-28)
 
 ### W-041
 
@@ -1740,6 +1742,7 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 570 commits (14 unlinked). Newest
   - `01ce6b0` docs(spine): hot-state at the wrap (2026-11-28)
   - `0f2d304` docs(spine): hot-state time (2026-11-28)
   - `eb48905` chore(web): the console footer reads v0.0.3, README Bruno line from the clean run (2026-11-28)
+  - `e0b7504` fix(web): breathing room between the Next step bar and its text (2026-11-28)
 
 ### D-067
 
@@ -1889,6 +1892,9 @@ Counts: 41 workstreams, 14 ADRs, 81 decisions, 570 commits (14 unlinked). Newest
 
 | Commit | Subject | Date | Ids |
 |---|---|---|---|
+| `416a579` | fix(web): merge nth-nextpad, the Next step text no longer touches its coloured bar | 2026-11-28 | [W-040](#w-040) |
+| `e0b7504` | fix(web): breathing room between the Next step bar and its text | 2026-11-28 | [D-066](#d-066) |
+| `0d36ce7` | docs(plans): ledger rows for nth-nextpad and nth-helpguide | 2026-11-28 | [W-040](#w-040) |
 | `909c90b` | docs(docs): merge nth-explained3, Fugue explained says v0.0.3 with today's status | 2026-11-28 | [W-040](#w-040), [D-064](#d-064) |
 | `0688a5e` | docs(explained): the explained page and README badge at v0.0.3 | 2026-11-28 | [W-040](#w-040) |
 | `eb48905` | chore(web): the console footer reads v0.0.3, README Bruno line from the clean run | 2026-11-28 | [W-040](#w-040), [D-066](#d-066) |
