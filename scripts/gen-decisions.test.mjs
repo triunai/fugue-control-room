@@ -142,3 +142,14 @@ test("generate groups newest first, Unreleased on top, skips the template, is de
   assert.equal(r.unparsed.length, 1);
   assert.deepEqual(generate(root), r);
 });
+
+test("generate works when nothing is dated after the newest release (no Unreleased group)", () => {
+  const root = mkdtempSync(path.join(tmpdir(), "decisions-"));
+  mkdirSync(path.join(root, "docs/adr"), { recursive: true });
+  writeFileSync(path.join(root, "CHANGELOG.md"), "# Changelog\n\n## v0.0.9 — 2099-01-01\nRelease: far future.\n\n" + CHANGELOG.replace(/^# Changelog\n/, ""));
+  writeFileSync(path.join(root, "docs/decisions.md"), DECISIONS);
+  writeFileSync(path.join(root, "docs/adr/ADR-001-x.md"), ADR_COLON);
+  const r = generate(root);
+  assert.equal(r.data.groups[0].version, "v0.0.9");
+  assert.ok(!r.data.groups.some((g) => g.version === "Unreleased"));
+});

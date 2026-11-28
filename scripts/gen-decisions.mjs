@@ -166,9 +166,9 @@ export function generate(root) {
     byVersion.get(key).push(e);
   }
   const order = [...versions].reverse().map((v) => v.version);
+  const closedFor = (k) => log.closed.filter((c) => (versionFor(c.date, versions)?.version ?? "Unreleased") === k);
   const keys = ["Unreleased", ...order].filter((k) => byVersion.has(k) || closedFor(k).length);
   const rank = (e) => (e.kind === "D" ? "1" : "0") + e.id;
-  const closedFor = (k) => log.closed.filter((c) => (versionFor(c.date, versions)?.version ?? "Unreleased") === k);
   const groups = keys.map((k) => ({
     version: k,
     date: versions.find((v) => v.version === k)?.date ?? null,
