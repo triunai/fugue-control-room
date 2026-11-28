@@ -23,6 +23,8 @@ D-079 relay cycle with the broker down (about 200 s per cycle at defaults, one t
 HybridCache covers GET /me only (D-081); owner belief corrected: PostgreSQL 17, ids UUID v7.
 Traceability: 14 unlinked commits; tonight's 6 are lanes' "Merge branch 'main' into nth-*" (no trailer), not product changes.
 
+Known polish: on the claim record the shell's header controls ("Fugue, explained · Help") show faded inside the navy hero (seen in claims-record-officer.png); cosmetic, not fixed.
+
 ## Traps hit
 33, 34, 35, 36 (host asleep on battery stalls Testcontainers), 37 (a relaying test must settle leftover due rows first).
 Running Bruno on the demo stack writes data (claims, users): recreate after it before screenshots or a demo.
