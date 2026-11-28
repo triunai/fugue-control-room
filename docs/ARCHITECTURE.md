@@ -207,8 +207,10 @@ public sealed class UpdateCustomerHandler(ICustomerRepository customers, ICurren
 Every use case follows the same recipe ([`Features/README.md`](../src/Fugue.Application/Features/README.md)):
 
 ```text
-Fugue.Application/Features/<Feature>/I<Feature>Repository.cs
 Fugue.Application/Features/<Feature>/Commands/<Verb><Noun>.cs      (also Queries/)
+Fugue.Application/Features/<Feature>/Models/         DTOs, outcomes, errors
+Fugue.Application/Features/<Feature>/Repos/          the slice's ports (I*Repository, I*Store, I*Reader, I*Admin)
+Fugue.Application/Features/<Feature>/Helpers/        pure rules and parsers (ClaimFlow, ClaimScope, *Rules)
 Fugue.Infrastructure/Persistence/<Feature>/                       repository implementation
 Fugue.Api/Controllers/<Feature>Controller.cs                      one-liner actions
 ```

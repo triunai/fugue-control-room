@@ -106,6 +106,10 @@ Ownership from 03:23: the relay session dispatches every new lane (file boundari
       :5431 with the limiter raised, throwaway pg :55531). OWNERS Addendum 11.
 - [ ] 27. nth-hybridcache (W-041, pending dispatch after nth-refactor merges): Microsoft.Extensions.Caching.Hybrid with stampede
       protection; hard stop 12:50, else defer with a D-row.
+- [x] 28. (merge 766ff6f at f89c523; bruno/ only; on the demo stack after an api restart (fresh limiter, as in CI) the full `bru run --env compose` passes 127/127 requests, 153/153 tests) nth-brunoci (FIX, W-041): CI api-contract run was red (127 requests, 12 failed: 429 at sign-in, then 401s); the collection
+      caches one token per account per run, the limiter stays on. Wrap gate: full `bru run --env compose` green.
+- [ ] 29. nth-kafkafix (FIX, tests only, dispatched 12:00 as the critical path, READY or BLOCKED by 12:35; if BLOCKED a known-issue D-row and the dispatcher decides the push at 12:45; never --no-verify): KafkaPublisherTests' no-broker test crashes the test host
+      (librdkafka -> 127.0.0.1:1) on this machine, so the full suite does not finish in one run; known issue if not fixed by 13:45.
 README refresh (11) slides to about 12:30.
 
 ## P2 — after the lanes merge (backlog #010)
@@ -115,7 +119,7 @@ nth-options (Sonnet) item 13; (3) 11g after 13, optional, behind the same 12:00 
 13 only if time allows before 12:00, else defer; (6) about 12:00 nth-readme (Sonnet) item 11 from the final main, plus the
 one-line ClaimSearchHitDto comment fix. Then the integrator's 13:00-14:00 fixes window and the 14:00 wrap (16, 17).
 Run 12 + 13 only if every feature lane has merged by ~10:30, else defer with a D-row. 14 (Worker host) is a deferral candidate.
-- [ ] 12. (lane nth-refactor from afc6fe9, W-039; base full suite 849 + Arch 37 at push 6, 3a6fb56) Per-slice folders `Commands/ Queries/ Models/ Repos/ Helpers/` + DI extension; namespaces follow folders (IDE fix or
+- [x] 12. (merge 8e0993b at c618248, W-039, D-078: 58 renames, namespaces follow folders, OpenAPI byte-identical, build 0 warnings, format clean, 3 moved files spot-checked (namespace line only), web = 17 hood path strings; suite 849 + 37 from two runs under the lock because KafkaPublisherTests' no-broker test crashes the test host on this machine today, on main too) Per-slice folders `Commands/ Queries/ Models/ Repos/ Helpers/` + DI extension; namespaces follow folders (IDE fix or
       `dotnet format analyzers --diagnostics IDE0130`); full suite.
 - [-] 13. (DEFERRED by D-076: item 12 had not merged by 11:00; its 09:13 suite stalled while the host slept, failure mode 36) Remaining hardcoded values to IOptions (page sizes kept in step with validators, webhook replay window, SLA days).
 - [-] 14. (DEFERRED by D-075 at 09:15: two hours lost to the OrbStack hang, 10:00 gate; stays backlog #010 part 3) `Fugue.Worker` host for the four BackgroundServices + a building-blocks project for pipeline behaviours; ArchTests.

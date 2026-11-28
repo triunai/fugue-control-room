@@ -7,4 +7,6 @@ One row per live branch or worktree, added BEFORE `git worktree add` / `git swit
 | Branch | Worktree path | Base sha | Owner (lane) | W id | Status |
 |---|---|---|---|---|---|
 | `main` | repo root | - | lead | - | integration branch; the only tree that writes spine files |
-| `nth-refactor` | `.worktrees/nth-refactor` | afc6fe9 | nth-refactor (Opus), relay-dispatched | W-039 | item 12: per-slice folders + DI extensions, EXCLUSIVE on src/ and tests/ |
+| `nth-useredit` | `.worktrees/nth-useredit` | 8e0993b | nth-useredit (relay-dispatched) | W-040 | item 25: edit users (PUT /users/{id}, If-Match), show-password toggle, add/edit gap audit; hard stop 12:50 |
+| `nth-hybridcache` | `.worktrees/nth-hybridcache` | 8e0993b | nth-hybridcache (relay-dispatched) | W-041 | item 27: HybridCache with stampede protection on hot reads; hard stop 12:50 |
+| `nth-kafkafix` | `.worktrees/nth-kafkafix` | 8e0993b | nth-kafkafix (Opus, relay-dispatched) | W-041 | item 29: Kafka no-broker test crashes the test host; proof = one full-suite run that finishes; READY or BLOCKED by 12:35 |
